@@ -11,6 +11,8 @@ start:
   push ax                     ; save previous mode on stack
 
   mov  si, bitmap
+  mov  ah, (640 - LOGOW) / 2 / 8
+  mov  al, (200 - LOGOH) / 2
   mov  cx, LOGOW
   mov  dx, LOGOH
   call cga_draw_bitmap

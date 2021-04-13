@@ -28,11 +28,21 @@ cga_set_video_mode:
 ; Copy bitmap to screen buffer
 ; Input:
 ;   DS:SI - linear monochrome bitmap
+;   AH    - horizontal position, in octets
+;   AL    - vertical position, in lines
 ;   CX    - image width
 ;   DX    - image height
-; Invalidates: AX, CX, DI
+; Invalidates: DI
 cga_draw_bitmap:
   push es                     ; save the segment register
+
+  mov  di, ax                 ; get the offset
+  mov  ah, al                 
+  mov  al, CGA_HIMONO_LINE / 2
+  mul  ah                     ; AX = vertical position * CGA_HIMONO_LINE / 2
+  shr  di, 8                  ; DI = horizontal position
+  add  di, ax
+  push di                     ; save the offset
   shr  cx, 3                  ; get the image width in octets
   push cx                     ; save the image width in octets
   shr  dx, 1                  ; get the image half-height, copy every other line
@@ -41,7 +51,6 @@ cga_draw_bitmap:
 
   mov  ax, CGA_HIMONO_FB_EVEN ; write even lines
   mov  es, ax
-  xor  di, di                 ; start from the top of the screen
 .even:
   call cga_draw_line
   dec  dx
@@ -54,7 +63,7 @@ cga_draw_bitmap:
 
   mov  ax, CGA_HIMONO_FB_ODD  ; write odd lines
   mov  es, ax
-  xor  di, di                 ; start from the top of the screen
+  pop  di                     ; restore the offset
 .odd:
   call cga_draw_line
   dec  dx
