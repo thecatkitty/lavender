@@ -84,3 +84,35 @@ cga_draw_line:
   pop  cx
   pop  di
   ret
+
+
+; Write text to screen
+; Input:
+;   DS:SI - null-terminated ASCII string
+;   AH    - horizontal position, in columns
+;   AL    - vertical position, in rows
+cga_draw_text:
+  push  dx                    ; save registers
+  push  bx
+  push  ax
+
+  mov   dh, al
+  mov   dl, ah
+  xor   bx, bx
+  mov   ah, 02h               ; SET CURSOR POSITION
+  int   10h
+
+  mov   ah, 0Eh               ; TELETYPE OUTPUT
+.next:
+  mov   al, [si]
+  test  al, al
+  jz    .end
+  int   10h
+  inc   si
+  jmp   .next
+
+.end:
+  pop   ax
+  pop   bx
+  pop   cx
+  ret

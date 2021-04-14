@@ -13,10 +13,30 @@ start:
 
   mov  si, bitmap
   mov  ah, (640 - LOGOW) / 2 / 8
-  mov  al, (200 - LOGOH) / 2
+  mov  al, (144 - LOGOH) / 2
   mov  cx, LOGOW
   mov  dx, LOGOH
   call cga_draw_bitmap
+
+  mov  si, msg_bronies
+  mov  ah, 32
+  mov  al, 18
+  call cga_draw_text
+
+  mov  si, msg_version
+  mov  ah, 35
+  mov  al, 19
+  call cga_draw_text
+
+  mov  si, msg_copyright
+  mov  ah, 10
+  mov  al, 23
+  call cga_draw_text
+
+  mov  si, msg_press
+  mov  ah, 24
+  mov  al, 24
+  call cga_draw_text
 
   xor  ah, ah                 ; GET KEYSTROKE
   int  16h
@@ -31,6 +51,10 @@ start:
 
 section .data
   bitmap            incbin "cgihisym.pbm", 57
+  msg_bronies       db     "Bronies Twilight", 0
+  msg_version       db     "Wersja 2.0", 0
+  msg_copyright     db     "Copyright (c) Fundacja BT, 2021. Wszelkie prawa zastrzezone.", 0
+  msg_press         db     "Nacisnij ENTER, aby kontynuowac.", 0
 
 section .bss
   
