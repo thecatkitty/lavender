@@ -1,7 +1,7 @@
 CGA_MODE_HIMONO     equ 6                         ; 640x200x1
-CGA_HIMONO_FB_EVEN  equ 0B800h                    ; even lines
-CGA_HIMONO_FB_ODD   equ 0BA00h                    ; odd lines
+CGA_HIMONO_MEM      equ 0B800h                    ; video memory base
 CGA_HIMONO_LINE     equ (640 / 8)                 ; line size in bytes
+CGA_HIMONO_PLANE    equ 2000h                     ; odd plane offset
 
 section .text
 
@@ -32,42 +32,30 @@ cga_set_video_mode:
 ;   AL    - vertical position, in lines
 ;   CX    - image width
 ;   DX    - image height
-; Invalidates: DI
+; Invalidates: AX, CX, DX, DI, SI
 cga_draw_bitmap:
-  push es                     ; save the segment register
-
   mov  di, ax                 ; get the offset
   mov  ah, al                 
   mov  al, CGA_HIMONO_LINE / 2
   mul  ah                     ; AX = vertical position * CGA_HIMONO_LINE / 2
   shr  di, 8                  ; DI = horizontal position
   add  di, ax
-  push di                     ; save the offset
+
   shr  cx, 3                  ; get the image width in octets
-  push cx                     ; save the image width in octets
-  shr  dx, 1                  ; get the image half-height, copy every other line
-  push dx                     ; save the image half-height
-  push si                     ; save the address of the first line of the bitmap
 
-  mov  ax, CGA_HIMONO_FB_EVEN ; write even lines
+  push es                     ; save and set the segment register
+  mov  ax, CGA_HIMONO_MEM     
   mov  es, ax
-.even:
-  call cga_draw_line
+.next:
+  call cga_draw_line          ; draw even line
+  xor  di, CGA_HIMONO_PLANE
   dec  dx
-  jnz  .even
-
-  pop  si                     ; restore the address of the first line
-  pop  dx                     ; restore the image half-height, copy every other line
-  pop  cx                     ; restore the number of horizontal octets
-  add  si, cx                 ; start from the second line of the bitmap
-
-  mov  ax, CGA_HIMONO_FB_ODD  ; write odd lines
-  mov  es, ax
-  pop  di                     ; restore the offset
-.odd:
-  call cga_draw_line
+  
+  call cga_draw_line          ; draw odd line
+  add  di, CGA_HIMONO_LINE
+  xor  di, CGA_HIMONO_PLANE
   dec  dx
-  jnz  .odd
+  jnz  .next
 
   pop  es                     ; restore the segment register
   ret
@@ -80,8 +68,7 @@ cga_draw_bitmap:
 ;   CX    - number of octets
 ; Output:
 ;   DS:SI - next bitmap line
-;   ES:DI - next screen line
-; Invalidates: AL
+; Invalidates: AX
 cga_draw_line:
   push di
   push cx
@@ -93,7 +80,5 @@ cga_draw_line:
   loop .octet
 
   pop  cx
-  add  si, cx
   pop  di
-  add  di, CGA_HIMONO_LINE
   ret
