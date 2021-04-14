@@ -92,27 +92,27 @@ cga_draw_line:
 ;   AH    - horizontal position, in columns
 ;   AL    - vertical position, in rows
 cga_draw_text:
-  push  dx                    ; save registers
-  push  bx
-  push  ax
+  push dx                     ; save registers
+  push bx
+  push ax
 
-  mov   dh, al
-  mov   dl, ah
-  xor   bx, bx
-  mov   ah, 02h               ; SET CURSOR POSITION
-  int   10h
+  mov  dh, al
+  mov  dl, ah
+  xor  bx, bx
+  mov  ah, 02h                ; SET CURSOR POSITION
+  int  10h
 
-  mov   ah, 0Eh               ; TELETYPE OUTPUT
+  mov  ah, 02h                ; WRITE CHARACTER TO STANDARD OUTPUT
 .next:
-  mov   al, [si]
-  test  al, al
-  jz    .end
-  int   10h
-  inc   si
-  jmp   .next
+  mov  dl, [si]
+  test dl, dl
+  jz   .end
+  int  21h
+  inc  si
+  jmp  .next
 
 .end:
-  pop   ax
-  pop   bx
-  pop   cx
+  pop  ax
+  pop  bx
+  pop  cx
   ret
