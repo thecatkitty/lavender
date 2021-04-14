@@ -34,14 +34,22 @@ cga_set_video_mode:
 ;   DX    - image height
 ; Invalidates: AX, CX, DX, DI, SI
 cga_draw_bitmap:
-  mov  di, ax                 ; get the offset
+  push dx                     ; save image height
+  push cx                     ; save image width
+
+  mov  di, ax
+  mov  cl, 8
+  shr  di, cl                 ; DI = horizontal position
   mov  ah, al                 
   mov  al, CGA_HIMONO_LINE / 2
   mul  ah                     ; AX = vertical position * CGA_HIMONO_LINE / 2
-  shr  di, 8                  ; DI = horizontal position
-  add  di, ax
+  add  di, ax                 ; get the offset
 
-  shr  cx, 3                  ; get the image width in octets
+  pop  dx                     ; restore image width
+  mov  cl, 3
+  shr  dx, cl                 ; get the image width in octets
+  mov  cx, dx
+  pop  dx                     ; restore image height
 
   push es                     ; save and set the segment register
   mov  ax, CGA_HIMONO_MEM     
@@ -68,17 +76,11 @@ cga_draw_bitmap:
 ;   CX    - number of octets
 ; Output:
 ;   DS:SI - next bitmap line
-; Invalidates: AX
 cga_draw_line:
   push di
   push cx
-.octet:
-  mov  al, [si]
-  mov  [es:di], al
-  inc  si
-  inc  di
-  loop .octet
-
+  cld
+  rep  movsb
   pop  cx
   pop  di
   ret

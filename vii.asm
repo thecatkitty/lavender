@@ -1,4 +1,5 @@
 org 100h
+cpu 8086
 
 LOGOW equ 272                 ; logo width
 LOGOH equ 100                 ; logo height
