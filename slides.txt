@@ -2,4 +2,4 @@
 500 B   22  ^CGIHISYM.PBM
 500 T   19  ^Wersja 2.0
 500 T   23  ^Copyright (c) Fundacja BT, 2021. Wszelkie prawa zastrzezone.
-500 T   24  ^Nacisnij ENTER, aby kontynuowac.
+500 T   24  ^Nacisnij dowolny klawisz, aby kontynuowac.
