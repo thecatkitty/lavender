@@ -9,7 +9,7 @@ SRC     = src
 all: bin/lavender.com
 
 $(BIN)/%.com: $(OBJ)/%.pe
-	objcopy -O binary $< $@
+	objcopy -O binary -j .com $< $@
 
 $(OBJ)/lavender.pe: $(OBJ)/lavender.o
 	$(LD) -m i386pe --nmagic -T com.ld -o $@ $<
