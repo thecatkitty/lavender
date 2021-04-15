@@ -1,12 +1,16 @@
+%include "cga.inc"
+%include "line.inc"
+
 cpu 8086
 
 LOGOW equ 272                 ; logo width
 LOGOH equ 100                 ; logo height
-LINE  equ 80                  ; max line length
 
 %define milliseconds(ms) (ms * 10 / 549)
 
-[BITS 16]
+[bits 16]
+section .init
+  jmp  start
 
 section .text
 
@@ -67,9 +71,6 @@ start:
   mov  ah, 4Ch                ; TERMINATE WITH RETURN CODE -> AL
   int  21h
 
-
-%include "cga.asm"
-%include "lineexec.asm"
 
 section .data
   bitmap            incbin "../bin/cgihisym.pbm", 57

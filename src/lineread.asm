@@ -1,7 +1,22 @@
+%define LINE_API
+%include "line.inc"
+%include "strings.inc"
+
+global line_read
+
+extern fslides
+extern buff
+extern line_delay
+extern line_x
+extern line_y
+extern line_type
+extern line_content
+extern line_length
+
+[bits 16]
 section .text
 
 line_read:
-  
   ; Read line header
   mov  ah, 3Fh                ; READ FROM FILE OR DEVICE
   mov  bx, [fslides]
@@ -163,5 +178,3 @@ line_read_content:
   stc
 .end:
   ret
-
-%include "strings.asm"

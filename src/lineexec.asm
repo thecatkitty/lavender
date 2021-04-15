@@ -1,3 +1,19 @@
+%define LINE_API
+%include "line.inc"
+%include "cga.inc"
+
+global line_execute
+
+global fslides
+global buff
+global line_delay
+global line_x
+global line_y
+global line_type
+global line_content
+global line_length
+
+[bits 16]
 section .text
 
 line_execute:
@@ -47,9 +63,6 @@ sleep:
   loop sleep
 .end:
   ret
-
-
-%include "lineread.asm"
 
 
 section .bss
