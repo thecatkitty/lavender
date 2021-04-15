@@ -72,7 +72,7 @@ start:
 %include "lineexec.asm"
 
 section .data
-  bitmap            incbin "cgihisym.pbm", 57
+  bitmap            incbin "../bin/cgihisym.pbm", 57
   slides            db     "slides.txt", 0
   msg_err           db     "ERR$"
 
