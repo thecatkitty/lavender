@@ -1,16 +1,14 @@
-CGA_MODE_HIMONO     equ 6                         ; 640x200x1
-CGA_HIMONO_MEM      equ 0B800h                    ; video memory base
-CGA_HIMONO_LINE     equ (640 / 8)                 ; line size in bytes
-CGA_HIMONO_PLANE    equ 2000h                     ; odd plane offset
+%define CGA_API
+%include "cga.inc"
 
+global cga_draw_bitmap
+global cga_draw_text
+global cga_set_video_mode
+global cga_set_video_mode
+
+[bits 16]
 section .text
 
-; Set video mode
-; Input:
-;   AX - new video mode
-; Output:
-;   AX - previous video mode
-; Invalidates: CX
 cga_set_video_mode:
   push ax
   mov  ah, 0Fh                ; GET CURRENT VIDEO MODE
@@ -25,14 +23,6 @@ cga_set_video_mode:
   ret
 
 
-; Copy bitmap to screen buffer
-; Input:
-;   DS:SI - linear monochrome bitmap
-;   AH    - horizontal position, in octets
-;   AL    - vertical position, in lines
-;   CX    - image width
-;   DX    - image height
-; Invalidates: AX, CX, DX, DI, SI
 cga_draw_bitmap:
   push dx                     ; save image height
   push cx                     ; save image width
@@ -86,11 +76,6 @@ cga_draw_line:
   ret
 
 
-; Write text to screen
-; Input:
-;   DS:SI - null-terminated ASCII string
-;   AH    - horizontal position, in columns
-;   AL    - vertical position, in rows
 cga_draw_text:
   push dx                     ; save registers
   push bx

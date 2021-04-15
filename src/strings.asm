@@ -1,13 +1,11 @@
+%define STRINGS_API
+%include "strings.inc"
+
+global parse_uint16
+
+[bits 16]
 section .text
 
-; Parse a space-delimited unsigned 16-bit integer
-; Input:
-;   DS:SI - string
-; Output:
-;   AX    - parsed integer
-;   CX    - field length
-;   CF    - parsing error
-;   DS:SI - first cell after the field
 parse_uint16:
   push bx                     ; save registers
   push dx
