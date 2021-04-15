@@ -1,7 +1,7 @@
 SECTIONS
 {
   . = 0x0100;
-  .text :
+  .com :
   {
     *(.text);
     *(.data);
@@ -9,5 +9,6 @@ SECTIONS
   .bss (NOLOAD) :
   {
     *(.bss*);
+    *(.reloc*);
   }
 }
