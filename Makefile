@@ -1,19 +1,22 @@
 AS      = nasm
 LD      = ld
 
+BIN     = bin
+OBJ     = obj
+SRC     = src
 
-all: lavender.com
 
-%.com: %.pe
+all: bin/lavender.com
+
+$(BIN)/%.com: $(OBJ)/%.pe
 	objcopy -O binary $< $@
 
-lavender.pe: lavender.o
+$(OBJ)/lavender.pe: $(OBJ)/lavender.o
 	$(LD) -m i386pe --nmagic -T com.ld -o $@ $<
 
-%.o: %.asm
+$(OBJ)/%.o: $(SRC)/%.asm
 	$(AS) -o $@ -f elf32 -isrc $<
 
 clean:
-	rm -f *.com
-	rm -f *.pe
-	rm -f *.o
+	rm -f bin/*.com
+	rm -f obj/*.*
