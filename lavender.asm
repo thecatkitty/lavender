@@ -1,4 +1,3 @@
-org 100h
 cpu 8086
 
 LOGOW equ 272                 ; logo width
@@ -6,6 +5,8 @@ LOGOH equ 100                 ; logo height
 LINE  equ 80                  ; max line length
 
 %define milliseconds(ms) (ms * 10 / 549)
+
+[BITS 16]
 
 section .text
 
