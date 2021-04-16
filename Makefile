@@ -20,11 +20,11 @@ $(OBJ)/lavender.pe: $(SOURCES:%.asm=$(OBJ)/%.o)
 	$(LD) -m i386pe --nmagic -T com.ld -o $@ $^
 	
 $(OBJ)/%.o: $(SRC)/%.asm
-	$(AS) -o $@ -f elf32 -isrc $<
+	$(AS) -o $@ -f elf32 -iinc $<
 
 $(OBJ)/%.d: $(SRC)/%.asm
 	@rm -f $@; \
-	 cat $< | grep '^\s*%include' | sed -r 's,.+"(.+)".*,$(SRC)/\1,g' | tr '\n' ' ' | sed -r 's,^,$(@:.d=.o) $@ : $< ,g' > $@
+	 cat $< | grep '^\s*%include' | sed -r 's,.+"(.+)".*,inc/\1,g' | tr '\n' ' ' | sed -r 's,^,$(@:.d=.o) $@ : $< ,g' > $@
 
 clean:
 	rm -f bin/*.com
