@@ -7,7 +7,10 @@ SRC     = src
 
 SOURCES = cga.asm strings.asm lineexec.asm lineread.asm lavender.asm
 
-all: bin/lavender.com
+all: $(BIN)/sshow.com
+
+$(BIN)/sshow.com: $(BIN)/lavender.com data/slides.txt
+	cat $^ > $(BIN)/sshow.com
 
 ifneq ($(MAKECMDGOALS),clean)
 include $(SOURCES:%.asm=$(OBJ)/%.d)

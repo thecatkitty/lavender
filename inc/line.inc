@@ -2,17 +2,17 @@
 
 %define LINE_API extern
 
-; Load the next line from the slideshow file 
+; Load the next line from the slideshow file
 ; Input:
+;   DS:SI - slideshow file line
 ;   DS:DI - LINE structure
-;   BX    - file handle
 ; Output:
+;   DS:SI - next slideshow file line
 ;   AX    - line content length
-;   AX=0  - end of file
 ;   CF    - error
-LINE_API line_read
+LINE_API line_load
 
-; Load the next line from the slideshow file 
+; Execute a line loaded from the slideshow file
 ; Input:
 ;   DS:DI - LINE structure
 LINE_API line_execute

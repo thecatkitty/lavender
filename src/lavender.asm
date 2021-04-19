@@ -6,7 +6,7 @@ cpu 8086
 LOGOW equ 272                 ; logo width
 LOGOH equ 100                 ; logo height
 
-%define milliseconds(ms) (ms * 10 / 549)
+extern _ext_start
 
 [bits 16]
 section .init
@@ -20,13 +20,6 @@ start:
   call cga_set_video_mode
   push ax                     ; save previous mode on stack
 
-  ; Open slideshow file
-  mov  ax, 3D00h              ; OPEN EXISTING FILE -> read only
-  mov  dx, slides
-  int  21h
-  jc   .error
-  mov  [fslides], ax
-
   mov  si, bitmap
   mov  ah, (640 - LOGOW) / 2 / 8
   mov  al, (144 - LOGOH) / 2
@@ -34,22 +27,18 @@ start:
   mov  dx, LOGOH
   call cga_draw_bitmap
 
+  mov  si, _ext_start
 .next:
-  call line_read
+  mov  di, oLine
+  call line_load
   jc   .error
   test ax, ax
-  jz   .eof
+  jz   .end
   push si
-  
+
   call line_execute
   pop  si
   jmp .next
-
-.eof:
-  ; Close file
-  mov  ah, 3Eh
-  int  21h
-  jmp  .end
 
 .end:
   xor  ah, ah                 ; GET KEYSTROKE
@@ -73,8 +62,9 @@ start:
 
 
 section .data
-  bitmap            incbin "../bin/cgihisym.pbm", 57
-  slides            db     "slides.txt", 0
+  bitmap            incbin "../data/cgihisym.pbm", 57
   msg_err           db     "ERR$"
 
+
 section .bss
+  oLine             resb   LINE_size

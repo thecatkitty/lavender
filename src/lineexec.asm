@@ -2,52 +2,46 @@
 %include "line.inc"
 %include "cga.inc"
 
-global line_execute
+cpu 8086
 
-global fslides
-global buff
-global line_delay
-global line_x
-global line_y
-global line_type
-global line_content
-global line_length
+global line_execute
 
 [bits 16]
 section .text
 
 line_execute:
   ; Delay
-  mov  cx, [line_delay]
+  mov  cx, [di + LINE.Delay]
   call sleep
 
   ; Type
-  cmp  byte [line_type], 0
+  cmp  byte [di + LINE.Type], 0
   jne  .end
 
   ; Text - vertical position
-  mov  al, [line_y]
+  mov  al, [di + LINE.Vertical]
 
   ; Text - horizontal position
-  cmp  word [line_x], 0FFF1h
+  cmp  word [di + LINE.Horizontal], 0FFF1h
   je   .center
-  cmp  word [line_x], 0FFF2h
+  cmp  word [di + LINE.Horizontal], 0FFF2h
   je   .right
-  mov  ah, [line_x]
+  mov  ah, [di + LINE.Horizontal]
   jmp  .write
 
 .center:
-  mov  ah, LINE
-  sub  ah, [line_length]
+  mov  ah, LINE_MAX_LENGTH
+  sub  ah, [di + LINE.Length]
   shr  ah, 1
   jmp  .write
 
 .right:
-  mov  ah, LINE
-  sub  ah, [line_length]
+  mov  ah, LINE_MAX_LENGTH
+  sub  ah, [di + LINE.Length]
   
 .write:
-  mov  si, line_content
+  mov  si, di
+  add  si, LINE.Content
   call cga_draw_text
 
 .end:
@@ -63,15 +57,3 @@ sleep:
   loop sleep
 .end:
   ret
-
-
-section .bss
-  fslides           resw   1
-  buff              resw   LINE
-
-  line_delay        resw   1
-  line_x            resw   1
-  line_y            resw   1
-  line_type         resb   1
-  line_content      resb   LINE + 1
-  line_length       resb   1
