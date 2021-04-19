@@ -1,22 +1,20 @@
 %define LINE_API
 %include "c16.mac"
 %include "line.inc"
-%include "strings.inc"
+%include "str.inc"
 
 cpu 8086
-
-global line_read
 
 [bits 16]
 section .text
 
-proc line_load
+proc LineLoad
   cmp  byte [si], 0Dh
   je   .eof
 
   ; Parse and convert delay
   jc   .error
-  call parse_uint16
+  call StrParseU16
   mov  dx, 10                 ; multiplier
   mul  dx                     ; DX:AX = AX * 10
   mov  bx, 549                ; divisor
@@ -65,12 +63,12 @@ endproc
 line_read_position:
   ; Parse row number
   inc  si
-  call parse_uint16
+  call StrParseU16
   jc   .error
   mov  [di + LINE.Vertical], ax
 
   ; Parse column number
-  call parse_uint16
+  call StrParseU16
   jnc  .column_number
   cmp  byte [si], '<'
   je   .column_left

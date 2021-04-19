@@ -10,12 +10,12 @@
 ;   DS:SI - next slideshow file line
 ;   AX    - line content length
 ;   CF    - error
-LINE_API line_load
+LINE_API LineLoad
 
 ; Execute a line loaded from the slideshow file
 ; Input:
 ;   DS:DI - LINE structure
-LINE_API line_execute
+LINE_API LineExecute
 
 %endif
 

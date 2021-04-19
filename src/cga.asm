@@ -1,15 +1,14 @@
 %define CGA_API
-%include "cga.inc"
+%include "vid.inc"
 
-global cga_draw_bitmap
-global cga_draw_text
-global cga_set_video_mode
-global cga_set_video_mode
+global VidDrawBitmap
+global VidDrawText
+global VidSetMode
 
 [bits 16]
 section .text
 
-cga_set_video_mode:
+VidSetMode:
   push ax
   mov  ah, 0Fh                ; GET CURRENT VIDEO MODE
   int  10h
@@ -23,7 +22,7 @@ cga_set_video_mode:
   ret
 
 
-cga_draw_bitmap:
+VidDrawBitmap:
   push dx                     ; save image height
   push cx                     ; save image width
 
@@ -31,8 +30,8 @@ cga_draw_bitmap:
   mov  cl, 8
   shr  di, cl                 ; DI = horizontal position
   mov  ah, al                 
-  mov  al, CGA_HIMONO_LINE / 2
-  mul  ah                     ; AX = vertical position * CGA_HIMONO_LINE / 2
+  mov  al, VID_CGA_HIMONO_LINE / 2
+  mul  ah                     ; AX = vertical position * VID_CGA_HIMONO_LINE / 2
   add  di, ax                 ; get the offset
 
   pop  dx                     ; restore image width
@@ -42,16 +41,16 @@ cga_draw_bitmap:
   pop  dx                     ; restore image height
 
   push es                     ; save and set the segment register
-  mov  ax, CGA_HIMONO_MEM     
+  mov  ax, VID_CGA_HIMONO_MEM     
   mov  es, ax
 .next:
   call cga_draw_line          ; draw even line
-  xor  di, CGA_HIMONO_PLANE
+  xor  di, VID_CGA_HIMONO_PLANE
   dec  dx
   
   call cga_draw_line          ; draw odd line
-  add  di, CGA_HIMONO_LINE
-  xor  di, CGA_HIMONO_PLANE
+  add  di, VID_CGA_HIMONO_LINE
+  xor  di, VID_CGA_HIMONO_PLANE
   dec  dx
   jnz  .next
 
@@ -76,7 +75,7 @@ cga_draw_line:
   ret
 
 
-cga_draw_text:
+VidDrawText:
   push dx                     ; save registers
   push bx
   push ax

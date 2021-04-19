@@ -10,7 +10,7 @@
 ;   CX    - image width
 ;   DX    - image height
 ; Invalidates: AX, CX, DX, DI, SI
-CGA_API cga_draw_bitmap
+CGA_API VidDrawBitmap
 
 
 ; Write text to screen
@@ -18,7 +18,7 @@ CGA_API cga_draw_bitmap
 ;   DS:SI - null-terminated ASCII string
 ;   AH    - horizontal position, in columns
 ;   AL    - vertical position, in rows
-CGA_API cga_draw_text
+CGA_API VidDrawText
 
 ; Set video mode
 ; Input:
@@ -26,11 +26,11 @@ CGA_API cga_draw_text
 ; Output:
 ;   AX - previous video mode
 ; Invalidates: CX
-CGA_API cga_set_video_mode
+CGA_API VidSetMode
 
 %endif
 
-CGA_MODE_HIMONO     equ 6                         ; 640x200x1
-CGA_HIMONO_MEM      equ 0B800h                    ; video memory base
-CGA_HIMONO_LINE     equ (640 / 8)                 ; line size in bytes
-CGA_HIMONO_PLANE    equ 2000h                     ; odd plane offset
+VID_MODE_CGA_HIMONO  equ 6                         ; 640x200x1
+VID_CGA_HIMONO_MEM   equ 0B800h                    ; video memory base
+VID_CGA_HIMONO_LINE  equ (640 / 8)                 ; line size in bytes
+VID_CGA_HIMONO_PLANE equ 2000h                     ; odd plane offset
