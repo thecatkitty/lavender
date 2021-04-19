@@ -1,5 +1,7 @@
-%include "vid.inc"
+%include "bios.inc"
+%include "dos.inc"
 %include "line.inc"
+%include "vid.inc"
 
 
                 cpu     8086
@@ -42,23 +44,23 @@ LavenderEntry:
                 jmp    .Next
 
 .End:
-                xor     ah, ah          ; GET KEYSTROKE
-                int     16h
+                xor     ah, ah          ; AH = BIOS_KEYBOARD_GET_KEYSTROKE
+                int     BIOS_INT_KEYBOARD
 
                 pop     ax              ; restore saved mode
                 call    VidSetMode
 
-                mov     ax, 4C00h       ; TERMINATE WITH RETURN CODE -> 0
-                int     21h
+                mov     ax, (DOS_EXIT << 8 | 0)
+                int     DOS_INT
 .Error:
                 push    ax
-                mov     ah, 09h         ; WRITE STRING TO STANDARD OUTPUT
+                mov     ah, DOS_PUTS
                 mov     dx, sErr
-                int     21h
+                int     DOS_INT
 
                 pop     ax
-                mov     ah, 4Ch         ; TERMINATE WITH RETURN CODE -> AL
-                int     21h
+                mov     ah, DOS_EXIT
+                int     DOS_INT
 
 
 section .data

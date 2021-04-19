@@ -1,4 +1,6 @@
 %define VID_API
+%include "bios.inc"
+%include "dos.inc"
 %include "vid.inc"
 
 
@@ -11,13 +13,13 @@ section .text
                 global  VidSetMode
 VidSetMode:
                 push    ax
-                mov     ah, 0Fh         ; GET CURRENT VIDEO MODE
-                int     10h
+                mov     ah, BIOS_VIDEO_GET_MODE
+                int     BIOS_INT_VIDEO
                 xor     ah, ah          ; store previous video mode in CX
                 mov     cx, ax
 
                 pop     ax
-                int     10h             ; SET VIDEO MODE
+                int     BIOS_INT_VIDEO  ; AH = BIOS_VIDEO_SET_MODE
 
                 mov     ax, cx          ; return previous video mode
                 ret
@@ -86,15 +88,15 @@ VidDrawText:
                 mov     dh, al
                 mov     dl, ah
                 xor     bx, bx
-                mov     ah, 02h         ; SET CURSOR POSITION
-                int     10h
+                mov     ah, BIOS_VIDEO_SET_CURSOR_POSITION
+                int     BIOS_INT_VIDEO
 
-                mov     ah, 02h         ; WRITE CHARACTER TO STANDARD OUTPUT
+                mov     ah, DOS_PUTC
 .Next:
                 mov     dl, [si]
                 test    dl, dl
                 jz      .End
-                int     21h
+                int     DOS_INT
                 inc     si
                 jmp     .Next
 

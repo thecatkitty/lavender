@@ -17,25 +17,25 @@ LineLoad:
                 ; Parse and convert delay
                 jc      .Error
                 call    StrParseU16
-                mov     dx, 10          ; multiplier
-                mul     dx              ; DX:AX = AX * 10
-                mov     bx, 549         ; divisor
-                div     bx              ; AX = DX:AX / 549
+                mov     dx, LINE_DELAY_MS_MULTIPLIER
+                mul     dx              ; DX:AX = AX * DX
+                mov     bx, LINE_DELAY_MS_DIVISOR
+                div     bx              ; AX = DX:AX / BX
                 mov     [di + LINE.Delay], ax
   
                 ; Get type
-                cmp     byte [si], 'T'
+                cmp     byte [si], LINE_TAG_TYPE_TEXT
                 je      .TypeText
-                cmp     byte [si], 'B'
+                cmp     byte [si], LINE_TAG_TYPE_BITMAP
                 je      .TypeBitmap
                 jmp     .Error          ; unknown line type
 
 .TypeText:
-                mov     byte [di + LINE.Type], 0
+                mov     byte [di + LINE.Type], LINE_TYPE_TEXT
                 jmp    .TextBitmapCommon
 
 .TypeBitmap:
-                mov     byte [di + LINE.Type], 1
+                mov     byte [di + LINE.Type], LINE_TYPE_BITMAP
 
 .TextBitmapCommon:
                 call    LineLoadPosition
@@ -67,11 +67,11 @@ LineLoadPosition:
                 ; Parse column number
                 call    StrParseU16
                 jnc     .ColumnNumeric
-                cmp     byte [si], '<'
+                cmp     byte [si], LINE_TAG_ALIGN_LEFT
                 je      .ColumnLeft
-                cmp     byte [si], '^'
+                cmp     byte [si], LINE_TAG_ALIGN_CENTER
                 je      .ColumnCenter
-                cmp     byte [si], '>'
+                cmp     byte [si], LINE_TAG_ALIGN_RIGHT
                 je      .ColumnRight
                 jmp     .Error
   
@@ -81,17 +81,17 @@ LineLoadPosition:
   
 .ColumnLeft:
                 inc     si
-                mov     word [di + LINE.Horizontal], 0
+                mov     word [di + LINE.Horizontal], LINE_ALIGN_LEFT
                 jmp     .End
   
 .ColumnCenter:
                 inc     si
-                mov     word [di + LINE.Horizontal], 0FFF1h
+                mov     word [di + LINE.Horizontal], LINE_ALIGN_CENTER
                 jmp     .End
   
 .ColumnRight:
                 inc     si
-                mov     word [di + LINE.Horizontal], 0FFF2h
+                mov     word [di + LINE.Horizontal], LINE_ALIGN_RIGHT
                 jmp     .End
 
 .Error:         stc
