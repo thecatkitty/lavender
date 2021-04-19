@@ -1,13 +1,11 @@
 %define CGA_API
 %include "vid.inc"
 
-global VidDrawBitmap
-global VidDrawText
-global VidSetMode
 
 [bits 16]
 section .text
 
+global VidSetMode
 VidSetMode:
   push ax
   mov  ah, 0Fh                ; GET CURRENT VIDEO MODE
@@ -22,6 +20,7 @@ VidSetMode:
   ret
 
 
+global VidDrawBitmap
 VidDrawBitmap:
   push dx                     ; save image height
   push cx                     ; save image width
@@ -75,6 +74,7 @@ cga_draw_line:
   ret
 
 
+global VidDrawText
 VidDrawText:
   push dx                     ; save registers
   push bx
