@@ -5,7 +5,7 @@ BIN     = bin
 OBJ     = obj
 SRC     = src
 
-SOURCES = cga.asm strings.asm lineexec.asm lineread.asm lavender.asm
+SOURCES = cga.asm str.asm lineexec.asm lineread.asm lavender.asm
 
 all: $(BIN)/vii.com
 

@@ -1,4 +1,4 @@
-%include "cga.inc"
+%include "vid.inc"
 %include "line.inc"
 
 cpu 8086
@@ -16,8 +16,8 @@ section .text
 
 start:
   ; Set CGA video mode
-  mov  ax, CGA_MODE_HIMONO    ; 640x200x2
-  call cga_set_video_mode
+  mov  ax, VID_MODE_CGA_HIMONO; 640x200x2
+  call VidSetMode
   push ax                     ; save previous mode on stack
 
   mov  si, bitmap
@@ -25,18 +25,18 @@ start:
   mov  al, (144 - LOGOH) / 2
   mov  cx, LOGOW
   mov  dx, LOGOH
-  call cga_draw_bitmap
+  call VidDrawBitmap
 
   mov  si, _ext_start
 .next:
   mov  di, oLine
-  call line_load
+  call LineLoad
   jc   .error
   test ax, ax
   jz   .end
   push si
 
-  call line_execute
+  call LineExecute
   pop  si
   jmp .next
 
@@ -45,7 +45,7 @@ start:
   int  16h
 
   pop  ax                     ; restore saved mode
-  call cga_set_video_mode
+  call VidSetMode
 
   mov  ax, 4C00h              ; TERMINATE WITH RETURN CODE -> 0
   int  21h

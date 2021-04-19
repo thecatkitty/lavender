@@ -1,12 +1,12 @@
-%define STRINGS_API
-%include "strings.inc"
+%define STR_API
+%include "str.inc"
 
-global parse_uint16
+global StrParseU16
 
 [bits 16]
 section .text
 
-parse_uint16:
+StrParseU16:
   push bx                     ; save registers
   push dx
 

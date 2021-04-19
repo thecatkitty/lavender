@@ -1,15 +1,15 @@
 %define LINE_API
 %include "line.inc"
-%include "cga.inc"
+%include "vid.inc"
 
 cpu 8086
 
-global line_execute
+global LineExecute
 
 [bits 16]
 section .text
 
-line_execute:
+LineExecute:
   ; Delay
   mov  cx, [di + LINE.Delay]
   call sleep
@@ -42,7 +42,7 @@ line_execute:
 .write:
   mov  si, di
   add  si, LINE.Content
-  call cga_draw_text
+  call VidDrawText
 
 .end:
   ret

@@ -1,6 +1,6 @@
-%ifndef STRINGS_API
+%ifndef STR_API
 
-%define STRINGS_API extern
+%define STR_API extern
 
 ; Parse a space-delimited unsigned 16-bit integer
 ; Input:
@@ -10,6 +10,6 @@
 ;   CX    - field length
 ;   CF    - parsing error
 ;   DS:SI - first cell after the field
-STRINGS_API parse_uint16
+STR_API StrParseU16
 
 %endif
