@@ -21,6 +21,23 @@ LINE_API LineExecute
 
 LINE_MAX_LENGTH                 equ     80
 
+LINE_TAG_TYPE_TEXT              equ     'T'
+LINE_TAG_TYPE_BITMAP            equ     'B'
+LINE_TAG_ALIGN_LEFT             equ     '<'
+LINE_TAG_ALIGN_CENTER           equ     '^'
+LINE_TAG_ALIGN_RIGHT            equ     '>'
+
+LINE_DELAY_MS_MULTIPLIER        equ     10
+LINE_DELAY_MS_DIVISOR           equ     (1000_0000 * LINE_DELAY_MS_MULTIPLIER) \
+                                        / 18_2065
+
+LINE_TYPE_TEXT                  equ     0
+LINE_TYPE_BITMAP                equ     1
+
+LINE_ALIGN_LEFT                 equ     0
+LINE_ALIGN_CENTER               equ     0FFF1h
+LINE_ALIGN_RIGHT                equ     0FFF2h
+
 struc LINE
   .Delay:                       resw    1
   .Horizontal:                  resw    1

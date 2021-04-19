@@ -15,16 +15,16 @@ LineExecute:
                 call    Sleep
 
                 ; Type
-                cmp     byte [di + LINE.Type], 0
+                cmp     byte [di + LINE.Type], LINE_TYPE_TEXT
                 jne     .End
 
                 ; Text - vertical position
                 mov     al, [di + LINE.Vertical]
 
                 ; Text - horizontal position
-                cmp     word [di + LINE.Horizontal], 0FFF1h
+                cmp     word [di + LINE.Horizontal], LINE_ALIGN_CENTER
                 je      .AlignCenter
-                cmp     word [di + LINE.Horizontal], 0FFF2h
+                cmp     word [di + LINE.Horizontal], LINE_ALIGN_RIGHT
                 je      .AlignRight
                 mov     ah, [di + LINE.Horizontal]
                 jmp     .Write
