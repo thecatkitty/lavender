@@ -45,16 +45,16 @@ VidDrawBitmap:
                 push    es              ; save and set the segment register
                 mov     ax, VID_CGA_HIMONO_MEM     
                 mov     es, ax
-.next:
-                call    cga_draw_line   ; draw even line
+.Next:
+                call    CgaDrawLine     ; draw even line
                 xor     di, VID_CGA_HIMONO_PLANE
                 dec     dx
   
-                call    cga_draw_line   ; draw odd line
+                call    CgaDrawLine     ; draw odd line
                 add     di, VID_CGA_HIMONO_LINE
                 xor     di, VID_CGA_HIMONO_PLANE
                 dec     dx
-                jnz     .next
+                jnz     .Next
 
                 pop     es              ; restore the segment register
                 ret
@@ -67,7 +67,7 @@ VidDrawBitmap:
 ;   CX    - number of octets
 ; Output:
 ;   DS:SI - next bitmap line
-cga_draw_line:
+CgaDrawLine:
                 push    di
                 push    cx
                 cld
@@ -90,15 +90,15 @@ VidDrawText:
                 int     10h
 
                 mov     ah, 02h         ; WRITE CHARACTER TO STANDARD OUTPUT
-.next:
+.Next:
                 mov     dl, [si]
                 test    dl, dl
-                jz      .end
+                jz      .End
                 int     21h
                 inc     si
-                jmp     .next
+                jmp     .Next
 
-.end:           pop     ax
+.End:           pop     ax
                 pop     bx
                 pop     cx
                 ret

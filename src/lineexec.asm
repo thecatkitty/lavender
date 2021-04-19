@@ -16,33 +16,33 @@ LineExecute:
 
                 ; Type
                 cmp     byte [di + LINE.Type], 0
-                jne     .end
+                jne     .End
 
                 ; Text - vertical position
                 mov     al, [di + LINE.Vertical]
 
                 ; Text - horizontal position
                 cmp     word [di + LINE.Horizontal], 0FFF1h
-                je      .center
+                je      .AlignCenter
                 cmp     word [di + LINE.Horizontal], 0FFF2h
-                je      .right
+                je      .AlignRight
                 mov     ah, [di + LINE.Horizontal]
-                jmp     .write
-.center:
+                jmp     .Write
+.AlignCenter:
                 mov     ah, LINE_MAX_LENGTH
                 sub     ah, [di + LINE.Length]
                 shr     ah, 1
-                jmp     .write
-.right:
+                jmp     .Write
+.AlignRight:
                 mov     ah, LINE_MAX_LENGTH
                 sub     ah, [di + LINE.Length]
   
-.write:
+.Write:
                 mov     si, di
                 add     si, LINE.Content
                 call    VidDrawText
 
-.end:           ret
+.End:           ret
 
 
 ; Halt execution for a given period
@@ -51,9 +51,9 @@ LineExecute:
 ; Invalidates: CX
                 global  Sleep
 Sleep:
-                jcxz    .end
-.next:
+                jcxz    .End
+.Next:
                 hlt
-                loop    .next
+                loop    .Next
 
-.end:           ret
+.End:           ret

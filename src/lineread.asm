@@ -12,10 +12,10 @@ section .text
                 global  LineLoad
 LineLoad:
                 cmp     byte [si], 0Dh
-                je      .eof
+                je      .EndOfFile
 
-  ; Parse and convert delay
-                jc      .error
+                ; Parse and convert delay
+                jc      .Error
                 call    StrParseU16
                 mov     dx, 10          ; multiplier
                 mul     dx              ; DX:AX = AX * 10
@@ -23,33 +23,33 @@ LineLoad:
                 div     bx              ; AX = DX:AX / 549
                 mov     [di + LINE.Delay], ax
   
-  ; Get type
+                ; Get type
                 cmp     byte [si], 'T'
-                je      .text_line
+                je      .TypeText
                 cmp     byte [si], 'B'
-                je      .bitmap_line
-                jmp     .error          ; unknown line type
+                je      .TypeBitmap
+                jmp     .Error          ; unknown line type
 
-.text_line:
+.TypeText:
                 mov     byte [di + LINE.Type], 0
-                jmp    .text_bitmap_line_common
+                jmp    .TextBitmapCommon
 
-.bitmap_line:
+.TypeBitmap:
                 mov     byte [di + LINE.Type], 1
 
-.text_bitmap_line_common:
+.TextBitmapCommon:
                 call    LineLoadPosition
-                jc      .error
+                jc      .Error
 
                 call    LineLoadContent
-                jnc     .end
+                jnc     .End
 
-.error:         stc
-                jmp     .end
-.eof:
+.Error:         stc
+                jmp     .End
+.EndOfFile:
                 mov     byte [di + LINE.Length], 0
                 clc
-.end:           mov     ax, [di + LINE.Length]
+.End:           mov     ax, [di + LINE.Length]
                 ret
 
 
@@ -58,44 +58,44 @@ LineLoad:
 ;   DS:SI - beginning of the text field
 ;   DS:DI - LINE structure
 LineLoadPosition:
-  ; Parse row number
+                ; Parse row number
                 inc     si
                 call    StrParseU16
-                jc      .error
+                jc      .Error
                 mov     [di + LINE.Vertical], ax
 
-  ; Parse column number
+                ; Parse column number
                 call    StrParseU16
-                jnc     .column_number
+                jnc     .ColumnNumeric
                 cmp     byte [si], '<'
-                je      .column_left
+                je      .ColumnLeft
                 cmp     byte [si], '^'
-                je      .column_center
+                je      .ColumnCenter
                 cmp     byte [si], '>'
-                je      .column_right
-                jmp     .error
+                je      .ColumnRight
+                jmp     .Error
   
-.column_number:
+.ColumnNumeric:
                 mov     [di + LINE.Horizontal], ax
-                jmp     .end
+                jmp     .End
   
-.column_left:
+.ColumnLeft:
                 inc     si
                 mov     word [di + LINE.Horizontal], 0
-                jmp     .end
+                jmp     .End
   
-.column_center:
+.ColumnCenter:
                 inc     si
                 mov     word [di + LINE.Horizontal], 0FFF1h
-                jmp     .end
+                jmp     .End
   
-.column_right:
+.ColumnRight:
                 inc     si
                 mov     word [di + LINE.Horizontal], 0FFF2h
-                jmp     .end
+                jmp     .End
 
-.error:         stc
-.end:           ret
+.Error:         stc
+.End:           ret
 
 
 ; Read line content from the slideshow file 
@@ -103,7 +103,7 @@ LineLoadPosition:
 ;   DS:SI - slideshow file line content
 ;   DS:DI - LINE structure
 ; Output:
-;   CF    - error
+;   CF    - Error
 LineLoadContent:
                 push    dx
                 push    di              ; save LINE structure pointer
@@ -111,25 +111,25 @@ LineLoadContent:
 
                 xor     dx, dx
                 add     di, LINE.Content
-.next:
+.Next:
                 mov     bl, [si]
                 cmp     bl, 0Dh
-                je      .break
+                je      .Break
                 mov     [di], bl
                 inc     si
                 inc     di
                 inc     dx
                 cmp     dx, LINE_MAX_LENGTH
-                je      .error
-                jmp     .next
-.break:
+                je      .Error
+                jmp     .Next
+.Break:
                 mov     byte [di], 0
                 pop     di
                 mov     [di + LINE.Length], dx
                 add     si, 2
-                jmp     .end
+                jmp     .End
 
-.error:         pop     di
+.Error:         pop     di
                 stc
-.end:           pop     dx
+.End:           pop     dx
                 ret
