@@ -1,5 +1,4 @@
 %define LINE_API
-%include "c16.mac"
 %include "line.inc"
 %include "str.inc"
 
@@ -8,7 +7,8 @@ cpu 8086
 [bits 16]
 section .text
 
-proc LineLoad
+global LineLoad
+LineLoad:
   cmp  byte [si], 0Dh
   je   .eof
 
@@ -36,10 +36,10 @@ proc LineLoad
   mov  byte [di + LINE.Type], 1
 
 .text_bitmap_line_common:
-  call line_read_position
+  call LineLoadPosition
   jc   .error
 
-  call line_read_content
+  call LineLoadContent
   jnc  .end
 
 .error:
@@ -52,15 +52,14 @@ proc LineLoad
 
 .end:
   mov  ax, [di + LINE.Length]
-
-endproc
+  ret
 
 
 ; Parse line row and column information from the slideshow file 
 ; Input:
 ;   DS:SI - beginning of the text field
 ;   DS:DI - LINE structure
-line_read_position:
+LineLoadPosition:
   ; Parse row number
   inc  si
   call StrParseU16
@@ -109,12 +108,9 @@ line_read_position:
 ;   DS:DI - LINE structure
 ; Output:
 ;   CF    - error
-proc line_read_content
-  %stacksize small
-  %assign %$localsize 0
-  %local pLine:word
-  sub  sp, %$localsize
-  mov  [pLine], di            ; save LINE structure pointer
+LineLoadContent:
+  push dx
+  push di                     ; save LINE structure pointer
   mov  byte [di + LINE.Length], 0
 
   xor  dx, dx
@@ -133,16 +129,14 @@ proc line_read_content
 
 .break:
   mov  byte [di], 0
-  mov  di, [pLine]
+  pop  di
   mov  [di + LINE.Length], dx
   add  si, 2
   jmp  .end
 
 .error:
+  pop  di
   stc
 .end:
-
-endproc
-
-
-section .bss
+  pop  dx
+  ret

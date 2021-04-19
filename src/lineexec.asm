@@ -4,15 +4,14 @@
 
 cpu 8086
 
-global LineExecute
-
 [bits 16]
 section .text
 
+global LineExecute
 LineExecute:
   ; Delay
   mov  cx, [di + LINE.Delay]
-  call sleep
+  call Sleep
 
   ; Type
   cmp  byte [di + LINE.Type], 0
@@ -46,14 +45,17 @@ LineExecute:
 
 .end:
   ret
-  
+
+
 ; Halt execution for a given period
 ; Input:
 ;   CX - number of ticks (1 tick ~ 54,9 ms)
 ; Invalidates: CX
-sleep:
+global Sleep
+Sleep:
   jcxz .end
+.next:
   hlt
-  loop sleep
+  loop .next
 .end:
   ret
