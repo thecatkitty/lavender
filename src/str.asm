@@ -17,21 +17,21 @@ StrParseU16:
                 xor     bx, bx          ; character
                 xor     cx, cx          ; count
 
-.lpad:
+.LeftPad:
                 mov     bl, [si]
                 cmp     bl, ' '
-                jne     .digit
+                jne     .Digit
 
                 inc     cx
                 inc     si
-                jmp    .lpad
+                jmp    .LeftPad
 
-.digit:
+.Digit:
                 mov     bl, [si]
                 cmp     bl, '0'
-                jb      .below_digit
+                jb      .BelowZero
                 cmp     bl, '9'
-                ja      .error          ; invalid character
+                ja      .Error          ; invalid character
 
                 mov     dx, 10          ; multiplier
                 mul     dx
@@ -40,25 +40,25 @@ StrParseU16:
 
                 inc     cx
                 inc     si
-                jmp    .digit
+                jmp    .Digit
 
-.below_digit:
+.BelowZero:
                 cmp     bl, ' '
-                jne     .error          ; invalid character
+                jne     .Error          ; invalid character
 
                 inc     cx
                 inc     si
 
-.rpad:
+.RightPad:
                 mov     bl, [si]
                 cmp     bl, ' '
-                jne     .end
+                jne     .End
 
                 inc     cx
                 inc     si
-                jmp    .rpad
+                jmp    .RightPad
 
-.error:         stc                     ; set CF
-.end:           pop     dx              ; restore registers
+.Error:         stc                     ; set CF
+.End:           pop     dx              ; restore registers
                 pop     bx
                 ret

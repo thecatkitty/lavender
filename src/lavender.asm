@@ -10,19 +10,18 @@
 section .init
 
 
-                jmp     start
+                jmp     LavenderEntry
 
 
 section .text
 
 
-start:
-                ; Set CGA video mode
-                mov     ax, VID_MODE_CGA_HIMONO; 640x200x2
+LavenderEntry:
+                mov     ax, VID_MODE_CGA_HIMONO
                 call    VidSetMode
                 push    ax              ; save previous mode on stack
 
-                mov     si, bitmap
+                mov     si, oBitmap
                 mov     ah, (640 - LOGOW) / 2 / 8
                 mov     al, (144 - LOGOH) / 2
                 mov     cx, LOGOW
@@ -30,19 +29,19 @@ start:
                 call    VidDrawBitmap
 
                 mov     si, _ext_start
-.next:
+.Next:
                 mov     di, oLine
                 call    LineLoad
-                jc      .error
+                jc      .Error
                 test    ax, ax
-                jz      .end
+                jz      .End
                 push    si
 
                 call    LineExecute
                 pop     si
-                jmp    .next
+                jmp    .Next
 
-.end:
+.End:
                 xor     ah, ah          ; GET KEYSTROKE
                 int     16h
 
@@ -51,10 +50,10 @@ start:
 
                 mov     ax, 4C00h       ; TERMINATE WITH RETURN CODE -> 0
                 int     21h
-.error:
+.Error:
                 push    ax
                 mov     ah, 09h         ; WRITE STRING TO STANDARD OUTPUT
-                mov     dx, msg_err
+                mov     dx, sErr
                 int     21h
 
                 pop     ax
@@ -65,10 +64,11 @@ start:
 section .data
 
 
-bitmap                          incbin  "../data/cgihisym.pbm", 57
-msg_err                         db      "ERR$"
 LOGOW                           equ     272             ; logo width
 LOGOH                           equ     100             ; logo height
+
+oBitmap                         incbin  "../data/cgihisym.pbm", 57
+sErr                            db      "ERR$"
 
 
 section .bss
