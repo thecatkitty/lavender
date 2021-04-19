@@ -19,13 +19,13 @@ LINE_API LineExecute
 
 %endif
 
-LINE_MAX_LENGTH     equ    80
+LINE_MAX_LENGTH                 equ     80
 
 struc LINE
-  .Delay:           resw   1
-  .Horizontal:      resw   1
-  .Vertical:        resw   1
-  .Type:            resb   1
-  .Content:         resb   LINE_MAX_LENGTH + 1
-  .Length:          resb   1
+  .Delay:                       resw    1
+  .Horizontal:                  resw    1
+  .Vertical:                    resw    1
+  .Type:                        resb    1
+  .Content:                     resb    LINE_MAX_LENGTH + 1
+  .Length:                      resb    1
 endstruc
