@@ -15,6 +15,12 @@ ERR_LINE_INVALID_DELAY          equ     1
 ERR_LINE_UNKNOWN_TYPE           equ     2
 ERR_LINE_INVALID_VERTICAL       equ     3
 ERR_LINE_INVALID_HORIZONTAL     equ     4
+ERR_ZIP_CDIR_END_NOT_FOUND      equ     5
+ERR_ZIP_CDIR_TOO_LARGE          equ     6
+ERR_ZIP_CDIR_INVALID            equ     7
+ERR_ZIP_NOT_FOUND               equ     8
+ERR_ZIP_LOCAL_INVALID           equ     9
+
 
 %macro          ERR     1
 
