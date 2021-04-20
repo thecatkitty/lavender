@@ -16,6 +16,11 @@ section .init
 
 
                 jmp     LavenderEntry
+%push About
+%defstr GIT_COMMIT      %!GIT_COMMIT
+%defstr GIT_TAG         %!GIT_TAG
+                db      0Dh, "Lavender ", GIT_TAG, '-', GIT_COMMIT, 1Ah
+%pop
 
 
 section .text
