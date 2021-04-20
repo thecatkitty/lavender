@@ -7,6 +7,9 @@ SRC     = src
 
 SOURCES = err.asm str.asm cga.asm zip.asm lineexec.asm lineread.asm lavender.asm
 
+export GIT_COMMIT = $(shell git rev-parse --short HEAD)
+export GIT_TAG = $(shell git describe --tags $(GIT_COMMIT))
+
 $(BIN)/sshow.com: $(BIN)/lavender.com $(OBJ)/data.zip
 	cat $^ > $@
 
