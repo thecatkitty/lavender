@@ -1,5 +1,6 @@
 %include "bios.inc"
 %include "dos.inc"
+%include "err.inc"
 %include "line.inc"
 %include "vid.inc"
 
@@ -50,17 +51,10 @@ LavenderEntry:
                 pop     ax              ; restore saved mode
                 call    VidSetMode
 
-                mov     ax, (DOS_EXIT << 8 | 0)
+                mov     ax, (DOS_EXIT << 8 | ERR_OK)
                 int     DOS_INT
 .Error:
-                push    ax
-                mov     ah, DOS_PUTS
-                mov     dx, sErr
-                int     DOS_INT
-
-                pop     ax
-                mov     ah, DOS_EXIT
-                int     DOS_INT
+                call    ErrTerminate
 
 
 section .data
@@ -70,7 +64,6 @@ LOGOW                           equ     272             ; logo width
 LOGOH                           equ     100             ; logo height
 
 oBitmap                         incbin  "../data/cgihisym.pbm", 57
-sErr                            db      "ERR$"
 
 
 section .bss

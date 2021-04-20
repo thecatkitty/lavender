@@ -1,4 +1,5 @@
 %define LINE_API
+%include "err.inc"
 %include "line.inc"
 %include "str.inc"
 
@@ -14,9 +15,9 @@ LineLoad:
                 cmp     byte [si], 0Dh
                 je      .EndOfFile
 
-                ; Parse and convert delay
-                jc      .Error
                 call    StrParseU16
+                ERRC    LINE_INVALID_DELAY
+
                 mov     dx, LINE_DELAY_MS_MULTIPLIER
                 mul     dx              ; DX:AX = AX * DX
                 mov     bx, LINE_DELAY_MS_DIVISOR
@@ -28,7 +29,7 @@ LineLoad:
                 je      .TypeText
                 cmp     byte [si], LINE_TAG_TYPE_BITMAP
                 je      .TypeBitmap
-                jmp     .Error          ; unknown line type
+                ERR     LINE_UNKNOWN_TYPE
 
 .TypeText:
                 mov     byte [di + LINE.Type], LINE_TYPE_TEXT
@@ -44,8 +45,7 @@ LineLoad:
                 call    LineLoadContent
                 jnc     .End
 
-.Error:         stc
-                jmp     .End
+.Error:         jmp     .End
 .EndOfFile:
                 mov     byte [di + LINE.Length], 0
                 clc
@@ -61,7 +61,7 @@ LineLoadPosition:
                 ; Parse row number
                 inc     si
                 call    StrParseU16
-                jc      .Error
+                ERRC    LINE_INVALID_VERTICAL
                 mov     [di + LINE.Vertical], ax
 
                 ; Parse column number
@@ -73,7 +73,7 @@ LineLoadPosition:
                 je      .ColumnCenter
                 cmp     byte [si], LINE_TAG_ALIGN_RIGHT
                 je      .ColumnRight
-                jmp     .Error
+                ERR     LINE_INVALID_HORIZONTAL
   
 .ColumnNumeric:
                 mov     [di + LINE.Horizontal], ax
@@ -94,7 +94,7 @@ LineLoadPosition:
                 mov     word [di + LINE.Horizontal], LINE_ALIGN_RIGHT
                 jmp     .End
 
-.Error:         stc
+.Error:
 .End:           ret
 
 
