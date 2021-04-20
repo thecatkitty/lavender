@@ -53,6 +53,7 @@ ZipLocateFileHeader:
                 jne     .Iterate
                 push    di
                 push    ax
+                push    cx
                 add     di, ZIP_CDIR_FILE_HEADER.Name
 .NextCharacter:
                 mov     al, [di]
@@ -61,10 +62,12 @@ ZipLocateFileHeader:
                 inc     di
                 inc     bx
                 loop    .NextCharacter
+                pop     cx
                 pop     ax
                 pop     di
                 jmp     .LocateLocalHeader
 .DifferentNames:
+                pop     cx
                 pop     ax
                 pop     di
 .Iterate:
@@ -79,8 +82,9 @@ ZipLocateFileHeader:
 
 .LocateLocalHeader:
                 push    ax
-                mov     ax, di
+                mov     ax, si
                 sub     ax, [si + ZIP_CDIR_END_HEADER.CentralDirectoryOffset]
+                sub     ax, [si + ZIP_CDIR_END_HEADER.CentralDirectorySize]
                 add     ax, [di + ZIP_CDIR_FILE_HEADER.LocalHeaderOffset]
                 mov     di, ax
                 pop     ax

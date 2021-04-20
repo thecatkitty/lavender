@@ -3,11 +3,13 @@
 %include "err.inc"
 %include "line.inc"
 %include "vid.inc"
+%include "zip.inc"
 
 
                 cpu     8086
 
-                extern  _ext_start
+                extern  ArchiveStart
+                extern  ArchiveEnd
 
 [bits 16]
 section .init
@@ -24,14 +26,40 @@ LavenderEntry:
                 call    VidSetMode
                 push    ax              ; save previous mode on stack
 
-                mov     si, oBitmap
+                mov     bx, ArchiveStart
+                mov     si, ArchiveEnd
+                call    ZipLocateCentralDirectoryEnd
+                jc      .Error
+
+
+                mov     bx, sLogo
+                mov     cx, 12
+                call    ZipLocateFileHeader
+                jc      .Error
+
+                push    si
+                mov     si, di
+                add     si, ZIP_LOCAL_FILE_HEADER_size
+                add     si, [di + ZIP_LOCAL_FILE_HEADER.NameLength]
+                add     si, [di + ZIP_LOCAL_FILE_HEADER.ExtraLength]
+                add     si, 57          ; TODO : replace after PBM implementation
                 mov     ah, (640 - LOGOW) / 2 / 8
                 mov     al, (144 - LOGOH) / 2
                 mov     cx, LOGOW
                 mov     dx, LOGOH
                 call    VidDrawBitmap
+                pop     si
 
-                mov     si, _ext_start
+
+                mov     bx, sSlides
+                mov     cx, 10
+                call    ZipLocateFileHeader
+                jc      .Error
+
+                mov     si, di
+                add     si, ZIP_LOCAL_FILE_HEADER_size
+                add     si, [di + ZIP_LOCAL_FILE_HEADER.NameLength]
+                add     si, [di + ZIP_LOCAL_FILE_HEADER.ExtraLength]
 .Next:
                 mov     di, oLine
                 call    LineLoad
@@ -63,7 +91,8 @@ section .data
 LOGOW                           equ     272             ; logo width
 LOGOH                           equ     100             ; logo height
 
-oBitmap                         incbin  "../data/cgihisym.pbm", 57
+sLogo                           db      "cgihisym.pbm"
+sSlides                         db      "slides.txt"
 
 
 section .bss
