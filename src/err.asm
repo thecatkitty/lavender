@@ -45,6 +45,11 @@ asErrMessages                   db      "OK$"
                                 db      "Unknown line type$"
                                 db      "Invalid line vertical position$"
                                 db      "Invalid line horizontal position$"
+                                db      "ZIP central directory end not found$"
+                                db      "ZIP central directory is too large$"
+                                db      "ZIP central directory is invalid$"
+                                db      "File not found in ZIP$"
+                                db      "ZIP local file header is invalid$"
 
 
 section .bss

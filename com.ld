@@ -7,8 +7,9 @@ SECTIONS
     *(.text);
     *(.data);
   }
-  _ext_start = .;
+  ArchiveStart = .;
   . = 0x3000;
+  ArchiveEnd = .;
   .bss (NOLOAD) :
   {
     *(.bss*);
