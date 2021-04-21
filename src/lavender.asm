@@ -10,11 +10,13 @@
 
                 extern  ArchiveStart
                 extern  ArchiveEnd
+                extern  StackBottom
 
 [bits 16]
 section .init
 
 
+                mov     sp, StackBottom
                 jmp     LavenderEntry
 %push About
 %defstr GIT_COMMIT      %!GIT_COMMIT
