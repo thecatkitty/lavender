@@ -12,6 +12,7 @@ export GIT_TAG = $(shell git describe --tags $(GIT_COMMIT) --abbrev=0)
 
 $(BIN)/vii.com: $(BIN)/lavender.com $(OBJ)/data.zip
 	cat $^ > $@
+	@if [ $$(stat -L -c %s $@) -gt 12288 ]; then echo >&2 "'$@' size exceedes 12K"; false; fi
 
 image: $(BIN)/180k.img
 
