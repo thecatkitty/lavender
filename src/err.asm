@@ -1,3 +1,4 @@
+%define ERR_API
 %include "dos.inc"
 %include "err.inc"
 
@@ -7,7 +8,7 @@
 [bits 16]
 section .text
 
-
+                global  ErrTerminate
 ErrTerminate:
                 mov     ah, DOS_PUTS
                 mov     dx, sErrHeader
@@ -54,5 +55,5 @@ asErrMessages                   db      "OK$"
 
 section .bss
 
-
+                                global  ErrLastCode
 ErrLastCode                     resb    1
