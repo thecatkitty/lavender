@@ -53,7 +53,8 @@ asErrMessages                   db      "OK$"
                                 db      "ZIP local file header is invalid$"
                                 db      "ZIP compression method not supported$"
                                 db      "ZIP file flags require unsupported features$"
-
+                                db      "String contains an invalid UTF-8 sequence$"
+                                db      "String contains an unsupported code point$"
 
 section .bss
 

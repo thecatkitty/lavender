@@ -22,6 +22,8 @@ ERR_ZIP_NOT_FOUND               equ     8
 ERR_ZIP_LOCAL_INVALID           equ     9
 ERR_ZIP_UNSUPPORTED_METHOD      equ     10
 ERR_ZIP_UNSUPPORTED_FLAGS       equ     11
+ERR_UNI_INVALID_SEQUENCE        equ     12
+ERR_UNI_UNSUPPORTED_CODEPOINT   equ     13
 
 
 %macro          ERR     1
