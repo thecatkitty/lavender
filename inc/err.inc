@@ -20,6 +20,8 @@ ERR_ZIP_CDIR_TOO_LARGE          equ     6
 ERR_ZIP_CDIR_INVALID            equ     7
 ERR_ZIP_NOT_FOUND               equ     8
 ERR_ZIP_LOCAL_INVALID           equ     9
+ERR_ZIP_UNSUPPORTED_METHOD      equ     10
+ERR_ZIP_UNSUPPORTED_FLAGS       equ     11
 
 
 %macro          ERR     1
