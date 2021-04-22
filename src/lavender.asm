@@ -43,12 +43,11 @@ LavenderEntry:
                 mov     cx, 12
                 call    ZipLocateFileHeader
                 jc      .Error
+                call    ZipLocateFileData
+                jc      .Error
 
                 push    si
-                mov     si, di
-                add     si, ZIP_LOCAL_FILE_HEADER_size
-                add     si, [di + ZIP_LOCAL_FILE_HEADER.NameLength]
-                add     si, [di + ZIP_LOCAL_FILE_HEADER.ExtraLength]
+                mov     si, bx
                 add     si, 57          ; TODO : replace after PBM implementation
                 mov     ah, (640 - LOGOW) / 2 / 8
                 mov     al, (144 - LOGOH) / 2
@@ -62,11 +61,10 @@ LavenderEntry:
                 mov     cx, 10
                 call    ZipLocateFileHeader
                 jc      .Error
+                call    ZipLocateFileData
+                jc      .Error
 
-                mov     si, di
-                add     si, ZIP_LOCAL_FILE_HEADER_size
-                add     si, [di + ZIP_LOCAL_FILE_HEADER.NameLength]
-                add     si, [di + ZIP_LOCAL_FILE_HEADER.ExtraLength]
+                mov     si, bx
 .Next:
                 mov     di, oLine
                 call    LineLoad
