@@ -23,7 +23,7 @@ ZIP_API ZipLocateCentralDirectoryEnd
 ; Invalidates: BX, CX
 ZIP_API ZipLocateFileHeader
 
-; Locate ZIP local file header structure
+; Locate ZIP file data
 ; Input:
 ;   DS:DI - ZIP local file header structure
 ; Output:
