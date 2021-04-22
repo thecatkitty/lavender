@@ -100,3 +100,23 @@ ZipLocateFileHeader:
                 ERR     ZIP_NOT_FOUND
 .Error:
 .End:           ret
+
+
+                global  ZipLocateFileData
+ZipLocateFileData:
+                cmp     word [di + ZIP_LOCAL_FILE_HEADER.Compression], ZIP_METHOD_STORE
+                je      .CheckFlags
+                ERR     ZIP_UNSUPPORTED_METHOD
+.CheckFlags:
+                test    word [di + ZIP_LOCAL_FILE_HEADER.Flags], ~ZIP_FLAGS_SUPPORTED
+                jz      .LoadData
+                ERR     ZIP_UNSUPPORTED_FLAGS
+.LoadData:
+                mov     bx, di
+                add     bx, ZIP_LOCAL_FILE_HEADER_size
+                add     bx, [di + ZIP_LOCAL_FILE_HEADER.NameLength]
+                add     bx, [di + ZIP_LOCAL_FILE_HEADER.ExtraLength]
+                jmp     .End
+
+.Error:
+.End:           ret
