@@ -40,7 +40,7 @@ LavenderEntry:
 
 
                 mov     bx, sLogo
-                mov     cx, 12
+                mov     cx, lLogo
                 call    ZipLocateFileHeader
                 jc      .Error
                 call    ZipLocateFileData
@@ -58,7 +58,7 @@ LavenderEntry:
 
 
                 mov     bx, sSlides
-                mov     cx, 10
+                mov     cx, lSlides
                 call    ZipLocateFileHeader
                 jc      .Error
                 call    ZipLocateFileData
@@ -97,7 +97,9 @@ LOGOW                           equ     272             ; logo width
 LOGOH                           equ     100             ; logo height
 
 sLogo                           db      "cgihisym.pbm"
+lLogo                           equ     $ - sLogo
 sSlides                         db      "slides.txt"
+lSlides                         equ     $ - sSlides
 
 
 section .bss
