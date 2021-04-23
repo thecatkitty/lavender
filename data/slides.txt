@@ -1,6 +1,6 @@
 0   T   18  ^Lavender
 500 B   22  ^CGIHISYM.PBM
 500 T   19  ^Wersja 0.1
-500 T   23  ^Copyright (c) Mateusz Karcz, 2021. Wszelkie prawa zastrzezone.
-500 T   24  ^Nacisnij dowolny klawisz, aby kontynuowac.
+500 T   23  ^Copyright (c) Mateusz Karcz, 2021. Wszelkie prawa zastrze�one.
+500 T   24  ^Naci�nij dowolny klawisz, aby kontynuowa�.
 

@@ -1,6 +1,7 @@
 %include "bios.inc"
 %include "dos.inc"
 %include "err.inc"
+%include "fnt.inc"
 %include "line.inc"
 %include "vid.inc"
 %include "zip.inc"
@@ -33,6 +34,8 @@ LavenderEntry:
                 call    VidSetMode
                 push    ax              ; save previous mode on stack
 
+                call FntLoad
+
                 mov     bx, ArchiveStart
                 mov     si, ArchiveEnd
                 call    ZipLocateCentralDirectoryEnd
@@ -40,7 +43,7 @@ LavenderEntry:
 
 
                 mov     bx, sLogo
-                mov     cx, 12
+                mov     cx, lLogo
                 call    ZipLocateFileHeader
                 jc      .Error
                 call    ZipLocateFileData
@@ -58,7 +61,7 @@ LavenderEntry:
 
 
                 mov     bx, sSlides
-                mov     cx, 10
+                mov     cx, lSlides
                 call    ZipLocateFileHeader
                 jc      .Error
                 call    ZipLocateFileData
@@ -81,6 +84,8 @@ LavenderEntry:
                 xor     ah, ah          ; AH = BIOS_KEYBOARD_GET_KEYSTROKE
                 int     BIOS_INT_KEYBOARD
 
+                call    FntUnload
+
                 pop     ax              ; restore saved mode
                 call    VidSetMode
 
@@ -97,7 +102,9 @@ LOGOW                           equ     272             ; logo width
 LOGOH                           equ     100             ; logo height
 
 sLogo                           db      "cgihisym.pbm"
+lLogo                           equ     $ - sLogo
 sSlides                         db      "slides.txt"
+lSlides                         equ     $ - sSlides
 
 
 section .bss
