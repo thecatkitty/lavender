@@ -107,6 +107,8 @@ ZIP_TIME_YEARS                  equ     111111000000000b
 ZIP_TIME_YEARS_SHIFT            equ     9
 ZIP_TIME_YEARS_BASE             equ     1980
 
+ZIP_EXTRA_INFOZIP_UNICODE_PATH  equ     7075h
+
 struc ZIP_CDIR_END_HEADER
   .PkSignature:                 resw    1
   .HeaderSignature:             resw    1
@@ -156,4 +158,17 @@ struc ZIP_LOCAL_FILE_HEADER
   .NameLength:                  resw    1
   .ExtraLength:                 resw    1
   .Name:
+endstruc
+
+struc ZIP_EXTRA_FIELD_HEADER
+  .Signature:                   resw    1
+  .TotalSize:                   resw    1
+endstruc
+
+struc ZIP_EXTRA_INFOZIP_UNICODE_PATH_FIELD
+  .Signature:                   resw    1
+  .TotalSize:                   resw    1
+  .Version:                     resb    1
+  .NameCrc32:                   resd    1
+  .UnicodeName:
 endstruc
