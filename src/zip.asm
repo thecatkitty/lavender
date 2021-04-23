@@ -1,6 +1,7 @@
 %define ZIP_API
 %include "err.inc"
 %include "str.inc"
+%include "uni.inc"
 %include "zip.inc"
 
 
@@ -52,15 +53,28 @@ ZipLocateFileHeader:
 .CheckName:
                 cmp     word [di + ZIP_CDIR_FILE_HEADER.NameLength], cx
                 jne     .Iterate
-                push    bx
+                cmp     byte [di + ZIP_CDIR_FILE_HEADER.Version + 1], ZIP_VERSION_FS_MSDOS
+                je      .CaseInsensitive
+                cmp     byte [di + ZIP_CDIR_FILE_HEADER.Version + 1], ZIP_VERSION_FS_NTFS
+                je      .CaseInsensitive
+                cmp     byte [di + ZIP_CDIR_FILE_HEADER.Version + 1], ZIP_VERSION_FS_VFAT
+                jne     .CaseSensitive
+.CaseInsensitive:
+                push    si
+                mov     si, di
+                add     si, ZIP_CDIR_FILE_HEADER.Name
+                call    UniCompareUtf8IgnoreCase
+                pop     si
+                jc      .Error
+                jne     .Iterate
+                jmp     .LocateLocalHeader
+.CaseSensitive:
                 push    si
                 mov     si, di
                 add     si, ZIP_CDIR_FILE_HEADER.Name
                 call    StrCompareMemory
                 pop     si
-                pop     bx
-                jne     .Iterate
-                jmp     .LocateLocalHeader
+                je      .LocateLocalHeader
 .Iterate:
                 push    cx
                 mov     cx, ZIP_CDIR_FILE_HEADER_size
