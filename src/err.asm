@@ -51,6 +51,8 @@ asErrMessages                   db      "OK$"
                                 db      "ZIP central directory is invalid$"
                                 db      "File not found in ZIP$"
                                 db      "ZIP local file header is invalid$"
+                                db      "ZIP compression method not supported$"
+                                db      "ZIP file flags require unsupported features$"
 
 
 section .bss
