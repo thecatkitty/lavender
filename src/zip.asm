@@ -1,5 +1,6 @@
 %define ZIP_API
 %include "err.inc"
+%include "str.inc"
 %include "zip.inc"
 
 
@@ -51,25 +52,15 @@ ZipLocateFileHeader:
 .CheckName:
                 cmp     word [di + ZIP_CDIR_FILE_HEADER.NameLength], cx
                 jne     .Iterate
-                push    di
-                push    ax
-                push    cx
-                add     di, ZIP_CDIR_FILE_HEADER.Name
-.NextCharacter:
-                mov     al, [di]
-                cmp     al, [bx]
-                jne     .DifferentNames
-                inc     di
-                inc     bx
-                loop    .NextCharacter
-                pop     cx
-                pop     ax
-                pop     di
+                push    bx
+                push    si
+                mov     si, di
+                add     si, ZIP_CDIR_FILE_HEADER.Name
+                call    StrCompareMemory
+                pop     si
+                pop     bx
+                jne     .Iterate
                 jmp     .LocateLocalHeader
-.DifferentNames:
-                pop     cx
-                pop     ax
-                pop     di
 .Iterate:
                 push    cx
                 mov     cx, ZIP_CDIR_FILE_HEADER_size
