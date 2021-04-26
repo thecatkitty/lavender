@@ -1,6 +1,7 @@
 %include "bios.inc"
 %include "dos.inc"
 %include "err.inc"
+%include "fnt.inc"
 %include "line.inc"
 %include "vid.inc"
 %include "zip.inc"
@@ -32,6 +33,8 @@ LavenderEntry:
                 mov     ax, VID_MODE_CGA_HIMONO
                 call    VidSetMode
                 push    ax              ; save previous mode on stack
+
+                call FntLoad
 
                 mov     bx, ArchiveStart
                 mov     si, ArchiveEnd
@@ -80,6 +83,8 @@ LavenderEntry:
 .End:
                 xor     ah, ah          ; AH = BIOS_KEYBOARD_GET_KEYSTROKE
                 int     BIOS_INT_KEYBOARD
+
+                call    FntUnload
 
                 pop     ax              ; restore saved mode
                 call    VidSetMode
