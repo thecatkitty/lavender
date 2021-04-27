@@ -1,7 +1,7 @@
-%define LINE_API
+%define SLD_API
 %include "err.inc"
 %include "fnt.inc"
-%include "line.inc"
+%include "sld.inc"
 %include "str.inc"
 %include "uni.inc"
 
@@ -12,88 +12,88 @@
 section .text
 
 
-                global  LineLoad
-LineLoad:
+                global  SldEntryLoad
+SldEntryLoad:
                 cmp     byte [si], 0Dh
                 je      .EndOfFile
 
                 call    StrParseU16
-                ERRC    LINE_INVALID_DELAY
+                ERRC    SLD_INVALID_DELAY
 
-                mov     dx, LINE_DELAY_MS_MULTIPLIER
+                mov     dx, SLD_DELAY_MS_MULTIPLIER
                 mul     dx              ; DX:AX = AX * DX
-                mov     bx, LINE_DELAY_MS_DIVISOR
+                mov     bx, SLD_DELAY_MS_DIVISOR
                 div     bx              ; AX = DX:AX / BX
-                mov     [di + LINE.Delay], ax
+                mov     [di + SLD_ENTRY.Delay], ax
   
                 ; Get type
-                cmp     byte [si], LINE_TAG_TYPE_TEXT
+                cmp     byte [si], SLD_TAG_TYPE_TEXT
                 je      .TypeText
-                cmp     byte [si], LINE_TAG_TYPE_BITMAP
+                cmp     byte [si], SLD_TAG_TYPE_BITMAP
                 je      .TypeBitmap
-                ERR     LINE_UNKNOWN_TYPE
+                ERR     SLD_UNKNOWN_TYPE
 
 .TypeText:
-                mov     byte [di + LINE.Type], LINE_TYPE_TEXT
+                mov     byte [di + SLD_ENTRY.Type], SLD_TYPE_TEXT
                 jmp    .TextBitmapCommon
 
 .TypeBitmap:
-                mov     byte [di + LINE.Type], LINE_TYPE_BITMAP
+                mov     byte [di + SLD_ENTRY.Type], SLD_TYPE_BITMAP
 
 .TextBitmapCommon:
-                call    LineLoadPosition
+                call    SldLoadPosition
                 jc      .Error
 
-                call    LineLoadContent
+                call    SldLoadContent
                 jnc     .End
 
 .Error:         jmp     .End
 .EndOfFile:
-                mov     byte [di + LINE.Length], 0
+                mov     byte [di + SLD_ENTRY.Length], 0
                 clc
-.End:           mov     ax, [di + LINE.Length]
+.End:           mov     ax, [di + SLD_ENTRY.Length]
                 ret
 
 
 ; Parse line row and column information from the slideshow file 
 ; Input:
 ;   DS:SI - beginning of the text field
-;   DS:DI - LINE structure
-LineLoadPosition:
+;   DS:DI - SLD_ENTRY structure
+SldLoadPosition:
                 ; Parse row number
                 inc     si
                 call    StrParseU16
-                ERRC    LINE_INVALID_VERTICAL
-                mov     [di + LINE.Vertical], ax
+                ERRC    SLD_INVALID_VERTICAL
+                mov     [di + SLD_ENTRY.Vertical], ax
 
                 ; Parse column number
                 call    StrParseU16
                 jnc     .ColumnNumeric
-                cmp     byte [si], LINE_TAG_ALIGN_LEFT
+                cmp     byte [si], SLD_TAG_ALIGN_LEFT
                 je      .ColumnLeft
-                cmp     byte [si], LINE_TAG_ALIGN_CENTER
+                cmp     byte [si], SLD_TAG_ALIGN_CENTER
                 je      .ColumnCenter
-                cmp     byte [si], LINE_TAG_ALIGN_RIGHT
+                cmp     byte [si], SLD_TAG_ALIGN_RIGHT
                 je      .ColumnRight
-                ERR     LINE_INVALID_HORIZONTAL
+                ERR     SLD_INVALID_HORIZONTAL
   
 .ColumnNumeric:
-                mov     [di + LINE.Horizontal], ax
+                mov     [di + SLD_ENTRY.Horizontal], ax
                 jmp     .End
   
 .ColumnLeft:
                 inc     si
-                mov     word [di + LINE.Horizontal], LINE_ALIGN_LEFT
+                mov     word [di + SLD_ENTRY.Horizontal], SLD_ALIGN_LEFT
                 jmp     .End
   
 .ColumnCenter:
                 inc     si
-                mov     word [di + LINE.Horizontal], LINE_ALIGN_CENTER
+                mov     word [di + SLD_ENTRY.Horizontal], SLD_ALIGN_CENTER
                 jmp     .End
   
 .ColumnRight:
                 inc     si
-                mov     word [di + LINE.Horizontal], LINE_ALIGN_RIGHT
+                mov     word [di + SLD_ENTRY.Horizontal], SLD_ALIGN_RIGHT
                 jmp     .End
 
 .Error:
@@ -103,17 +103,17 @@ LineLoadPosition:
 ; Read line content from the slideshow file 
 ; Input:
 ;   DS:SI - slideshow file line content
-;   DS:DI - LINE structure
+;   DS:DI - SLD_ENTRY structure
 ; Output:
 ;   CF    - Error
-LineLoadContent:
+SldLoadContent:
                 push    dx
                 push    ax
-                push    di              ; save LINE structure pointer
-                mov     byte [di + LINE.Length], 0
+                push    di              ; save SLD_ENTRY structure pointer
+                mov     byte [di + SLD_ENTRY.Length], 0
 
                 xor     dx, dx
-                add     di, LINE.Content
+                add     di, SLD_ENTRY.Content
 .Next:
                 cmp     byte [si], 0Dh
                 je      .Break
@@ -123,13 +123,13 @@ LineLoadContent:
                 mov     byte [di], al
                 inc     di
                 inc     dx
-                cmp     dx, LINE_MAX_LENGTH
+                cmp     dx, SLD_ENTRY_MAX_LENGTH
                 je      .Error
                 jmp     .Next
 .Break:
                 mov     byte [di], 0
                 pop     di
-                mov     [di + LINE.Length], dx
+                mov     [di + SLD_ENTRY.Length], dx
                 add     si, 2
                 jmp     .End
 

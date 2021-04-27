@@ -11,10 +11,10 @@ ERR_API ErrLastCode
 %endif
 
 ERR_OK                          equ     0
-ERR_LINE_INVALID_DELAY          equ     1
-ERR_LINE_UNKNOWN_TYPE           equ     2
-ERR_LINE_INVALID_VERTICAL       equ     3
-ERR_LINE_INVALID_HORIZONTAL     equ     4
+ERR_SLD_INVALID_DELAY           equ     1
+ERR_SLD_UNKNOWN_TYPE            equ     2
+ERR_SLD_INVALID_VERTICAL        equ     3
+ERR_SLD_INVALID_HORIZONTAL      equ     4
 ERR_ZIP_CDIR_END_NOT_FOUND      equ     5
 ERR_ZIP_CDIR_TOO_LARGE          equ     6
 ERR_ZIP_CDIR_INVALID            equ     7
