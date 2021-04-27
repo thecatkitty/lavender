@@ -13,10 +13,7 @@
 section .init
 
 
-                mov     sp, StackBottom
-                call    Main
-                mov     ah, DOS_EXIT
-                int     DOS_INT
+                jmp     KerEntry
 %push About
 %defstr GIT_COMMIT      %!GIT_COMMIT
 %defstr GIT_TAG         %!GIT_TAG
@@ -26,6 +23,14 @@ section .init
 
 section .text
 
+
+KerEntry:
+                mov     sp, StackBottom
+                call    Main
+                mov     ah, DOS_EXIT
+                int     DOS_INT
+
+
                 global  KerSleep
 KerSleep:
                 jcxz    .End
@@ -34,3 +39,19 @@ KerSleep:
                 loop    .Next
 
 .End:           ret
+
+
+                global  KerIsDosBox
+KerIsDosBox:
+                push    ax
+                push    ds
+                mov     ax, 0F000h
+                mov     ds, ax
+                cmp     word [0E061h], 4F44h    ; DO
+                jne     .End
+                cmp     word [0E063h], 4253h    ; SB
+                jne     .End
+                cmp     word [0E065h], 786Fh    ; ox
+.End:           pop     ds
+                pop     ax
+                ret
