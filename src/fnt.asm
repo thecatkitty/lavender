@@ -32,7 +32,6 @@ FntLoad:
                 mov     es, ax
                 mov     si, aFontData
                 mov     di, bmExtendedFont
-                inc     di
                 mov     dx, lFontData
                 cmp     dx, 0
 .NextCharacter:
