@@ -1,6 +1,6 @@
 0   T   18  ^Bronies Twilight
 500 B   22  ^CGIHISYM.PBM
 500 T   19  ^Wersja 2.0
-500 T   23  ^Copyright (c) Fundacja BT, 2021. Wszelkie prawa zastrzeëone.
-500 T   24  ^Naciènij dowolny klawisz, aby kontynuowaä.
+500 T   23  ^Copyright (c) Fundacja BT, 2021. Wszelkie prawa zastrze≈ºone.
+500 T   24  ^Naci≈õnij dowolny klawisz, aby kontynuowaƒá.
 
