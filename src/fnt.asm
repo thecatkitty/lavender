@@ -1,6 +1,6 @@
 %define FNT_API
-%include "dos.inc"
 %include "fnt.inc"
+%include "ker.inc"
 
 
                 cpu     8086
@@ -31,6 +31,10 @@ FntLoad:
                 mov     es, ax
                 mov     si, aFontData
                 mov     di, bmExtendedFont
+
+                call    KerIsDosBox
+                jnz     .NextCharacter
+                inc     di              ; DOSBox ROM font is moved one line lower
 .NextCharacter:
                 cmp     word [si + FNT_CHARACTER_DESCRIPTOR.CodePoint], 0FFFFh
                 je      .End
