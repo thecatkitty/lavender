@@ -37,7 +37,6 @@ FntLoad:
                 cmp     dx, 0
 .NextCharacter:
                 jz      .End
-
                 xor     ax, ax
                 mov     al, byte [si + 4]
                 cmp     al, 0
@@ -66,13 +65,13 @@ FntLoad:
                 shr     al, 1
                 shr     al, 1           ; AX = position from top
                 and     cl, 0Fh         ; CX = overlay height
+                jcxz    .OverlayEnd
 
                 mov     bp, sp
                 mov     di, word [bp]   ; restore extended glyph position
                 add     di, ax          ; start from top of the overlay
                 inc     bx
 .NextOverlayByte:
-                jcxz    .OverlayEnd
                 mov     al, byte [bx]   ; read a byte from the overlay
                 or      byte [di], al   ; apply the overlay by ORing
                 inc     bx
@@ -110,6 +109,37 @@ FntUnload:
                 
                 pop     ax
                 pop     es
+                ret
+
+
+                global  FntGetLocalCharacter
+FntGetLocalCharacter:
+                cmp     ax, 80h
+                jae     .Convert
+                ret                     ; do not convert ASCII code points
+.Convert:
+                push    si
+                push    cx
+                mov     si, aFontData
+                xor     cx, cx
+.NextCharacter:
+                cmp     cx, lFontData
+                je      .Error
+                cmp     word [si], ax
+                je      .Return
+                add     si, 5
+                inc     cx
+                jmp     .NextCharacter
+.Error:
+                mov     al, '?'
+                stc
+                jmp     .End
+.Return:
+                mov     al, cl
+                add     al, 80h
+.End:
+                pop     cx
+                pop     si
                 ret
 
 
