@@ -1,4 +1,5 @@
 %define SLD_API
+%include "ker.inc"
 %include "sld.inc"
 %include "vid.inc"
 
@@ -12,7 +13,7 @@ section .text
 SldEntryExecute:
                 ; Delay
                 mov     cx, [di + SLD_ENTRY.Delay]
-                call    Sleep
+                call    KerSleep
 
                 ; Type
                 cmp     byte [di + SLD_ENTRY.Type], SLD_TYPE_TEXT
@@ -41,19 +42,5 @@ SldEntryExecute:
                 mov     si, di
                 add     si, SLD_ENTRY.Content
                 call    VidDrawText
-
-.End:           ret
-
-
-; Halt execution for a given period
-; Input:
-;   CX - number of ticks (1 tick ~ 54,9 ms)
-; Invalidates: CX
-                global  Sleep
-Sleep:
-                jcxz    .End
-.Next:
-                hlt
-                loop    .Next
 
 .End:           ret

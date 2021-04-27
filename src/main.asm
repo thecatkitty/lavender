@@ -1,7 +1,7 @@
 %include "bios.inc"
-%include "dos.inc"
 %include "err.inc"
 %include "fnt.inc"
+%include "ker.inc"
 %include "sld.inc"
 %include "vid.inc"
 %include "zip.inc"
@@ -11,43 +11,30 @@
 
                 extern  ArchiveStart
                 extern  ArchiveEnd
-                extern  StackBottom
 
 [bits 16]
-section .init
-
-
-                mov     sp, StackBottom
-                jmp     LavenderEntry
-%push About
-%defstr GIT_COMMIT      %!GIT_COMMIT
-%defstr GIT_TAG         %!GIT_TAG
-                db      0Dh, "Lavender ", GIT_TAG, '-', GIT_COMMIT, 1Ah
-%pop
-
-
 section .text
 
-
-LavenderEntry:
+                global  Main
+Main:
                 mov     ax, VID_MODE_CGA_HIMONO
                 call    VidSetMode
                 push    ax              ; save previous mode on stack
 
-                call FntLoad
+                call    FntLoad
 
                 mov     bx, ArchiveStart
                 mov     si, ArchiveEnd
                 call    ZipLocateCentralDirectoryEnd
-                jc      .Error
+                jc      ErrTerminate
 
 
                 mov     bx, sLogo
                 mov     cx, lLogo
                 call    ZipLocateFileHeader
-                jc      .Error
+                jc      ErrTerminate
                 call    ZipLocateFileData
-                jc      .Error
+                jc      ErrTerminate
 
                 push    si
                 mov     si, bx
@@ -63,15 +50,15 @@ LavenderEntry:
                 mov     bx, sSlides
                 mov     cx, lSlides
                 call    ZipLocateFileHeader
-                jc      .Error
+                jc      ErrTerminate
                 call    ZipLocateFileData
-                jc      .Error
+                jc      ErrTerminate
 
                 mov     si, bx
 .Next:
                 mov     di, oEntry
                 call    SldEntryLoad
-                jc      .Error
+                jc      ErrTerminate
                 test    ax, ax
                 jz      .End
                 push    si
@@ -89,10 +76,8 @@ LavenderEntry:
                 pop     ax              ; restore saved mode
                 call    VidSetMode
 
-                mov     ax, (DOS_EXIT << 8 | ERR_OK)
-                int     DOS_INT
-.Error:
-                call    ErrTerminate
+                xor     al, al          ; AL = ERR_OK
+                ret
 
 
 section .data
