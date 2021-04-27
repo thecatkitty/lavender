@@ -1,7 +1,9 @@
 %define LINE_API
 %include "err.inc"
+%include "fnt.inc"
 %include "line.inc"
 %include "str.inc"
+%include "uni.inc"
 
 
                 cpu     8086
@@ -106,17 +108,19 @@ LineLoadPosition:
 ;   CF    - Error
 LineLoadContent:
                 push    dx
+                push    ax
                 push    di              ; save LINE structure pointer
                 mov     byte [di + LINE.Length], 0
 
                 xor     dx, dx
                 add     di, LINE.Content
 .Next:
-                mov     bl, [si]
-                cmp     bl, 0Dh
+                cmp     byte [si], 0Dh
                 je      .Break
-                mov     [di], bl
-                inc     si
+                call    UniGetCharacterFromUtf8
+                jc      .Error
+                call    FntGetLocalCharacter
+                mov     byte [di], al
                 inc     di
                 inc     dx
                 cmp     dx, LINE_MAX_LENGTH
@@ -131,5 +135,6 @@ LineLoadContent:
 
 .Error:         pop     di
                 stc
-.End:           pop     dx
+.End:           pop     ax
+                pop     dx
                 ret
