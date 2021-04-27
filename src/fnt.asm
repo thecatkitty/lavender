@@ -14,7 +14,6 @@ FntLoad:
                 push    bp
                 push    di
                 push    si
-                push    dx
                 push    cx
                 push    bx
                 push    ax
@@ -32,12 +31,11 @@ FntLoad:
                 mov     es, ax
                 mov     si, aFontData
                 mov     di, bmExtendedFont
-                mov     dx, lFontData
-                cmp     dx, 0
 .NextCharacter:
-                jz      .End
+                cmp     word [si + FNT_CHARACTER_DESCRIPTOR.CodePoint], 0FFFFh
+                je      .End
                 xor     ax, ax
-                mov     al, byte [si + 4]
+                mov     al, byte [si + FNT_CHARACTER_DESCRIPTOR.Base]
                 cmp     al, 0
                 jz      .ApplyOverlay
                 shl     ax, 1
@@ -54,7 +52,7 @@ FntLoad:
                 add     di, 2
                 loop    .NextBasicWord
 .ApplyOverlay:
-                mov     bx, word [si + 2]
+                mov     bx, word [si + FNT_CHARACTER_DESCRIPTOR.Overlay]
                 xor     ax, ax
                 xor     cx, cx
                 mov     al, byte [bx]   ; 7:4 - position from top, 3:0 - height
@@ -80,13 +78,11 @@ FntLoad:
                 pop     di              ; restore extended glyph position
                 add     di, FNT_CHARACTER_HEIGHT
                 add     si, 5
-                dec     dx
                 jmp     .NextCharacter
 .End:
                 pop     ax
                 pop     bx
                 pop     cx
-                pop     dx
                 pop     si
                 pop     di
                 pop     bp
@@ -122,9 +118,8 @@ FntGetLocalCharacter:
                 mov     si, aFontData
                 xor     cx, cx
 .NextCharacter:
-                cmp     cx, lFontData
-                je      .Error
-                cmp     word [si], ax
+                cmp     word [si + FNT_CHARACTER_DESCRIPTOR.CodePoint], ax
+                ja      .Error
                 je      .Return
                 add     si, 5
                 inc     cx
@@ -146,32 +141,35 @@ section .data
 %push Context
 
 %macro          DCHR    3
-
-                dw      %1, %3
-                db      %2
+                                        ; FNT_CHARACTER_DESCRIPTOR
+                dw      %1              ;   CodePoint
+                dw      %3              ;   Overlay
+                db      %2              ;   Base
 
 %endmacro
 
 
-aFontData:                      DCHR    0104h, 'A', bmOgonek
-                                DCHR    0106h, 'C', bmAcute
-                                DCHR    0118h, 'E', bmOgonek
-                                DCHR    0141h, 'L', bmStroke
-                                DCHR    0143h, 'N', bmAcute
+aFontData:
                                 DCHR    00D3h, 'O', bmAcute
-                                DCHR    015Ah, 'S', bmAcute
-                                DCHR    0179h, 'Z', bmAcute
-                                DCHR    017Bh, 'Z', bmDotAbove
-                                DCHR    0105h, 'a', bmOgonek
-                                DCHR    0107h, 'c', bmAcute
-                                DCHR    0119h, 'e', bmOgonek
-                                DCHR    0142h, 'l', bmStroke
-                                DCHR    0144h, 'n', bmAcute
                                 DCHR    00F3h, 'o', bmAcute
+                                DCHR    0104h, 'A', bmOgonek
+                                DCHR    0105h, 'a', bmOgonek
+                                DCHR    0106h, 'C', bmAcute
+                                DCHR    0107h, 'c', bmAcute
+                                DCHR    0118h, 'E', bmOgonek
+                                DCHR    0119h, 'e', bmOgonek
+                                DCHR    0141h, 'L', bmStroke
+                                DCHR    0142h, 'l', bmStroke
+                                DCHR    0143h, 'N', bmAcute
+                                DCHR    0144h, 'n', bmAcute
+                                DCHR    015Ah, 'S', bmAcute
                                 DCHR    015Bh, 's', bmAcute
+                                DCHR    0179h, 'Z', bmAcute
                                 DCHR    017Ah, 'z', bmAcute
+                                DCHR    017Bh, 'Z', bmDotAbove
                                 DCHR    017Ch, 'z', bmDotAbove
 lFontData                       equ     ($ - aFontData) / 5
+                                dw      0FFFFh
 
 bmAcute:                        db      02h, \
                                         00011000b, \
