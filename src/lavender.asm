@@ -2,7 +2,7 @@
 %include "dos.inc"
 %include "err.inc"
 %include "fnt.inc"
-%include "line.inc"
+%include "sld.inc"
 %include "vid.inc"
 %include "zip.inc"
 
@@ -69,14 +69,14 @@ LavenderEntry:
 
                 mov     si, bx
 .Next:
-                mov     di, oLine
-                call    LineLoad
+                mov     di, oEntry
+                call    SldEntryLoad
                 jc      .Error
                 test    ax, ax
                 jz      .End
                 push    si
 
-                call    LineExecute
+                call    SldEntryExecute
                 pop     si
                 jmp    .Next
 
@@ -110,4 +110,4 @@ lSlides                         equ     $ - sSlides
 section .bss
 
 
-oLine                           resb    LINE_size
+oEntry                          resb    SLD_ENTRY_size

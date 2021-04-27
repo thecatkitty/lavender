@@ -1,5 +1,5 @@
-%define LINE_API
-%include "line.inc"
+%define SLD_API
+%include "sld.inc"
 %include "vid.inc"
 
 
@@ -8,38 +8,38 @@
 [bits 16]
 section .text
 
-                global  LineExecute
-LineExecute:
+                global  SldEntryExecute
+SldEntryExecute:
                 ; Delay
-                mov     cx, [di + LINE.Delay]
+                mov     cx, [di + SLD_ENTRY.Delay]
                 call    Sleep
 
                 ; Type
-                cmp     byte [di + LINE.Type], LINE_TYPE_TEXT
+                cmp     byte [di + SLD_ENTRY.Type], SLD_TYPE_TEXT
                 jne     .End
 
                 ; Text - vertical position
-                mov     al, [di + LINE.Vertical]
+                mov     al, [di + SLD_ENTRY.Vertical]
 
                 ; Text - horizontal position
-                cmp     word [di + LINE.Horizontal], LINE_ALIGN_CENTER
+                cmp     word [di + SLD_ENTRY.Horizontal], SLD_ALIGN_CENTER
                 je      .AlignCenter
-                cmp     word [di + LINE.Horizontal], LINE_ALIGN_RIGHT
+                cmp     word [di + SLD_ENTRY.Horizontal], SLD_ALIGN_RIGHT
                 je      .AlignRight
-                mov     ah, [di + LINE.Horizontal]
+                mov     ah, [di + SLD_ENTRY.Horizontal]
                 jmp     .Write
 .AlignCenter:
-                mov     ah, LINE_MAX_LENGTH
-                sub     ah, [di + LINE.Length]
+                mov     ah, SLD_ENTRY_MAX_LENGTH
+                sub     ah, [di + SLD_ENTRY.Length]
                 shr     ah, 1
                 jmp     .Write
 .AlignRight:
-                mov     ah, LINE_MAX_LENGTH
-                sub     ah, [di + LINE.Length]
+                mov     ah, SLD_ENTRY_MAX_LENGTH
+                sub     ah, [di + SLD_ENTRY.Length]
   
 .Write:
                 mov     si, di
-                add     si, LINE.Content
+                add     si, SLD_ENTRY.Content
                 call    VidDrawText
 
 .End:           ret
