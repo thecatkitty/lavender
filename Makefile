@@ -5,7 +5,7 @@ BIN     = bin
 OBJ     = obj
 SRC     = src
 
-SOURCES = ker.asm err.asm str.asm uni.asm cga.asm fnt.asm zip.asm sldex.asm sldld.asm main.asm
+SOURCES = ker.asm err.asm str.asm uni.asm cga.asm fnt.asm pic.asm zip.asm sldex.asm sldld.asm main.asm
 
 export GIT_COMMIT = $(shell git rev-parse --short HEAD)
 export GIT_TAG = $(shell git describe --tags $(GIT_COMMIT) --abbrev=0)

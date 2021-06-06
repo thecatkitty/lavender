@@ -2,6 +2,7 @@
 %include "err.inc"
 %include "fnt.inc"
 %include "ker.inc"
+%include "pic.inc"
 %include "sld.inc"
 %include "vid.inc"
 %include "zip.inc"
@@ -38,11 +39,19 @@ Main:
 
                 push    si
                 mov     si, bx
-                add     si, 57          ; TODO : replace after PBM implementation
-                mov     ah, (640 - LOGOW) / 2 / 8
-                mov     al, (144 - LOGOH) / 2
-                mov     cx, LOGOW
-                mov     dx, LOGOH
+                mov     di, oPic
+                call    PicLoadBitmap
+                jc      ErrTerminate
+                mov     si, word [di + PIC_BITMAP.Bits]
+                mov     cx, word [di + PIC_BITMAP.Width]
+                mov     dx, word [di + PIC_BITMAP.Height]
+                mov     ax, 80
+                sub     ax, word [di + PIC_BITMAP.WidthBytes]
+                shr     ax, 1                           ; AX = (WidthBytes - (640 / 8)) / 2
+                mov     ah, al                          ; horizontal position
+                mov     al, 144
+                sub     al, dl
+                shr     al, 1                           ; vertical position
                 call    VidDrawBitmap
                 pop     si
 
@@ -96,3 +105,4 @@ section .bss
 
 
 oEntry                          resb    SLD_ENTRY_size
+oPic                            resb    PIC_BITMAP_size
