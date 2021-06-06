@@ -21,4 +21,11 @@ STR_API StrParseU16
 ;   CF, ZF - difference
 STR_API StrCompareMemory
 
+; Tells if given byte is a whitespace character
+; Input:
+;   AL - byte
+; Output:
+;   ZF - zero if a whitespace
+STR_API StrIsWhitespace
+
 %endif
