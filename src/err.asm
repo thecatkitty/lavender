@@ -57,6 +57,8 @@ asErrMessages                   db      "OK$"
                                 db      "Unicode - Unsupported code point$"
                                 db      "Picture - Unsupported format$"
                                 db      "Picture - Malformed file$"
+                                db      "Video - Unsupported feature$"
+                                db      "Video - Operation failed$"
 
 section .bss
 
