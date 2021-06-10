@@ -24,6 +24,8 @@ ERR_ZIP_UNSUPPORTED_METHOD      equ     10
 ERR_ZIP_UNSUPPORTED_FLAGS       equ     11
 ERR_UNI_INVALID_SEQUENCE        equ     12
 ERR_UNI_UNSUPPORTED_CODEPOINT   equ     13
+ERR_PIC_UNSUPPORTED_FORMAT      equ     14
+ERR_PIC_MALFORMED_FILE          equ     15
 
 
 %macro          ERR     1

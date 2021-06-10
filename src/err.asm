@@ -55,6 +55,8 @@ asErrMessages                   db      "OK$"
                                 db      "ZIP - File flags require unsupported features$"
                                 db      "Unicode - Invalid UTF-8 sequence$"
                                 db      "Unicode - Unsupported code point$"
+                                db      "Picture - Unsupported format$"
+                                db      "Picture - Malformed file$"
 
 section .bss
 
