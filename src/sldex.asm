@@ -9,17 +9,16 @@
 
                 cpu     8086
 
-                extern  ArchiveStart
-                extern  ArchiveEnd
-
 [bits 16]
 section .text
 
                 global  SldEntryExecute
 SldEntryExecute:
                 ; Delay
+                push    cx
                 mov     cx, [di + SLD_ENTRY.Delay]
                 call    KerSleep
+                pop     cx
 
                 ; Type
                 cmp     byte [di + SLD_ENTRY.Type], SLD_TYPE_TEXT
@@ -30,6 +29,9 @@ SldEntryExecute:
 
 
 SldEntryExecuteText:
+                push    ax
+                push    si
+
                 ; Text - vertical position
                 mov     al, [di + SLD_ENTRY.Vertical]
 
@@ -55,7 +57,9 @@ SldEntryExecuteText:
                 call    VidDrawText
                 clc
 
-.End:           ret
+                pop     si
+                pop     ax
+                ret
 
 
 SldEntryExecuteBitmap:
@@ -67,11 +71,6 @@ SldEntryExecuteBitmap:
                 push    di
 
                 ; Bitmap - locate file
-                mov     bx, ArchiveStart
-                mov     si, ArchiveEnd
-                call    ZipLocateCentralDirectoryEnd
-                jc      .End
-
                 mov     bx, di
                 add     bx, SLD_ENTRY.Content
                 xor     ch, ch

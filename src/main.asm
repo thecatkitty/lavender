@@ -1,4 +1,5 @@
 %include "bios.inc"
+%include "dos.inc"
 %include "err.inc"
 %include "fnt.inc"
 %include "ker.inc"
@@ -28,6 +29,7 @@ Main:
                 mov     si, ArchiveEnd
                 call    ZipLocateCentralDirectoryEnd
                 jc      ErrTerminate
+                mov     word [pDirectoryEnd], si
 
                 mov     bx, sSlides
                 mov     cx, lSlides
@@ -45,6 +47,7 @@ Main:
                 jz      .End
                 push    si
 
+                mov     si, word [pDirectoryEnd]
                 call    SldEntryExecute
                 pop     si
                 jc      ErrTerminate
@@ -73,4 +76,5 @@ lSlides                         equ     $ - sSlides
 section .bss
 
 
+pDirectoryEnd                   resw    1
 oEntry                          resb    SLD_ENTRY_size
