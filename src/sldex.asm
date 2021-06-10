@@ -95,23 +95,19 @@ SldEntryExecuteBitmap:
                 je      .AlignCenter
                 cmp     word [di + SLD_ENTRY.Horizontal], SLD_ALIGN_RIGHT
                 je      .AlignRight
-                mov     ah, [di + SLD_ENTRY.Horizontal]
+                mov     ax, word [di + SLD_ENTRY.Horizontal]
                 jmp     .Draw
 .AlignCenter:
                 mov     ax, VID_CGA_HIMONO_LINE
                 sub     ax, word [bx + PIC_BITMAP.WidthBytes]
                 shr     ax, 1
-                mov     ah, al
                 jmp     .Draw
 .AlignRight:
                 mov     ax, VID_CGA_HIMONO_LINE
                 sub     ax, word [bx + PIC_BITMAP.WidthBytes]
-                mov     ah, al
 .Draw:
-                mov     si, word [bx + PIC_BITMAP.Bits]
-                mov     cx, word [bx + PIC_BITMAP.Width]
-                mov     dx, word [bx + PIC_BITMAP.Height]
-                mov     al, byte [di + SLD_ENTRY.Vertical]
+                mov     si, bx
+                mov     bx, word [di + SLD_ENTRY.Vertical]
                 call    VidDrawBitmap
                 clc
                 jmp     .End
