@@ -19,6 +19,13 @@ VID_API VidDrawBitmap
 ;   AL    - vertical position, in rows
 VID_API VidDrawText
 
+; Get pixel aspect ratio
+; Output:
+;   AL - pixel aspect ratio (PAR = 64 / AL), default value on error
+;   CF - error
+; Invalidates: AX
+VID_API VidGetPixelAspectRatio
+
 ; Set video mode
 ; Input:
 ;   AX - new video mode
@@ -31,5 +38,99 @@ VID_API VidSetMode
 
 VID_MODE_CGA_HIMONO             equ     6               ; 640x200x1
 VID_CGA_HIMONO_MEM              equ     0B800h          ; video memory base
-VID_CGA_HIMONO_LINE             equ     (640 / 8)       ; line size in bytes
+VID_CGA_HIMONO_WIDTH            equ     640
+VID_CGA_HIMONO_HEIGHT           equ     200
+VID_CGA_HIMONO_LINE             equ     (VID_CGA_HIMONO_WIDTH / 8)
 VID_CGA_HIMONO_PLANE            equ     2000h           ; odd plane offset
+
+VID_EDID_MANUFACTURER_ID1       equ     10              ; .ManufacturerId
+VID_EDID_MANUFACTURER_ID2       equ     5               ;   -111 1122  2223 3333
+VID_EDID_MANUFACTURER_ID3       equ     0
+VID_EDID_MANUFACTURER_IDx_MASK  equ     11111b
+
+VID_EDID_INPUT_TYPE             equ     7               ; .InputType (digital)
+VID_EDID_INPUT_TYPE_ANALOG      equ     0               ;   TDDD IIII
+VID_EDID_INPUT_TYPE_DIGITAL     equ     1
+VID_EDID_INPUT_TYPE_MASK        equ     1b
+VID_EDID_INPUT_DEPTH            equ     4
+VID_EDID_INPUT_DEPTH_6B         equ     1
+VID_EDID_INPUT_DEPTH_8B         equ     2
+VID_EDID_INPUT_DEPTH_10B        equ     3
+VID_EDID_INPUT_DEPTH_12B        equ     4
+VID_EDID_INPUT_DEPTH_14B        equ     5
+VID_EDID_INPUT_DEPTH_16B        equ     6
+VID_EDID_INPUT_DEPTH_MASK       equ     111b
+VID_EDID_INPUT_INTERFACE        equ     0
+VID_EDID_INPUT_INTERFACE_HDMIA  equ     2
+VID_EDID_INPUT_INTERFACE_HDMIB  equ     3
+VID_EDID_INPUT_INTERFACE_MDDI   equ     4
+VID_EDID_INPUT_INTERFACE_DP     equ     5
+VID_EDID_INPUT_INTERFACE_MASK   equ     1111b
+
+VID_EDID_INPUT_LEVELS           equ     5               ; .InputType (analog)
+VID_EDID_INPUT_LEVELS_0700_0300 equ     0               ;   -LLB SCGV
+VID_EDID_INPUT_LEVELS_0714_0286 equ     1
+VID_EDID_INPUT_LEVELS_1000_0400 equ     2
+VID_EDID_INPUT_LEVELS_0700_0000 equ     3
+VID_EDID_INPUT_LEVELS_MASK      equ     11b
+VID_EDID_INPUT_BLANK_TO_BLACK   equ     4
+VID_EDID_INPUT_SEPARATE_SYNC    equ     3
+VID_EDID_INPUT_COMPOSITE_SYNC   equ     2
+VID_EDID_INPUT_SYNC_ON_GREEN    equ     1
+VID_EDID_INPUT_VSYNC_SERRATED   equ     0
+
+VID_EDID_FEATURE_STANDBY        equ     7               ; .Features (digital)
+VID_EDID_FEATURE_SUSPEND        equ     6               ;   SUA2 4RDC
+VID_EDID_FEATURE_ACTIVEOFF      equ     5
+VID_EDID_FEATURE_YCRCB422       equ     4
+VID_EDID_FEATURE_YCRCB444       equ     3
+VID_EDID_FEATURE_TYPE           equ     3               ; .Features (analog)
+VID_EDID_FEATURE_TYPE_MONO      equ     0               ;   SUAT TRDC
+VID_EDID_FEATURE_TYPE_RGB       equ     1
+VID_EDID_FEATURE_TYPE_NONRGB    equ     2
+VID_EDID_FEATURE_TYPE_MASK      equ     11b
+VID_EDID_FEATURE_SRGB           equ     2
+VID_EDID_FEATURE_PREFERRED_DT1  equ     1
+VID_EDID_FEATURE_CONTINUOUS     equ     0
+
+VID_EDID_TIMING_ASPECT          equ     14              ; .StandardTiming
+VID_EDID_TIMING_ASPECT_16_10    equ     0               ;   AAVV VVVV XXXX XXXX
+VID_EDID_TIMING_ASPECT_4_3      equ     1
+VID_EDID_TIMING_ASPECT_5_4      equ     2
+VID_EDID_TIMING_ASPECT_16_9     equ     3
+VID_EDID_TIMING_ASPECT_MASK     equ     11b
+VID_EDID_TIMING_VFREQ           equ     8
+VID_EDID_TIMING_VFREQ_MASK      equ     111111b
+VID_EDID_TIMING_XRES            equ     0
+VID_EDID_TIMING_XRES_MASK       equ     11111111b
+
+%define VID_PAR(dx,dy,sx,sy)            (64 * dy * sx / dx / sy)
+
+struc VID_EDID
+  ; Header information
+  .Padding:                     resb    8
+  .ManufacturerId:              resw    1
+  .ModelId:                     resw    1
+  .SerialNumber:                resd    1
+  .Week:                        resb    1
+  .Year:                        resb    1
+  .EdidVersion:                 resb    1
+  .EdidRevision:                resb    1
+  ; Display parameters
+  .InputType:                   resb    1
+  .HorizontalSize:              resb    1
+  .VerticalSize:                resb    1
+  .Gamma:                       resb    1
+  .Features:                    resb    1
+  .Chroma:                      resb    10
+  .EstablishedModes:            resb    3
+  ; Standard timing information
+  .StandardTiming:              resw    8
+  .DetailedTiming1:             resb    18 
+  .DetailedTiming2:             resb    18 
+  .DetailedTiming3:             resb    18 
+  .DetailedTiming4:             resb    18 
+  ; Footer
+  .Extensions:                  resb    1
+  .Checksum:                    resb    1
+endstruc
