@@ -15,6 +15,8 @@ SLD_API SldEntryLoad
 ; Execute a line loaded from the slideshow file
 ; Input:
 ;   DS:DI - SLD_ENTRY structure
+; Output:
+;   CF    - error
 SLD_API SldEntryExecute
 
 %endif
