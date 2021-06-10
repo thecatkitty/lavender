@@ -28,6 +28,7 @@ ERR_PIC_UNSUPPORTED_FORMAT      equ     14
 ERR_PIC_MALFORMED_FILE          equ     15
 ERR_VID_UNSUPPORTED             equ     16
 ERR_VID_FAILED                  equ     17
+ERR_VID_FORMAT                  equ     18
 
 
 %macro          ERR     1

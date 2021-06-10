@@ -4,11 +4,9 @@
 
 ; Copy bitmap to screen buffer
 ; Input:
-;   DS:SI - linear monochrome bitmap
-;   AH    - horizontal position, in octets
-;   AL    - vertical position, in lines
-;   CX    - image width
-;   DX    - image height
+;   DS:SI - PIC_BITMAP structure
+;   AX    - horizontal position, in columns (aligned on 8)
+;   BX    - vertical position, in lines
 ; Invalidates: AX, CX, DX, DI, SI
 VID_API VidDrawBitmap
 
