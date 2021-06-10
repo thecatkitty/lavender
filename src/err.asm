@@ -59,6 +59,7 @@ asErrMessages                   db      "OK$"
                                 db      "Picture - Malformed file$"
                                 db      "Video - Unsupported feature$"
                                 db      "Video - Operation failed$"
+                                db      "Video - Improper graphics format$"
 
 section .bss
 

@@ -2,6 +2,7 @@
 %include "bios.inc"
 %include "dos.inc"
 %include "err.inc"
+%include "pic.inc"
 %include "vid.inc"
 
 
@@ -57,39 +58,48 @@ VidGetPixelAspectRatio:
 
                 global  VidDrawBitmap
 VidDrawBitmap:
-                push    dx              ; save image height
-                push    cx              ; save image width
+                cmp     byte [si + PIC_BITMAP.Planes], 1
+                jne     .BadFormat
+                mov     byte [si + PIC_BITMAP.BitsPerPixel], 1
+                jne     .BadFormat
 
-                mov     di, ax
-                mov     cl, 8
-                shr     di, cl          ; DI = x
-                mov     ah, al
-                mov     al, VID_CGA_HIMONO_LINE / 2
-                mul     ah              ; AX = y * VID_CGA_HIMONO_LINE / 2
-                add     di, ax          ; get the offset
+                push    ax
+                push    cx
+                push    dx
+                push    si
+                push    di
+                push    es
 
-                pop     dx              ; restore image width
-                mov     cl, 3
-                shr     dx, cl          ; get the image width in octets
-                mov     cx, dx
-                pop     dx              ; restore image height
+                mov     di, ax          ; DI = x
+                mov     ax, VID_CGA_HIMONO_LINE / 2
+                mul     bx
+                add     di, ax          ; DX:AX = y * VID_CGA_HIMONO_LINE / 2 + x
 
-                push    es              ; save and set the segment register
+                mov     cx, word [si + PIC_BITMAP.WidthBytes]
+                mov     dx, word [si + PIC_BITMAP.Height]
+                mov     si, word [si + PIC_BITMAP.Bits]
+
                 mov     ax, VID_CGA_HIMONO_MEM     
                 mov     es, ax
 .Next:
                 call    CgaDrawBitmapLine
                 xor     di, VID_CGA_HIMONO_PLANE
                 dec     dx              ; even lines
-  
+
                 call    CgaDrawBitmapLine
                 add     di, VID_CGA_HIMONO_LINE
                 xor     di, VID_CGA_HIMONO_PLANE
                 dec     dx              ; odd lines
                 jnz     .Next
-
-                pop     es              ; restore the segment register
+.Error:
+.End:           pop     es
+                pop     di
+                pop     si
+                pop     dx
+                pop     cx
+                pop     ax
                 ret
+.BadFormat:     ERR     VID_FORMAT
 
 
 ; Copy bitmap line to screen buffer
