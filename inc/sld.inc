@@ -14,6 +14,7 @@ SLD_API SldEntryLoad
 
 ; Execute a line loaded from the slideshow file
 ; Input:
+;   DS:SI - ZIP central directory end structure
 ;   DS:DI - SLD_ENTRY structure
 ; Output:
 ;   CF    - error
