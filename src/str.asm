@@ -84,3 +84,19 @@ StrCompareMemory:
                 pop     cx
                 pop     si
                 ret
+
+
+                global  StrIsWhitespace
+StrIsWhitespace:
+                cmp     al, 20h         ; SPACE
+                jae     .End
+                cmp     al, 0Dh         ; CARRIAGE RETURN
+                jae     .End
+                cmp     al, 0Ch         ; FORM FEED
+                jae     .End
+                cmp     al, 0Bh         ; VERTICAL TAB
+                jae     .End
+                cmp     al, 0Ah         ; LINE FEED
+                jae     .End
+                cmp     al, 09h         ; HORIZONTAL TAB
+.End:           ret
