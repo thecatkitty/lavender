@@ -60,9 +60,14 @@ KerExit:
                 global  KerSleep
 KerSleep:
                 jcxz    .End
+                push    ax
+                mov     ax, [cs:PitIsr.Counter]
 .Next:
                 hlt
+                cmp     ax, [cs:PitIsr.Counter]
+                je      .Next
                 loop    .Next
+                pop     ax
 
 .End:           ret
 
