@@ -1,6 +1,7 @@
 %define SLD_API
 %include "err.inc"
 %include "fnt.inc"
+%include "ker.inc"
 %include "sld.inc"
 %include "str.inc"
 %include "uni.inc"
@@ -20,9 +21,9 @@ SldEntryLoad:
                 call    StrParseU16
                 ERRC    SLD_INVALID_DELAY
 
-                mov     dx, SLD_DELAY_MS_MULTIPLIER
+                mov     dx, KER_DELAY_MS_MULTIPLIER
                 mul     dx              ; DX:AX = AX * DX
-                mov     bx, SLD_DELAY_MS_DIVISOR
+                mov     bx, KER_DELAY_MS_DIVISOR
                 div     bx              ; AX = DX:AX / BX
                 mov     [di + SLD_ENTRY.Delay], ax
   

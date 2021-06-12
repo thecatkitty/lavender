@@ -30,10 +30,6 @@ SLD_TAG_ALIGN_LEFT              equ     '<'
 SLD_TAG_ALIGN_CENTER            equ     '^'
 SLD_TAG_ALIGN_RIGHT             equ     '>'
 
-SLD_DELAY_MS_MULTIPLIER         equ     10
-SLD_DELAY_MS_DIVISOR            equ     (1000_0000 * SLD_DELAY_MS_MULTIPLIER) \
-                                        / 18_2065
-
 SLD_TYPE_TEXT                   equ     0
 SLD_TYPE_BITMAP                 equ     1
 
