@@ -8,14 +8,14 @@
 [bits 16]
 section .text
 
-                global  ErrTerminate
-ErrTerminate:
+                global  KerTerminate
+KerTerminate:
                 mov     ah, DOS_PUTS
                 mov     dx, sErrHeader
                 int     DOS_INT
 
                 xor     cx, cx
-                mov     cl, [ErrLastCode]
+                mov     cl, [KerLastError]
                 mov     si, asErrMessages
                 jcxz    .PrintMessage
 .NextCharacter:
@@ -32,7 +32,7 @@ ErrTerminate:
                 mov     dx, si
                 int     DOS_INT
 
-                mov     al, [ErrLastCode]
+                mov     al, [KerLastError]
                 mov     ah, DOS_EXIT
                 int     DOS_INT
 
@@ -63,5 +63,5 @@ asErrMessages                   db      "OK$"
 
 section .bss
 
-                                global  ErrLastCode
-ErrLastCode                     resb    1
+                                global  KerLastError
+KerLastError                    resb    1

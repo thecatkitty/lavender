@@ -8,8 +8,8 @@
 section .text
 
 
-                global  StrParseU16
-StrParseU16:
+                global  KerParseU16
+KerParseU16:
                 push    bx              ; save registers
                 push    dx
 
@@ -64,8 +64,8 @@ StrParseU16:
                 ret
 
 
-                global  StrCompareMemory
-StrCompareMemory:
+                global  KerCompareMemory
+KerCompareMemory:
                 push    si
                 push    cx
                 push    bx
@@ -86,8 +86,8 @@ StrCompareMemory:
                 ret
 
 
-                global  StrIsWhitespace
-StrIsWhitespace:
+                global  KerIsWhitespace
+KerIsWhitespace:
                 cmp     al, 20h         ; SPACE
                 jae     .End
                 cmp     al, 0Dh         ; CARRIAGE RETURN

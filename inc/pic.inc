@@ -8,7 +8,7 @@
 ;   DS:DI - PIC_BITMAP structure
 ; Output:
 ;   CF    - error
-PIC_API PicLoadBitmap
+PIC_API GfxLoadBitmap
 
 %endif
 

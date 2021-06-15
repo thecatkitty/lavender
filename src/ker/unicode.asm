@@ -9,8 +9,8 @@
 section .text
 
 
-                global  UniGetCharacterFromUtf8
-UniGetCharacterFromUtf8:
+                global  KerGetCharacterFromUtf8
+KerGetCharacterFromUtf8:
                 xor     ax, ax
                 mov     ah, byte [si]
                 test    ah, 10000000b
@@ -45,8 +45,8 @@ UniGetCharacterFromUtf8:
 .End:           ret
 
 
-                global  UniCompareUtf8IgnoreCase
-UniCompareUtf8IgnoreCase:
+                global  KerCompareUtf8IgnoreCase
+KerCompareUtf8IgnoreCase:
                 push    di              ; STACK COMPOSITION, relative to BP
                 push    si              ;  +12  - preserved DI
                 push    dx              ;  +10  - preserved SI
@@ -71,9 +71,9 @@ UniCompareUtf8IgnoreCase:
                 cmp     si, dx
                 jae     .Compare        ; end of the left string
 
-                call    UniGetCharacterFromUtf8
+                call    KerGetCharacterFromUtf8
                 jc      .Error
-                call    UniFoldCharacterCase
+                call    KerFoldCase
 
                 mov     word [di], ax   ; save first case-folded code point
                 add     di, 2
@@ -91,9 +91,9 @@ UniCompareUtf8IgnoreCase:
                 cmp     si, dx
                 jae     .SameStrings
 
-                call    UniGetCharacterFromUtf8
+                call    KerGetCharacterFromUtf8
                 jc      .Error
-                call    UniFoldCharacterCase
+                call    KerFoldCase
 
                 cmp     ax, word [di]
                 jne     .Return
@@ -121,8 +121,8 @@ UniCompareUtf8IgnoreCase:
                 ret
 
 
-                global  UniFoldCharacterCase
-UniFoldCharacterCase:
+                global  KerFoldCase
+KerFoldCase:
 %push Context
 
 %macro          JBOIN   5

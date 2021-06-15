@@ -11,8 +11,8 @@
 section .text
 
 
-                global  ZipLocateCentralDirectoryEnd
-ZipLocateCentralDirectoryEnd:
+                global  KerLocateArchive
+KerLocateArchive:
                 sub     si, ZIP_CDIR_END_HEADER_size
                 ja      .Next
                 ERR     ZIP_CDIR_END_NOT_FOUND
@@ -31,8 +31,8 @@ ZipLocateCentralDirectoryEnd:
 .End:           ret
 
 
-                global  ZipLocateFileHeader
-ZipLocateFileHeader:
+                global  KerSearchArchive
+KerSearchArchive:
                 mov     di, [si + ZIP_CDIR_END_HEADER.dwCentralDirectorySize + 2]
                 test    di, di
                 jz      .LocateInDirectory
@@ -63,7 +63,7 @@ ZipLocateFileHeader:
                 push    si
                 mov     si, di
                 add     si, ZIP_CDIR_FILE_HEADER.sName
-                call    UniCompareUtf8IgnoreCase
+                call    KerCompareUtf8IgnoreCase
                 pop     si
                 jc      .Iterate
                 jne     .Iterate
@@ -74,7 +74,7 @@ ZipLocateFileHeader:
                 push    si
                 mov     si, di
                 add     si, ZIP_CDIR_FILE_HEADER.sName
-                call    StrCompareMemory
+                call    KerCompareMemory
                 pop     si
                 je      .LocateLocalHeader
 .CheckExtraFields:
@@ -97,7 +97,7 @@ ZipLocateFileHeader:
                 mov     cx, word [si + ZIP_EXTRA_FIELD_HEADER.wTotalSize]
                 sub     cx, (ZIP_EXTRA_INFOZIP_UNICODE_PATH_FIELD.sUnicodeName - ZIP_EXTRA_FIELD_HEADER_size)
                 add     si, ZIP_EXTRA_INFOZIP_UNICODE_PATH_FIELD.sUnicodeName
-                call    UniCompareUtf8IgnoreCase
+                call    KerCompareUtf8IgnoreCase
                 jc      .NotInExtraFields
                 jne     .NotInExtraFields
                 pop     cx
@@ -138,8 +138,8 @@ ZipLocateFileHeader:
 .End:           ret
 
 
-                global  ZipLocateFileData
-ZipLocateFileData:
+                global  KerGetArchiveData
+KerGetArchiveData:
                 cmp     word [di + ZIP_LOCAL_FILE_HEADER.wPkSignature], ZIP_PK_SIGN
                 je      .CheckLocalSignature
                 ERR     ZIP_LOCAL_INVALID
