@@ -1,6 +1,6 @@
 %define KER_API_SUBSET_ERROR
-%include "dos.inc"
 %include "ker.inc"
+%include "api/dos.inc"
 
 
                 cpu     8086

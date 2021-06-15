@@ -1,10 +1,11 @@
 %define VID_API
-%include "bios.inc"
-%include "dos.inc"
 %include "err.inc"
 %include "gfx.inc"
 %include "ker.inc"
 %include "vid.inc"
+%include "api/bios.inc"
+%include "api/dos.inc"
+%include "dev/cga.inc"
 
 
                 cpu     8086
@@ -80,16 +81,16 @@ VidDrawBitmap:
                 mov     dx, word [si + GFX_BITMAP.wHeight]
                 mov     si, word [si + GFX_BITMAP.pBits]
 
-                mov     ax, VID_CGA_HIMONO_MEM     
+                mov     ax, CGA_HIMONO_MEM     
                 mov     es, ax
 .Next:
                 call    CgaDrawBitmapLine
-                xor     di, VID_CGA_HIMONO_PLANE
+                xor     di, CGA_HIMONO_PLANE
                 dec     dx              ; even lines
 
                 call    CgaDrawBitmapLine
                 add     di, VID_CGA_HIMONO_LINE
-                xor     di, VID_CGA_HIMONO_PLANE
+                xor     di, CGA_HIMONO_PLANE
                 dec     dx              ; odd lines
                 jnz     .Next
 .Error:
