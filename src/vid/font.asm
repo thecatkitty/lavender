@@ -55,7 +55,7 @@ VidLoadFont:
                 add     di, 2
                 loop    .NextBasicWord
 .ApplyOverlay:
-                mov     bx, word [si + VID_CHARACTER_DESCRIPTOR.pOverlay]
+                mov     bx, word [si + VID_CHARACTER_DESCRIPTOR.pabOverlay]
                 xor     ax, ax
                 xor     cx, cx
                 mov     al, byte [bx]   ; 7:4 - position from top, 3:0 - height
@@ -144,9 +144,9 @@ section .data
 
 %macro          DCHR    3
                                         ; VID_CHARACTER_DESCRIPTOR
-                dw      %1              ;   CodePoint
-                dw      %3              ;   Overlay
-                db      %2              ;   Base
+                dw      %1              ;   .wcCodePoint
+                dw      %3              ;   .pabOverlay
+                db      %2              ;   .cBase
 
 %endmacro
 
