@@ -29,10 +29,10 @@ Main:
                 mov     si, ArchiveEnd
                 call    ZipLocateCentralDirectoryEnd
                 jc      ErrTerminate
-                mov     word [pDirectoryEnd], si
+                mov     word [pstDirectoryEnd], si
 
                 mov     bx, sSlides
-                mov     cx, lSlides
+                mov     cx, nSlidesLength
                 call    ZipLocateFileHeader
                 jc      ErrTerminate
                 call    ZipLocateFileData
@@ -40,14 +40,14 @@ Main:
 
                 mov     si, bx
 .Next:
-                mov     di, oEntry
+                mov     di, stEntry
                 call    SldEntryLoad
                 jc      ErrTerminate
                 test    ax, ax
                 jz      .End
                 push    si
 
-                mov     si, word [pDirectoryEnd]
+                mov     si, word [pstDirectoryEnd]
                 call    SldEntryExecute
                 pop     si
                 jc      ErrTerminate
@@ -70,11 +70,11 @@ section .data
 
 
 sSlides                         db      "slides.txt"
-lSlides                         equ     $ - sSlides
+nSlidesLength                   equ     $ - sSlides
 
 
 section .bss
 
 
-pDirectoryEnd                   resw    1
-oEntry                          resb    SLD_ENTRY_size
+pstDirectoryEnd                 resw    1
+stEntry                         resb    SLD_ENTRY_size

@@ -31,7 +31,7 @@ KerEntry:
                 ; Initialize Programmable Interval Timer
                 mov     si, PitIsr
                 mov     di, KER_INT_PIT
-                mov     bx, PitIsr.BiosIsr
+                mov     bx, PitIsr.lpfnBiosIsr
                 call    IsrInstall
 
                 xor     al, al              ; Channel 0
@@ -46,7 +46,7 @@ KerEntry:
                 global  KerExit
 KerExit:
                 mov     di, KER_INT_PIT
-                mov     si, PitIsr.BiosIsr
+                mov     si, PitIsr.lpfnBiosIsr
                 call    IsrUninstall
 
                 xor     al, al              ; Channel 0
@@ -61,10 +61,10 @@ KerExit:
 KerSleep:
                 jcxz    .End
                 push    ax
-                mov     ax, [cs:PitIsr.Counter]
+                mov     ax, [cs:PitIsr.wCounter]
 .Next:
                 hlt
-                cmp     ax, [cs:PitIsr.Counter]
+                cmp     ax, [cs:PitIsr.wCounter]
                 je      .Next
                 loop    .Next
                 pop     ax
@@ -181,10 +181,10 @@ PitInitChannel:
 ; Programmable Interval Timer interrupt service routine
 PitIsr:
                 cli
-                inc     word [cs:.Counter]
-                test    word [cs:.Counter], 11111b
+                inc     word [cs:.wCounter]
+                test    word [cs:.wCounter], 11111b
                 jnz     .End
-                jmp     far [cs:.BiosIsr]      ; Call BIOS timer ISR every 32 ticks (~18,2065 Hz)
+                jmp     far [cs:.lpfnBiosIsr]      ; Call BIOS timer ISR every 32 ticks (~18,2065 Hz)
 .End:
                 push    ax
                 mov     al, KER_PIC1_IO_COMMAND
@@ -192,5 +192,5 @@ PitIsr:
                 pop     ax
                 sti
                 iret
-.BiosIsr        dd      0
-.Counter        dw      0FFFFh
+.lpfnBiosIsr    dd      0
+.wCounter       dw      0FFFFh

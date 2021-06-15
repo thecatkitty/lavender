@@ -22,24 +22,24 @@ FntLoad:
                 mov     es, ax          ; preserve previous extended font pointer
                 push    word [es:FNT_INTV_EXTENDED_FONT_PTR * 4]
                 push    word [es:FNT_INTV_EXTENDED_FONT_PTR * 4 + 2]
-                pop     word [lpOldPointer + 2]
-                pop     word [lpOldPointer]
-                mov     word [es:FNT_INTV_EXTENDED_FONT_PTR * 4], bmExtendedFont
+                pop     word [lpabPreviousFont + 2]
+                pop     word [lpabPreviousFont]
+                mov     word [es:FNT_INTV_EXTENDED_FONT_PTR * 4], abExtendedFont
                 mov     word [es:FNT_INTV_EXTENDED_FONT_PTR * 4 + 2], ds
 
                 mov     ax, FNT_BASIC_FONT_SEGMENT
                 mov     es, ax
-                mov     si, aFontData
-                mov     di, bmExtendedFont
+                mov     si, astFontData
+                mov     di, abExtendedFont
 
                 call    KerIsDosBox
                 jnz     .NextCharacter
                 inc     di              ; DOSBox ROM font is moved one line lower
 .NextCharacter:
-                cmp     word [si + FNT_CHARACTER_DESCRIPTOR.CodePoint], 0FFFFh
+                cmp     word [si + FNT_CHARACTER_DESCRIPTOR.wcCodePoint], 0FFFFh
                 je      .End
                 xor     ax, ax
-                mov     al, byte [si + FNT_CHARACTER_DESCRIPTOR.Base]
+                mov     al, byte [si + FNT_CHARACTER_DESCRIPTOR.cBase]
                 cmp     al, 0
                 jz      .ApplyOverlay
                 shl     ax, 1
@@ -56,7 +56,7 @@ FntLoad:
                 add     di, 2
                 loop    .NextBasicWord
 .ApplyOverlay:
-                mov     bx, word [si + FNT_CHARACTER_DESCRIPTOR.Overlay]
+                mov     bx, word [si + FNT_CHARACTER_DESCRIPTOR.pOverlay]
                 xor     ax, ax
                 xor     cx, cx
                 mov     al, byte [bx]   ; 7:4 - position from top, 3:0 - height
@@ -101,8 +101,8 @@ FntUnload:
 
                 xor     ax, ax
                 mov     es, ax          ; restore previous extended font pointer
-                push    word [lpOldPointer]
-                push    word [lpOldPointer + 2]
+                push    word [lpabPreviousFont]
+                push    word [lpabPreviousFont + 2]
                 pop     word [es:FNT_INTV_EXTENDED_FONT_PTR * 4 + 2]
                 pop     word [es:FNT_INTV_EXTENDED_FONT_PTR * 4]
                 
@@ -119,10 +119,10 @@ FntGetLocalCharacter:
 .Convert:
                 push    si
                 push    cx
-                mov     si, aFontData
+                mov     si, astFontData
                 xor     cx, cx
 .NextCharacter:
-                cmp     word [si + FNT_CHARACTER_DESCRIPTOR.CodePoint], ax
+                cmp     word [si + FNT_CHARACTER_DESCRIPTOR.wcCodePoint], ax
                 ja      .Error
                 je      .Return
                 add     si, 5
@@ -153,36 +153,36 @@ section .data
 %endmacro
 
 
-aFontData:
-                                DCHR    00D3h, 'O', bmAcute
-                                DCHR    00F3h, 'o', bmAcute
-                                DCHR    0104h, 'A', bmOgonek
-                                DCHR    0105h, 'a', bmOgonek
-                                DCHR    0106h, 'C', bmAcute
-                                DCHR    0107h, 'c', bmAcute
-                                DCHR    0118h, 'E', bmOgonek
-                                DCHR    0119h, 'e', bmOgonek
-                                DCHR    0141h, 'L', bmStroke
-                                DCHR    0142h, 'l', bmStroke
-                                DCHR    0143h, 'N', bmAcute
-                                DCHR    0144h, 'n', bmAcute
-                                DCHR    015Ah, 'S', bmAcute
-                                DCHR    015Bh, 's', bmAcute
-                                DCHR    0179h, 'Z', bmAcute
-                                DCHR    017Ah, 'z', bmAcute
-                                DCHR    017Bh, 'Z', bmDotAbove
-                                DCHR    017Ch, 'z', bmDotAbove
-lFontData                       equ     ($ - aFontData) / 5
+astFontData:
+                                DCHR    00D3h, 'O', abAcute
+                                DCHR    00F3h, 'o', abAcute
+                                DCHR    0104h, 'A', abOgonek
+                                DCHR    0105h, 'a', abOgonek
+                                DCHR    0106h, 'C', abAcute
+                                DCHR    0107h, 'c', abAcute
+                                DCHR    0118h, 'E', abOgonek
+                                DCHR    0119h, 'e', abOgonek
+                                DCHR    0141h, 'L', abStroke
+                                DCHR    0142h, 'l', abStroke
+                                DCHR    0143h, 'N', abAcute
+                                DCHR    0144h, 'n', abAcute
+                                DCHR    015Ah, 'S', abAcute
+                                DCHR    015Bh, 's', abAcute
+                                DCHR    0179h, 'Z', abAcute
+                                DCHR    017Ah, 'z', abAcute
+                                DCHR    017Bh, 'Z', abDotAbove
+                                DCHR    017Ch, 'z', abDotAbove
+nFontDataLength                 equ     ($ - astFontData) / 5
                                 dw      0FFFFh
 
-bmAcute:                        db      02h, \
+abAcute:                        db      02h, \
                                         00011000b, \
                                         00110000b
-bmDotAbove:                     db      01h, \
+abDotAbove:                     db      01h, \
                                         00110000b
-bmOgonek:                       db      71h, \
+abOgonek:                       db      71h, \
                                         00011100b
-bmStroke:                       db      22h, \
+abStroke:                       db      22h, \
                                         00011000b, \
                                         01100000b
 
@@ -192,5 +192,5 @@ bmStroke:                       db      22h, \
 section .bss
 
 
-bmExtendedFont                  resb    lFontData * 8
-lpOldPointer                    resd    1
+abExtendedFont                  resb    nFontDataLength * 8
+lpabPreviousFont                resd    1

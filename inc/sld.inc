@@ -38,10 +38,10 @@ SLD_ALIGN_CENTER                equ     0FFF1h
 SLD_ALIGN_RIGHT                 equ     0FFF2h
 
 struc SLD_ENTRY
-  .Delay:                       resw    1
-  .Horizontal:                  resw    1
-  .Vertical:                    resw    1
-  .Type:                        resb    1
-  .Content:                     resb    SLD_ENTRY_MAX_LENGTH + 1
-  .Length:                      resb    1
+  .wDelay:                      resw    1
+  .wHorizontal:                 resw    1
+  .wVertical:                   resw    1
+  .bType:                       resb    1
+  .szContent:                   resb    SLD_ENTRY_MAX_LENGTH + 1
+  .bLength:                     resb    1
 endstruc
