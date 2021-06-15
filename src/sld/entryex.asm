@@ -16,14 +16,14 @@ section .text
 SldEntryExecute:
                 ; Delay
                 push    cx
-                mov     cx, [di + SLD_ENTRY.Delay]
+                mov     cx, [di + SLD_ENTRY.wDelay]
                 call    KerSleep
                 pop     cx
 
                 ; Type
-                cmp     byte [di + SLD_ENTRY.Type], SLD_TYPE_TEXT
+                cmp     byte [di + SLD_ENTRY.bType], SLD_TYPE_TEXT
                 je      SldEntryExecuteText
-                cmp     byte [di + SLD_ENTRY.Type], SLD_TYPE_BITMAP
+                cmp     byte [di + SLD_ENTRY.bType], SLD_TYPE_BITMAP
                 je      SldEntryExecuteBitmap
                 ret
 
@@ -33,27 +33,27 @@ SldEntryExecuteText:
                 push    si
 
                 ; Text - vertical position
-                mov     al, [di + SLD_ENTRY.Vertical]
+                mov     al, [di + SLD_ENTRY.wVertical]
 
                 ; Text - horizontal position
-                cmp     word [di + SLD_ENTRY.Horizontal], SLD_ALIGN_CENTER
+                cmp     word [di + SLD_ENTRY.wHorizontal], SLD_ALIGN_CENTER
                 je      .AlignCenter
-                cmp     word [di + SLD_ENTRY.Horizontal], SLD_ALIGN_RIGHT
+                cmp     word [di + SLD_ENTRY.wHorizontal], SLD_ALIGN_RIGHT
                 je      .AlignRight
-                mov     ah, [di + SLD_ENTRY.Horizontal]
+                mov     ah, [di + SLD_ENTRY.wHorizontal]
                 jmp     .Write
 .AlignCenter:
                 mov     ah, SLD_ENTRY_MAX_LENGTH
-                sub     ah, [di + SLD_ENTRY.Length]
+                sub     ah, [di + SLD_ENTRY.bLength]
                 shr     ah, 1
                 jmp     .Write
 .AlignRight:
                 mov     ah, SLD_ENTRY_MAX_LENGTH
-                sub     ah, [di + SLD_ENTRY.Length]
+                sub     ah, [di + SLD_ENTRY.bLength]
   
 .Write:
                 mov     si, di
-                add     si, SLD_ENTRY.Content
+                add     si, SLD_ENTRY.szContent
                 call    VidDrawText
                 clc
 
@@ -72,9 +72,9 @@ SldEntryExecuteBitmap:
 
                 ; Bitmap - locate file
                 mov     bx, di
-                add     bx, SLD_ENTRY.Content
+                add     bx, SLD_ENTRY.szContent
                 xor     ch, ch
-                mov     cl, byte [di + SLD_ENTRY.Length]
+                mov     cl, byte [di + SLD_ENTRY.bLength]
                 call    ZipLocateFileHeader
                 jc      .End
                 call    ZipLocateFileData               ; file data in DS:BX
@@ -82,7 +82,7 @@ SldEntryExecuteBitmap:
 
                 ; Bitmap - load image
                 mov     si, bx
-                mov     di, oPicture
+                mov     di, stPicture
                 call    PicLoadBitmap
                 jc      .End
                 
@@ -90,23 +90,23 @@ SldEntryExecuteBitmap:
                 xchg    di, bx
 
                 ; Bitmap - horizontal position
-                cmp     word [di + SLD_ENTRY.Horizontal], SLD_ALIGN_CENTER
+                cmp     word [di + SLD_ENTRY.wHorizontal], SLD_ALIGN_CENTER
                 je      .AlignCenter
-                cmp     word [di + SLD_ENTRY.Horizontal], SLD_ALIGN_RIGHT
+                cmp     word [di + SLD_ENTRY.wHorizontal], SLD_ALIGN_RIGHT
                 je      .AlignRight
-                mov     ax, word [di + SLD_ENTRY.Horizontal]
+                mov     ax, word [di + SLD_ENTRY.wHorizontal]
                 jmp     .Draw
 .AlignCenter:
                 mov     ax, VID_CGA_HIMONO_LINE
-                sub     ax, word [bx + PIC_BITMAP.WidthBytes]
+                sub     ax, word [bx + PIC_BITMAP.wWidthBytes]
                 shr     ax, 1
                 jmp     .Draw
 .AlignRight:
                 mov     ax, VID_CGA_HIMONO_LINE
-                sub     ax, word [bx + PIC_BITMAP.WidthBytes]
+                sub     ax, word [bx + PIC_BITMAP.wWidthBytes]
 .Draw:
                 mov     si, bx
-                mov     bx, word [di + SLD_ENTRY.Vertical]
+                mov     bx, word [di + SLD_ENTRY.wVertical]
                 call    VidDrawBitmap
                 clc
                 jmp     .End
@@ -123,4 +123,4 @@ SldEntryExecuteBitmap:
 section .bss
 
 
-oPicture                        resb    PIC_BITMAP_size
+stPicture                       resb    PIC_BITMAP_size
