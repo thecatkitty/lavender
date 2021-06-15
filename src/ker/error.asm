@@ -1,6 +1,6 @@
-%define ERR_API
+%define KER_API_SUBSET_ERROR
 %include "dos.inc"
-%include "err.inc"
+%include "ker.inc"
 
 
                 cpu     8086
@@ -61,7 +61,9 @@ asErrMessages                   db      "OK$"
                                 db      "Video - Operation failed$"
                                 db      "Video - Improper graphics format$"
 
+
 section .bss
+
 
                                 global  KerLastError
 KerLastError                    resb    1

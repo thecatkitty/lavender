@@ -1,20 +1,20 @@
-%ifndef PIC_API
+%ifndef GFX_API
 
-%define PIC_API extern
+%define GFX_API extern
 
 ; Load bitmap picture
 ; Input:
 ;   DS:SI - picture data
-;   DS:DI - PIC_BITMAP structure
+;   DS:DI - GFX_BITMAP structure
 ; Output:
 ;   CF    - error
-PIC_API GfxLoadBitmap
+GFX_API GfxLoadBitmap
 
 %endif
 
-PIC_PBM_RAW_MAGIC               equ     03450h          ; P4
+GFX_PBM_RAW_MAGIC               equ     03450h          ; P4
 
-struc PIC_BITMAP
+struc GFX_BITMAP
   .wWidth:                      resw    1
   .wHeight:                     resw    1
   .wWidthBytes:                 resw    1

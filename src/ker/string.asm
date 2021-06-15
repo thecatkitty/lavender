@@ -1,5 +1,5 @@
-%define STR_API
-%include "str.inc"
+%define KER_API_SUBSET_STRING
+%include "ker.inc"
 
 
                 cpu     8086

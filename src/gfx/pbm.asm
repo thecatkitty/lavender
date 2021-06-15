@@ -1,7 +1,7 @@
-%define PIC_API
+%define GFX_API
 %include "err.inc"
-%include "pic.inc"
-%include "str.inc"
+%include "gfx.inc"
+%include "ker.inc"
 
 
                 cpu     8086
@@ -12,9 +12,9 @@ section .text
 
                 global  GfxLoadBitmap
 GfxLoadBitmap:
-                cmp     word [si], PIC_PBM_RAW_MAGIC
+                cmp     word [si], GFX_PBM_RAW_MAGIC
                 je      PbmLoadBitmap
-                ERR     PIC_UNSUPPORTED_FORMAT
+                ERR     GFX_UNSUPPORTED_FORMAT
 .Error:         ret
 
 
@@ -33,13 +33,13 @@ PbmLoadBitmap:
 .ReadWidth:
                 call    PbmParseU16
                 jc      .Error
-                mov     word [di + PIC_BITMAP.wWidth], ax
+                mov     word [di + GFX_BITMAP.wWidth], ax
                 test    ax, 00000000_00000111b
                 jz      .DoNotAdd
                 add     ax, 8
 .DoNotAdd:      mov     cl, 3
                 shr     ax, cl
-                mov     word [di + PIC_BITMAP.wWidthBytes], ax
+                mov     word [di + GFX_BITMAP.wWidthBytes], ax
 .LookForHeight:
                 mov     al, byte [si]
                 call    KerIsWhitespace
@@ -49,7 +49,7 @@ PbmLoadBitmap:
 .ReadHeight:
                 call    PbmParseU16
                 jc      .Error
-                mov     word [di + PIC_BITMAP.wHeight], ax
+                mov     word [di + GFX_BITMAP.wHeight], ax
 .LookForBits:
                 mov     al, byte [si]
                 call    KerIsWhitespace
@@ -57,9 +57,9 @@ PbmLoadBitmap:
                 inc     si
                 jmp     .LookForBits
 .SaveBits:
-                mov     byte [di + PIC_BITMAP.bPlanes], 1
-                mov     byte [di + PIC_BITMAP.bBitsPerPixel], 1
-                mov     word [di + PIC_BITMAP.pBits], si
+                mov     byte [di + GFX_BITMAP.bPlanes], 1
+                mov     byte [di + GFX_BITMAP.bBitsPerPixel], 1
+                mov     word [di + GFX_BITMAP.pBits], si
                 clc
 .Error:
 .End:           pop     cx
@@ -106,7 +106,7 @@ PbmParseU16:
                 je      .NextCharacter
                 jmp     .SkipComment
 .Bad:
-                ERR     PIC_MALFORMED_FILE
+                ERR     GFX_MALFORMED_FILE
 .Error:
 .End:           mov     ax, cx
                 pop     cx

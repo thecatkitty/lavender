@@ -1,12 +1,10 @@
 %include "bios.inc"
 %include "dos.inc"
 %include "err.inc"
-%include "fnt.inc"
+%include "gfx.inc"
 %include "ker.inc"
-%include "pic.inc"
 %include "sld.inc"
 %include "vid.inc"
-%include "zip.inc"
 
 
                 cpu     8086

@@ -1,8 +1,7 @@
-%define ZIP_API
+%define KER_API_SUBSET_ZIP
 %include "err.inc"
-%include "str.inc"
-%include "uni.inc"
-%include "zip.inc"
+%include "ker.inc"
+%include "fmt/zip.inc"
 
 
                 cpu     8086

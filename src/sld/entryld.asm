@@ -1,10 +1,8 @@
 %define SLD_API
 %include "err.inc"
-%include "fnt.inc"
 %include "ker.inc"
 %include "sld.inc"
-%include "str.inc"
-%include "uni.inc"
+%include "vid.inc"
 
 
                 cpu     8086
