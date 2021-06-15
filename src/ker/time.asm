@@ -64,6 +64,8 @@ PitInitChannel:
 ; Initialize Programmable Interval Timer
                 global  PitInitialize
 PitInitialize:
+                push    cs
+                pop     es
                 mov     si, PitIsr
                 mov     di, INT_PIT
                 mov     bx, PitIsr.lpfnBiosIsr
@@ -79,6 +81,8 @@ PitInitialize:
 ; Deinitialize Programmable Interval Timer
                 global  PitDeinitialize
 PitDeinitialize:
+                push    cs
+                pop     es
                 mov     di, INT_PIT
                 mov     si, PitIsr.lpfnBiosIsr
                 call    KerUninstallIsr
