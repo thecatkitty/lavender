@@ -1,10 +1,9 @@
 %define SLD_API
 %include "dos.inc"
+%include "gfx.inc"
 %include "ker.inc"
-%include "pic.inc"
 %include "sld.inc"
 %include "vid.inc"
-%include "zip.inc"
 
 
                 cpu     8086
@@ -98,12 +97,12 @@ SldEntryExecuteBitmap:
                 jmp     .Draw
 .AlignCenter:
                 mov     ax, VID_CGA_HIMONO_LINE
-                sub     ax, word [bx + PIC_BITMAP.wWidthBytes]
+                sub     ax, word [bx + GFX_BITMAP.wWidthBytes]
                 shr     ax, 1
                 jmp     .Draw
 .AlignRight:
                 mov     ax, VID_CGA_HIMONO_LINE
-                sub     ax, word [bx + PIC_BITMAP.wWidthBytes]
+                sub     ax, word [bx + GFX_BITMAP.wWidthBytes]
 .Draw:
                 mov     si, bx
                 mov     bx, word [di + SLD_ENTRY.wVertical]
@@ -123,4 +122,4 @@ SldEntryExecuteBitmap:
 section .bss
 
 
-stPicture                       resb    PIC_BITMAP_size
+stPicture                       resb    GFX_BITMAP_size

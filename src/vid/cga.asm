@@ -2,7 +2,8 @@
 %include "bios.inc"
 %include "dos.inc"
 %include "err.inc"
-%include "pic.inc"
+%include "gfx.inc"
+%include "ker.inc"
 %include "vid.inc"
 
 
@@ -58,9 +59,9 @@ VidGetPixelAspectRatio:
 
                 global  VidDrawBitmap
 VidDrawBitmap:
-                cmp     byte [si + PIC_BITMAP.bPlanes], 1
+                cmp     byte [si + GFX_BITMAP.bPlanes], 1
                 jne     .BadFormat
-                mov     byte [si + PIC_BITMAP.bBitsPerPixel], 1
+                mov     byte [si + GFX_BITMAP.bBitsPerPixel], 1
                 jne     .BadFormat
 
                 push    ax
@@ -75,9 +76,9 @@ VidDrawBitmap:
                 mul     bx
                 add     di, ax          ; DX:AX = y * VID_CGA_HIMONO_LINE / 2 + x
 
-                mov     cx, word [si + PIC_BITMAP.wWidthBytes]
-                mov     dx, word [si + PIC_BITMAP.wHeight]
-                mov     si, word [si + PIC_BITMAP.pBits]
+                mov     cx, word [si + GFX_BITMAP.wWidthBytes]
+                mov     dx, word [si + GFX_BITMAP.wHeight]
+                mov     si, word [si + GFX_BITMAP.pBits]
 
                 mov     ax, VID_CGA_HIMONO_MEM     
                 mov     es, ax

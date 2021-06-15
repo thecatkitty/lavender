@@ -1,6 +1,6 @@
-%define FNT_API
-%include "fnt.inc"
+%define VID_API
 %include "ker.inc"
+%include "vid.inc"
 
 
                 cpu     8086
@@ -20,14 +20,14 @@ VidLoadFont:
 
                 xor     ax, ax
                 mov     es, ax          ; preserve previous extended font pointer
-                push    word [es:FNT_INTV_EXTENDED_FONT_PTR * 4]
-                push    word [es:FNT_INTV_EXTENDED_FONT_PTR * 4 + 2]
+                push    word [es:VID_INT_EXTENDED_FONT_PTR * 4]
+                push    word [es:VID_INT_EXTENDED_FONT_PTR * 4 + 2]
                 pop     word [lpabPreviousFont + 2]
                 pop     word [lpabPreviousFont]
-                mov     word [es:FNT_INTV_EXTENDED_FONT_PTR * 4], abExtendedFont
-                mov     word [es:FNT_INTV_EXTENDED_FONT_PTR * 4 + 2], ds
+                mov     word [es:VID_INT_EXTENDED_FONT_PTR * 4], abExtendedFont
+                mov     word [es:VID_INT_EXTENDED_FONT_PTR * 4 + 2], ds
 
-                mov     ax, FNT_BASIC_FONT_SEGMENT
+                mov     ax, VID_BASIC_FONT_SEGMENT
                 mov     es, ax
                 mov     si, astFontData
                 mov     di, abExtendedFont
@@ -36,18 +36,18 @@ VidLoadFont:
                 jnz     .NextCharacter
                 inc     di              ; DOSBox ROM font is moved one line lower
 .NextCharacter:
-                cmp     word [si + FNT_CHARACTER_DESCRIPTOR.wcCodePoint], 0FFFFh
+                cmp     word [si + VID_CHARACTER_DESCRIPTOR.wcCodePoint], 0FFFFh
                 je      .End
                 xor     ax, ax
-                mov     al, byte [si + FNT_CHARACTER_DESCRIPTOR.cBase]
+                mov     al, byte [si + VID_CHARACTER_DESCRIPTOR.cBase]
                 cmp     al, 0
                 jz      .ApplyOverlay
                 shl     ax, 1
                 shl     ax, 1
                 shl     ax, 1
-                mov     bx, FNT_BASIC_FONT_OFFSET
+                mov     bx, VID_BASIC_FONT_OFFSET
                 add     bx, ax
-                mov     cx, FNT_CHARACTER_HEIGHT / 2
+                mov     cx, VID_CHARACTER_HEIGHT / 2
                 push    di              ; preserve extended glyph position
 .NextBasicWord:
                 mov     ax, word [es:bx]
@@ -56,7 +56,7 @@ VidLoadFont:
                 add     di, 2
                 loop    .NextBasicWord
 .ApplyOverlay:
-                mov     bx, word [si + FNT_CHARACTER_DESCRIPTOR.pOverlay]
+                mov     bx, word [si + VID_CHARACTER_DESCRIPTOR.pOverlay]
                 xor     ax, ax
                 xor     cx, cx
                 mov     al, byte [bx]   ; 7:4 - position from top, 3:0 - height
@@ -80,7 +80,7 @@ VidLoadFont:
                 loop    .NextOverlayByte
 .OverlayEnd:
                 pop     di              ; restore extended glyph position
-                add     di, FNT_CHARACTER_HEIGHT
+                add     di, VID_CHARACTER_HEIGHT
                 add     si, 5
                 jmp     .NextCharacter
 .End:
@@ -103,8 +103,8 @@ VidUnloadFont:
                 mov     es, ax          ; restore previous extended font pointer
                 push    word [lpabPreviousFont]
                 push    word [lpabPreviousFont + 2]
-                pop     word [es:FNT_INTV_EXTENDED_FONT_PTR * 4 + 2]
-                pop     word [es:FNT_INTV_EXTENDED_FONT_PTR * 4]
+                pop     word [es:VID_INT_EXTENDED_FONT_PTR * 4 + 2]
+                pop     word [es:VID_INT_EXTENDED_FONT_PTR * 4]
                 
                 pop     ax
                 pop     es
@@ -122,7 +122,7 @@ VidGetFontEncoding:
                 mov     si, astFontData
                 xor     cx, cx
 .NextCharacter:
-                cmp     word [si + FNT_CHARACTER_DESCRIPTOR.wcCodePoint], ax
+                cmp     word [si + VID_CHARACTER_DESCRIPTOR.wcCodePoint], ax
                 ja      .Error
                 je      .Return
                 add     si, 5
@@ -145,7 +145,7 @@ section .data
 %push Context
 
 %macro          DCHR    3
-                                        ; FNT_CHARACTER_DESCRIPTOR
+                                        ; VID_CHARACTER_DESCRIPTOR
                 dw      %1              ;   CodePoint
                 dw      %3              ;   Overlay
                 db      %2              ;   Base

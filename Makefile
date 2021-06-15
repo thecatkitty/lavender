@@ -34,7 +34,7 @@ $(OBJ)/data.zip: data/*
 	zip -0 -r -j $@ $^
 
 $(OBJ)/%.o: $(SRC)/%.asm
-	$(AS) -o $@ -f elf32 -iinc/ $<
+	$(AS) -o $@ -f elf32 -w-label-redef-late -iinc/ $<
 
 $(OBJ)/%.d: $(SRC)/%.asm
 	@mkdir -p $(@D)
