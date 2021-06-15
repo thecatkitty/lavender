@@ -153,7 +153,7 @@ endstruc
 
 struc VID_CHARACTER_DESCRIPTOR
   .wcCodePoint:                 resw    1
-  .pOverlay:                    resw    1
+  .pabOverlay:                  resw    1
   .cBase:                       resb    1
 endstruc
 
