@@ -30,21 +30,21 @@ API_SUBSET INT
 
 ; Install interrupt service routine
 ; Input:
-;   CS:SI - interrupt service routine
+;   ES:SI - interrupt service routine
 ;   DI    - interrupt number
-;   CS:BX - output pointer
+;   ES:BX - output pointer
 ; Output:
-;   CS:BX - long pointer to previous interrupt service routine
+;   ES:BX - long pointer to previous interrupt service routine
 ; Invalidates: DI
 KER_API KerInstallIsr
 
 ; Install interrupt service routine
 ; Input:
-;   CS:SI - interrupt service routine
+;   ES:SI - interrupt service routine
 ;   DI    - interrupt number
-;   CS:BX - output pointer
+;   ES:BX - output pointer
 ; Output:
-;   CS:BX - long pointer to previous interrupt service routine
+;   ES:BX - long pointer to previous interrupt service routine
 ; Invalidates: DI
 KER_API KerUninstallIsr
 
