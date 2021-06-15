@@ -1,6 +1,8 @@
 %define KER_API_SUBSET_INIT
-%include "dos.inc"
 %include "ker.inc"
+%include "api/dos.inc"
+%include "dev/pic.inc"
+%include "dev/pit.inc"
 
 
                 cpu     8086
@@ -30,12 +32,12 @@ KerEntry:
 
                 ; Initialize Programmable Interval Timer
                 mov     si, PitIsr
-                mov     di, KER_INT_PIT
+                mov     di, INT_PIT
                 mov     bx, PitIsr.lpfnBiosIsr
                 call    IsrInstall
 
                 xor     al, al              ; Channel 0
-                mov     ah, KER_PIT_MODE_RATE_GEN
+                mov     ah, PIT_MODE_RATE_GEN
                 mov     bx, KER_PIT_FREQ_DIVISOR
                 call    PitInitChannel
 
@@ -45,12 +47,12 @@ KerEntry:
 
                 global  KerExit
 KerExit:
-                mov     di, KER_INT_PIT
+                mov     di, INT_PIT
                 mov     si, PitIsr.lpfnBiosIsr
                 call    IsrUninstall
 
                 xor     al, al              ; Channel 0
-                mov     ah, KER_PIT_MODE_RATE_GEN
+                mov     ah, PIT_MODE_RATE_GEN
                 xor     bx, bx              ; Fin / Fout = 65536
                 call    PitInitChannel      ; Fout ~ 18,2065 Hz
                 mov     ah, DOS_EXIT
@@ -156,17 +158,17 @@ PitInitChannel:
                 push    cx
                 push    dx
 
-                mov     dx, KER_PIT_IO
+                mov     dx, PIT_IO
                 add     dl, al
-                mov     cl, KER_PIT_CHANNEL
+                mov     cl, PIT_CHANNEL
                 shl     al, cl
-                or      al, (1 << KER_PIT_BYTE_HI) | (1 << KER_PIT_BYTE_LO)
-                and     ah, KER_PIT_MODE_MASK
-                shl     ah, KER_PIT_MODE
+                or      al, (1 << PIT_BYTE_HI) | (1 << PIT_BYTE_LO)
+                and     ah, PIT_MODE_MASK
+                shl     ah, PIT_MODE
                 or      al, ah
 
                 cli
-                out     KER_PIT_IO_COMMAND, al
+                out     PIT_IO_COMMAND, al
                 mov     ax, bx              ; Set frequency divisor
                 out     dx, al              ;   low byte
                 mov     al, ah
@@ -187,8 +189,8 @@ PitIsr:
                 jmp     far [cs:.lpfnBiosIsr]      ; Call BIOS timer ISR every 32 ticks (~18,2065 Hz)
 .End:
                 push    ax
-                mov     al, KER_PIC1_IO_COMMAND
-                out     KER_PIC_COMMAND_EOI, al
+                mov     al, PIC1_IO_COMMAND
+                out     PIC_COMMAND_EOI, al
                 pop     ax
                 sti
                 iret

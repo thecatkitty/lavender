@@ -1,6 +1,7 @@
 %define VID_API
 %include "ker.inc"
 %include "vid.inc"
+%include "dev/cga.inc"
 
 
                 cpu     8086
@@ -20,14 +21,14 @@ VidLoadFont:
 
                 xor     ax, ax
                 mov     es, ax          ; preserve previous extended font pointer
-                push    word [es:VID_INT_EXTENDED_FONT_PTR * 4]
-                push    word [es:VID_INT_EXTENDED_FONT_PTR * 4 + 2]
+                push    word [es:INT_CGA_EXTENDED_FONT_PTR * 4]
+                push    word [es:INT_CGA_EXTENDED_FONT_PTR * 4 + 2]
                 pop     word [lpabPreviousFont + 2]
                 pop     word [lpabPreviousFont]
-                mov     word [es:VID_INT_EXTENDED_FONT_PTR * 4], abExtendedFont
-                mov     word [es:VID_INT_EXTENDED_FONT_PTR * 4 + 2], ds
+                mov     word [es:INT_CGA_EXTENDED_FONT_PTR * 4], abExtendedFont
+                mov     word [es:INT_CGA_EXTENDED_FONT_PTR * 4 + 2], ds
 
-                mov     ax, VID_BASIC_FONT_SEGMENT
+                mov     ax, CGA_BASIC_FONT_SEGMENT
                 mov     es, ax
                 mov     si, astFontData
                 mov     di, abExtendedFont
@@ -45,9 +46,9 @@ VidLoadFont:
                 shl     ax, 1
                 shl     ax, 1
                 shl     ax, 1
-                mov     bx, VID_BASIC_FONT_OFFSET
+                mov     bx, CGA_BASIC_FONT_OFFSET
                 add     bx, ax
-                mov     cx, VID_CHARACTER_HEIGHT / 2
+                mov     cx, CGA_CHARACTER_HEIGHT / 2
                 push    di              ; preserve extended glyph position
 .NextBasicWord:
                 mov     ax, word [es:bx]
@@ -80,7 +81,7 @@ VidLoadFont:
                 loop    .NextOverlayByte
 .OverlayEnd:
                 pop     di              ; restore extended glyph position
-                add     di, VID_CHARACTER_HEIGHT
+                add     di, CGA_CHARACTER_HEIGHT
                 add     si, 5
                 jmp     .NextCharacter
 .End:
@@ -103,8 +104,8 @@ VidUnloadFont:
                 mov     es, ax          ; restore previous extended font pointer
                 push    word [lpabPreviousFont]
                 push    word [lpabPreviousFont + 2]
-                pop     word [es:VID_INT_EXTENDED_FONT_PTR * 4 + 2]
-                pop     word [es:VID_INT_EXTENDED_FONT_PTR * 4]
+                pop     word [es:INT_CGA_EXTENDED_FONT_PTR * 4 + 2]
+                pop     word [es:INT_CGA_EXTENDED_FONT_PTR * 4]
                 
                 pop     ax
                 pop     es
