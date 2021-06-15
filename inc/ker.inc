@@ -6,7 +6,7 @@
         %endif
 %endmacro
 
-; ----- System infromation functions -----
+; ----- System information functions -----
 API_SUBSET INFO
 
 ; Check if running inside DOSBox
@@ -38,13 +38,10 @@ API_SUBSET INT
 ; Invalidates: DI
 KER_API KerInstallIsr
 
-; Install interrupt service routine
+; Uninstall interrupt service routine
 ; Input:
-;   ES:SI - interrupt service routine
+;   ES:SI - long pointer to previous interrupt service routine
 ;   DI    - interrupt number
-;   ES:BX - output pointer
-; Output:
-;   ES:BX - long pointer to previous interrupt service routine
 ; Invalidates: DI
 KER_API KerUninstallIsr
 
