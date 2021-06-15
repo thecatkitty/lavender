@@ -18,7 +18,7 @@ KerInstallIsr:
 
                 cli
                 xor     ax, ax
-                mov     ds, ax              ; ES = 0000h
+                mov     ds, ax              ; DS = 0000h
                 push    word [ds:di]        ; Get current ISR offset
                 push    word [ds:di + 2]    ; Get current ISR segment
                 pop     word [es:bx + 2]
@@ -41,11 +41,11 @@ KerUninstallIsr:
 
                 cli
                 xor     ax, ax
-                mov     ds, ax              ; ES = 0000h
+                mov     ds, ax              ; DS = 0000h
                 push    word [es:si + 2]
                 push    word [es:si]
-                pop     word [ds:di]        ; Get current ISR offset
-                pop     word [ds:di + 2]    ; Get current ISR segment
+                pop     word [ds:di]        ; Restore ISR offset
+                pop     word [ds:di + 2]    ; Restore ISR segment
                 sti
 
                 pop     ds
