@@ -3,10 +3,10 @@
 %define FNT_API extern
 
 ; Initialize extended screen font
-FNT_API FntLoad
+FNT_API VidLoadFont
 
 ; Deinitialize extended screen font
-FNT_API FntUnload
+FNT_API VidUnloadFont
 
 ; Get local encoding code point from Unicode code point
 ; Input:
@@ -14,7 +14,7 @@ FNT_API FntUnload
 ; Output:
 ;   AL - local encoding code point, '?' on error
 ;   CF - error
-FNT_API FntGetLocalCharacter
+FNT_API VidGetFontEncoding
 
 %endif
 

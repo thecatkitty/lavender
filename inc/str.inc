@@ -10,7 +10,7 @@
 ;   CX    - field length
 ;   CF    - parsing error
 ;   DS:SI - first cell after the field
-STR_API StrParseU16
+STR_API KerParseU16
 
 ; Compare two memory ranges
 ; Input:
@@ -19,13 +19,13 @@ STR_API StrParseU16
 ;   CX    - range length
 ; Output:
 ;   CF, ZF - difference
-STR_API StrCompareMemory
+STR_API KerCompareMemory
 
 ; Tells if given byte is a whitespace character
 ; Input:
 ;   AL - byte
 ; Output:
 ;   ZF - zero if a whitespace
-STR_API StrIsWhitespace
+STR_API KerIsWhitespace
 
 %endif

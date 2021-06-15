@@ -18,7 +18,7 @@ SldEntryLoad:
                 cmp     byte [si], 0Dh
                 je      .EndOfFile
 
-                call    StrParseU16
+                call    KerParseU16
                 ERRC    SLD_INVALID_DELAY
 
                 mov     dx, KER_DELAY_MS_MULTIPLIER
@@ -63,12 +63,12 @@ SldEntryLoad:
 SldLoadPosition:
                 ; Parse row number
                 inc     si
-                call    StrParseU16
+                call    KerParseU16
                 ERRC    SLD_INVALID_VERTICAL
                 mov     [di + SLD_ENTRY.wVertical], ax
 
                 ; Parse column number
-                call    StrParseU16
+                call    KerParseU16
                 jnc     .ColumnNumeric
                 cmp     byte [si], SLD_TAG_ALIGN_LEFT
                 je      .ColumnLeft
@@ -118,9 +118,9 @@ SldLoadContent:
 .Next:
                 cmp     byte [si], 0Dh
                 je      .Break
-                call    UniGetCharacterFromUtf8
+                call    KerGetCharacterFromUtf8
                 jc      .Error
-                call    FntGetLocalCharacter
+                call    VidGetFontEncoding
                 mov     byte [di], al
                 inc     di
                 inc     dx

@@ -10,7 +10,7 @@
 ;   DS:SI - ZIP central directory end structure
 ;   CF    - error
 ; Invalidates:
-ZIP_API ZipLocateCentralDirectoryEnd
+ZIP_API KerLocateArchive
 
 ; Locate ZIP local file header structure
 ; Input:
@@ -21,7 +21,7 @@ ZIP_API ZipLocateCentralDirectoryEnd
 ;   DS:DI - ZIP local file header structure
 ;   CF    - error
 ; Invalidates: BX, CX
-ZIP_API ZipLocateFileHeader
+ZIP_API KerSearchArchive
 
 ; Locate ZIP file data
 ; Input:
@@ -29,7 +29,7 @@ ZIP_API ZipLocateFileHeader
 ; Output:
 ;   DS:BX - ZIP file data
 ;   CF    - error
-ZIP_API ZipLocateFileData
+ZIP_API KerGetArchiveData
 
 %endif
 
