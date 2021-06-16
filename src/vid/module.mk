@@ -1,1 +1,1 @@
-SOURCES := $(SOURCES) $(DIR)/cga.asm $(DIR)/font.asm
+SOURCES := $(SOURCES) $(DIR)/cga.asm $(DIR)/font.asm $(DIR)/messages.asm

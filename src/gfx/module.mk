@@ -1,1 +1,1 @@
-SOURCES := $(SOURCES) $(DIR)/pbm.asm
+SOURCES := $(SOURCES) $(DIR)/pbm.asm $(DIR)/messages.asm

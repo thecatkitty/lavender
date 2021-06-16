@@ -1,3 +1,5 @@
+%include "err.inc"
+
 %macro  API_SUBSET 1
         %ifdef  KER_API_SUBSET_%1
                 %define KER_API global
@@ -159,3 +161,10 @@ KER_PIT_FREQ_DIVISOR            equ     2048
 KER_DELAY_MS_MULTIPLIER         equ     100
 KER_DELAY_MS_DIVISOR            equ     (1000_0000 * KER_DELAY_MS_MULTIPLIER) \
                                         * KER_PIT_FREQ_DIVISOR / KER_PIT_INPUT_FREQ
+
+%define ERR_KER_UNSUPPORTED             ERR_CODE(ERR_FACILITY_KER, 1)
+%define ERR_KER_NOT_FOUND               ERR_CODE(ERR_FACILITY_KER, 2)
+%define ERR_KER_ARCHIVE_NOT_FOUND       ERR_CODE(ERR_FACILITY_KER, 3)
+%define ERR_KER_ARCHIVE_TOO_LARGE       ERR_CODE(ERR_FACILITY_KER, 4)
+%define ERR_KER_ARCHIVE_INVALID         ERR_CODE(ERR_FACILITY_KER, 5)
+%define ERR_KER_INVALID_SEQUENCE        ERR_CODE(ERR_FACILITY_KER, 6)

@@ -1,3 +1,5 @@
+%include "err.inc"
+
 %ifndef SLD_API
 
 %define SLD_API extern
@@ -36,6 +38,11 @@ SLD_TYPE_BITMAP                 equ     1
 SLD_ALIGN_LEFT                  equ     0
 SLD_ALIGN_CENTER                equ     0FFF1h
 SLD_ALIGN_RIGHT                 equ     0FFF2h
+
+%define ERR_SLD_INVALID_DELAY           ERR_CODE(ERR_FACILITY_SLD, 0)
+%define ERR_SLD_UNKNOWN_TYPE            ERR_CODE(ERR_FACILITY_SLD, 1)
+%define ERR_SLD_INVALID_VERTICAL        ERR_CODE(ERR_FACILITY_SLD, 2)
+%define ERR_SLD_INVALID_HORIZONTAL      ERR_CODE(ERR_FACILITY_SLD, 3)
 
 struc SLD_ENTRY
   .wDelay:                      resw    1

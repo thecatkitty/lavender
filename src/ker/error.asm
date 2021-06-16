@@ -6,6 +6,9 @@
 
                 cpu     8086
 
+                extern  ErrFacilities
+                extern  ErrMessages
+
 [bits 16]
 section .text
 
@@ -15,48 +18,55 @@ KerTerminate:
                 mov     dx, sErrHeader
                 int     DOS_INT
 
-                xor     cx, cx
-                mov     cl, [KerLastError]
-                mov     si, asErrMessages
-.NextMessage:
-                cmp     byte [si], cl
-                je      .PrintMessage
+                mov     al, byte [KerLastError]
+                mov     cl, 5
+                shr     al, cl
+                mov     si, ErrFacilities
+                call    ErrFindMessage
+                mov     dx, si
+                int     DOS_INT
+
+                mov     ah, DOS_PUTS
+                mov     dx, sErrSeparator
+                int     DOS_INT
+
+                mov     al, byte [KerLastError]
+                mov     si, ErrMessages
+                call    ErrFindMessage
+                mov     dx, si
+                int     DOS_INT
+
+                mov     al, byte [KerLastError]
+                mov     ah, DOS_EXIT
+                int     DOS_INT
+
+
+; Find a message using its key byte
+;   WILL CRASH IF MESSAGE NOT FOUND!
+; Input:
+;   AL    - key
+;   DS:SI - begin of message list
+; Output:
+;   DS:SI - found message
+ErrFindMessage:
+                cmp     byte [si], al
+                je      .End
 .NextCharacter:
                 inc     si
                 cmp     byte [si], '$'
                 jne     .NextCharacter
                 inc     si
-                jmp     .NextMessage
-.PrintMessage:
+                jmp     ErrFindMessage
+.End:
                 inc     si
-                mov     dx, si
-                int     DOS_INT
-
-                mov     al, [KerLastError]
-                mov     ah, DOS_EXIT
-                int     DOS_INT
+                ret
 
 
 section .data
 
 
 sErrHeader                      db      "ERROR: $"
-asErrMessages                   db      ERR_OK, "OK$"
-                                db      ERR_KER_UNSUPPORTED,        "Kernel - Unsupported feature requested$"
-                                db      ERR_KER_NOT_FOUND,          "Kernel - Item not found$"
-                                db      ERR_KER_ARCHIVE_NOT_FOUND,  "Kernel - Archive not found$"
-                                db      ERR_KER_ARCHIVE_TOO_LARGE,  "Kernel - Archive is too large$"
-                                db      ERR_KER_ARCHIVE_INVALID,    "Kernel - Archive is invalid$"
-                                db      ERR_KER_INVALID_SEQUENCE,   "Kernel - Invalid or unsupported UTF-8 sequence$"
-                                db      ERR_VID_UNSUPPORTED,        "Video - Unsupported feature requested$"
-                                db      ERR_VID_FAILED,             "Video - Operation failed$"
-                                db      ERR_VID_FORMAT,             "Video - Improper graphics format$"
-                                db      ERR_GFX_FORMAT,             "Graphics - Unsupported format$"
-                                db      ERR_GFX_MALFORMED_FILE,     "Graphics - Malformed file$"
-                                db      ERR_SLD_INVALID_DELAY,      "Slides - Invalid delay$"
-                                db      ERR_SLD_UNKNOWN_TYPE,       "Slides - Unknown type$"
-                                db      ERR_SLD_INVALID_VERTICAL,   "Slides - Invalid vertical position$"
-                                db      ERR_SLD_INVALID_HORIZONTAL, "Slides - Invalid horizontal position$"
+sErrSeparator                   db      " - $"
 
 
 section .bss
