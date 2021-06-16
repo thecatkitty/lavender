@@ -10,6 +10,10 @@ SECTIONS
   {
     *(.init);
     *(.text);
+    ErrFacilities = .;
+    *(.errf);
+    ErrMessages = .;
+    *(.errm);
     *(.data);
     ArchiveStart = .;
   } > FILE
