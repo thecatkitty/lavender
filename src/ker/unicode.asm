@@ -163,7 +163,7 @@ UniFoldCharacterCase:
                 JBOIN   ax, 0246h, 024Fh, .CheckSingle, .EvenCapitals
 
 .CheckSingle:
-                mov     bx, .SingleCharacters
+                mov     bx, .awcSingleCharacters
 .NextSingle:
                 cmp     word [bx], ax
                 ja      .CheckDouble
@@ -176,7 +176,7 @@ UniFoldCharacterCase:
                 jmp     .End
 
 .CheckDouble:
-                mov     bx, .DoubleCharacters
+                mov     bx, .awcDoubleCharacters
 .NextDouble:
                 cmp     word [bx], ax
                 ja      .Identity
@@ -203,7 +203,7 @@ UniFoldCharacterCase:
 .End:
                 ret
 
-.SingleCharacters:
+.awcSingleCharacters:
                 dw      00B5h, 03BCh    ; MICRO SIGN
                 dw      0178h, 00FFh    ; LATIN CAPITAL LETTER Y WITH DIAERESIS
                 dw      0179h, 017Ah    ; LATIN CAPITAL LETTER Z WITH ACUTE
@@ -266,7 +266,7 @@ UniFoldCharacterCase:
                 dw      0244h, 0289h    ; LATIN CAPITAL LETTER U BAR
                 dw      0245h, 028Ch    ; LATIN CAPITAL LETTER TURNED V
                 dw      0FFFFh
-.DoubleCharacters:
+.awcDoubleCharacters:
                 dw      00DFh, 0073h, 0073h     ; LATIN SMALL LETTER SHARP S
                 dw      0130h, 0069h, 0307h     ; LATIN CAPITAL LETTER I WITH DOT ABOVE
                 dw      0149h, 02BCh, 006Eh     ; LATIN SMALL LETTER N PRECEDED BY APOSTROPHE

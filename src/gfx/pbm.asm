@@ -33,13 +33,13 @@ PbmLoadBitmap:
 .ReadWidth:
                 call    PbmParseU16
                 jc      .Error
-                mov     word [di + PIC_BITMAP.Width], ax
+                mov     word [di + PIC_BITMAP.wWidth], ax
                 test    ax, 00000000_00000111b
                 jz      .DoNotAdd
                 add     ax, 8
 .DoNotAdd:      mov     cl, 3
                 shr     ax, cl
-                mov     word [di + PIC_BITMAP.WidthBytes], ax
+                mov     word [di + PIC_BITMAP.wWidthBytes], ax
 .LookForHeight:
                 mov     al, byte [si]
                 call    StrIsWhitespace
@@ -49,7 +49,7 @@ PbmLoadBitmap:
 .ReadHeight:
                 call    PbmParseU16
                 jc      .Error
-                mov     word [di + PIC_BITMAP.Height], ax
+                mov     word [di + PIC_BITMAP.wHeight], ax
 .LookForBits:
                 mov     al, byte [si]
                 call    StrIsWhitespace
@@ -57,9 +57,9 @@ PbmLoadBitmap:
                 inc     si
                 jmp     .LookForBits
 .SaveBits:
-                mov     byte [di + PIC_BITMAP.Planes], 1
-                mov     byte [di + PIC_BITMAP.BitsPerPixel], 1
-                mov     word [di + PIC_BITMAP.Bits], si
+                mov     byte [di + PIC_BITMAP.bPlanes], 1
+                mov     byte [di + PIC_BITMAP.bBitsPerPixel], 1
+                mov     word [di + PIC_BITMAP.pBits], si
                 clc
 .Error:
 .End:           pop     cx

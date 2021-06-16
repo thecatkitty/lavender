@@ -24,7 +24,7 @@ FNT_BASIC_FONT_OFFSET           equ     6Eh
 FNT_CHARACTER_HEIGHT            equ     8
 
 struc FNT_CHARACTER_DESCRIPTOR
-  .CodePoint:                   resw    1
-  .Overlay:                     resw    1
-  .Base:                        resb    1
+  .wcCodePoint:                 resw    1
+  .pOverlay:                    resw    1
+  .cBase:                       resb    1
 endstruc

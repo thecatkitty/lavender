@@ -37,7 +37,7 @@ VidGetPixelAspectRatio:
                 mov     di, sp
                 call    VesaReadEdid
                 jc      .Convert
-                mov     ax, word [bp - VID_EDID_size + VID_EDID.StandardTiming]
+                mov     ax, word [bp - VID_EDID_size + VID_EDID.stStandardTiming]
 .Convert:
                 mov     cl, VID_EDID_TIMING_ASPECT
                 shr     ax, cl
@@ -58,9 +58,9 @@ VidGetPixelAspectRatio:
 
                 global  VidDrawBitmap
 VidDrawBitmap:
-                cmp     byte [si + PIC_BITMAP.Planes], 1
+                cmp     byte [si + PIC_BITMAP.bPlanes], 1
                 jne     .BadFormat
-                mov     byte [si + PIC_BITMAP.BitsPerPixel], 1
+                mov     byte [si + PIC_BITMAP.bBitsPerPixel], 1
                 jne     .BadFormat
 
                 push    ax
@@ -75,9 +75,9 @@ VidDrawBitmap:
                 mul     bx
                 add     di, ax          ; DX:AX = y * VID_CGA_HIMONO_LINE / 2 + x
 
-                mov     cx, word [si + PIC_BITMAP.WidthBytes]
-                mov     dx, word [si + PIC_BITMAP.Height]
-                mov     si, word [si + PIC_BITMAP.Bits]
+                mov     cx, word [si + PIC_BITMAP.wWidthBytes]
+                mov     dx, word [si + PIC_BITMAP.wHeight]
+                mov     si, word [si + PIC_BITMAP.pBits]
 
                 mov     ax, VID_CGA_HIMONO_MEM     
                 mov     es, ax

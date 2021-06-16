@@ -110,65 +110,65 @@ ZIP_TIME_YEARS_BASE             equ     1980
 ZIP_EXTRA_INFOZIP_UNICODE_PATH  equ     7075h
 
 struc ZIP_CDIR_END_HEADER
-  .PkSignature:                 resw    1
-  .HeaderSignature:             resw    1
-  .DiskNumber:                  resw    1
-  .CentralDirectoryDisk:        resw    1
-  .DiskEntries:                 resw    1
-  .TotalEntries:                resw    1
-  .CentralDirectorySize:        resd    1
-  .CentralDirectoryOffset:      resd    1
-  .CommentLength:               resw    1
-  .Comment:
+  .wPkSignature:                resw    1
+  .wHeaderSignature:            resw    1
+  .wDiskNumber:                 resw    1
+  .wCentralDirectoryDisk:       resw    1
+  .wDiskEntries:                resw    1
+  .wTotalEntries:               resw    1
+  .dwCentralDirectorySize:      resd    1
+  .dwCentralDirectoryOffset:    resd    1
+  .wCommentLength:              resw    1
+  .sComment:
 endstruc
 
 struc ZIP_CDIR_FILE_HEADER
-  .PkSignature:                 resw    1
-  .HeaderSignature:             resw    1
-  .Version:                     resw    1
-  .VersionNeeded:               resw    1
-  .Flags:                       resw    1
-  .Compression:                 resw    1
-  .ModificationTime:            resw    1
-  .ModificationDate:            resw    1
-  .Crc32:                       resd    1
-  .CompressedSize:              resd    1
-  .UncompressedSize:            resd    1
-  .NameLength:                  resw    1
-  .ExtraLength:                 resw    1
-  .CommentLength:               resw    1
-  .StartDiskNumber:             resw    1
-  .InternalAttributes:          resw    1
-  .ExternalAttributes:          resd    1
-  .LocalHeaderOffset:           resd    1
-  .Name:
+  .wPkSignature:                resw    1
+  .wHeaderSignature:            resw    1
+  .wVersion:                    resw    1
+  .wVersionNeeded:              resw    1
+  .wFlags:                      resw    1
+  .wCompression:                resw    1
+  .wModificationTime:           resw    1
+  .wModificationDate:           resw    1
+  .dwCrc32:                     resd    1
+  .dwCompressedSize:            resd    1
+  .dwUncompressedSize:          resd    1
+  .wNameLength:                 resw    1
+  .wExtraLength:                resw    1
+  .wCommentLength:              resw    1
+  .wStartDiskNumber:            resw    1
+  .wInternalAttributes:         resw    1
+  .dwExternalAttributes:        resd    1
+  .dwLocalHeaderOffset:         resd    1
+  .sName:
 endstruc
 
 struc ZIP_LOCAL_FILE_HEADER
-  .PkSignature:                 resw    1
-  .HeaderSignature:             resw    1
-  .Version:                     resw    1
-  .Flags:                       resw    1
-  .Compression:                 resw    1
-  .ModificationTime:            resw    1
-  .ModificationDate:            resw    1
-  .Crc32:                       resd    1
-  .CompressedSize:              resd    1
-  .UncompressedSize:            resd    1
-  .NameLength:                  resw    1
-  .ExtraLength:                 resw    1
-  .Name:
+  .wPkSignature:                resw    1
+  .wHeaderSignature:            resw    1
+  .wVersion:                    resw    1
+  .wFlags:                      resw    1
+  .wCompression:                resw    1
+  .wModificationTime:           resw    1
+  .wModificationDate:           resw    1
+  .dwCrc32:                     resd    1
+  .dwCompressedSize:            resd    1
+  .dwUncompressedSize:          resd    1
+  .wNameLength:                 resw    1
+  .wExtraLength:                resw    1
+  .sName:
 endstruc
 
 struc ZIP_EXTRA_FIELD_HEADER
-  .Signature:                   resw    1
-  .TotalSize:                   resw    1
+  .wSignature:                  resw    1
+  .wTotalSize:                  resw    1
 endstruc
 
 struc ZIP_EXTRA_INFOZIP_UNICODE_PATH_FIELD
-  .Signature:                   resw    1
-  .TotalSize:                   resw    1
-  .Version:                     resb    1
-  .NameCrc32:                   resd    1
-  .UnicodeName:
+  .wSignature:                  resw    1
+  .wTotalSize:                  resw    1
+  .wVersion:                    resb    1
+  .dwNameCrc32:                 resd    1
+  .sUnicodeName:
 endstruc

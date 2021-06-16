@@ -15,10 +15,10 @@ PIC_API PicLoadBitmap
 PIC_PBM_RAW_MAGIC               equ     03450h          ; P4
 
 struc PIC_BITMAP
-  .Width:                       resw    1
-  .Height:                      resw    1
-  .WidthBytes:                  resw    1
-  .Planes:                      resb    1
-  .BitsPerPixel:                resb    1
-  .Bits:                        resw    1
+  .wWidth:                      resw    1
+  .wHeight:                     resw    1
+  .wWidthBytes:                 resw    1
+  .bPlanes:                     resb    1
+  .bBitsPerPixel:               resb    1
+  .pBits:                       resw    1
 endstruc

@@ -25,7 +25,7 @@ SldEntryLoad:
                 mul     dx              ; DX:AX = AX * DX
                 mov     bx, KER_DELAY_MS_DIVISOR
                 div     bx              ; AX = DX:AX / BX
-                mov     [di + SLD_ENTRY.Delay], ax
+                mov     [di + SLD_ENTRY.wDelay], ax
   
                 ; Get type
                 cmp     byte [si], SLD_TAG_TYPE_TEXT
@@ -35,11 +35,11 @@ SldEntryLoad:
                 ERR     SLD_UNKNOWN_TYPE
 
 .TypeText:
-                mov     byte [di + SLD_ENTRY.Type], SLD_TYPE_TEXT
+                mov     byte [di + SLD_ENTRY.bType], SLD_TYPE_TEXT
                 jmp    .TextBitmapCommon
 
 .TypeBitmap:
-                mov     byte [di + SLD_ENTRY.Type], SLD_TYPE_BITMAP
+                mov     byte [di + SLD_ENTRY.bType], SLD_TYPE_BITMAP
 
 .TextBitmapCommon:
                 call    SldLoadPosition
@@ -50,9 +50,9 @@ SldEntryLoad:
 
 .Error:         jmp     .End
 .EndOfFile:
-                mov     byte [di + SLD_ENTRY.Length], 0
+                mov     byte [di + SLD_ENTRY.bLength], 0
                 clc
-.End:           mov     ax, [di + SLD_ENTRY.Length]
+.End:           mov     ax, [di + SLD_ENTRY.bLength]
                 ret
 
 
@@ -65,7 +65,7 @@ SldLoadPosition:
                 inc     si
                 call    StrParseU16
                 ERRC    SLD_INVALID_VERTICAL
-                mov     [di + SLD_ENTRY.Vertical], ax
+                mov     [di + SLD_ENTRY.wVertical], ax
 
                 ; Parse column number
                 call    StrParseU16
@@ -79,22 +79,22 @@ SldLoadPosition:
                 ERR     SLD_INVALID_HORIZONTAL
   
 .ColumnNumeric:
-                mov     [di + SLD_ENTRY.Horizontal], ax
+                mov     [di + SLD_ENTRY.wHorizontal], ax
                 jmp     .End
   
 .ColumnLeft:
                 inc     si
-                mov     word [di + SLD_ENTRY.Horizontal], SLD_ALIGN_LEFT
+                mov     word [di + SLD_ENTRY.wHorizontal], SLD_ALIGN_LEFT
                 jmp     .End
   
 .ColumnCenter:
                 inc     si
-                mov     word [di + SLD_ENTRY.Horizontal], SLD_ALIGN_CENTER
+                mov     word [di + SLD_ENTRY.wHorizontal], SLD_ALIGN_CENTER
                 jmp     .End
   
 .ColumnRight:
                 inc     si
-                mov     word [di + SLD_ENTRY.Horizontal], SLD_ALIGN_RIGHT
+                mov     word [di + SLD_ENTRY.wHorizontal], SLD_ALIGN_RIGHT
                 jmp     .End
 
 .Error:
@@ -111,10 +111,10 @@ SldLoadContent:
                 push    dx
                 push    ax
                 push    di              ; save SLD_ENTRY structure pointer
-                mov     byte [di + SLD_ENTRY.Length], 0
+                mov     byte [di + SLD_ENTRY.bLength], 0
 
                 xor     dx, dx
-                add     di, SLD_ENTRY.Content
+                add     di, SLD_ENTRY.szContent
 .Next:
                 cmp     byte [si], 0Dh
                 je      .Break
@@ -130,7 +130,7 @@ SldLoadContent:
 .Break:
                 mov     byte [di], 0
                 pop     di
-                mov     [di + SLD_ENTRY.Length], dx
+                mov     [di + SLD_ENTRY.bLength], dx
                 add     si, 2
                 jmp     .End
 
