@@ -1,1 +1,1 @@
-SOURCES := $(SOURCES) $(DIR)/entryld.asm $(DIR)/entryex.asm
+SOURCES := $(SOURCES) $(DIR)/entryld.asm $(DIR)/entryex.asm $(DIR)/messages.asm

@@ -1,3 +1,5 @@
+%include "err.inc"
+
 %ifndef VID_API
 
 %define VID_API extern
@@ -121,6 +123,10 @@ VID_EDID_TIMING_XRES            equ     0
 VID_EDID_TIMING_XRES_MASK       equ     11111111b
 
 %define VID_PAR(dx,dy,sx,sy)            (64 * dy * sx / dx / sy)
+
+%define ERR_VID_UNSUPPORTED             ERR_CODE(ERR_FACILITY_VID, 0)
+%define ERR_VID_FAILED                  ERR_CODE(ERR_FACILITY_VID, 1)
+%define ERR_VID_FORMAT                  ERR_CODE(ERR_FACILITY_VID, 2)
 
 struc VID_EDID
   ; Header information
