@@ -25,7 +25,7 @@ KerGetCharacterFromUtf8:
 .Lead:
                 test    ah, 00100000b
                 jz      .TwoBytes
-                ERR     KER_UNSUPPORTED_CODEPOINT
+                ERR     KER_INVALID_SEQUENCE
 .TwoBytes:
                 mov     al, byte [si + 1]
                 and     al, 11000000b

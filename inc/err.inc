@@ -1,22 +1,29 @@
-ERR_OK                          equ     0
-ERR_SLD_INVALID_DELAY           equ     1
-ERR_SLD_UNKNOWN_TYPE            equ     2
-ERR_SLD_INVALID_VERTICAL        equ     3
-ERR_SLD_INVALID_HORIZONTAL      equ     4
-ERR_ZIP_CDIR_END_NOT_FOUND      equ     5
-ERR_ZIP_CDIR_TOO_LARGE          equ     6
-ERR_ZIP_CDIR_INVALID            equ     7
-ERR_ZIP_NOT_FOUND               equ     8
-ERR_ZIP_LOCAL_INVALID           equ     9
-ERR_ZIP_UNSUPPORTED_METHOD      equ     10
-ERR_ZIP_UNSUPPORTED_FLAGS       equ     11
-ERR_KER_INVALID_SEQUENCE        equ     12
-ERR_KER_UNSUPPORTED_CODEPOINT   equ     13
-ERR_GFX_UNSUPPORTED_FORMAT      equ     14
-ERR_GFX_MALFORMED_FILE          equ     15
-ERR_VID_UNSUPPORTED             equ     16
-ERR_VID_FAILED                  equ     17
-ERR_VID_FORMAT                  equ     18
+%define ERR_FACILITY_KER                0
+%define ERR_FACILITY_VID                1
+%define ERR_FACILITY_GFX                2
+%define ERR_FACILITY_SLD                3
+
+%define ERR_CODE(facility,code)         (((facility) << 5) | ((code) & 11111b))
+
+%define ERR_OK                          ERR_CODE(ERR_FACILITY_KER, 0)
+%define ERR_KER_UNSUPPORTED             ERR_CODE(ERR_FACILITY_KER, 1)
+%define ERR_KER_NOT_FOUND               ERR_CODE(ERR_FACILITY_KER, 2)
+%define ERR_KER_ARCHIVE_NOT_FOUND       ERR_CODE(ERR_FACILITY_KER, 3)
+%define ERR_KER_ARCHIVE_TOO_LARGE       ERR_CODE(ERR_FACILITY_KER, 4)
+%define ERR_KER_ARCHIVE_INVALID         ERR_CODE(ERR_FACILITY_KER, 5)
+%define ERR_KER_INVALID_SEQUENCE        ERR_CODE(ERR_FACILITY_KER, 6)
+
+%define ERR_VID_UNSUPPORTED             ERR_CODE(ERR_FACILITY_VID, 0)
+%define ERR_VID_FAILED                  ERR_CODE(ERR_FACILITY_VID, 1)
+%define ERR_VID_FORMAT                  ERR_CODE(ERR_FACILITY_VID, 2)
+
+%define ERR_GFX_FORMAT                  ERR_CODE(ERR_FACILITY_GFX, 0)
+%define ERR_GFX_MALFORMED_FILE          ERR_CODE(ERR_FACILITY_GFX, 1)
+
+%define ERR_SLD_INVALID_DELAY           ERR_CODE(ERR_FACILITY_SLD, 0)
+%define ERR_SLD_UNKNOWN_TYPE            ERR_CODE(ERR_FACILITY_SLD, 1)
+%define ERR_SLD_INVALID_VERTICAL        ERR_CODE(ERR_FACILITY_SLD, 2)
+%define ERR_SLD_INVALID_HORIZONTAL      ERR_CODE(ERR_FACILITY_SLD, 3)
 
 
 %macro          ERR     1

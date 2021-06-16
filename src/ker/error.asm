@@ -1,4 +1,5 @@
 %define KER_API_SUBSET_ERROR
+%include "err.inc"
 %include "ker.inc"
 %include "api/dos.inc"
 
@@ -17,18 +18,17 @@ KerTerminate:
                 xor     cx, cx
                 mov     cl, [KerLastError]
                 mov     si, asErrMessages
-                jcxz    .PrintMessage
-.NextCharacter:
-                cmp     byte [si], '$'
-                je      .NextMessage
-                inc     si
-                jmp     .NextCharacter
 .NextMessage:
+                cmp     byte [si], cl
+                je      .PrintMessage
+.NextCharacter:
                 inc     si
-                dec     cx
-                jz      .PrintMessage
-                jmp     .NextCharacter
+                cmp     byte [si], '$'
+                jne     .NextCharacter
+                inc     si
+                jmp     .NextMessage
 .PrintMessage:
+                inc     si
                 mov     dx, si
                 int     DOS_INT
 
@@ -41,25 +41,22 @@ section .data
 
 
 sErrHeader                      db      "ERROR: $"
-asErrMessages                   db      "OK$"
-                                db      "Slides - Invalid delay$"
-                                db      "Slides - Unknown type$"
-                                db      "Slides - Invalid vertical position$"
-                                db      "Slides - Invalid horizontal position$"
-                                db      "ZIP - Central directory not found$"
-                                db      "ZIP - Central directory is too large$"
-                                db      "ZIP - Central directory is invalid$"
-                                db      "ZIP - File not found$"
-                                db      "ZIP - Local file header is invalid$"
-                                db      "ZIP - Compression method not supported$"
-                                db      "ZIP - File flags require unsupported features$"
-                                db      "Unicode - Invalid UTF-8 sequence$"
-                                db      "Unicode - Unsupported code point$"
-                                db      "Picture - Unsupported format$"
-                                db      "Picture - Malformed file$"
-                                db      "Video - Unsupported feature$"
-                                db      "Video - Operation failed$"
-                                db      "Video - Improper graphics format$"
+asErrMessages                   db      ERR_OK, "OK$"
+                                db      ERR_KER_UNSUPPORTED,        "Kernel - Unsupported feature requested$"
+                                db      ERR_KER_NOT_FOUND,          "Kernel - Item not found$"
+                                db      ERR_KER_ARCHIVE_NOT_FOUND,  "Kernel - Archive not found$"
+                                db      ERR_KER_ARCHIVE_TOO_LARGE,  "Kernel - Archive is too large$"
+                                db      ERR_KER_ARCHIVE_INVALID,    "Kernel - Archive is invalid$"
+                                db      ERR_KER_INVALID_SEQUENCE,   "Kernel - Invalid or unsupported UTF-8 sequence$"
+                                db      ERR_VID_UNSUPPORTED,        "Video - Unsupported feature requested$"
+                                db      ERR_VID_FAILED,             "Video - Operation failed$"
+                                db      ERR_VID_FORMAT,             "Video - Improper graphics format$"
+                                db      ERR_GFX_FORMAT,             "Graphics - Unsupported format$"
+                                db      ERR_GFX_MALFORMED_FILE,     "Graphics - Malformed file$"
+                                db      ERR_SLD_INVALID_DELAY,      "Slides - Invalid delay$"
+                                db      ERR_SLD_UNKNOWN_TYPE,       "Slides - Unknown type$"
+                                db      ERR_SLD_INVALID_VERTICAL,   "Slides - Invalid vertical position$"
+                                db      ERR_SLD_INVALID_HORIZONTAL, "Slides - Invalid horizontal position$"
 
 
 section .bss
