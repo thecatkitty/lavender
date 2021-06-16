@@ -1,5 +1,4 @@
 %macro  API_SUBSET 1
-        %push   api_subset_ctx
         %ifdef  KER_API_SUBSET_%1
                 %define KER_API global
         %else
@@ -7,12 +6,8 @@
         %endif
 %endmacro
 
-%macro  API_SUBSET_END 0
-        %pop
-%endmacro
-
 ; ----- System infromation functions -----
-API_SUBSET INIT
+API_SUBSET INFO
 
 ; Check if running inside DOSBox
 ; Output:
@@ -20,7 +15,9 @@ API_SUBSET INIT
 ; Invalidates: CX
 KER_API KerIsDosBox
 
-; ----- Program execution flow functions -----
+
+; ----- Time related functions -----
+API_SUBSET TIME
 
 ; Halt execution for a given period
 ; Input:
@@ -28,7 +25,28 @@ KER_API KerIsDosBox
 ; Invalidates: CX
 KER_API KerSleep
 
-API_SUBSET_END
+; ----- Interrupt related functions -----
+API_SUBSET INT
+
+; Install interrupt service routine
+; Input:
+;   CS:SI - interrupt service routine
+;   DI    - interrupt number
+;   CS:BX - output pointer
+; Output:
+;   CS:BX - long pointer to previous interrupt service routine
+; Invalidates: DI
+KER_API KerInstallIsr
+
+; Install interrupt service routine
+; Input:
+;   CS:SI - interrupt service routine
+;   DI    - interrupt number
+;   CS:BX - output pointer
+; Output:
+;   CS:BX - long pointer to previous interrupt service routine
+; Invalidates: DI
+KER_API KerUninstallIsr
 
 
 ; ----- String and memory manipulation functions -----
@@ -59,8 +77,6 @@ KER_API KerCompareMemory
 ; Output:
 ;   ZF - zero if a whitespace
 KER_API KerIsWhitespace
-
-API_SUBSET_END
 
 
 ; ----- Unicode support functions -----
@@ -97,8 +113,6 @@ KER_API KerCompareUtf8IgnoreCase
 ;   BX    - case folding second code point or NUL
 KER_API KerFoldCase
 
-API_SUBSET_END
-
 
 ; ----- ZIP archive functions -----
 API_SUBSET ZIP
@@ -132,8 +146,6 @@ KER_API KerSearchArchive
 ;   CF    - error
 KER_API KerGetArchiveData
 
-API_SUBSET_END
-
 
 ; ----- Error handling functions -----
 API_SUBSET ERROR
@@ -143,8 +155,6 @@ KER_API KerTerminate
 
 ; Byte variable for storing error code
 KER_API KerLastError
-
-API_SUBSET_END
 
 
 KER_PIT_INPUT_FREQ              equ     1193181_6667
