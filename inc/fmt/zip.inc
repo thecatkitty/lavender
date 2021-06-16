@@ -1,38 +1,3 @@
-%ifndef ZIP_API
-
-%define ZIP_API extern
-
-; Locate ZIP central directory end structure
-; Input:
-;   DS:BX - search range lower boundary
-;   DS:SI - search range upper boundary
-; Output:
-;   DS:SI - ZIP central directory end structure
-;   CF    - error
-; Invalidates:
-ZIP_API KerLocateArchive
-
-; Locate ZIP local file header structure
-; Input:
-;   DS:SI - ZIP central directory end structure
-;   DS:BX - file name
-;   CX    - file name length
-; Output:
-;   DS:DI - ZIP local file header structure
-;   CF    - error
-; Invalidates: BX, CX
-ZIP_API KerSearchArchive
-
-; Locate ZIP file data
-; Input:
-;   DS:DI - ZIP local file header structure
-; Output:
-;   DS:BX - ZIP file data
-;   CF    - error
-ZIP_API KerGetArchiveData
-
-%endif
-
 ZIP_PK_SIGN                     equ     4B50h
 ZIP_LOCAL_FILE_SIGN             equ     0403h
 ZIP_CDIR_FILE_SIGN              equ     0201h

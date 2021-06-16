@@ -1,4 +1,4 @@
-%define KER_API
+%define KER_API_SUBSET_INIT
 %include "dos.inc"
 %include "ker.inc"
 

@@ -2,9 +2,11 @@
 
 %define VID_API extern
 
+; ----- Low level drawing functions -----
+
 ; Copy bitmap to screen buffer
 ; Input:
-;   DS:SI - PIC_BITMAP structure
+;   DS:SI - GFX_BITMAP structure
 ;   AX    - horizontal position, in columns (aligned on 8)
 ;   BX    - vertical position, in lines
 ; Invalidates: AX, CX, DX, DI, SI
@@ -16,6 +18,8 @@ VID_API VidDrawBitmap
 ;   AH    - horizontal position, in columns
 ;   AL    - vertical position, in rows
 VID_API VidDrawText
+
+; ----- Display mode functions -----
 
 ; Get pixel aspect ratio
 ; Output:
@@ -31,6 +35,22 @@ VID_API VidGetPixelAspectRatio
 ;   AX - previous video mode
 ; Invalidates: CX
 VID_API VidSetMode
+
+; ----- Font functions -----
+
+; Initialize extended screen font
+VID_API VidLoadFont
+
+; Deinitialize extended screen font
+VID_API VidUnloadFont
+
+; Get local encoding code point from Unicode code point
+; Input:
+;   AX - Unicode code point
+; Output:
+;   AL - local encoding code point, '?' on error
+;   CF - error
+VID_API VidGetFontEncoding
 
 %endif
 
@@ -102,6 +122,11 @@ VID_EDID_TIMING_VFREQ_MASK      equ     111111b
 VID_EDID_TIMING_XRES            equ     0
 VID_EDID_TIMING_XRES_MASK       equ     11111111b
 
+VID_INT_EXTENDED_FONT_PTR       equ     31              ; index in the IVT
+VID_BASIC_FONT_SEGMENT          equ     0FFA0h          ; 0FFA6Eh - ROM font base
+VID_BASIC_FONT_OFFSET           equ     6Eh
+VID_CHARACTER_HEIGHT            equ     8
+
 %define VID_PAR(dx,dy,sx,sy)            (64 * dy * sx / dx / sy)
 
 struc VID_EDID
@@ -132,3 +157,10 @@ struc VID_EDID
   .bExtensions:                 resb    1
   .bChecksum:                   resb    1
 endstruc
+
+struc VID_CHARACTER_DESCRIPTOR
+  .wcCodePoint:                 resw    1
+  .pOverlay:                    resw    1
+  .cBase:                       resb    1
+endstruc
+

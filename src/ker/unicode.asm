@@ -1,6 +1,6 @@
-%define UNI_API
+%define KER_API_SUBSET_UNICODE
 %include "err.inc"
-%include "uni.inc"
+%include "ker.inc"
 
 
                 cpu     8086
@@ -17,7 +17,7 @@ KerGetCharacterFromUtf8:
                 jz      .SingleByte
                 test    ah, 01000000b
                 jnz     .Lead
-                ERR     UNI_INVALID_SEQUENCE
+                ERR     KER_INVALID_SEQUENCE
 .SingleByte:
                 xchg    al, ah
                 inc     si
@@ -25,13 +25,13 @@ KerGetCharacterFromUtf8:
 .Lead:
                 test    ah, 00100000b
                 jz      .TwoBytes
-                ERR     UNI_UNSUPPORTED_CODEPOINT
+                ERR     KER_UNSUPPORTED_CODEPOINT
 .TwoBytes:
                 mov     al, byte [si + 1]
                 and     al, 11000000b
                 cmp     al, 10000000b
                 jz      .LoadConvert
-                ERR     UNI_INVALID_SEQUENCE
+                ERR     KER_INVALID_SEQUENCE
 .LoadConvert:
                 mov     al, byte [si + 1]
                 and     ah, 00011111b
