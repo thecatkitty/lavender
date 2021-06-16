@@ -14,20 +14,20 @@ KerInstallIsr:
                 shl     di, 1
                 shl     di, 1               ; 4-byte alignment
                 push    ax
-                push    es
+                push    ds
 
                 cli
                 xor     ax, ax
-                mov     es, ax              ; ES = 0000h
-                push    word [es:di]        ; Get current ISR offset
-                push    word [es:di + 2]    ; Get current ISR segment
-                pop     word [cs:bx + 2]
-                pop     word [cs:bx]
-                mov     word [es:di], si
-                mov     word [es:di + 2], cs
+                mov     ds, ax              ; ES = 0000h
+                push    word [ds:di]        ; Get current ISR offset
+                push    word [ds:di + 2]    ; Get current ISR segment
+                pop     word [es:bx + 2]
+                pop     word [es:bx]
+                mov     word [ds:di], si
+                mov     word [ds:di + 2], es
                 sti
 
-                pop     es
+                pop     ds
                 pop     ax
                 ret
 
@@ -37,17 +37,17 @@ KerUninstallIsr:
                 shl     di, 1
                 shl     di, 1               ; 4-byte alignment
                 push    ax
-                push    es
+                push    ds
 
                 cli
                 xor     ax, ax
-                mov     es, ax              ; ES = 0000h
-                push    word [cs:si + 2]
-                push    word [cs:si]
-                pop     word [es:di]        ; Get current ISR offset
-                pop     word [es:di + 2]    ; Get current ISR segment
+                mov     ds, ax              ; ES = 0000h
+                push    word [es:si + 2]
+                push    word [es:si]
+                pop     word [ds:di]        ; Get current ISR offset
+                pop     word [ds:di + 2]    ; Get current ISR segment
                 sti
 
-                pop     es
+                pop     ds
                 pop     ax
                 ret
