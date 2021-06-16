@@ -8,8 +8,8 @@
 [bits 16]
 section .text
 
-                global  FntLoad
-FntLoad:
+                global  VidLoadFont
+VidLoadFont:
                 push    es              ; preserve registers
                 push    bp
                 push    di
@@ -94,8 +94,8 @@ FntLoad:
                 ret
 
 
-                global  FntUnload
-FntUnload:
+                global  VidUnloadFont
+VidUnloadFont:
                 push    es              ; preserve registers
                 push    ax
 
@@ -111,8 +111,8 @@ FntUnload:
                 ret
 
 
-                global  FntGetLocalCharacter
-FntGetLocalCharacter:
+                global  VidGetFontEncoding
+VidGetFontEncoding:
                 cmp     ax, 80h
                 jae     .Convert
                 ret                     ; do not convert ASCII code points

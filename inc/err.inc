@@ -3,10 +3,10 @@
 %define ERR_API extern
 
 ; Print error message and terminate program execution
-ERR_API ErrTerminate
+ERR_API KerTerminate
 
 ; Byte variable for storing error code
-ERR_API ErrLastCode
+ERR_API KerLastError
 
 %endif
 
@@ -34,7 +34,7 @@ ERR_VID_FORMAT                  equ     18
 %macro          ERR     1
 
                 stc
-                mov     byte [ErrLastCode], ERR_%1
+                mov     byte [KerLastError], ERR_%1
                 jmp     .Error
 
 %endmacro
@@ -42,7 +42,7 @@ ERR_VID_FORMAT                  equ     18
 %macro          ERRC    1
 
                 jnc     %%Skip
-                mov     byte [ErrLastCode], ERR_%1
+                mov     byte [KerLastError], ERR_%1
                 jmp     .Error
 %%Skip:
 

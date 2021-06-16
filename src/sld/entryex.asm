@@ -75,15 +75,15 @@ SldEntryExecuteBitmap:
                 add     bx, SLD_ENTRY.szContent
                 xor     ch, ch
                 mov     cl, byte [di + SLD_ENTRY.bLength]
-                call    ZipLocateFileHeader
+                call    KerSearchArchive
                 jc      .End
-                call    ZipLocateFileData               ; file data in DS:BX
+                call    KerGetArchiveData               ; file data in DS:BX
                 jc      .End
 
                 ; Bitmap - load image
                 mov     si, bx
                 mov     di, stPicture
-                call    PicLoadBitmap
+                call    GfxLoadBitmap
                 jc      .End
                 
                 pop     bx

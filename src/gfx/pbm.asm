@@ -10,8 +10,8 @@
 section .text
 
 
-                global  PicLoadBitmap
-PicLoadBitmap:
+                global  GfxLoadBitmap
+GfxLoadBitmap:
                 cmp     word [si], PIC_PBM_RAW_MAGIC
                 je      PbmLoadBitmap
                 ERR     PIC_UNSUPPORTED_FORMAT
@@ -26,7 +26,7 @@ PbmLoadBitmap:
                 add     si, 2
 .LookForWidth:
                 mov     al, byte [si]
-                call    StrIsWhitespace
+                call    KerIsWhitespace
                 jne     .ReadWidth
                 inc     si
                 jmp     .LookForWidth
@@ -42,7 +42,7 @@ PbmLoadBitmap:
                 mov     word [di + PIC_BITMAP.wWidthBytes], ax
 .LookForHeight:
                 mov     al, byte [si]
-                call    StrIsWhitespace
+                call    KerIsWhitespace
                 jne     .ReadHeight
                 inc     si
                 jmp     .LookForHeight
@@ -52,7 +52,7 @@ PbmLoadBitmap:
                 mov     word [di + PIC_BITMAP.wHeight], ax
 .LookForBits:
                 mov     al, byte [si]
-                call    StrIsWhitespace
+                call    KerIsWhitespace
                 jne     .SaveBits
                 inc     si
                 jmp     .LookForBits
@@ -84,7 +84,7 @@ PbmParseU16:
                 mov     al, byte [si]
                 cmp     al, '#'
                 je      .SkipComment
-                call    StrIsWhitespace
+                call    KerIsWhitespace
                 je      .End
                 cmp     al, '0'
                 jb      .Bad

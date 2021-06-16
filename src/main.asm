@@ -23,26 +23,26 @@ Main:
                 call    VidSetMode
                 push    ax              ; save previous mode on stack
 
-                call    FntLoad
+                call    VidLoadFont
 
                 mov     bx, ArchiveStart
                 mov     si, ArchiveEnd
-                call    ZipLocateCentralDirectoryEnd
-                jc      ErrTerminate
+                call    KerLocateArchive
+                jc      KerTerminate
                 mov     word [pstDirectoryEnd], si
 
                 mov     bx, sSlides
                 mov     cx, nSlidesLength
-                call    ZipLocateFileHeader
-                jc      ErrTerminate
-                call    ZipLocateFileData
-                jc      ErrTerminate
+                call    KerSearchArchive
+                jc      KerTerminate
+                call    KerGetArchiveData
+                jc      KerTerminate
 
                 mov     si, bx
 .Next:
                 mov     di, stEntry
                 call    SldEntryLoad
-                jc      ErrTerminate
+                jc      KerTerminate
                 test    ax, ax
                 jz      .End
                 push    si
@@ -50,14 +50,14 @@ Main:
                 mov     si, word [pstDirectoryEnd]
                 call    SldEntryExecute
                 pop     si
-                jc      ErrTerminate
+                jc      KerTerminate
                 jmp    .Next
 
 .End:
                 xor     ah, ah          ; AH = BIOS_KEYBOARD_GET_KEYSTROKE
                 int     BIOS_INT_KEYBOARD
 
-                call    FntUnload
+                call    VidUnloadFont
 
                 pop     ax              ; restore saved mode
                 call    VidSetMode
