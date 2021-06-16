@@ -2,6 +2,7 @@
 %include "err.inc"
 %include "gfx.inc"
 %include "ker.inc"
+%include "fmt/pbm.inc"
 
 
                 cpu     8086
@@ -12,7 +13,7 @@ section .text
 
                 global  GfxLoadBitmap
 GfxLoadBitmap:
-                cmp     word [si], GFX_PBM_RAW_MAGIC
+                cmp     word [si], PBM_RAW_MAGIC
                 je      PbmLoadBitmap
                 ERR     GFX_UNSUPPORTED_FORMAT
 .Error:         ret

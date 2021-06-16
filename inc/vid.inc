@@ -55,11 +55,9 @@ VID_API VidGetFontEncoding
 %endif
 
 VID_MODE_CGA_HIMONO             equ     6               ; 640x200x1
-VID_CGA_HIMONO_MEM              equ     0B800h          ; video memory base
 VID_CGA_HIMONO_WIDTH            equ     640
 VID_CGA_HIMONO_HEIGHT           equ     200
 VID_CGA_HIMONO_LINE             equ     (VID_CGA_HIMONO_WIDTH / 8)
-VID_CGA_HIMONO_PLANE            equ     2000h           ; odd plane offset
 
 VID_EDID_MANUFACTURER_ID1       equ     10              ; .wManufacturerId
 VID_EDID_MANUFACTURER_ID2       equ     5               ;   -111 1122  2223 3333
@@ -121,11 +119,6 @@ VID_EDID_TIMING_VFREQ           equ     8
 VID_EDID_TIMING_VFREQ_MASK      equ     111111b
 VID_EDID_TIMING_XRES            equ     0
 VID_EDID_TIMING_XRES_MASK       equ     11111111b
-
-VID_INT_EXTENDED_FONT_PTR       equ     31              ; index in the IVT
-VID_BASIC_FONT_SEGMENT          equ     0FFA0h          ; 0FFA6Eh - ROM font base
-VID_BASIC_FONT_OFFSET           equ     6Eh
-VID_CHARACTER_HEIGHT            equ     8
 
 %define VID_PAR(dx,dy,sx,sy)            (64 * dy * sx / dx / sy)
 

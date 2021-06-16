@@ -12,8 +12,6 @@ GFX_API GfxLoadBitmap
 
 %endif
 
-GFX_PBM_RAW_MAGIC               equ     03450h          ; P4
-
 struc GFX_BITMAP
   .wWidth:                      resw    1
   .wHeight:                     resw    1
