@@ -15,7 +15,7 @@ section .text
 GfxLoadBitmap:
                 cmp     word [si], PBM_RAW_MAGIC
                 je      PbmLoadBitmap
-                ERR     GFX_UNSUPPORTED_FORMAT
+                ERR     GFX_FORMAT
 .Error:         ret
 
 

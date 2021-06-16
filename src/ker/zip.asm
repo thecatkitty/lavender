@@ -14,11 +14,11 @@ section .text
 KerLocateArchive:
                 sub     si, ZIP_CDIR_END_HEADER_size
                 ja      .Next
-                ERR     ZIP_CDIR_END_NOT_FOUND
+                ERR     KER_ARCHIVE_NOT_FOUND
 .Next:
                 dec     si
                 cmp     si, bx
-                ERRC    ZIP_CDIR_END_NOT_FOUND
+                ERRC    KER_ARCHIVE_NOT_FOUND
 
                 cmp     word [si + ZIP_CDIR_END_HEADER.wPkSignature], ZIP_PK_SIGN
                 jne     .Next
@@ -35,20 +35,20 @@ KerSearchArchive:
                 mov     di, [si + ZIP_CDIR_END_HEADER.dwCentralDirectorySize + 2]
                 test    di, di
                 jz      .LocateInDirectory
-                ERR     ZIP_CDIR_TOO_LARGE
+                ERR     KER_ARCHIVE_TOO_LARGE
 .LocateInDirectory:
                 mov     di, si
                 sub     di, [si + ZIP_CDIR_END_HEADER.dwCentralDirectorySize]
 .NextDirectoryEntry:
                 cmp     word [di + ZIP_CDIR_FILE_HEADER.wPkSignature], ZIP_PK_SIGN
                 je      .CheckDirectorySignature
-                ERR     ZIP_CDIR_INVALID
+                ERR     KER_ARCHIVE_INVALID
 .CheckDirectorySignature:
                 cmp     word [di + ZIP_CDIR_FILE_HEADER.wHeaderSignature], ZIP_CDIR_END_SIGN
                 je      .NotFound
                 cmp     word [di + ZIP_CDIR_FILE_HEADER.wHeaderSignature], ZIP_CDIR_FILE_SIGN
                 je      .CheckName
-                ERR     ZIP_CDIR_INVALID
+                ERR     KER_ARCHIVE_INVALID
 .CheckName:
                 cmp     byte [di + ZIP_CDIR_FILE_HEADER.wVersion + 1], ZIP_VERSION_FS_MSDOS
                 je      .CaseInsensitive
@@ -125,14 +125,14 @@ KerSearchArchive:
                 pop     ax
                 cmp     word [di + ZIP_LOCAL_FILE_HEADER.wPkSignature], ZIP_PK_SIGN
                 je      .CheckLocalSignature
-                ERR     ZIP_LOCAL_INVALID
+                ERR     KER_ARCHIVE_INVALID
 .CheckLocalSignature:
                 cmp     word [di + ZIP_LOCAL_FILE_HEADER.wHeaderSignature], ZIP_LOCAL_FILE_SIGN
                 je      .End
-                ERR     ZIP_LOCAL_INVALID
+                ERR     KER_ARCHIVE_INVALID
 
 .NotFound:
-                ERR     ZIP_NOT_FOUND
+                ERR     KER_NOT_FOUND
 .Error:
 .End:           ret
 
@@ -141,19 +141,19 @@ KerSearchArchive:
 KerGetArchiveData:
                 cmp     word [di + ZIP_LOCAL_FILE_HEADER.wPkSignature], ZIP_PK_SIGN
                 je      .CheckLocalSignature
-                ERR     ZIP_LOCAL_INVALID
+                ERR     KER_ARCHIVE_INVALID
 .CheckLocalSignature:
                 cmp     word [di + ZIP_LOCAL_FILE_HEADER.wHeaderSignature], ZIP_LOCAL_FILE_SIGN
                 je      .CheckMethod
-                ERR     ZIP_LOCAL_INVALID
+                ERR     KER_ARCHIVE_INVALID
 .CheckMethod:
                 cmp     word [di + ZIP_LOCAL_FILE_HEADER.wCompression], ZIP_METHOD_STORE
                 je      .CheckFlags
-                ERR     ZIP_UNSUPPORTED_METHOD
+                ERR     KER_UNSUPPORTED
 .CheckFlags:
                 test    word [di + ZIP_LOCAL_FILE_HEADER.wFlags], ~ZIP_FLAGS_SUPPORTED
                 jz      .LoadData
-                ERR     ZIP_UNSUPPORTED_FLAGS
+                ERR     KER_UNSUPPORTED
 .LoadData:
                 mov     bx, di
                 add     bx, ZIP_LOCAL_FILE_HEADER_size
