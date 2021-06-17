@@ -11,38 +11,61 @@ section .text
 
                 global  KerGetCharacterFromUtf8
 KerGetCharacterFromUtf8:
+                push    bx
+                push    cx
+
                 xor     ax, ax
-                mov     ah, byte [si]
-                test    ah, 10000000b
+                mov     al, byte [si]
+                test    al, 10000000b
                 jz      .SingleByte
-                test    ah, 01000000b
+                test    al, 01000000b
                 jnz     .Lead
                 ERR     KER_INVALID_SEQUENCE
 .SingleByte:
-                xchg    al, ah
                 inc     si
                 jmp     .End
 .Lead:
-                test    ah, 00100000b
-                jz      .TwoBytes
+                xor     bx, bx          ; temporary code point register
+                mov     bl, al
+
+                mov     cx, 0106h       ; start with 1 continuation byte
+                                        ; and set 6 as the shift value
+                and     bl, 00011111b   ; assume two-byte
+                test    al, 00100000b
+                jz      .Continuation
+
+                inc     ch
+                and     bl, 00001111b   ; assume three-byte
+                test    al, 00010000b
+                jz      .Continuation
+
+                inc     ch
+                and     bl, 00000111b   ; assume four-byte
+                test    al, 00001000b
+                jz      .Continuation
+
                 ERR     KER_INVALID_SEQUENCE
-.TwoBytes:
-                mov     al, byte [si + 1]
+.Continuation:
+                mov     ax, bx
+                inc     si
+                cmp     ch, 0
+                jz      .End            ; end of continuation bytes
+                mov     al, byte [si]
                 and     al, 11000000b
                 cmp     al, 10000000b
-                jz      .LoadConvert
+                je      .Convert
                 ERR     KER_INVALID_SEQUENCE
-.LoadConvert:
-                mov     al, byte [si + 1]
-                and     ah, 00011111b
+.Convert:
+                shl     bx, cl          ; 6
+                mov     al, byte [si]
                 and     al, 00111111b
-                shl     al, 1
-                shl     al, 1
-                shr     ax, 1
-                shr     ax, 1
-                add     si, 2
+                or      bl, al          ; append bits from current byte
+                dec     ch
+                jmp     .Continuation
 .Error:
-.End:           ret
+.End:           pop     cx
+                pop     bx
+                ret
 
 
                 global  KerCompareUtf8IgnoreCase
