@@ -5,15 +5,27 @@ BIN     = bin
 OBJ     = obj
 SRC     = src
 
+ifdef LAV_DATA
+DATA    = $(LAV_DATA)
+else
+DATA    = data
+endif
+
+ifdef LAV_SSHOW
+SSHOW   = $(LAV_SSHOW)
+else
+SSHOW   = sshow.com
+endif
+
 include sources.mk
 
-$(BIN)/sshow.com: $(BIN)/lavender.com $(OBJ)/data.zip
+$(BIN)/$(SSHOW): $(BIN)/lavender.com $(OBJ)/data.zip
 	cat $^ > $@
 	@if [ $$(stat -L -c %s $@) -gt 12288 ]; then echo >&2 "'$@' size exceedes 12K"; false; fi
 
 image: $(BIN)/180k.img
 
-$(BIN)/180k.img: $(BIN)/sshow.com
+$(BIN)/180k.img: $(BIN)/$(SSHOW)
 	dd if=/dev/zero of=$@ bs=512 count=360 status=none
 	mformat -i $@ -f 180 -v lavender
 	touch -m -t 201004100841 $^
@@ -30,7 +42,7 @@ $(BIN)/%.com: $(OBJ)/%.pe
 $(OBJ)/lavender.pe: $(SOURCES:%.asm=$(OBJ)/%.o)
 	$(LD) -m i386pe --nmagic -T com.ld -o $@ $^
 
-$(OBJ)/data.zip: data/*
+$(OBJ)/data.zip: $(DATA)/*
 	zip -0 -r -j $@ $^
 
 $(OBJ)/%.o: $(SRC)/%.asm
