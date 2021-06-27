@@ -75,15 +75,15 @@ SldEntryExecuteBitmap:
                 xor     ch, ch
                 mov     cl, byte [di + SLD_ENTRY.bLength]
                 call    KerSearchArchive
-                jc      .End
+                jc      .Error
                 call    KerGetArchiveData               ; file data in DS:BX
-                jc      .End
+                jc      .Error
 
                 ; Bitmap - load image
                 mov     si, bx
                 mov     di, stPicture
                 call    GfxLoadBitmap
-                jc      .End
+                jc      .Error
                 
                 pop     bx
                 xchg    di, bx
