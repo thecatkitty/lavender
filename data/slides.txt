@@ -1,5 +1,5 @@
 0   T   18  ^Lavender
-500 B   22  ^CGIHISYM.PBM
+500 B   22  ^celolg99.pbm
 500 T   19  ^Wersja 0.1
 500 T   23  ^Copyright (c) Mateusz Karcz, 2021. Wszelkie prawa zastrzeżone.
 500 T   24  ^Naciśnij dowolny klawisz, aby kontynuować.
