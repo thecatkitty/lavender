@@ -1,4 +1,9 @@
 trigger:
+  branches:
+    include:
+      - refs/tags/*
+
+pr:
 - main
 
 pool:
@@ -9,7 +14,7 @@ steps:
   displayName: 'Install additional tools'
 
 - script: make image
-  displayName: 'Run a multi-line script'
+  displayName: 'Build a release image'
 
 - task: PublishBuildArtifacts@1
   inputs:
