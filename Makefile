@@ -23,14 +23,6 @@ $(BIN)/$(SSHOW): $(BIN)/lavender.com $(OBJ)/data.zip
 	cat $^ > $@
 	@if [ $$(stat -L -c %s $@) -gt 12288 ]; then echo >&2 "'$@' size exceedes 12K"; false; fi
 
-image: $(BIN)/180k.img
-
-$(BIN)/180k.img: $(BIN)/$(SSHOW)
-	dd if=/dev/zero of=$@ bs=512 count=360 status=none
-	mformat -i $@ -f 180 -v lavender
-	touch -m -t 201004100841 $^
-	mcopy -m -i $@ $^ ::
-
 ifneq ($(MAKECMDGOALS),clean)
 include $(SOURCES:%.asm=$(OBJ)/%.d)
 endif

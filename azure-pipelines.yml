@@ -10,11 +10,11 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-- script: sudo apt install mtools nasm zip -y
+- script: sudo apt install nasm zip -y
   displayName: 'Install additional tools'
 
-- script: make image
-  displayName: 'Build a release image'
+- script: make
+  displayName: 'Build a release'
 
 - task: PublishBuildArtifacts@1
   inputs:
