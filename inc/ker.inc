@@ -61,6 +61,14 @@ API_SUBSET STRING
 ;   DS:SI - first cell after the field
 KER_API KerParseU16
 
+; Convert byte to its hexadecimal representation
+; Input:
+;   AL    - byte
+; Output:
+;   AH    - first hexadecimal digit
+;   AL    - second hexadecimal digit
+KER_API KerByteToHex
+
 ; Compare two memory ranges
 ; Input:
 ;   DS:SI - first range
