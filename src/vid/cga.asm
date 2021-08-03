@@ -41,11 +41,13 @@ VidGetPixelAspectRatio:
                 jc      .Convert
                 mov     ax, word [bp - VID_EDID_size + VID_EDID.stStandardTiming]
 .Convert:
+                push    bx
+                push    cx
                 mov     cl, VID_EDID_TIMING_ASPECT
                 shr     ax, cl
-                push    bx
                 mov     bx, .LookupTable
                 xlat
+                pop     cx
                 pop     bx
 
                 mov     sp, bp
