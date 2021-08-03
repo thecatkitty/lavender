@@ -1,4 +1,4 @@
-# Lavender
+# Lavender [![Build Status](https://dev.azure.com/celones/thecatkitty-gh-public/_apis/build/status/thecatkitty.lavender?branchName=main)](https://dev.azure.com/celones/thecatkitty-gh-public/_build/latest?definitionId=3&branchName=main)
 
 A simple configurable slideshow program for DOS 2.0+ written in 8086 assembly. It shows slides consisting of text and graphics contained in the ZIP file appended to the executable.
 
