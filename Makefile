@@ -21,7 +21,7 @@ include sources.mk
 
 $(BIN)/$(SSHOW): $(BIN)/lavender.com $(OBJ)/data.zip
 	cat $^ > $@
-	@if [ $$(stat -L -c %s $@) -gt 12288 ]; then echo >&2 "'$@' size exceedes 12K"; false; fi
+	@if [ $$(stat -L -c %s $@) -gt 65280 ]; then echo >&2 "'$@' size exceedes 65,280 bytes"; false; fi
 
 ifneq ($(MAKECMDGOALS),clean)
 include $(SOURCES:%.asm=$(OBJ)/%.d)
