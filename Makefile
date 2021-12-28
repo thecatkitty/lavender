@@ -1,5 +1,6 @@
 AS      = nasm
-LD      = ld
+LD      = ia16-elf-ld
+OBJCOPY = ia16-elf-objcopy
 
 BIN     = bin
 OBJ     = obj
@@ -27,12 +28,12 @@ ifneq ($(MAKECMDGOALS),clean)
 include $(SOURCES:%.asm=$(OBJ)/%.d)
 endif
 
-$(BIN)/%.com: $(OBJ)/%.pe
+$(BIN)/%.com: $(OBJ)/%.elf
 	@mkdir -p $(BIN)
-	objcopy -O binary -j .com $< $@
+	$(OBJCOPY) -O binary -j .com $< $@
 
-$(OBJ)/lavender.pe: $(SOURCES:%.asm=$(OBJ)/%.o)
-	$(LD) -m i386pe --nmagic -T com.ld -o $@ $^
+$(OBJ)/lavender.elf: $(SOURCES:%.asm=$(OBJ)/%.o)
+	$(LD) --nmagic -T com.ld -o $@ $^
 
 $(OBJ)/data.zip: $(DATA)/*
 	zip -0 -r -j $@ $^
