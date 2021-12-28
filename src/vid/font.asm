@@ -18,13 +18,16 @@ VidLoadFont:
                 push    cx
                 push    bx
                 push    ax
-
+                
+                mov     ax, INT_CGA_EXTENDED_FONT_PTR
+                push    ax
                 push    ds
-                pop     es
-                mov     si, abExtendedFont
-                mov     di, INT_CGA_EXTENDED_FONT_PTR
-                mov     bx, lpabPreviousFont
-                call    KerInstallIsr
+                mov     ax, abExtendedFont
+                push    ax
+                call    _KerInstallIsr
+                add     sp, 6
+                mov     word [lpabPreviousFont], ax
+                mov     word [lpabPreviousFont + 2], dx
 
                 mov     ax, CGA_BASIC_FONT_SEGMENT
                 mov     es, ax
@@ -102,12 +105,15 @@ VidLoadFont:
 VidUnloadFont:
                 push    es              ; preserve registers
                 push    ax
-
-                push    ds
-                pop     es
-                mov     si, lpabPreviousFont
-                mov     di, INT_CGA_EXTENDED_FONT_PTR
-                call    KerInstallIsr
+                
+                mov     ax, INT_CGA_EXTENDED_FONT_PTR
+                push    ax
+                mov     ax, word [lpabPreviousFont + 2]
+                push    ax
+                mov     ax, word [lpabPreviousFont]
+                push    ax
+                call    _KerUninstallIsr
+                add     sp, 6
                 
                 pop     ax
                 pop     es

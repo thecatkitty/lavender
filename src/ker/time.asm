@@ -64,12 +64,15 @@ PitInitChannel:
 ; Initialize Programmable Interval Timer
                 global  PitInitialize
 PitInitialize:
+                mov     ax, INT_PIT
+                push    ax
                 push    cs
-                pop     es
-                mov     si, PitIsr
-                mov     di, INT_PIT
-                mov     bx, PitIsr.lpfnBiosIsr
-                call    KerInstallIsr
+                mov     ax, PitIsr
+                push    ax
+                call    _KerInstallIsr
+                add     sp, 6
+                mov     word [PitIsr.lpfnBiosIsr], ax
+                mov     word [PitIsr.lpfnBiosIsr + 2], dx
 
                 xor     al, al              ; Channel 0
                 mov     ah, PIT_MODE_RATE_GEN
@@ -81,11 +84,14 @@ PitInitialize:
 ; Deinitialize Programmable Interval Timer
                 global  PitDeinitialize
 PitDeinitialize:
-                push    cs
-                pop     es
-                mov     di, INT_PIT
-                mov     si, PitIsr.lpfnBiosIsr
-                call    KerUninstallIsr
+                mov     ax, INT_PIT
+                push    ax
+                mov     ax, word [PitIsr.lpfnBiosIsr + 2]
+                push    ax
+                mov     ax, word [PitIsr.lpfnBiosIsr]
+                push    ax
+                call    _KerUninstallIsr
+                add     sp, 6
 
                 xor     al, al              ; Channel 0
                 mov     ah, PIT_MODE_RATE_GEN
