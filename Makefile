@@ -1,4 +1,5 @@
 AS      = nasm
+CC      = ia16-elf-gcc
 LD      = ia16-elf-ld
 OBJCOPY = ia16-elf-objcopy
 
@@ -32,14 +33,17 @@ $(BIN)/%.com: $(OBJ)/%.elf
 	@mkdir -p $(BIN)
 	$(OBJCOPY) -O binary -j .com $< $@
 
-$(OBJ)/lavender.elf: $(ASSOURCES:%.asm=$(OBJ)/%.asm.o)
-	$(LD) --nmagic -T com.ld -o $@ $^
+$(OBJ)/lavender.elf: $(ASSOURCES:%.asm=$(OBJ)/%.asm.o) $(CCSOURCES:%.c=$(OBJ)/%.c.o)
+	$(LD) --nmagic -T com.ld -Map=$(OBJ)/lavender.map -o $@ $^
 
 $(OBJ)/data.zip: $(DATA)/*
 	zip -0 -r -j $@ $^
 
 $(OBJ)/%.asm.o: $(SRC)/%.asm
 	$(AS) -o $@ -f elf32 -w-label-redef-late -iinc/ $<
+
+$(OBJ)/%.c.o: $(SRC)/%.c
+	$(CC) -c -o $@ -fleading-underscore -Os -Iinc/ $<
 
 $(OBJ)/%.asm.d: $(SRC)/%.asm
 	@mkdir -p $(@D)
