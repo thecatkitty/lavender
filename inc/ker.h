@@ -7,7 +7,9 @@
 #define far
 #endif
 
-typedef void far *isr;
+#define interrupt __attribute__ ((interrupt))
+
+typedef void (interrupt *isr)(void) far;
 
 extern isr KerInstallIsr(
     isr      routine,
@@ -18,12 +20,12 @@ extern void KerUninstallIsr(
     unsigned number
     );
 
-void KerDisableInterrupts()
+inline void KerDisableInterrupts()
 {
     asm ("cli");
 }
 
-void KerEnableInterrupts()
+inline void KerEnableInterrupts()
 {
     asm ("sti");
 }

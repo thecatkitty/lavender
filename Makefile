@@ -3,6 +3,9 @@ CC      = ia16-elf-gcc
 LD      = ia16-elf-ld
 OBJCOPY = ia16-elf-objcopy
 
+CFLAGS  = -c -march=i8088 -Os -Iinc/
+LDFLAGS = -L/usr/ia16-elf/lib/ -li86 --nmagic -T com.ld
+
 BIN     = bin
 OBJ     = obj
 SRC     = src
@@ -34,7 +37,7 @@ $(BIN)/%.com: $(OBJ)/%.elf
 	$(OBJCOPY) -O binary -j .com $< $@
 
 $(OBJ)/lavender.elf: $(ASSOURCES:%.asm=$(OBJ)/%.asm.o) $(CCSOURCES:%.c=$(OBJ)/%.c.o)
-	$(LD) --nmagic -T com.ld -Map=$(OBJ)/lavender.map -o $@ $^
+	$(LD) -Map=$(OBJ)/lavender.map -o $@ $^ $(LDFLAGS)
 
 $(OBJ)/data.zip: $(DATA)/*
 	zip -0 -r -j $@ $^
@@ -43,7 +46,7 @@ $(OBJ)/%.asm.o: $(SRC)/%.asm
 	$(AS) -o $@ -f elf32 -w-label-redef-late -iinc/ $<
 
 $(OBJ)/%.c.o: $(SRC)/%.c
-	$(CC) -c -march=i8088 -o $@ -fleading-underscore -Os -Iinc/ $<
+	$(CC) $(CFLAGS) -o $@ $<
 
 $(OBJ)/%.asm.d: $(SRC)/%.asm
 	@mkdir -p $(@D)

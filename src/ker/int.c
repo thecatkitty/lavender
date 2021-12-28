@@ -1,14 +1,14 @@
 #include <ker.h>
 
-static isr far * const vectors = (isr far *)0x00000000;
+#include <dos.h>
 
 isr KerInstallIsr(
     isr      routine,
     unsigned number)
 {
     KerDisableInterrupts();
-    isr previous = vectors[number];
-    vectors[number] = routine;
+    isr previous = _dos_getvect(number);
+    _dos_setvect(number, routine);
     KerEnableInterrupts();
     return previous;
 }
@@ -19,6 +19,6 @@ void KerUninstallIsr(
     )
 {
     KerDisableInterrupts();
-    vectors[number] = previous;
+    _dos_setvect(number, previous);
     KerEnableInterrupts();
 }

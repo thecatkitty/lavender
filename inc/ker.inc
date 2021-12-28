@@ -37,7 +37,7 @@ KER_API KerSleep
 ;   AX - previous interrupt service routine offset
 ;   DX - previous interrupt service routine segment
 ; Invalidates: AX, BX, CX, DX
-extern _KerInstallIsr
+extern KerInstallIsr
 
 ; Uninstall interrupt service routine
 ; Stack input:
@@ -45,7 +45,7 @@ extern _KerInstallIsr
 ;   previous interrupt service routine segment
 ;   interrupt number
 ; Invalidates: AX, BX, CX, DX
-extern _KerUninstallIsr
+extern KerUninstallIsr
 
 
 ; ----- String and memory manipulation functions -----
