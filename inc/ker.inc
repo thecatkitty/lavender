@@ -13,8 +13,8 @@ API_SUBSET INFO
 
 ; Check if running inside DOSBox
 ; Output:
-;   ZF - 0 if DOSBox
-; Invalidates: CX
+;   AX - 1 if DOSBox
+; Invalidates: AX, BX, CX, DX
 KER_API KerIsDosBox
 
 

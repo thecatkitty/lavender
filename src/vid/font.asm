@@ -34,8 +34,17 @@ VidLoadFont:
                 mov     si, astFontData
                 mov     di, abExtendedFont
 
+                push    ax
+                push    bx
+                push    cx
+                push    dx
                 call    KerIsDosBox
-                jnz     .NextCharacter
+                cmp     ax, 0
+                pop     dx
+                pop     cx
+                pop     bx
+                pop     ax
+                je      .NextCharacter
                 inc     di              ; DOSBox ROM font is moved one line lower
 .NextCharacter:
                 cmp     word [si + VID_CHARACTER_DESCRIPTOR.wcCodePoint], 0FFFFh
