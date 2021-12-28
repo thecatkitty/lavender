@@ -22,10 +22,10 @@ KER_API KerIsDosBox
 API_SUBSET TIME
 
 ; Halt execution for a given period
-; Input:
-;   CX - number of ticks (1 tick ~ 54,9 ms)
-; Invalidates: CX
-KER_API KerSleep
+; Stack input:
+;   number of ticks (1 tick ~ 54,9 ms)
+; Invalidates: AX, BX, CX, DX
+extern KerSleep
 
 ; ----- Interrupt related functions -----
 ; Install interrupt service routine

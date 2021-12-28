@@ -11,6 +11,14 @@
 
 typedef void (interrupt *isr)(void) far;
 
+#define KER_PIT_INPUT_FREQ              11931816667
+#define KER_PIT_FREQ_DIVISOR            2048
+#define KER_DELAY_MS_MULTIPLIER         100
+#define KER_DELAY_MS_DIVISOR            ((10000000 * KER_DELAY_MS_MULTIPLIER) * KER_PIT_FREQ_DIVISOR / KER_PIT_INPUT_FREQ)
+
+extern void KerSleep(
+    unsigned ticks);
+
 extern isr KerInstallIsr(
     isr      routine,
     unsigned number);

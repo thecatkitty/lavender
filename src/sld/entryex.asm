@@ -14,10 +14,17 @@ section .text
                 global  SldEntryExecute
 SldEntryExecute:
                 ; Delay
+                push    ax
+                push    bx
                 push    cx
-                mov     cx, [di + SLD_ENTRY.wDelay]
+                push    dx
+                push    word [di + SLD_ENTRY.wDelay]
                 call    KerSleep
+                add     sp, 2
+                pop     dx
                 pop     cx
+                pop     bx
+                pop     ax
 
                 ; Type
                 cmp     byte [di + SLD_ENTRY.bType], SLD_TYPE_TEXT
