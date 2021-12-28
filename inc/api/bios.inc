@@ -1,10 +1,10 @@
-BIOS_INT_VIDEO                  equ     10h
-BIOS_VIDEO_SET_MODE             equ     00h             ; AH
-BIOS_VIDEO_SET_CURSOR_POSITION  equ     02h             ; AH
-BIOS_VIDEO_GET_MODE             equ     0Fh             ; AH
-BIOS_VIDEO_VBE_DC               equ     4F15h           ; AX
-BIOS_VIDEO_VBE_DC_CAPABILITIES  equ     00H             ; BL
-BIOS_VIDEO_VBE_DC_READ_EDID     equ     01H             ; BL
+%define BIOS_INT_VIDEO                  10h
+%define BIOS_VIDEO_SET_MODE             00h             ; AH
+%define BIOS_VIDEO_SET_CURSOR_POSITION  02h             ; AH
+%define BIOS_VIDEO_GET_MODE             0Fh             ; AH
+%define BIOS_VIDEO_VBE_DC               4F15h           ; AX
+%define BIOS_VIDEO_VBE_DC_CAPABILITIES  00H             ; BL
+%define BIOS_VIDEO_VBE_DC_READ_EDID     01H             ; BL
 
-BIOS_INT_KEYBOARD               equ     16h
-BIOS_KEYBOARD_GET_KEYSTROKE     equ     00h             ; AH
+%define BIOS_INT_KEYBOARD               16h
+%define BIOS_KEYBOARD_GET_KEYSTROKE     00h             ; AH

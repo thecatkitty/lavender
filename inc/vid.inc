@@ -56,71 +56,71 @@ VID_API VidGetFontEncoding
 
 %endif
 
-VID_MODE_CGA_HIMONO             equ     6               ; 640x200x1
-VID_CGA_HIMONO_WIDTH            equ     640
-VID_CGA_HIMONO_HEIGHT           equ     200
-VID_CGA_HIMONO_LINE             equ     (VID_CGA_HIMONO_WIDTH / 8)
+%define VID_MODE_CGA_HIMONO             6               ; 640x200x1
+%define VID_CGA_HIMONO_WIDTH            640
+%define VID_CGA_HIMONO_HEIGHT           200
+%define VID_CGA_HIMONO_LINE             (VID_CGA_HIMONO_WIDTH / 8)
 
-VID_EDID_MANUFACTURER_ID1       equ     10              ; .wManufacturerId
-VID_EDID_MANUFACTURER_ID2       equ     5               ;   -111 1122  2223 3333
-VID_EDID_MANUFACTURER_ID3       equ     0
-VID_EDID_MANUFACTURER_IDx_MASK  equ     11111b
+%define VID_EDID_MANUFACTURER_ID1       10              ; .wManufacturerId
+%define VID_EDID_MANUFACTURER_ID2       5               ;   -111 1122  2223 3333
+%define VID_EDID_MANUFACTURER_ID3       0
+%define VID_EDID_MANUFACTURER_IDx_MASK  11111b
 
-VID_EDID_INPUT_TYPE             equ     7               ; .bInputType (digital)
-VID_EDID_INPUT_TYPE_ANALOG      equ     0               ;   TDDD IIII
-VID_EDID_INPUT_TYPE_DIGITAL     equ     1
-VID_EDID_INPUT_TYPE_MASK        equ     1b
-VID_EDID_INPUT_DEPTH            equ     4
-VID_EDID_INPUT_DEPTH_6B         equ     1
-VID_EDID_INPUT_DEPTH_8B         equ     2
-VID_EDID_INPUT_DEPTH_10B        equ     3
-VID_EDID_INPUT_DEPTH_12B        equ     4
-VID_EDID_INPUT_DEPTH_14B        equ     5
-VID_EDID_INPUT_DEPTH_16B        equ     6
-VID_EDID_INPUT_DEPTH_MASK       equ     111b
-VID_EDID_INPUT_INTERFACE        equ     0
-VID_EDID_INPUT_INTERFACE_HDMIA  equ     2
-VID_EDID_INPUT_INTERFACE_HDMIB  equ     3
-VID_EDID_INPUT_INTERFACE_MDDI   equ     4
-VID_EDID_INPUT_INTERFACE_DP     equ     5
-VID_EDID_INPUT_INTERFACE_MASK   equ     1111b
+%define VID_EDID_INPUT_TYPE             7               ; .bInputType (digital)
+%define VID_EDID_INPUT_TYPE_ANALOG      0               ;   TDDD IIII
+%define VID_EDID_INPUT_TYPE_DIGITAL     1
+%define VID_EDID_INPUT_TYPE_MASK        1b
+%define VID_EDID_INPUT_DEPTH            4
+%define VID_EDID_INPUT_DEPTH_6B         1
+%define VID_EDID_INPUT_DEPTH_8B         2
+%define VID_EDID_INPUT_DEPTH_10B        3
+%define VID_EDID_INPUT_DEPTH_12B        4
+%define VID_EDID_INPUT_DEPTH_14B        5
+%define VID_EDID_INPUT_DEPTH_16B        6
+%define VID_EDID_INPUT_DEPTH_MASK       111b
+%define VID_EDID_INPUT_INTERFACE        0
+%define VID_EDID_INPUT_INTERFACE_HDMIA  2
+%define VID_EDID_INPUT_INTERFACE_HDMIB  3
+%define VID_EDID_INPUT_INTERFACE_MDDI   4
+%define VID_EDID_INPUT_INTERFACE_DP     5
+%define VID_EDID_INPUT_INTERFACE_MASK   1111b
 
-VID_EDID_INPUT_LEVELS           equ     5               ; .bInputType (analog)
-VID_EDID_INPUT_LEVELS_0700_0300 equ     0               ;   -LLB SCGV
-VID_EDID_INPUT_LEVELS_0714_0286 equ     1
-VID_EDID_INPUT_LEVELS_1000_0400 equ     2
-VID_EDID_INPUT_LEVELS_0700_0000 equ     3
-VID_EDID_INPUT_LEVELS_MASK      equ     11b
-VID_EDID_INPUT_BLANK_TO_BLACK   equ     4
-VID_EDID_INPUT_SEPARATE_SYNC    equ     3
-VID_EDID_INPUT_COMPOSITE_SYNC   equ     2
-VID_EDID_INPUT_SYNC_ON_GREEN    equ     1
-VID_EDID_INPUT_VSYNC_SERRATED   equ     0
+%define VID_EDID_INPUT_LEVELS           5               ; .bInputType (analog)
+%define VID_EDID_INPUT_LEVELS_0700_0300 0               ;   -LLB SCGV
+%define VID_EDID_INPUT_LEVELS_0714_0286 1
+%define VID_EDID_INPUT_LEVELS_1000_0400 2
+%define VID_EDID_INPUT_LEVELS_0700_0000 3
+%define VID_EDID_INPUT_LEVELS_MASK      11b
+%define VID_EDID_INPUT_BLANK_TO_BLACK   4
+%define VID_EDID_INPUT_SEPARATE_SYNC    3
+%define VID_EDID_INPUT_COMPOSITE_SYNC   2
+%define VID_EDID_INPUT_SYNC_ON_GREEN    1
+%define VID_EDID_INPUT_VSYNC_SERRATED   0
 
-VID_EDID_FEATURE_STANDBY        equ     7               ; .bFeatures (digital)
-VID_EDID_FEATURE_SUSPEND        equ     6               ;   SUA2 4RDC
-VID_EDID_FEATURE_ACTIVEOFF      equ     5
-VID_EDID_FEATURE_YCRCB422       equ     4
-VID_EDID_FEATURE_YCRCB444       equ     3
-VID_EDID_FEATURE_TYPE           equ     3               ; .bFeatures (analog)
-VID_EDID_FEATURE_TYPE_MONO      equ     0               ;   SUAT TRDC
-VID_EDID_FEATURE_TYPE_RGB       equ     1
-VID_EDID_FEATURE_TYPE_NONRGB    equ     2
-VID_EDID_FEATURE_TYPE_MASK      equ     11b
-VID_EDID_FEATURE_SRGB           equ     2
-VID_EDID_FEATURE_PREFERRED_DT1  equ     1
-VID_EDID_FEATURE_CONTINUOUS     equ     0
+%define VID_EDID_FEATURE_STANDBY        7               ; .bFeatures (digital)
+%define VID_EDID_FEATURE_SUSPEND        6               ;   SUA2 4RDC
+%define VID_EDID_FEATURE_ACTIVEOFF      5
+%define VID_EDID_FEATURE_YCRCB422       4
+%define VID_EDID_FEATURE_YCRCB444       3
+%define VID_EDID_FEATURE_TYPE           3               ; .bFeatures (analog)
+%define VID_EDID_FEATURE_TYPE_MONO      0               ;   SUAT TRDC
+%define VID_EDID_FEATURE_TYPE_RGB       1
+%define VID_EDID_FEATURE_TYPE_NONRGB    2
+%define VID_EDID_FEATURE_TYPE_MASK      11b
+%define VID_EDID_FEATURE_SRGB           2
+%define VID_EDID_FEATURE_PREFERRED_DT1  1
+%define VID_EDID_FEATURE_CONTINUOUS     0
 
-VID_EDID_TIMING_ASPECT          equ     14              ; .stStandardTiming
-VID_EDID_TIMING_ASPECT_16_10    equ     0               ;   AAVV VVVV XXXX XXXX
-VID_EDID_TIMING_ASPECT_4_3      equ     1
-VID_EDID_TIMING_ASPECT_5_4      equ     2
-VID_EDID_TIMING_ASPECT_16_9     equ     3
-VID_EDID_TIMING_ASPECT_MASK     equ     11b
-VID_EDID_TIMING_VFREQ           equ     8
-VID_EDID_TIMING_VFREQ_MASK      equ     111111b
-VID_EDID_TIMING_XRES            equ     0
-VID_EDID_TIMING_XRES_MASK       equ     11111111b
+%define VID_EDID_TIMING_ASPECT          14              ; .stStandardTiming
+%define VID_EDID_TIMING_ASPECT_16_10    0               ;   AAVV VVVV XXXX XXXX
+%define VID_EDID_TIMING_ASPECT_4_3      1
+%define VID_EDID_TIMING_ASPECT_5_4      2
+%define VID_EDID_TIMING_ASPECT_16_9     3
+%define VID_EDID_TIMING_ASPECT_MASK     11b
+%define VID_EDID_TIMING_VFREQ           8
+%define VID_EDID_TIMING_VFREQ_MASK      111111b
+%define VID_EDID_TIMING_XRES            0
+%define VID_EDID_TIMING_XRES_MASK       11111111b
 
 %define VID_PAR(dx,dy,sx,sy)            (64 * dy * sx / dx / sy)
 

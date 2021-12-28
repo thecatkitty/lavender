@@ -24,20 +24,20 @@ SLD_API SldEntryExecute
 
 %endif
 
-SLD_ENTRY_MAX_LENGTH            equ     80
+%define SLD_ENTRY_MAX_LENGTH            80
 
-SLD_TAG_TYPE_TEXT               equ     'T'
-SLD_TAG_TYPE_BITMAP             equ     'B'
-SLD_TAG_ALIGN_LEFT              equ     '<'
-SLD_TAG_ALIGN_CENTER            equ     '^'
-SLD_TAG_ALIGN_RIGHT             equ     '>'
+%define SLD_TAG_TYPE_TEXT               'T'
+%define SLD_TAG_TYPE_BITMAP             'B'
+%define SLD_TAG_ALIGN_LEFT              '<'
+%define SLD_TAG_ALIGN_CENTER            '^'
+%define SLD_TAG_ALIGN_RIGHT             '>'
 
-SLD_TYPE_TEXT                   equ     0
-SLD_TYPE_BITMAP                 equ     1
+%define SLD_TYPE_TEXT                   0
+%define SLD_TYPE_BITMAP                 1
 
-SLD_ALIGN_LEFT                  equ     0
-SLD_ALIGN_CENTER                equ     0FFF1h
-SLD_ALIGN_RIGHT                 equ     0FFF2h
+%define SLD_ALIGN_LEFT                  0
+%define SLD_ALIGN_CENTER                0FFF1h
+%define SLD_ALIGN_RIGHT                 0FFF2h
 
 %define ERR_SLD_INVALID_DELAY           ERR_CODE(ERR_FACILITY_SLD, 0)
 %define ERR_SLD_UNKNOWN_TYPE            ERR_CODE(ERR_FACILITY_SLD, 1)
