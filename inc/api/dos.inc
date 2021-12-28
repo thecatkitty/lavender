@@ -1,4 +1,4 @@
-DOS_INT                         equ     21h
-DOS_PUTC                        equ     02h             ; AH
-DOS_PUTS                        equ     09h             ; AH
-DOS_EXIT                        equ     4Ch             ; AH
+%define DOS_INT                         21h
+%define DOS_PUTC                        02h             ; AH
+%define DOS_PUTS                        09h             ; AH
+%define DOS_EXIT                        4Ch             ; AH

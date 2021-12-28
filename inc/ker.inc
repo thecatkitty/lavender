@@ -164,11 +164,10 @@ KER_API KerTerminate
 KER_API KerLastError
 
 
-KER_PIT_INPUT_FREQ              equ     1193181_6667
-KER_PIT_FREQ_DIVISOR            equ     2048
-KER_DELAY_MS_MULTIPLIER         equ     100
-KER_DELAY_MS_DIVISOR            equ     (1000_0000 * KER_DELAY_MS_MULTIPLIER) \
-                                        * KER_PIT_FREQ_DIVISOR / KER_PIT_INPUT_FREQ
+%define KER_PIT_INPUT_FREQ              1193181_6667
+%define KER_PIT_FREQ_DIVISOR            2048
+%define KER_DELAY_MS_MULTIPLIER         100
+%define KER_DELAY_MS_DIVISOR            ((1000_0000 * KER_DELAY_MS_MULTIPLIER) * KER_PIT_FREQ_DIVISOR / KER_PIT_INPUT_FREQ)
 
 %define ERR_KER_UNSUPPORTED             ERR_CODE(ERR_FACILITY_KER, 1)
 %define ERR_KER_NOT_FOUND               ERR_CODE(ERR_FACILITY_KER, 2)
