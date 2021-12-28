@@ -1,6 +1,6 @@
 # Lavender [![Build Status](https://dev.azure.com/celones/thecatkitty-gh-public/_apis/build/status/thecatkitty.lavender?branchName=main)](https://dev.azure.com/celones/thecatkitty-gh-public/_build/latest?definitionId=3&branchName=main)
 
-A simple configurable slideshow program for DOS 2.0+ written in 8086 assembly. It shows slides consisting of text and graphics contained in the ZIP file appended to the executable.
+A simple configurable slideshow program for DOS 2.0+ written in 8086 assembly and C. It shows slides consisting of text and graphics contained in the ZIP file appended to the executable.
 
 This is still work in progress, but I'm doing my best to separate working version (`main` branch) from progressing code (PRs).
 
@@ -25,9 +25,7 @@ Each line consists of these parts:
 The end of slides is marked with an empty line.
 
 ## Building
-On Windows, MSYS2 has to be installed and present in `%PATH%`. 
-
-Building on both Windows and Linux requires *GNU Make*, *GNU Binutils*, *Netwide Assembler* and `zip`. If you have it, just run:
+Building requires Linux with *GNU Make*, *GNU Binutils*, *Netwide Assembler*, [GCC for IA-16](https://github.com/tkchia/gcc-ia16/) and `zip`. If you have it, just run:
 ```sh
 make
 ```
