@@ -69,7 +69,7 @@ PitInitialize:
                 push    cs
                 mov     ax, PitIsr
                 push    ax
-                call    _KerInstallIsr
+                call    KerInstallIsr
                 add     sp, 6
                 mov     word [PitIsr.lpfnBiosIsr], ax
                 mov     word [PitIsr.lpfnBiosIsr + 2], dx
@@ -90,7 +90,7 @@ PitDeinitialize:
                 push    ax
                 mov     ax, word [PitIsr.lpfnBiosIsr]
                 push    ax
-                call    _KerUninstallIsr
+                call    KerUninstallIsr
                 add     sp, 6
 
                 xor     al, al              ; Channel 0

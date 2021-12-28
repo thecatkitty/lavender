@@ -24,7 +24,7 @@ VidLoadFont:
                 push    ds
                 mov     ax, abExtendedFont
                 push    ax
-                call    _KerInstallIsr
+                call    KerInstallIsr
                 add     sp, 6
                 mov     word [lpabPreviousFont], ax
                 mov     word [lpabPreviousFont + 2], dx
@@ -112,7 +112,7 @@ VidUnloadFont:
                 push    ax
                 mov     ax, word [lpabPreviousFont]
                 push    ax
-                call    _KerUninstallIsr
+                call    KerUninstallIsr
                 add     sp, 6
                 
                 pop     ax
