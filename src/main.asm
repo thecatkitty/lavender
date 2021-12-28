@@ -1,10 +1,7 @@
-%include "err.inc"
-%include "gfx.inc"
 %include "ker.inc"
 %include "sld.inc"
 %include "vid.inc"
 %include "api/bios.inc"
-%include "api/dos.inc"
 
 
                 cpu     8086
