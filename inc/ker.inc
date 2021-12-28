@@ -28,24 +28,24 @@ API_SUBSET TIME
 KER_API KerSleep
 
 ; ----- Interrupt related functions -----
-API_SUBSET INT
-
 ; Install interrupt service routine
-; Input:
-;   ES:SI - interrupt service routine
-;   DI    - interrupt number
-;   ES:BX - output pointer
+; Stack input:
+;   interrupt service routine offset
+;   interrupt service routine segment
+;   interrupt number
 ; Output:
-;   ES:BX - long pointer to previous interrupt service routine
-; Invalidates: DI
-KER_API KerInstallIsr
+;   AX - previous interrupt service routine offset
+;   DX - previous interrupt service routine segment
+; Invalidates: AX, BX, CX, DX
+extern _KerInstallIsr
 
 ; Uninstall interrupt service routine
-; Input:
-;   ES:SI - long pointer to previous interrupt service routine
-;   DI    - interrupt number
-; Invalidates: DI
-KER_API KerUninstallIsr
+; Stack input:
+;   previous interrupt service routine offset
+;   previous interrupt service routine segment
+;   interrupt number
+; Invalidates: AX, BX, CX, DX
+extern _KerUninstallIsr
 
 
 ; ----- String and memory manipulation functions -----
