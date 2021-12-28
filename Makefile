@@ -43,7 +43,7 @@ $(OBJ)/%.asm.o: $(SRC)/%.asm
 	$(AS) -o $@ -f elf32 -w-label-redef-late -iinc/ $<
 
 $(OBJ)/%.c.o: $(SRC)/%.c
-	$(CC) -c -o $@ -fleading-underscore -Os -Iinc/ $<
+	$(CC) -c -march=i8088 -o $@ -fleading-underscore -Os -Iinc/ $<
 
 $(OBJ)/%.asm.d: $(SRC)/%.asm
 	@mkdir -p $(@D)
