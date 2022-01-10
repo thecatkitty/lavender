@@ -1,4 +1,4 @@
-#include <libi86/string.h>
+#include <stdint.h>
 
 #include <ker.h>
 
