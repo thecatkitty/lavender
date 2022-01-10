@@ -3,6 +3,8 @@
 
 #include <stdbool.h>
 
+#include <err.h>
+
 #ifndef EDITING
 #define far __far
 #else
@@ -17,6 +19,13 @@ typedef void (interrupt *isr)(void) far;
 #define KER_PIT_FREQ_DIVISOR            2048
 #define KER_DELAY_MS_MULTIPLIER         100
 #define KER_DELAY_MS_DIVISOR            ((10000000 * KER_DELAY_MS_MULTIPLIER) * KER_PIT_FREQ_DIVISOR / KER_PIT_INPUT_FREQ)
+
+#define ERR_KER_UNSUPPORTED             ERR_CODE(ERR_FACILITY_KER, 1)
+#define ERR_KER_NOT_FOUND               ERR_CODE(ERR_FACILITY_KER, 2)
+#define ERR_KER_ARCHIVE_NOT_FOUND       ERR_CODE(ERR_FACILITY_KER, 3)
+#define ERR_KER_ARCHIVE_TOO_LARGE       ERR_CODE(ERR_FACILITY_KER, 4)
+#define ERR_KER_ARCHIVE_INVALID         ERR_CODE(ERR_FACILITY_KER, 5)
+#define ERR_KER_INVALID_SEQUENCE        ERR_CODE(ERR_FACILITY_KER, 6)
 
 extern bool KerIsDosBox(void);
 
