@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <conio.h>
 #include <dos.h>
 

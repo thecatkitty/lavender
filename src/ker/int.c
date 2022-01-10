@@ -1,6 +1,7 @@
-#include <ker.h>
-
+#include <stdint.h>
 #include <dos.h>
+
+#include <ker.h>
 
 isr KerInstallIsr(
     isr      routine,
