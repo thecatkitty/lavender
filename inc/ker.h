@@ -51,4 +51,17 @@ inline void KerEnableInterrupts()
     asm ("sti");
 }
 
+// Get code point from UTF-8 sequence
+// Returns the length of the sequence (0 when NUL), negative on error
+extern int KerGetCharacterFromUtf8(
+    const char *sequence,
+    uint16_t   *codePoint);
+
+// Conduct a case-insensitive comparison of two UTF-8 strings
+// Returns 0 when equal, 1 when different, negative on error
+extern int KerCompareUtf8IgnoreCase(
+    const char *str1,
+    const char *str2,
+    unsigned   length);
+
 #endif // _KER_H_

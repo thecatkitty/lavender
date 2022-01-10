@@ -116,8 +116,22 @@ SldLoadContent:
 .Next:
                 cmp     byte [si], 0Dh
                 je      .Break
+
+                push    bx              ; preserve registers
+                push    cx
+                push    dx
+                mov     ax, wCodePoint
+                push    ax              ; codePoint
+                push    si              ; sequence
                 call    KerGetCharacterFromUtf8
-                jc      .Error
+                add     sp, 4
+                pop     dx              ; restore registers
+                pop     cx
+                pop     bx
+                cmp     ax, 0           ; return value < 0
+                jl      .Error
+                add     si, ax
+                mov     ax, word [wCodePoint]
                 call    VidGetFontEncoding
                 mov     byte [di], al
                 inc     di
@@ -137,3 +151,9 @@ SldLoadContent:
 .End:           pop     ax
                 pop     dx
                 ret
+
+
+section .bss
+
+
+wCodePoint      resw    1
