@@ -91,34 +91,24 @@ API_SUBSET UNICODE
 
 ; Get code point from UTF-8 sequence
 ;   CURRENTLY WORKS ONLY FOR CODE POINTS UNDER 0800h
-; Input:
-;   DS:SI - UTF-8 sequence
+; Stack input:
+;   near pointer to the UTF-8 sequence
+;   near pointer to output WORD
 ; Output:
-;   AX    - code point under 0800h
-;   DS:SI - first byte after the end of sequence
-;   CF    - error
+;   AX - length of the sequence (0 when NUL), negative on error
+; Invalidates: AX, BX, CX, DX
 KER_API KerGetCharacterFromUtf8
 
 ; Conduct a case-insensitive comparison of two UTF-8 strings
-; CURRENTLY WORKS ONLY FOR LATIN SCRIPT UNDER 0800h
-; Input:
-;   DS:SI - left string
-;   DS:BX - right string
-;   CX    - length in bytes
-; Output:
-;   ZF    - difference
-;   CF    - error
-; Invalidates: 
-KER_API KerCompareUtf8IgnoreCase
-
-; Get case folding for Unicode code point
 ;   CURRENTLY WORKS ONLY FOR CODE POINTS UNDER 0800h
-; Input:
-;   AX    - code point
+; Stack input:
+;   near pointer to the left string
+;   near pointer to the right string
+;   length in bytes
 ; Output:
-;   AX    - case folding first code point
-;   BX    - case folding second code point or NUL
-KER_API KerFoldCase
+;   AX - 0 when equal, 1 when different, negative on error
+; Invalidates: AX, BX, CX, DX
+KER_API KerCompareUtf8IgnoreCase
 
 
 ; ----- ZIP archive functions -----
