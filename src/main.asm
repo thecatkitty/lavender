@@ -20,20 +20,40 @@ Main:
 
                 call    VidLoadFont
 
-                mov     bx, ArchiveStart
-                mov     si, ArchiveEnd
+                mov     ax, pstDirectoryEnd 
+                push    ax              ; cdir
+                mov     ax, ArchiveEnd      
+                push    ax              ; to
+                mov     ax, ArchiveStart    
+                push    ax              ; from
                 call    KerLocateArchive
-                jc      KerTerminate
-                mov     word [pstDirectoryEnd], si
+                add     sp, 6
+                cmp     ax, 0
+                jl      KerTerminate
 
-                mov     bx, sSlides
+                mov     ax, pstLocalFile    
+                push    ax              ; lfh
                 mov     cx, nSlidesLength
+                push    cx              ; nameLength
+                mov     ax, sSlides         
+                push    ax              ; name
+                mov     ax, word [pstDirectoryEnd]
+                push    ax              ; cdir
                 call    KerSearchArchive
-                jc      KerTerminate
-                call    KerGetArchiveData
-                jc      KerTerminate
+                add     sp, 8
+                cmp     ax, 0
+                jl      KerTerminate
 
-                mov     si, bx
+                mov     ax, pabFileData
+                push    ax              ; data
+                mov     ax, word [pstLocalFile]
+                push    ax              ; lfh
+                call    KerGetArchiveData
+                add     sp, 4
+                cmp     ax, 0
+                jl      KerTerminate
+
+                mov     si, word [pabFileData]
 .Next:
                 mov     di, stEntry
                 call    SldEntryLoad
@@ -72,4 +92,6 @@ section .bss
 
 
 pstDirectoryEnd                 resw    1
+pstLocalFile                    resw    1
+pabFileData                     resw    1
 stEntry                         resb    SLD_ENTRY_size

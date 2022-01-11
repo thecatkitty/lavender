@@ -4,7 +4,7 @@ LD      = ia16-elf-ld
 OBJCOPY = ia16-elf-objcopy
 
 CFLAGS  = -c -march=i8088 -Os -Iinc/
-LDFLAGS = -L/usr/ia16-elf/lib/ -li86 --nmagic -T com.ld
+LDFLAGS = -L/usr/ia16-elf/lib/ -lc -li86 --nmagic -T com.ld
 
 BIN     = bin
 OBJ     = obj

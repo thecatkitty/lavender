@@ -115,32 +115,33 @@ KER_API KerCompareUtf8IgnoreCase
 API_SUBSET ZIP
 
 ; Locate ZIP central directory end structure
-; Input:
-;   DS:BX - search range lower boundary
-;   DS:SI - search range upper boundary
+; Stack input:
+;   search range lower boundary (near)
+;   search range upper boundary (near)
+;   near pointer to output structure pointer
 ; Output:
-;   DS:SI - ZIP central directory end structure
-;   CF    - error
-; Invalidates:
+;   AX - 0 when found, negative on error
+; Invalidates: AX, BX, CX, DX
 KER_API KerLocateArchive
 
 ; Locate ZIP local file header structure
-; Input:
-;   DS:SI - ZIP central directory end structure
-;   DS:BX - file name
-;   CX    - file name length
+; Stack input:
+;   near pointer to ZIP central directory end structure
+;   near pointer to the file name
+;   file name length
+;   near pointer to output structure pointer
 ; Output:
-;   DS:DI - ZIP local file header structure
-;   CF    - error
-; Invalidates: BX, CX
+;   AX - 0 when found, negative on error
+; Invalidates: AX, BX, CX, DX
 KER_API KerSearchArchive
 
 ; Locate ZIP file data
-; Input:
-;   DS:DI - ZIP local file header structure
+; Stack input:
+;   near pointer to ZIP local file header structure
+;   near pointer to ZIP file data pointer
 ; Output:
-;   DS:BX - ZIP file data
-;   CF    - error
+;   AX - 0 when found, negative on error
+; Invalidates: AX, BX, CX, DX
 KER_API KerGetArchiveData
 
 

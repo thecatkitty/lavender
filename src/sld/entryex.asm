@@ -83,11 +83,20 @@ SldEntryExecuteBitmap:
                 mov     cl, byte [di + SLD_ENTRY.bLength]
                 call    SldLocateBestBitmap
                 jc      .Error
-                call    KerGetArchiveData               ; file data in DS:BX
-                jc      .Error
+                
+                push    ax
+                mov     bx, pabFileData
+                push    bx              ; data
+                mov     bx, word [pstLocalFile]
+                push    bx              ; lfh
+                call    KerGetArchiveData
+                add     sp, 4
+                cmp     ax, 0
+                pop     ax
+                jl      .Error
 
                 ; Bitmap - load image
-                mov     si, bx
+                mov     si, word [pabFileData]
                 mov     di, stPicture
                 call    GfxLoadBitmap
                 jc      .Error
@@ -165,8 +174,22 @@ SldLocateBestBitmap:
                 call    SldFindBitmapNearestPar         ; DX - pixel aspect ration file name field
                 jc      .End
 .NoPattern:
-                mov     bx, word [bp - 2]
+                push    ax
+                mov     bx, pstLocalFile    
+                push    bx              ; lfh
+                push    cx              ; nameLength
+                mov     bx, word [bp - 2]         
+                push    bx              ; name
+                push    si              ; cdir
                 call    KerSearchArchive
+                add     sp, 8
+                cmp     ax, 0
+                pop     ax
+                jl      .Error
+                mov     di, word [pstLocalFile]
+                jmp     .End
+.Error:
+                stc
 .End:
                 mov     sp, bp
                 pop     bp
@@ -225,10 +248,30 @@ SldFindBitmapNearestPar:
                 xchg    bx, dx
                 mov     word [bx], ax                   ; replace pattern with number
                 xchg    bx, dx
-
-                mov     bx, word [bp - 6]
+                
+                push    ax
+                push    bx
+                push    cx
+                push    dx
+                mov     bx, pstLocalFile    
+                push    bx              ; lfh
                 mov     cx, word [bp - 8]
+                push    cx              ; nameLength
+                mov     bx, word [bp - 6]         
+                push    bx              ; name
+                push    si              ; cdir
                 call    KerSearchArchive
+                add     sp, 8
+                cmp     ax, 0
+                pop     dx
+                pop     cx
+                pop     bx
+                pop     ax
+                jl      .CheckError
+                mov     di, word [pstLocalFile]
+                ret
+.CheckError:
+                stc
                 ret
 
 
@@ -236,3 +279,5 @@ section .bss
 
 
 stPicture                       resb    GFX_BITMAP_size
+pstLocalFile                    resw    1
+pabFileData                     resw    1
