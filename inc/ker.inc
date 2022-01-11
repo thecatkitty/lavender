@@ -69,15 +69,6 @@ KER_API KerParseU16
 ;   AL    - second hexadecimal digit
 KER_API KerByteToHex
 
-; Compare two memory ranges
-; Input:
-;   DS:SI - first range
-;   DS:BX - second range
-;   CX    - range length
-; Output:
-;   CF, ZF - difference
-KER_API KerCompareMemory
-
 ; Tells if given byte is a whitespace character
 ; Input:
 ;   AL - byte
