@@ -6,8 +6,7 @@
 
                 cpu     8086
 
-                extern  ArchiveStart
-                extern  ArchiveEnd
+                extern  __edata
 
 [bits 16]
 section .text
@@ -22,9 +21,9 @@ Main:
 
                 mov     ax, pstDirectoryEnd 
                 push    ax              ; cdir
-                mov     ax, ArchiveEnd      
+                mov     ax, 0FD00h
                 push    ax              ; to
-                mov     ax, ArchiveStart    
+                mov     ax, __edata
                 push    ax              ; from
                 call    KerLocateArchive
                 add     sp, 6

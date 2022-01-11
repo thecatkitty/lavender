@@ -1,13 +1,13 @@
 %include "gfx.inc"
 
 
-section .errf
+section .ctors.errf
 
 
 db      ERR_FACILITY_GFX,               "Graphics$"
 
 
-section .errm
+section .ctors.errm
 
 
 db      ERR_GFX_FORMAT,                 "Unsupported format$"
