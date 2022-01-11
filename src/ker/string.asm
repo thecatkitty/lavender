@@ -91,28 +91,6 @@ KerByteToHex:
                 ret
 
 
-                global  KerCompareMemory
-KerCompareMemory:
-                push    si
-                push    cx
-                push    bx
-                push    ax
-.NextByte:
-                mov     al, byte [si]
-                cmp     al, byte [bx]
-                jne     .End
-                inc     si
-                inc     bx
-                loop    .NextByte
-                cmp     ax, ax
-.End:
-                pop     ax
-                pop     bx
-                pop     cx
-                pop     si
-                ret
-
-
                 global  KerIsWhitespace
 KerIsWhitespace:
                 cmp     al, 20h         ; SPACE
