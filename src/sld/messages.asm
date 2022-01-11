@@ -1,13 +1,13 @@
 %include "sld.inc"
 
 
-section .errf
+section .ctors.errf
 
 
 db      ERR_FACILITY_SLD,               "Slides$"
 
 
-section .errm
+section .ctors.errm
 
 
 db      ERR_SLD_INVALID_DELAY,          "Invalid delay$"

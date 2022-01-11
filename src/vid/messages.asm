@@ -1,13 +1,13 @@
 %include "vid.inc"
 
 
-section .errf
+section .ctors.errf
 
 
 db      ERR_FACILITY_VID,               "Video$"
 
 
-section .errm
+section .ctors.errm
 
 
 db      ERR_VID_UNSUPPORTED,            "Unsupported feature requested$"

@@ -1,13 +1,13 @@
 %include "ker.inc"
 
 
-section .errf
+section .ctors.errf
 
 
 db      ERR_FACILITY_KER,               "Kernel$"
 
 
-section .errm
+section .ctors.errm
 
 
 db      ERR_OK,                         "OK$"

@@ -4,7 +4,7 @@ LD      = ia16-elf-ld
 OBJCOPY = ia16-elf-objcopy
 
 CFLAGS  = -c -march=i8088 -Os -Iinc/
-LDFLAGS = -L/usr/ia16-elf/lib/ -lc -li86 --nmagic -T com.ld
+LDFLAGS = -L/usr/lib/x86_64-linux-gnu/gcc/ia16-elf/6.3.0 -L/usr/ia16-elf/lib -T dos-mtl.ld -li86 --nmagic
 
 BIN     = bin
 OBJ     = obj
@@ -32,11 +32,8 @@ ifneq ($(MAKECMDGOALS),clean)
 include $(ASSOURCES:%.asm=$(OBJ)/%.asm.d)
 endif
 
-$(BIN)/%.com: $(OBJ)/%.elf
+$(BIN)/lavender.com: $(ASSOURCES:%.asm=$(OBJ)/%.asm.o) $(CCSOURCES:%.c=$(OBJ)/%.c.o)
 	@mkdir -p $(BIN)
-	$(OBJCOPY) -O binary -j .com $< $@
-
-$(OBJ)/lavender.elf: $(ASSOURCES:%.asm=$(OBJ)/%.asm.o) $(CCSOURCES:%.c=$(OBJ)/%.c.o)
 	$(LD) -Map=$(OBJ)/lavender.map -o $@ $^ $(LDFLAGS)
 
 $(OBJ)/data.zip: $(DATA)/*

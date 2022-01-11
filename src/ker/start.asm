@@ -6,17 +6,16 @@
                 cpu     8086
 
                 extern  Main
-                extern  StackBottom
-                extern  StackTop
 
                 extern  PitInitialize
                 extern  PitDeinitialize
 
 
 [bits 16]
-section .init
+section .startupA
 
-
+                global  _start
+_start:
                 jmp     KerEntry
 %push About
 %defstr GIT_COMMIT      %!GIT_COMMIT
@@ -29,9 +28,6 @@ section .text
 
 
 KerEntry:
-                ; Initialize stack
-                mov     sp, StackBottom
-
                 call    PitInitialize
 
                 call    Main
@@ -43,3 +39,17 @@ KerExit:
 
                 mov     ah, DOS_EXIT
                 int     DOS_INT
+
+
+section .ctors.errf
+
+
+                global  ErrFacilities
+ErrFacilities:
+
+
+section .ctors.errm
+
+
+                global  ErrMessages
+ErrMessages:
