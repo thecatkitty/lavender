@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include <err.h>
+#include <fmt/zip.h>
 
 #ifndef EDITING
 #define far __far
@@ -63,5 +64,26 @@ extern int KerCompareUtf8IgnoreCase(
     const char *str1,
     const char *str2,
     unsigned   length);
+
+// Locate ZIP central directory end structure
+// Returns 0 when found, negative on error
+extern int KerLocateArchive(
+    void                *from,
+    void                *to,
+    ZIP_CDIR_END_HEADER **cdir);
+
+// Locate ZIP local file header structure
+// Returns 0 when found, negative on error
+extern int KerSearchArchive(
+    ZIP_CDIR_END_HEADER   *cdir,
+    const char            *name,
+    uint16_t              nameLength,
+    ZIP_LOCAL_FILE_HEADER **lfh);
+
+// Locate ZIP file data
+// Returns 0 when found, negative on error
+extern int KerGetArchiveData(
+    ZIP_LOCAL_FILE_HEADER *lfh,
+    void                  **data);
 
 #endif // _KER_H_
