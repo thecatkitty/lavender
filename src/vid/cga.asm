@@ -29,37 +29,6 @@ VidSetMode:
                 ret
 
 
-                global  VidGetPixelAspectRatio
-VidGetPixelAspectRatio:
-                push    bp
-                mov     bp, sp
-                sub     sp, VID_EDID_size
-                mov     ax, (VID_EDID_TIMING_ASPECT_4_3 << VID_EDID_TIMING_ASPECT)
-
-                mov     di, sp
-                call    VesaReadEdid
-                jc      .Convert
-                mov     ax, word [bp - VID_EDID_size + VID_EDID.stStandardTiming]
-.Convert:
-                push    bx
-                push    cx
-                mov     cl, VID_EDID_TIMING_ASPECT
-                shr     ax, cl
-                mov     bx, .LookupTable
-                xlat
-                pop     cx
-                pop     bx
-
-                mov     sp, bp
-                pop     bp
-                ret
-.LookupTable:
-                db      VID_PAR(16,10,VID_CGA_HIMONO_WIDTH,VID_CGA_HIMONO_HEIGHT)
-                db      VID_PAR(4,3,VID_CGA_HIMONO_WIDTH,VID_CGA_HIMONO_HEIGHT)
-                db      VID_PAR(5,4,VID_CGA_HIMONO_WIDTH,VID_CGA_HIMONO_HEIGHT)
-                db      VID_PAR(16,9,VID_CGA_HIMONO_WIDTH,VID_CGA_HIMONO_HEIGHT)
-
-
                 global  VidDrawBitmap
 VidDrawBitmap:
                 cmp     byte [si + GFX_BITMAP.bPlanes], 1
@@ -147,49 +116,4 @@ VidDrawText:
 .End:           pop     ax
                 pop     bx
                 pop     cx
-                ret
-
-
-; Read EDID record over VESA VBE/DC
-; Input:
-;   DS:DI - 128-byte output buffer
-; Output:
-;   DS:DI - EDID record
-;   CF    - error
-VesaReadEdid:
-                push    ax
-                push    bx
-                push    cx
-                push    dx
-                push    es
-
-                mov     ax, BIOS_VIDEO_VBE_DC
-                mov     bl, BIOS_VIDEO_VBE_DC_CAPABILITIES
-                int     BIOS_INT_VIDEO
-                cmp     al, 4Fh
-                jne     .Unsupported
-                cmp     ah, 00h
-                jne     .Failed
-
-                mov     ax, BIOS_VIDEO_VBE_DC
-                mov     bl, BIOS_VIDEO_VBE_DC_READ_EDID
-                xor     cx, cx
-                xor     dx, dx
-                push    ds
-                pop     es
-                int     BIOS_INT_VIDEO
-                cmp     al, 4Fh
-                jne     .Unsupported
-                cmp     ah, 00h
-                je      .End
-.Unsupported:
-                ERR     VID_UNSUPPORTED
-.Failed:
-                ERR     VID_FAILED
-.Error:
-.End:           pop     es
-                pop     dx
-                pop     cx
-                pop     bx
-                pop     ax
                 ret

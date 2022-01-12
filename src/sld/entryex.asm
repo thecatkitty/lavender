@@ -179,8 +179,13 @@ SldLocateBestBitmap:
                 mov     word [bp - 4], bx
 
                 ; Pixel Aspect Ratio field
-                xor     ax, ax
-                call    VidGetPixelAspectRatio          ; AX - reference PAR
+                push    bx
+                push    cx
+                push    dx
+                call    VidGetPixelAspectRatio
+                pop     dx
+                pop     cx
+                pop     ax                              ; AX - reference PAR
                 mov     bx, word [bp - 2]               ; BX - file name
                 mov     dx, word [bp - 4]               ; CX - file name length
                 call    SldFindBitmapNearestPar         ; DX - pixel aspect ration file name field
