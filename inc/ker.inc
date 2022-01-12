@@ -69,13 +69,6 @@ KER_API KerParseU16
 ;   AL    - second hexadecimal digit
 KER_API KerByteToHex
 
-; Tells if given byte is a whitespace character
-; Input:
-;   AL - byte
-; Output:
-;   ZF - zero if a whitespace
-KER_API KerIsWhitespace
-
 
 ; ----- Unicode support functions -----
 API_SUBSET UNICODE
