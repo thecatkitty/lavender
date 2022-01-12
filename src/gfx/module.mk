@@ -1,1 +1,2 @@
-ASSOURCES := $(ASSOURCES) $(DIR)/pbm.asm $(DIR)/messages.asm
+ASSOURCES := $(ASSOURCES) $(DIR)/messages.asm
+CCSOURCES := $(CCSOURCES) $(DIR)/pbm.c

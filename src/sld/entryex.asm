@@ -96,10 +96,22 @@ SldEntryExecuteBitmap:
                 jl      .Error
 
                 ; Bitmap - load image
-                mov     si, word [pabFileData]
+                push    ax              ; save registers
+                push    bx
+                push    cx
+                push    dx
                 mov     di, stPicture
+                push    di              ; bm
+                mov     si, word [pabFileData]
+                push    si              ; data
                 call    GfxLoadBitmap
-                jc      .Error
+                add     sp, 4
+                cmp     ax, 0
+                pop     dx              ; restore registers
+                pop     cx
+                pop     bx
+                pop     ax
+                jl      .Error
                 
                 pop     bx
                 xchg    di, bx
@@ -120,7 +132,7 @@ SldEntryExecuteBitmap:
                 mov     ax, VID_CGA_HIMONO_LINE
                 sub     ax, word [bx + GFX_BITMAP.wWidthBytes]
 .Draw:
-                mov     si, bx
+                mov     si, stPicture
                 mov     bx, word [di + SLD_ENTRY.wVertical]
                 call    VidDrawBitmap
                 clc

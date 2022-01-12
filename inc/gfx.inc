@@ -5,11 +5,12 @@
 %define GFX_API extern
 
 ; Load bitmap picture
-; Input:
-;   DS:SI - picture data
-;   DS:DI - GFX_BITMAP structure
+; Stack input:
+;   near pointer to picture data
+;   near pointer to GFX_BITMAP structure
 ; Output:
-;   CF    - error
+;   AX - negative on error
+; Invalidates: AX, BX, CX, DX
 GFX_API GfxLoadBitmap
 
 %endif
