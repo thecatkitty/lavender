@@ -126,6 +126,34 @@ VidUnloadFont(void)
     KerUninstallIsr((isr)lpabPreviousFont, INT_CGA_EXTENDED_FONT_PTR);
 }
 
+uint8_t
+VidConvertToLocal(uint16_t wc)
+{
+    if (0x80 > wc)
+    {
+        return wc;
+    }
+
+    uint8_t                   local = 0x80;
+    VID_CHARACTER_DESCRIPTOR *fdata = astFontData;
+
+    while (wc > fdata->CodePoint)
+    {
+        if (NULL != fdata->Overlay)
+        {
+            local++;
+        }
+        fdata++;
+    }
+
+    if (wc != fdata->CodePoint)
+    {
+        return '?';
+    }
+
+    return local;
+}
+
 int
 VesaReadEdid(EDID *edid)
 {

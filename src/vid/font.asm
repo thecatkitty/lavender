@@ -4,50 +4,6 @@
 %include "dev/cga.inc"
 
 
-                cpu     8086
-
-[bits 16]
-section .text
-
-
-                global  VidGetFontEncoding
-VidGetFontEncoding:
-                cmp     ax, 80h
-                jae     .Convert
-                ret                     ; do not convert ASCII code points
-.Convert:
-                push    si
-                push    cx
-                mov     si, astFontData
-                xor     cx, cx
-.NextCharacter:
-                cmp     word [si + VID_CHARACTER_DESCRIPTOR.wcCodePoint], ax
-                ja      .Error
-                je      .Return
-                cmp     word [si + VID_CHARACTER_DESCRIPTOR.pabOverlay], 0
-                je      .JumpNext
-                inc     cx
-.JumpNext:
-                add     si, VID_CHARACTER_DESCRIPTOR_size
-                jmp     .NextCharacter
-.Error:
-                mov     al, '?'
-                stc
-                jmp     .End
-.Return:
-                cmp     word [si + VID_CHARACTER_DESCRIPTOR.pabOverlay], 0
-                je      .Basic
-                mov     al, cl
-                add     al, 80h
-                jmp     .End
-.Basic:
-                mov     al, byte [si + VID_CHARACTER_DESCRIPTOR.cBase]
-.End:
-                pop     cx
-                pop     si
-                ret
-
-
 section .data
 %push Context
 

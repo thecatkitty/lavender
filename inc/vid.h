@@ -45,4 +45,7 @@ VidLoadFont(void);
 extern void
 VidUnloadFont(void);
 
+extern uint8_t
+VidConvertToLocal(uint16_t wc);
+
 #endif // _VID_H_

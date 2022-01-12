@@ -131,8 +131,17 @@ SldLoadContent:
                 cmp     ax, 0           ; return value < 0
                 jl      .Error
                 add     si, ax
+
+                push    bx
+                push    cx
+                push    dx
                 mov     ax, word [wCodePoint]
-                call    VidGetFontEncoding
+                push    ax
+                call    VidConvertToLocal
+                add     sp, 2
+                pop     dx
+                pop     cx
+                pop     bx
                 mov     byte [di], al
                 inc     di
                 inc     dx

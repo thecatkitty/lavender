@@ -48,12 +48,12 @@ VID_API VidLoadFont
 VID_API VidUnloadFont
 
 ; Get local encoding code point from Unicode code point
-; Input:
-;   AX - Unicode code point
+; Stack input:
+;   Unicode code point
 ; Output:
 ;   AL - local encoding code point, '?' on error
-;   CF - error
-VID_API VidGetFontEncoding
+; Invalidates: AX, BX, CX, DX
+VID_API VidConvertToLocal
 
 %endif
 
