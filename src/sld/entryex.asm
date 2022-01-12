@@ -132,10 +132,14 @@ SldEntryExecuteBitmap:
                 mov     ax, VID_CGA_HIMONO_LINE
                 sub     ax, word [bx + GFX_BITMAP.wWidthBytes]
 .Draw:
-                mov     si, stPicture
                 mov     bx, word [di + SLD_ENTRY.wVertical]
+                push    bx              ; y
+                push    ax              ; x
+                mov     si, stPicture
+                push    si              ; bm
                 call    VidDrawBitmap
-                clc
+                add     sp, 6
+                
                 jmp     .End
 .Error:
                 pop     di

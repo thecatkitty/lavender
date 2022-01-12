@@ -7,11 +7,13 @@
 ; ----- Low level drawing functions -----
 
 ; Copy bitmap to screen buffer
-; Input:
-;   DS:SI - GFX_BITMAP structure
-;   AX    - horizontal position, in columns (aligned on 8)
-;   BX    - vertical position, in lines
-; Invalidates: AX, CX, DX, DI, SI
+; Stack input:
+;   near pointer to GFX_BITMAP structure
+;   horizontal position, in columns (aligned on 8)
+;   vertical position, in lines
+; Output:
+;   AX - negative on error
+; Invalidates: AX, BX, CX, DX
 VID_API VidDrawBitmap
 
 ; Write text to screen

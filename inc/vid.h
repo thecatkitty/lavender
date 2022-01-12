@@ -4,12 +4,15 @@
 #include <stdint.h>
 
 #include <err.h>
+#include <gfx.h>
 
 #define VID_CGA_HIMONO_WIDTH  640
 #define VID_CGA_HIMONO_HEIGHT 200
+#define VID_CGA_HIMONO_LINE   (VID_CGA_HIMONO_WIDTH / 8)
 
 #define ERR_VID_UNSUPPORTED ERR_CODE(ERR_FACILITY_VID, 0)
 #define ERR_VID_FAILED      ERR_CODE(ERR_FACILITY_VID, 1)
+#define ERR_VID_FORMAT      ERR_CODE(ERR_FACILITY_VID, 2)
 
 // Set video mode
 // Returns previous video mode
@@ -20,5 +23,8 @@ VidSetMode(uint16_t mode);
 // Returns pixel aspect ratio (PAR = 64 / value), default value on error
 extern uint16_t
 VidGetPixelAspectRatio(void);
+
+extern int
+VidDrawBitmap(GFX_BITMAP *bm, uint16_t x, uint16_t y);
 
 #endif // _VID_H_
