@@ -9,9 +9,10 @@
 #define VID_PAR(dx, dy, sx, sy)                                                \
     (uint8_t)(64U * (unsigned)dy * (unsigned)sx / (unsigned)dx / (unsigned)sy)
 
-extern char                     abExtendedFont[];
-extern far char *               lpabPreviousFont;
-extern VID_CHARACTER_DESCRIPTOR astFontData[];
+extern char                     __VidExtendedFont[];
+extern VID_CHARACTER_DESCRIPTOR __VidFontData[];
+
+static isr PreviousFontPtr;
 
 static int
 VesaReadEdid(EDID *edid);
@@ -82,13 +83,13 @@ VidDrawText(const char *str, uint16_t x, uint16_t y)
 void
 VidLoadFont(void)
 {
-    lpabPreviousFont =
-        (char *)KerInstallIsr((isr)abExtendedFont, INT_CGA_EXTENDED_FONT_PTR);
+    PreviousFontPtr =
+        KerInstallIsr((isr)__VidExtendedFont, INT_CGA_EXTENDED_FONT_PTR);
 
     far const char *bfont =
         MK_FP(CGA_BASIC_FONT_SEGMENT, CGA_BASIC_FONT_OFFSET);
-    char *                    xfont = abExtendedFont;
-    VID_CHARACTER_DESCRIPTOR *fdata = astFontData;
+    char *                    xfont = __VidExtendedFont;
+    VID_CHARACTER_DESCRIPTOR *fdata = __VidFontData;
 
     if (KerIsDosBox())
     {
@@ -123,7 +124,7 @@ VidLoadFont(void)
 void
 VidUnloadFont(void)
 {
-    KerUninstallIsr((isr)lpabPreviousFont, INT_CGA_EXTENDED_FONT_PTR);
+    KerUninstallIsr((isr)PreviousFontPtr, INT_CGA_EXTENDED_FONT_PTR);
 }
 
 uint8_t
@@ -135,7 +136,7 @@ VidConvertToLocal(uint16_t wc)
     }
 
     uint8_t                   local = 0x80;
-    VID_CHARACTER_DESCRIPTOR *fdata = astFontData;
+    VID_CHARACTER_DESCRIPTOR *fdata = __VidFontData;
 
     while (wc > fdata->CodePoint)
     {

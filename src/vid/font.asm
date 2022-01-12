@@ -1,43 +1,37 @@
-%define VID_API
-%include "ker.inc"
-%include "vid.inc"
-%include "dev/cga.inc"
-
-
-section .data
-%push Context
-
 %macro          DCHR    3
                                         ; VID_CHARACTER_DESCRIPTOR
-                dw      %1              ;   .wcCodePoint
-                dw      %3              ;   .pabOverlay
-                db      %2              ;   .cBase
+                dw      %1              ;   CodePoint
+                dw      %3              ;   Overlay
+                db      %2              ;   Base
 
 %endmacro
 
 
-                                global  astFontData
-astFontData:
+section .rodata.font
+
+
+                                global  __VidFontData
+__VidFontData:
                                 DCHR    00A7h, 15h, 0   ; SECTION SIGN
                                 DCHR    00B6h, 14h, 0   ; PILCROW SIGN
-                                DCHR    00D3h, 'O', abAcute
-                                DCHR    00F3h, 'o', abAcute
-                                DCHR    0104h, 'A', abOgonek
-                                DCHR    0105h, 'a', abOgonek
-                                DCHR    0106h, 'C', abAcute
-                                DCHR    0107h, 'c', abAcute
-                                DCHR    0118h, 'E', abOgonek
-                                DCHR    0119h, 'e', abOgonek
-                                DCHR    0141h, 'L', abStroke
-                                DCHR    0142h, 'l', abStroke
-                                DCHR    0143h, 'N', abAcute
-                                DCHR    0144h, 'n', abAcute
-                                DCHR    015Ah, 'S', abAcute
-                                DCHR    015Bh, 's', abAcute
-                                DCHR    0179h, 'Z', abAcute
-                                DCHR    017Ah, 'z', abAcute
-                                DCHR    017Bh, 'Z', abDotAbove
-                                DCHR    017Ch, 'z', abDotAbove
+                                DCHR    00D3h, 'O', Acute
+                                DCHR    00F3h, 'o', Acute
+                                DCHR    0104h, 'A', Ogonek
+                                DCHR    0105h, 'a', Ogonek
+                                DCHR    0106h, 'C', Acute
+                                DCHR    0107h, 'c', Acute
+                                DCHR    0118h, 'E', Ogonek
+                                DCHR    0119h, 'e', Ogonek
+                                DCHR    0141h, 'L', Stroke
+                                DCHR    0142h, 'l', Stroke
+                                DCHR    0143h, 'N', Acute
+                                DCHR    0144h, 'n', Acute
+                                DCHR    015Ah, 'S', Acute
+                                DCHR    015Bh, 's', Acute
+                                DCHR    0179h, 'Z', Acute
+                                DCHR    017Ah, 'z', Acute
+                                DCHR    017Bh, 'Z', DotAbove
+                                DCHR    017Ch, 'z', DotAbove
                                 DCHR    2022h, 07h, 0   ; BULLET
                                 DCHR    203Ch, 13h, 0   ; DOUBLE EXCLAMATION MARK
                                 DCHR    2190h, 1Bh, 0   ; LEFTWARDS ARROW
@@ -68,28 +62,23 @@ astFontData:
                                 DCHR    2666h, 04h, 0   ; BLACK DIAMOND SUIT
                                 DCHR    266Ah, 0Dh, 0   ; EIGHTH NOTE
                                 DCHR    266Bh, 0Eh, 0   ; BEAMED EIGHTH NOTES
-nFontDataLength                 equ     ($ - astFontData) / VID_CHARACTER_DESCRIPTOR_size
+FONT_DATA_LENGTH                equ     ($ - __VidFontData) / 5
                                 dw      0FFFFh
 
-abAcute:                        db      02h, \
+Acute:                          db      02h, \
                                         00011000b, \
                                         00110000b
-abDotAbove:                     db      01h, \
+DotAbove:                       db      01h, \
                                         00110000b
-abOgonek:                       db      71h, \
+Ogonek:                         db      71h, \
                                         00011100b
-abStroke:                       db      22h, \
+Stroke:                         db      22h, \
                                         00011000b, \
                                         01100000b
-
-%pop
 
 
 section .bss
 
 
-                                global  abExtendedFont
-abExtendedFont                  resb    nFontDataLength * 8
-
-                                global  lpabPreviousFont
-lpabPreviousFont                resd    1
+                                global  __VidExtendedFont
+__VidExtendedFont               resb    FONT_DATA_LENGTH * 8
