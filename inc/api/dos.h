@@ -3,20 +3,20 @@
 
 #include <dos.h>
 
-inline void DosPutC(
-    int c)
+inline void
+DosPutC(int c)
 {
     bdos(0x02, c, 0);
 }
 
-inline void DosPutS(
-    const char *str)
+inline void
+DosPutS(const char *str)
 {
     bdos(0x09, (unsigned)str, 0);
 }
 
-inline void DosExit(
-    int code)
+inline void
+DosExit(int code)
 {
     bdos(0x4C, 0, code);
 }

@@ -2,16 +2,14 @@
 
 #include <ker.h>
 
-static int KerFoldCase(
-    uint16_t codePoint,
-    uint16_t *buff);
+static int
+KerFoldCase(uint16_t codePoint, uint16_t *buff);
 
 static const uint16_t FoldingSingleCharacters[];
 static const uint16_t FoldingDoubleCharacters[];
 
-int KerGetCharacterFromUtf8(
-    const char *sequence,
-    uint16_t   *codePoint)
+int
+KerGetCharacterFromUtf8(const char *sequence, uint16_t *codePoint)
 {
     unsigned leadBits = *sequence & 0b11000000;
 
@@ -62,15 +60,13 @@ int KerGetCharacterFromUtf8(
     return continuationBytes + 1;
 }
 
-int KerCompareUtf8IgnoreCase(
-    const char *str1,
-    const char *str2,
-    unsigned   length)
+int
+KerCompareUtf8IgnoreCase(const char *str1, const char *str2, unsigned length)
 {
     uint16_t code1, code2;
-    int length1, length2;
+    int      length1, length2;
     uint16_t fold1[2], fold2[2];
-    
+
     for (unsigned i = 0; i < length; i++)
     {
         if (0 > (length1 = KerGetCharacterFromUtf8(str1, &code1)))
@@ -102,24 +98,23 @@ int KerCompareUtf8IgnoreCase(
 
 // Get case folding for Unicode code point
 // Returns length of folding in Unicode code points
-int KerFoldCase(
-    uint16_t codePoint,
-    uint16_t *buff)
+int
+KerFoldCase(uint16_t codePoint, uint16_t *buff)
 {
     buff[0] = codePoint;
     buff[1] = 0;
 
     // NULL CHARACTER -- AT SIGN
     if ((codePoint < 0x0041)
-    // LEFT SQUARE BRACKET -- INVERTED QUESTION MARK
-    || ((codePoint >= 0x005B) && (codePoint <= 0x00BF)))
+        // LEFT SQUARE BRACKET -- INVERTED QUESTION MARK
+        || ((codePoint >= 0x005B) && (codePoint <= 0x00BF)))
     {
         return 1;
     }
 
     // LATIN CAPITAL LETTER A -- LATIN CAPITAL LETTER Z
-    if (((codePoint >= 0x0041) && (codePoint <= 0x005A))
-    || ((codePoint >= 0x00C0) && (codePoint <= 0x00DE)))
+    if (((codePoint >= 0x0041) && (codePoint <= 0x005A)) ||
+        ((codePoint >= 0x00C0) && (codePoint <= 0x00DE)))
     {
         buff[0] += 32;
         return 1;
@@ -127,18 +122,20 @@ int KerFoldCase(
 
     // LATIN CAPITAL LETTER A WITH MACRON -- LATIN SMALL LETTER I WITH OGONEK
     if (((codePoint >= 0x0100) && (codePoint <= 0x012F))
-    // LATIN CAPITAL LIGATURE IJ -- LATIN SMALL LETTER K WITH CEDILLA
-    || ((codePoint >= 0x0132) && (codePoint <= 0x0137))
-    // LATIN CAPITAL LETTER ENG -- LATIN SMALL LETTER Y WITH CIRCUMFLEX
-    || ((codePoint >= 0x014A) && (codePoint <= 0x0177))
-    // LATIN CAPITAL LETTER A WITH DIAERESIS AND MACRON -- LATIN SMALL LETTER EZH WITH CARON
-    || ((codePoint >= 0x01DE) && (codePoint <= 0x01EF))
-    // LATIN CAPITAL LETTER N WITH GRAVE -- LATIN SMALL LETTER H WITH CARON
-    || ((codePoint >= 0x01F8) && (codePoint <= 0x021F))
-    // LATIN CAPITAL LETTER OU -- LATIN SMALL LETTER Y WITH MACRON
-    || ((codePoint >= 0x0222) && (codePoint <= 0x0233))
-    // LATIN CAPITAL LETTER E WITH STROKE -- LATIN SMALL LETTER Y WITH STROKE
-    || ((codePoint >= 0x0246) && (codePoint <= 0x024F)))
+        // LATIN CAPITAL LIGATURE IJ -- LATIN SMALL LETTER K WITH CEDILLA
+        || ((codePoint >= 0x0132) && (codePoint <= 0x0137))
+        // LATIN CAPITAL LETTER ENG -- LATIN SMALL LETTER Y WITH CIRCUMFLEX
+        || ((codePoint >= 0x014A) && (codePoint <= 0x0177))
+        // LATIN CAPITAL LETTER A WITH DIAERESIS AND MACRON -- LATIN SMALL
+        // LETTER EZH WITH CARON
+        || ((codePoint >= 0x01DE) && (codePoint <= 0x01EF))
+        // LATIN CAPITAL LETTER N WITH GRAVE -- LATIN SMALL LETTER H WITH CARON
+        || ((codePoint >= 0x01F8) && (codePoint <= 0x021F))
+        // LATIN CAPITAL LETTER OU -- LATIN SMALL LETTER Y WITH MACRON
+        || ((codePoint >= 0x0222) && (codePoint <= 0x0233))
+        // LATIN CAPITAL LETTER E WITH STROKE -- LATIN SMALL LETTER Y WITH
+        // STROKE
+        || ((codePoint >= 0x0246) && (codePoint <= 0x024F)))
     {
         buff[0] |= 1;
         return 1;
@@ -146,8 +143,9 @@ int KerFoldCase(
 
     // LATIN CAPITAL LETTER L WITH ACUTE -- LATIN SMALL LETTER N WITH CARON
     if (((codePoint >= 0x0139) && (codePoint <= 0x0148))
-    // LATIN CAPITAL LETTER A WITH CARON -- LATIN SMALL LETTER U WITH DIAERESIS AND GRAVE
-    || ((codePoint >= 0x01CD) && (codePoint <= 0x01DC)))
+        // LATIN CAPITAL LETTER A WITH CARON -- LATIN SMALL LETTER U WITH
+        // DIAERESIS AND GRAVE
+        || ((codePoint >= 0x01CD) && (codePoint <= 0x01DC)))
     {
         buff[0] += buff[0] % 2;
         return 1;
@@ -243,14 +241,11 @@ static const uint16_t FoldingSingleCharacters[] = {
     0x0243, 0x0180, // LATIN CAPITAL LETTER B WITH STROKE
     0x0244, 0x0289, // LATIN CAPITAL LETTER U BAR
     0x0245, 0x028C, // LATIN CAPITAL LETTER TURNED V
-    0xFFFF
-};
+    0xFFFF};
 
-static const uint16_t FoldingDoubleCharacters[] =
-{
+static const uint16_t FoldingDoubleCharacters[] = {
     0x00DF, 0x0073, 0x0073, // LATIN SMALL LETTER SHARP S
     0x0130, 0x0069, 0x0307, // LATIN CAPITAL LETTER I WITH DOT ABOVE
     0x0149, 0x02BC, 0x006E, // LATIN SMALL LETTER N PRECEDED BY APOSTROPHE
     0x01F0, 0x006A, 0x030C, // LATIN SMALL LETTER J WITH CARON
-    0xFFFF
-};
+    0xFFFF};

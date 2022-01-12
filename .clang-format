@@ -1,0 +1,24 @@
+---
+BasedOnStyle: Microsoft
+AllowAllParametersOfDeclarationOnNextLine: 'true'
+AlignConsecutiveMacros: 'true'
+AlignConsecutiveDeclarations: 'true'
+AllowShortBlocksOnASingleLine: 'false'
+AllowShortCaseLabelsOnASingleLine: 'false'
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLambdasOnASingleLine: None
+AllowShortLoopsOnASingleLine: 'false'
+AlwaysBreakAfterDefinitionReturnType: All
+AlwaysBreakAfterReturnType: All
+BinPackParameters: 'false'
+ColumnLimit: '80'
+IncludeBlocks: Preserve
+Language: Cpp
+PointerAlignment: Right
+SortIncludes: 'true'
+SpaceBeforeParens: ControlStatements
+TabWidth: '4'
+UseTab: Never
+
+...

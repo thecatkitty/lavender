@@ -1,26 +1,20 @@
 #include <ctype.h>
 #include <stdlib.h>
 
-#include <gfx.h>
 #include <api/dos.h>
-
+#include <gfx.h>
 
 // Raw Portable Bitmap                  P4
-#define PBM_RAW_MAGIC                   0x3450
+#define PBM_RAW_MAGIC 0x3450
 
+static int
+PbmLoadBitmap(const char *data, GFX_BITMAP *bm);
 
-static int PbmLoadBitmap(
-    const char *data,
-    GFX_BITMAP *bm);
+static int
+PbmLoadU(const char *data, uint16_t *out);
 
-static int PbmLoadU(
-    const char *data,
-    uint16_t   *out);
-
-
-int GfxLoadBitmap(
-    const void *data,
-    GFX_BITMAP *bm)
+int
+GfxLoadBitmap(const void *data, GFX_BITMAP *bm)
 {
     if (PBM_RAW_MAGIC == *(uint16_t *)data)
     {
@@ -30,9 +24,8 @@ int GfxLoadBitmap(
     ERR(GFX_FORMAT);
 }
 
-int PbmLoadBitmap(
-    const char *data,
-    GFX_BITMAP *bm)
+int
+PbmLoadBitmap(const char *data, GFX_BITMAP *bm)
 {
     int count;
 
@@ -42,7 +35,7 @@ int PbmLoadBitmap(
     count = PbmLoadU(data, &bm->Width);
     if (0 > count)
         return count;
-    
+
     bm->WidthBytes = bm->Width / 8 + ((bm->Width % 8) ? 1 : 0);
     data += count;
 
@@ -58,9 +51,8 @@ int PbmLoadBitmap(
     return 0;
 }
 
-int PbmLoadU(
-    const char *str,
-    uint16_t   *out)
+int
+PbmLoadU(const char *str, uint16_t *out)
 {
     const char *start = str;
     *out = 0;

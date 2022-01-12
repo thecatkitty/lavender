@@ -1,18 +1,19 @@
-#include <ker.h>
 #include <api/dos.h>
+#include <ker.h>
 
 extern const char ErrFacilities[];
 extern const char ErrMessages[];
 
-extern void PitDeinitialize(void);
+extern void
+PitDeinitialize(void);
 
 char KerLastError;
 
-static const char *ErrFindMessage(
-    const char *messages,
-    unsigned   key);
+static const char *
+ErrFindMessage(const char *messages, unsigned key);
 
-void KerTerminate(void)
+void
+KerTerminate(void)
 {
     unsigned error = (unsigned char)KerLastError;
     unsigned facility = error >> 5;
@@ -28,9 +29,8 @@ void KerTerminate(void)
 
 // Find a message using its key byte
 //   WILL CRASH IF MESSAGE NOT FOUND!
-const char *ErrFindMessage(
-    const char *messages,
-    unsigned   key)
+const char *
+ErrFindMessage(const char *messages, unsigned key)
 {
     while (true)
     {
@@ -39,6 +39,9 @@ const char *ErrFindMessage(
             return messages + 1;
         }
 
-        while ('$' != *messages++);
+        while ('$' != *messages)
+        {
+            messages++;
+        }
     }
 }
