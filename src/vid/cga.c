@@ -3,10 +3,15 @@
 #include <api/bios.h>
 #include <api/dos.h>
 #include <dev/cga.h>
+#include <ker.h>
 #include <vid.h>
 
 #define VID_PAR(dx, dy, sx, sy)                                                \
     (uint8_t)(64U * (unsigned)dy * (unsigned)sx / (unsigned)dx / (unsigned)sy)
+
+extern char                     abExtendedFont[];
+extern far char *               lpabPreviousFont;
+extern VID_CHARACTER_DESCRIPTOR astFontData[];
 
 static int
 VesaReadEdid(EDID *edid);
@@ -71,6 +76,47 @@ VidDrawText(const char *str, uint16_t x, uint16_t y)
     {
         DosPutC(*str);
         str++;
+    }
+}
+
+void
+VidLoadFont(void)
+{
+    lpabPreviousFont =
+        (char *)KerInstallIsr((isr)abExtendedFont, INT_CGA_EXTENDED_FONT_PTR);
+
+    far const char *bfont =
+        MK_FP(CGA_BASIC_FONT_SEGMENT, CGA_BASIC_FONT_OFFSET);
+    char *                    xfont = abExtendedFont;
+    VID_CHARACTER_DESCRIPTOR *fdata = astFontData;
+
+    if (KerIsDosBox())
+    {
+        xfont++; // DOSBox ROM font is moved one line to the bottom
+    }
+
+    while (0xFFFF != fdata->CodePoint)
+    {
+        if (NULL == fdata->Overlay)
+        {
+            fdata++;
+            continue;
+        }
+
+        if (0 != fdata->Base)
+        {
+            _fmemcpy(xfont, bfont + 8 * fdata->Base, 8);
+        }
+
+        unsigned ovheight = fdata->Overlay[0] & 0xF;
+        unsigned ovtop = fdata->Overlay[0] >> 4;
+        for (unsigned i = 1; i <= ovheight; i++)
+        {
+            xfont[ovtop + i - 1] |= fdata->Overlay[i];
+        }
+
+        fdata++;
+        xfont += 8;
     }
 }
 

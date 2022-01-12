@@ -9,106 +9,6 @@
 [bits 16]
 section .text
 
-                global  VidLoadFont
-VidLoadFont:
-                push    es              ; preserve registers
-                push    bp
-                push    di
-                push    si
-                push    cx
-                push    bx
-                push    ax
-                
-                mov     ax, INT_CGA_EXTENDED_FONT_PTR
-                push    ax
-                push    ds
-                mov     ax, abExtendedFont
-                push    ax
-                call    KerInstallIsr
-                add     sp, 6
-                mov     word [lpabPreviousFont], ax
-                mov     word [lpabPreviousFont + 2], dx
-
-                mov     ax, CGA_BASIC_FONT_SEGMENT
-                mov     es, ax
-                mov     si, astFontData
-                mov     di, abExtendedFont
-
-                push    ax
-                push    bx
-                push    cx
-                push    dx
-                call    KerIsDosBox
-                cmp     ax, 0
-                pop     dx
-                pop     cx
-                pop     bx
-                pop     ax
-                je      .NextCharacter
-                inc     di              ; DOSBox ROM font is moved one line lower
-.NextCharacter:
-                cmp     word [si + VID_CHARACTER_DESCRIPTOR.wcCodePoint], 0FFFFh
-                je      .End
-                cmp     word [si + VID_CHARACTER_DESCRIPTOR.pabOverlay], 0
-                jnz     .Compose
-                add     si, VID_CHARACTER_DESCRIPTOR_size
-                jmp     .NextCharacter
-.Compose:
-                xor     ax, ax
-                mov     al, byte [si + VID_CHARACTER_DESCRIPTOR.cBase]
-                cmp     al, 0
-                jz      .ApplyOverlay
-                shl     ax, 1
-                shl     ax, 1
-                shl     ax, 1
-                mov     bx, CGA_BASIC_FONT_OFFSET
-                add     bx, ax
-                mov     cx, CGA_CHARACTER_HEIGHT / 2
-                push    di              ; preserve extended glyph position
-.NextBasicWord:
-                mov     ax, word [es:bx]
-                mov     word [di], ax
-                add     bx, 2
-                add     di, 2
-                loop    .NextBasicWord
-.ApplyOverlay:
-                mov     bx, word [si + VID_CHARACTER_DESCRIPTOR.pabOverlay]
-                xor     ax, ax
-                xor     cx, cx
-                mov     al, byte [bx]   ; 7:4 - position from top, 3:0 - height
-                mov     cl, al
-                shr     al, 1
-                shr     al, 1
-                shr     al, 1
-                shr     al, 1           ; AX = position from top
-                and     cl, 0Fh         ; CX = overlay height
-                jcxz    .OverlayEnd
-
-                mov     bp, sp
-                mov     di, word [bp]   ; restore extended glyph position
-                add     di, ax          ; start from top of the overlay
-                inc     bx
-.NextOverlayByte:
-                mov     al, byte [bx]   ; read a byte from the overlay
-                or      byte [di], al   ; apply the overlay by ORing
-                inc     bx
-                inc     di
-                loop    .NextOverlayByte
-.OverlayEnd:
-                pop     di              ; restore extended glyph position
-                add     di, CGA_CHARACTER_HEIGHT
-                add     si, VID_CHARACTER_DESCRIPTOR_size
-                jmp     .NextCharacter
-.End:
-                pop     ax
-                pop     bx
-                pop     cx
-                pop     si
-                pop     di
-                pop     bp
-                pop     es
-                ret
-
 
                 global  VidUnloadFont
 VidUnloadFont:
@@ -179,6 +79,7 @@ section .data
 %endmacro
 
 
+                                global  astFontData
 astFontData:
                                 DCHR    00A7h, 15h, 0   ; SECTION SIGN
                                 DCHR    00B6h, 14h, 0   ; PILCROW SIGN
@@ -250,5 +151,8 @@ abStroke:                       db      22h, \
 section .bss
 
 
+                                global  abExtendedFont
 abExtendedFont                  resb    nFontDataLength * 8
+
+                                global  lpabPreviousFont
 lpabPreviousFont                resd    1

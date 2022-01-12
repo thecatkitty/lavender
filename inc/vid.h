@@ -14,6 +14,15 @@
 #define ERR_VID_FAILED      ERR_CODE(ERR_FACILITY_VID, 1)
 #define ERR_VID_FORMAT      ERR_CODE(ERR_FACILITY_VID, 2)
 
+#pragma pack(push, 1)
+typedef struct
+{
+    uint16_t CodePoint;
+    char *   Overlay;
+    char     Base;
+} VID_CHARACTER_DESCRIPTOR;
+#pragma pack(pop)
+
 // Set video mode
 // Returns previous video mode
 extern uint16_t
@@ -29,5 +38,8 @@ VidDrawBitmap(GFX_BITMAP *bm, uint16_t x, uint16_t y);
 
 extern int
 VidDrawText(const char *str, uint16_t x, uint16_t y);
+
+extern void
+VidLoadFont(void);
 
 #endif // _VID_H_
