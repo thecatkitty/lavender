@@ -1,12 +1,9 @@
-%define KER_API_SUBSET_START
-%include "ker.inc"
-%include "api/dos.inc"
-
-
                 cpu     8086
+                
+%defstr GIT_COMMIT      %!GIT_COMMIT
+%defstr GIT_TAG         %!GIT_TAG
 
                 extern  Main
-
                 extern  PitInitialize
                 extern  PitDeinitialize
 
@@ -14,14 +11,11 @@
 [bits 16]
 section .startupA
 
+
                 global  _start
 _start:
                 jmp     KerEntry
-%push About
-%defstr GIT_COMMIT      %!GIT_COMMIT
-%defstr GIT_TAG         %!GIT_TAG
                 db      0Dh, "Lavender ", GIT_TAG, '-', GIT_COMMIT, 1Ah
-%pop
 
 
 section .text
@@ -31,14 +25,11 @@ KerEntry:
                 call    PitInitialize
 
                 call    Main
-                ; Pass to KerExit
 
-
-KerExit:
                 call    PitDeinitialize
 
-                mov     ah, DOS_EXIT
-                int     DOS_INT
+                mov     ah, 4Ch         ; Exit gracefully
+                int     21h
 
 
 section .ctors.errf

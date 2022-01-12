@@ -1,7 +1,6 @@
 %include "ker.inc"
 %include "sld.inc"
 %include "vid.inc"
-%include "api/bios.inc"
 
 
                 cpu     8086
@@ -70,12 +69,12 @@ Main:
                 jmp    .Next
 
 .End:
-                xor     ah, ah          ; AH = BIOS_KEYBOARD_GET_KEYSTROKE
-                int     BIOS_INT_KEYBOARD
+                xor     ah, ah          ; get key stroke
+                int     16h
 
                 call    VidUnloadFont
 
-                call    VidSetMode       ; restore saved mode
+                call    VidSetMode      ; restore saved mode
                 add     sp, 2
 
                 xor     al, al          ; AL = ERR_OK

@@ -65,9 +65,3 @@ VID_API VidConvertToLocal
 %define ERR_VID_UNSUPPORTED             ERR_CODE(ERR_FACILITY_VID, 0)
 %define ERR_VID_FAILED                  ERR_CODE(ERR_FACILITY_VID, 1)
 %define ERR_VID_FORMAT                  ERR_CODE(ERR_FACILITY_VID, 2)
-
-struc VID_CHARACTER_DESCRIPTOR
-  .wcCodePoint:                 resw    1
-  .pabOverlay:                  resw    1
-  .cBase:                       resb    1
-endstruc
