@@ -42,4 +42,7 @@ VidDrawText(const char *str, uint16_t x, uint16_t y);
 extern void
 VidLoadFont(void);
 
+extern void
+VidUnloadFont(void);
+
 #endif // _VID_H_

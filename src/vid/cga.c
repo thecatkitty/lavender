@@ -120,6 +120,12 @@ VidLoadFont(void)
     }
 }
 
+void
+VidUnloadFont(void)
+{
+    KerUninstallIsr((isr)lpabPreviousFont, INT_CGA_EXTENDED_FONT_PTR);
+}
+
 int
 VesaReadEdid(EDID *edid)
 {

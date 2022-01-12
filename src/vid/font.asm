@@ -10,25 +10,6 @@
 section .text
 
 
-                global  VidUnloadFont
-VidUnloadFont:
-                push    es              ; preserve registers
-                push    ax
-                
-                mov     ax, INT_CGA_EXTENDED_FONT_PTR
-                push    ax
-                mov     ax, word [lpabPreviousFont + 2]
-                push    ax
-                mov     ax, word [lpabPreviousFont]
-                push    ax
-                call    KerUninstallIsr
-                add     sp, 6
-                
-                pop     ax
-                pop     es
-                ret
-
-
                 global  VidGetFontEncoding
 VidGetFontEncoding:
                 cmp     ax, 80h
