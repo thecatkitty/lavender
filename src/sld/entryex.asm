@@ -58,10 +58,17 @@ SldEntryExecuteText:
                 sub     ah, [di + SLD_ENTRY.bLength]
   
 .Write:
+                mov     si, ax
+                and     si, 0FFh
+                push    si              ; y
+                xchg    ah, al
+                xor     ah, ah
+                push    ax              ; x
                 mov     si, di
                 add     si, SLD_ENTRY.szContent
+                push    si              ; str
                 call    VidDrawText
-                clc
+                add     sp, 6
 
                 pop     si
                 pop     ax

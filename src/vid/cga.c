@@ -1,6 +1,7 @@
 #include <libi86/string.h>
 
 #include <api/bios.h>
+#include <api/dos.h>
 #include <dev/cga.h>
 #include <vid.h>
 
@@ -59,6 +60,17 @@ VidDrawBitmap(GFX_BITMAP *bm, uint16_t x, uint16_t y)
         _fmemcpy(plane1, bits, bm->WidthBytes);
         plane1 += VID_CGA_HIMONO_LINE;
         bits += bm->WidthBytes;
+    }
+}
+
+int
+VidDrawText(const char *str, uint16_t x, uint16_t y)
+{
+    BiosVideoSetCursorPosition(0, (y << 8) | x);
+    while (*str)
+    {
+        DosPutC(*str);
+        str++;
     }
 }
 

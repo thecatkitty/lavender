@@ -27,4 +27,7 @@ VidGetPixelAspectRatio(void);
 extern int
 VidDrawBitmap(GFX_BITMAP *bm, uint16_t x, uint16_t y);
 
+extern int
+VidDrawText(const char *str, uint16_t x, uint16_t y);
+
 #endif // _VID_H_

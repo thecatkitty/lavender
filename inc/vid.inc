@@ -17,10 +17,10 @@
 VID_API VidDrawBitmap
 
 ; Write text to screen
-; Input:
-;   DS:SI - null-terminated ASCII string
-;   AH    - horizontal position, in columns
-;   AL    - vertical position, in rows
+; Stack input:
+;   near pointer to a null-terminated ASCII string
+;   horizontal position, in columns
+;   vertical position, in lines
 VID_API VidDrawText
 
 ; ----- Display mode functions -----

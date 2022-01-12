@@ -13,6 +13,15 @@ BiosVideoSetMode(uint8_t mode)
     asm volatile("int $0x10" : "=a"(ax) : "0"(mode) : "cc", "bx", "cx", "dx");
 }
 
+inline void
+BiosVideoSetCursorPosition(uint8_t page, uint16_t position)
+{
+    asm volatile("int $0x10"
+                 :
+                 : "Rah"((uint8_t)0x02), "b"((uint16_t)page << 8),
+                   "d"(position));
+}
+
 inline uint16_t
 BiosVideoGetMode()
 {
