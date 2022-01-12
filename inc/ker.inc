@@ -8,15 +8,6 @@
         %endif
 %endmacro
 
-; ----- System information functions -----
-API_SUBSET INFO
-
-; Check if running inside DOSBox
-; Output:
-;   AX - 1 if DOSBox
-; Invalidates: AX, BX, CX, DX
-KER_API KerIsDosBox
-
 
 ; ----- Time related functions -----
 API_SUBSET TIME
@@ -26,26 +17,6 @@ API_SUBSET TIME
 ;   number of ticks (1 tick ~ 54,9 ms)
 ; Invalidates: AX, BX, CX, DX
 extern KerSleep
-
-; ----- Interrupt related functions -----
-; Install interrupt service routine
-; Stack input:
-;   interrupt service routine offset
-;   interrupt service routine segment
-;   interrupt number
-; Output:
-;   AX - previous interrupt service routine offset
-;   DX - previous interrupt service routine segment
-; Invalidates: AX, BX, CX, DX
-extern KerInstallIsr
-
-; Uninstall interrupt service routine
-; Stack input:
-;   previous interrupt service routine offset
-;   previous interrupt service routine segment
-;   interrupt number
-; Invalidates: AX, BX, CX, DX
-extern KerUninstallIsr
 
 
 ; ----- String and memory manipulation functions -----
@@ -82,17 +53,6 @@ API_SUBSET UNICODE
 ;   AX - length of the sequence (0 when NUL), negative on error
 ; Invalidates: AX, BX, CX, DX
 KER_API KerGetCharacterFromUtf8
-
-; Conduct a case-insensitive comparison of two UTF-8 strings
-;   CURRENTLY WORKS ONLY FOR CODE POINTS UNDER 0800h
-; Stack input:
-;   near pointer to the left string
-;   near pointer to the right string
-;   length in bytes
-; Output:
-;   AX - 0 when equal, 1 when different, negative on error
-; Invalidates: AX, BX, CX, DX
-KER_API KerCompareUtf8IgnoreCase
 
 
 ; ----- ZIP archive functions -----
