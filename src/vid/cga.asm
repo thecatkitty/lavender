@@ -14,21 +14,6 @@
 section .text
 
 
-                global  VidSetMode
-VidSetMode:
-                push    ax
-                mov     ah, BIOS_VIDEO_GET_MODE
-                int     BIOS_INT_VIDEO
-                xor     ah, ah          ; store previous video mode in CX
-                mov     cx, ax
-
-                pop     ax
-                int     BIOS_INT_VIDEO  ; AH = BIOS_VIDEO_SET_MODE
-
-                mov     ax, cx          ; return previous video mode
-                ret
-
-
                 global  VidDrawBitmap
 VidDrawBitmap:
                 cmp     byte [si + GFX_BITMAP.bPlanes], 1

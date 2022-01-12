@@ -14,7 +14,9 @@ section .text
                 global  Main
 Main:
                 mov     ax, VID_MODE_CGA_HIMONO
+                push    ax
                 call    VidSetMode
+                add     sp, 2
                 push    ax              ; save previous mode on stack
 
                 call    VidLoadFont
@@ -73,8 +75,8 @@ Main:
 
                 call    VidUnloadFont
 
-                pop     ax              ; restore saved mode
-                call    VidSetMode
+                call    VidSetMode       ; restore saved mode
+                add     sp, 2
 
                 xor     al, al          ; AL = ERR_OK
                 ret

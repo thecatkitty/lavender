@@ -8,6 +8,14 @@ static int
 VesaReadEdid(EDID *edid);
 
 uint16_t
+VidSetMode(uint16_t mode)
+{
+    uint16_t previous = BiosVideoGetMode() & 0xFF;
+    BiosVideoSetMode((uint8_t)mode);
+    return previous;
+}
+
+uint16_t
 VidGetPixelAspectRatio(void)
 {
     const uint8_t ratios[4] = {

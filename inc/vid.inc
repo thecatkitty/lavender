@@ -30,11 +30,11 @@ VID_API VidDrawText
 VID_API VidGetPixelAspectRatio
 
 ; Set video mode
-; Input:
-;   AX - new video mode
+; Stack input:
+;   new video mode
 ; Output:
 ;   AX - previous video mode
-; Invalidates: CX
+; Invalidates: AX
 VID_API VidSetMode
 
 ; ----- Font functions -----

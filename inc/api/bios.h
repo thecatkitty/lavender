@@ -6,6 +6,24 @@
 #include <fmt/edid.h>
 #include <ker.h>
 
+inline void
+BiosVideoSetMode(uint8_t mode)
+{
+    uint16_t ax;
+    asm volatile("int $0x10" : "=a"(ax) : "0"(mode) : "cc", "bx", "cx", "dx");
+}
+
+inline uint16_t
+BiosVideoGetMode()
+{
+    uint16_t ax;
+    asm volatile("int $0x10"
+                 : "=a"(ax)
+                 : "Rah"((uint8_t)0x0F)
+                 : "cc", "bx", "cx", "dx");
+    return ax;
+}
+
 inline short
 BiosVideoVbeDcCapabilities()
 {
