@@ -127,7 +127,7 @@ VidUnloadFont(void)
     KerUninstallIsr((isr)PreviousFontPtr, INT_CGA_EXTENDED_FONT_PTR);
 }
 
-uint8_t
+char
 VidConvertToLocal(uint16_t wc)
 {
     if (0x80 > wc)
