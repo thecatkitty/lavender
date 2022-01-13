@@ -5,14 +5,13 @@
 %define SLD_API extern
 
 ; Load the next line from the slideshow file
-; Input:
-;   DS:SI - slideshow file line
-;   DS:DI - SLD_ENTRY structure
+; Stack input:
+;   near pointer to slideshow file line
+;   near pointer to SLD_ENTRY structure
 ; Output:
-;   DS:SI - next slideshow file line
-;   AX    - line content length
-;   CF    - error
-SLD_API SldEntryLoad
+;   AX    - total line length in bytes, negative on error
+; Invalidates: AX, BX, CX, DX
+SLD_API SldLoadEntry
 
 ; Execute a line loaded from the slideshow file
 ; Input:
@@ -43,6 +42,7 @@ SLD_API SldEntryExecute
 %define ERR_SLD_UNKNOWN_TYPE            ERR_CODE(ERR_FACILITY_SLD, 1)
 %define ERR_SLD_INVALID_VERTICAL        ERR_CODE(ERR_FACILITY_SLD, 2)
 %define ERR_SLD_INVALID_HORIZONTAL      ERR_CODE(ERR_FACILITY_SLD, 3)
+%define ERR_SLD_CONTENT_TOO_LONG        ERR_CODE(ERR_FACILITY_SLD, 4)
 
 struc SLD_ENTRY
   .wDelay:                      resw    1

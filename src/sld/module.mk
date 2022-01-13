@@ -1,1 +1,2 @@
-ASSOURCES := $(ASSOURCES) $(DIR)/entryld.asm $(DIR)/entryex.asm $(DIR)/messages.asm $(DIR)/string.asm
+ASSOURCES := $(ASSOURCES) $(DIR)/entryex.asm $(DIR)/messages.asm $(DIR)/string.asm
+CCSOURCES := $(CCSOURCES) $(DIR)/ldentry.c

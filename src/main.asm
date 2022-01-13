@@ -56,12 +56,18 @@ Main:
                 mov     si, word [pabFileData]
 .Next:
                 mov     di, stEntry
-                call    SldEntryLoad
-                jc      KerTerminate
+                push    di              ; out
+                push    si              ; line
+                call    SldLoadEntry
+                add     sp, 4
+                cmp     ax, 0
+                jl      KerTerminate
                 test    ax, ax
                 jz      .End
+                add     si, ax
                 push    si
 
+                mov     di, stEntry
                 mov     si, word [pstDirectoryEnd]
                 call    SldEntryExecute
                 pop     si
