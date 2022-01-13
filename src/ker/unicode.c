@@ -61,6 +61,27 @@ KerGetCharacterFromUtf8(const char *sequence, uint16_t *codePoint)
 }
 
 int
+KerConvertFromUtf8(const char *src, char *dst, char (*encoder)(uint16_t))
+{
+    int i;
+    for (i = 0; *src; i++)
+    {
+        uint16_t code;
+        int      length = KerGetCharacterFromUtf8(src, &code);
+        if (0 > length)
+        {
+            return length;
+        }
+
+        dst[i] = encoder(code);
+        src += length;
+    }
+
+    dst[i] = 0;
+    return i;
+}
+
+int
 KerCompareUtf8IgnoreCase(const char *str1, const char *str2, unsigned length)
 {
     uint16_t code1, code2;
