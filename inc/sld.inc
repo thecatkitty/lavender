@@ -1,8 +1,7 @@
 %include "err.inc"
 
-%ifndef SLD_API
-
 %define SLD_API extern
+
 
 ; Load the next line from the slideshow file
 ; Stack input:
@@ -22,15 +21,8 @@ SLD_API SldLoadEntry
 ; Invalidates: AX, BX, CX, DX
 SLD_API SldExecuteEntry
 
-%endif
 
 %define SLD_ENTRY_MAX_LENGTH            80
-
-%define SLD_TAG_TYPE_TEXT               'T'
-%define SLD_TAG_TYPE_BITMAP             'B'
-%define SLD_TAG_ALIGN_LEFT              '<'
-%define SLD_TAG_ALIGN_CENTER            '^'
-%define SLD_TAG_ALIGN_RIGHT             '>'
 
 %define SLD_TYPE_TEXT                   0
 %define SLD_TYPE_BITMAP                 1
