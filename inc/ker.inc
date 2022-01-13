@@ -22,16 +22,6 @@ extern KerSleep
 ; ----- String and memory manipulation functions -----
 API_SUBSET STRING
 
-; Parse a space-delimited unsigned 16-bit integer
-; Input:
-;   DS:SI - string
-; Output:
-;   AX    - parsed integer
-;   CX    - field length
-;   CF    - parsing error
-;   DS:SI - first cell after the field
-KER_API KerParseU16
-
 ; Convert byte to its hexadecimal representation
 ; Input:
 ;   AL    - byte
