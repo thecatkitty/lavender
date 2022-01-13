@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include <err.h>
+#include <ker.h>
 
 #define SLD_ENTRY_MAX_LENGTH 80
 
@@ -40,5 +40,10 @@ typedef struct
 // Returns total line length in bytes, negative on error
 extern int
 SldLoadEntry(const char *line, SLD_ENTRY *out);
+
+// Execute a line loaded from the slideshow file
+// Returns negative on error
+extern int
+SldExecuteEntry(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip);
 
 #endif // _SLD_H_

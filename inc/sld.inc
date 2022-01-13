@@ -14,12 +14,13 @@
 SLD_API SldLoadEntry
 
 ; Execute a line loaded from the slideshow file
-; Input:
-;   DS:SI - ZIP central directory end structure
-;   DS:DI - SLD_ENTRY structure
+; Stack input:
+;   near pointer to SLD_ENTRY structure
+;   near pointer to ZIP central directory end structure
 ; Output:
-;   CF    - error
-SLD_API SldEntryExecute
+;   AX    - negative on error
+; Invalidates: AX, BX, CX, DX
+SLD_API SldExecuteEntry
 
 %endif
 

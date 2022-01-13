@@ -19,18 +19,6 @@ API_SUBSET TIME
 extern KerSleep
 
 
-; ----- String and memory manipulation functions -----
-API_SUBSET STRING
-
-; Convert byte to its hexadecimal representation
-; Input:
-;   AL    - byte
-; Output:
-;   AH    - first hexadecimal digit
-;   AL    - second hexadecimal digit
-KER_API KerByteToHex
-
-
 ; ----- Unicode support functions -----
 API_SUBSET UNICODE
 

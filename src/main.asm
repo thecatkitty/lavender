@@ -67,11 +67,15 @@ Main:
                 add     si, ax
                 push    si
 
-                mov     di, stEntry
                 mov     si, word [pstDirectoryEnd]
-                call    SldEntryExecute
+                push    si              ; zip
+                mov     di, stEntry
+                push    di              ; sld
+                call    SldExecuteEntry
+                add     sp, 4
                 pop     si
-                jc      KerTerminate
+                cmp     ax, 0
+                jl      KerTerminate
                 jmp    .Next
 
 .End:
