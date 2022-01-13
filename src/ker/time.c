@@ -6,11 +6,24 @@
 #include <dev/pit.h>
 #include <ker.h>
 
+#define KER_PIT_INPUT_FREQ      11931816667ULL
+#define KER_PIT_FREQ_DIVISOR    2048ULL
+#define KER_DELAY_MS_MULTIPLIER 100ULL
+
 static volatile unsigned counter = 0xFFFF;
 static isr               biosIsr;
 
 static interrupt void far
 PitIsr(void);
+
+unsigned
+KerGetTicksFromMs(unsigned ms)
+{
+    unsigned ticks = ms * KER_DELAY_MS_MULTIPLIER;
+    ticks /= (10000000UL * KER_DELAY_MS_MULTIPLIER) * KER_PIT_FREQ_DIVISOR /
+             KER_PIT_INPUT_FREQ;
+    return ticks;
+}
 
 void
 KerSleep(unsigned ticks)

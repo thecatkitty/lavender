@@ -16,13 +16,6 @@
 
 typedef void(interrupt *isr)(void) far;
 
-#define KER_PIT_INPUT_FREQ      11931816667
-#define KER_PIT_FREQ_DIVISOR    2048
-#define KER_DELAY_MS_MULTIPLIER 100
-#define KER_DELAY_MS_DIVISOR                                                   \
-    ((10000000 * KER_DELAY_MS_MULTIPLIER) * KER_PIT_FREQ_DIVISOR /             \
-     KER_PIT_INPUT_FREQ)
-
 #define ERR_KER_UNSUPPORTED       ERR_CODE(ERR_FACILITY_KER, 1)
 #define ERR_KER_NOT_FOUND         ERR_CODE(ERR_FACILITY_KER, 2)
 #define ERR_KER_ARCHIVE_NOT_FOUND ERR_CODE(ERR_FACILITY_KER, 3)
@@ -32,6 +25,9 @@ typedef void(interrupt *isr)(void) far;
 
 extern bool
 KerIsDosBox(void);
+
+extern unsigned
+KerGetTicksFromMs(unsigned ms);
 
 extern void
 KerSleep(unsigned ticks);
