@@ -1,4 +1,4 @@
-%include "vid.inc"
+%include "err.inc"
 
 
 section .ctors.errf

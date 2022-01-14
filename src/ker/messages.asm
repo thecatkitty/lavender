@@ -1,4 +1,4 @@
-%include "ker.inc"
+%include "err.inc"
 
 
 section .ctors.errf

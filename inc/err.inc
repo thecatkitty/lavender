@@ -10,21 +10,24 @@
 
 %define ERR_CODE(facility,code)         (((facility) << 5) | ((code) & 11111b))
 
-%macro          ERR     1
+%define ERR_KER_UNSUPPORTED             ERR_CODE(ERR_FACILITY_KER, 1)
+%define ERR_KER_NOT_FOUND               ERR_CODE(ERR_FACILITY_KER, 2)
+%define ERR_KER_ARCHIVE_NOT_FOUND       ERR_CODE(ERR_FACILITY_KER, 3)
+%define ERR_KER_ARCHIVE_TOO_LARGE       ERR_CODE(ERR_FACILITY_KER, 4)
+%define ERR_KER_ARCHIVE_INVALID         ERR_CODE(ERR_FACILITY_KER, 5)
+%define ERR_KER_INVALID_SEQUENCE        ERR_CODE(ERR_FACILITY_KER, 6)
 
-                stc
-                mov     byte [KerLastError], ERR_%1
-                jmp     .Error
+%define ERR_VID_UNSUPPORTED             ERR_CODE(ERR_FACILITY_VID, 0)
+%define ERR_VID_FAILED                  ERR_CODE(ERR_FACILITY_VID, 1)
+%define ERR_VID_FORMAT                  ERR_CODE(ERR_FACILITY_VID, 2)
 
-%endmacro
+%define ERR_GFX_FORMAT                  ERR_CODE(ERR_FACILITY_GFX, 0)
+%define ERR_GFX_MALFORMED_FILE          ERR_CODE(ERR_FACILITY_GFX, 1)
 
-%macro          ERRC    1
-
-                jnc     %%Skip
-                mov     byte [KerLastError], ERR_%1
-                jmp     .Error
-%%Skip:
-
-%endmacro
+%define ERR_SLD_INVALID_DELAY           ERR_CODE(ERR_FACILITY_SLD, 0)
+%define ERR_SLD_UNKNOWN_TYPE            ERR_CODE(ERR_FACILITY_SLD, 1)
+%define ERR_SLD_INVALID_VERTICAL        ERR_CODE(ERR_FACILITY_SLD, 2)
+%define ERR_SLD_INVALID_HORIZONTAL      ERR_CODE(ERR_FACILITY_SLD, 3)
+%define ERR_SLD_CONTENT_TOO_LONG        ERR_CODE(ERR_FACILITY_SLD, 4)
 
 %endif ; ERR_INC
