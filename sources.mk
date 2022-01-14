@@ -10,4 +10,4 @@ include $(SRC)/$(DIR)/module.mk
 DIR	    := sld
 include $(SRC)/$(DIR)/module.mk
 
-ASSOURCES += main.asm
+CCSOURCES += main.c

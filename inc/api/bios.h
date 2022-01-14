@@ -6,6 +6,14 @@
 #include <fmt/edid.h>
 #include <ker.h>
 
+inline uint16_t
+BiosKeyboardGetKeystroke(void)
+{
+    uint16_t ax;
+    asm volatile("int $0x16" : "=a"(ax) : "Rah"((uint8_t)0x00));
+    return ax;
+}
+
 inline void
 BiosVideoSetMode(uint8_t mode)
 {

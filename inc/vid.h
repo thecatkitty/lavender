@@ -6,6 +6,8 @@
 #include <err.h>
 #include <gfx.h>
 
+#define VID_MODE_CGA_HIMONO 6 // 640x200x1
+
 #define VID_CGA_HIMONO_WIDTH  640
 #define VID_CGA_HIMONO_HEIGHT 200
 #define VID_CGA_HIMONO_LINE   (VID_CGA_HIMONO_WIDTH / 8)

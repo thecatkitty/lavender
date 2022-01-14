@@ -17,4 +17,7 @@ extern char KerLastError;
         return -(KerLastError = ERR_##e);                                      \
     }
 
+void
+KerTerminate(void);
+
 #endif // _ERR_H_
