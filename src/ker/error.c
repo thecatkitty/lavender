@@ -43,5 +43,7 @@ ErrFindMessage(const char *messages, unsigned key)
         {
             messages++;
         }
+
+        messages++;
     }
 }
