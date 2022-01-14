@@ -1,4 +1,4 @@
-#include <err.inc>
+#include <gfx.h>
 
 
 .section .ctors.errf

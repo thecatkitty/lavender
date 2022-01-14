@@ -10,6 +10,8 @@
 
 #define ERR_CODE(facility, code) (((facility) << 5) | ((code)&0b11111))
 
+#ifndef __ASSEMBLER__
+
 extern char KerLastError;
 
 #define ERR(e)                                                                 \
@@ -19,5 +21,7 @@ extern char KerLastError;
 
 void
 KerTerminate(void);
+
+#endif // __ASSEMBLER__
 
 #endif // _ERR_H_

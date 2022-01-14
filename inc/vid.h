@@ -1,9 +1,10 @@
 #ifndef _VID_H_
 #define _VID_H_
 
+#ifndef __ASSEMBLER__
+
 #include <stdint.h>
 
-#include <err.h>
 #include <gfx.h>
 
 #define VID_MODE_CGA_HIMONO 6 // 640x200x1
@@ -11,10 +12,6 @@
 #define VID_CGA_HIMONO_WIDTH  640
 #define VID_CGA_HIMONO_HEIGHT 200
 #define VID_CGA_HIMONO_LINE   (VID_CGA_HIMONO_WIDTH / 8)
-
-#define ERR_VID_UNSUPPORTED ERR_CODE(ERR_FACILITY_VID, 0)
-#define ERR_VID_FAILED      ERR_CODE(ERR_FACILITY_VID, 1)
-#define ERR_VID_FORMAT      ERR_CODE(ERR_FACILITY_VID, 2)
 
 #pragma pack(push, 1)
 typedef struct
@@ -49,5 +46,13 @@ VidUnloadFont(void);
 
 extern char
 VidConvertToLocal(uint16_t wc);
+
+#endif // __ASSEMBLER__
+
+#include <err.h>
+
+#define ERR_VID_UNSUPPORTED ERR_CODE(ERR_FACILITY_VID, 0)
+#define ERR_VID_FAILED      ERR_CODE(ERR_FACILITY_VID, 1)
+#define ERR_VID_FORMAT      ERR_CODE(ERR_FACILITY_VID, 2)
 
 #endif // _VID_H_

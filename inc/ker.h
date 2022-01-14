@@ -1,9 +1,10 @@
 #ifndef _KER_H_
 #define _KER_H_
 
+#ifndef __ASSEMBLER__
+
 #include <stdbool.h>
 
-#include <err.h>
 #include <fmt/zip.h>
 
 #ifndef EDITING
@@ -15,13 +16,6 @@
 #define interrupt __attribute__((interrupt))
 
 typedef void(interrupt *isr)(void) far;
-
-#define ERR_KER_UNSUPPORTED       ERR_CODE(ERR_FACILITY_KER, 1)
-#define ERR_KER_NOT_FOUND         ERR_CODE(ERR_FACILITY_KER, 2)
-#define ERR_KER_ARCHIVE_NOT_FOUND ERR_CODE(ERR_FACILITY_KER, 3)
-#define ERR_KER_ARCHIVE_TOO_LARGE ERR_CODE(ERR_FACILITY_KER, 4)
-#define ERR_KER_ARCHIVE_INVALID   ERR_CODE(ERR_FACILITY_KER, 5)
-#define ERR_KER_INVALID_SEQUENCE  ERR_CODE(ERR_FACILITY_KER, 6)
 
 extern bool
 KerIsDosBox(void);
@@ -82,5 +76,16 @@ KerSearchArchive(ZIP_CDIR_END_HEADER *   cdir,
 // Returns 0 when found, negative on error
 extern int
 KerGetArchiveData(ZIP_LOCAL_FILE_HEADER *lfh, void **data);
+
+#endif // __ASSEMBLER__
+
+#include <err.h>
+
+#define ERR_KER_UNSUPPORTED       ERR_CODE(ERR_FACILITY_KER, 1)
+#define ERR_KER_NOT_FOUND         ERR_CODE(ERR_FACILITY_KER, 2)
+#define ERR_KER_ARCHIVE_NOT_FOUND ERR_CODE(ERR_FACILITY_KER, 3)
+#define ERR_KER_ARCHIVE_TOO_LARGE ERR_CODE(ERR_FACILITY_KER, 4)
+#define ERR_KER_ARCHIVE_INVALID   ERR_CODE(ERR_FACILITY_KER, 5)
+#define ERR_KER_INVALID_SEQUENCE  ERR_CODE(ERR_FACILITY_KER, 6)
 
 #endif // _KER_H_

@@ -1,6 +1,8 @@
 #ifndef _SLD_H_
 #define _SLD_H_
 
+#ifndef __ASSEMBLER__
+
 #include <stdint.h>
 
 #include <ker.h>
@@ -19,12 +21,6 @@
 #define SLD_ALIGN_LEFT   0
 #define SLD_ALIGN_CENTER 0xFFF1
 #define SLD_ALIGN_RIGHT  0xFFF2
-
-#define ERR_SLD_INVALID_DELAY      ERR_CODE(ERR_FACILITY_SLD, 0)
-#define ERR_SLD_UNKNOWN_TYPE       ERR_CODE(ERR_FACILITY_SLD, 1)
-#define ERR_SLD_INVALID_VERTICAL   ERR_CODE(ERR_FACILITY_SLD, 2)
-#define ERR_SLD_INVALID_HORIZONTAL ERR_CODE(ERR_FACILITY_SLD, 3)
-#define ERR_SLD_CONTENT_TOO_LONG   ERR_CODE(ERR_FACILITY_SLD, 4)
 
 typedef struct
 {
@@ -45,5 +41,15 @@ SldLoadEntry(const char *line, SLD_ENTRY *out);
 // Returns negative on error
 extern int
 SldExecuteEntry(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip);
+
+#endif // __ASSEMBLER__
+
+#include <err.h>
+
+#define ERR_SLD_INVALID_DELAY      ERR_CODE(ERR_FACILITY_SLD, 0)
+#define ERR_SLD_UNKNOWN_TYPE       ERR_CODE(ERR_FACILITY_SLD, 1)
+#define ERR_SLD_INVALID_VERTICAL   ERR_CODE(ERR_FACILITY_SLD, 2)
+#define ERR_SLD_INVALID_HORIZONTAL ERR_CODE(ERR_FACILITY_SLD, 3)
+#define ERR_SLD_CONTENT_TOO_LONG   ERR_CODE(ERR_FACILITY_SLD, 4)
 
 #endif // _SLD_H_

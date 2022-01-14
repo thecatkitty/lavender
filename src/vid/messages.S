@@ -1,4 +1,4 @@
-#include <err.inc>
+#include <vid.h>
 
 
 .section .ctors.errf
