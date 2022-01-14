@@ -1,2 +1,3 @@
-ASSOURCES := $(ASSOURCES) $(DIR)/font.asm $(DIR)/messages.asm
+ASSOURCES := $(ASSOURCES) $(DIR)/messages.S
+ASMSOURCES := $(ASMSOURCES) $(DIR)/font.asm
 CCSOURCES := $(CCSOURCES) $(DIR)/cga.c
