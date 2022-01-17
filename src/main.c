@@ -3,7 +3,7 @@
 #include <sld.h>
 #include <vid.h>
 
-extern char __edata[];
+extern char __edata[], __sbss[];
 
 const char SLIDES_TXT[] = "slides.txt";
 
@@ -14,7 +14,7 @@ Main(void)
     VidLoadFont();
 
     ZIP_CDIR_END_HEADER *cdir;
-    if (0 > KerLocateArchive(__edata, (void *)0xFD00, &cdir))
+    if (0 > KerLocateArchive(__edata, __sbss, &cdir))
     {
         KerTerminate();
     }
