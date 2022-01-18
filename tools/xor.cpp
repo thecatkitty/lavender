@@ -4,31 +4,32 @@
 
 #include "bits.hpp"
 
-
-int main(int argc, char* argv[])
+int
+main(int argc, char *argv[])
 {
     if (argc < 3)
     {
-        std::cerr << "ERROR: 3 arguments expected - input, output, key!" << std::endl;
+        std::cerr << "ERROR: 3 arguments expected - input, output, key!"
+                  << std::endl;
         return 1;
     }
 
-    std::ifstream fin{ argv[1], std::ios::binary };
+    std::ifstream fin{argv[1], std::ios::binary};
     if (!fin)
     {
         std::cerr << "ERROR: Cannot open input!" << std::endl;
         return 1;
     }
 
-    std::ofstream fout{ argv[2], std::ios::binary };
+    std::ofstream fout{argv[2], std::ios::binary};
     if (!fout)
     {
         std::cerr << "ERROR: Cannot open output!" << std::endl;
         return 1;
     }
 
-    uint64_t key;
-    std::istringstream iss { argv[3] };
+    uint64_t           key;
+    std::istringstream iss{argv[3]};
     iss >> std::hex >> key;
     if (!iss)
     {
@@ -42,8 +43,8 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    char* key_bytes { reinterpret_cast<char*>(&key) };
-    int i { 0 };
+    char *key_bytes{reinterpret_cast<char *>(&key)};
+    int   i{0};
 
     while (true)
     {
@@ -52,7 +53,7 @@ int main(int argc, char* argv[])
         {
             break;
         }
-        
+
         fout.put(byte ^ key_bytes[i]);
         i++;
         i %= 6;
