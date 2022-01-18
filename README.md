@@ -25,7 +25,7 @@ Each line consists of these parts:
 The end of slides is marked with an empty line.
 
 ## Building
-Building requires Linux with *GNU Make*, *GNU Binutils*, [GCC for IA-16](https://github.com/tkchia/gcc-ia16/) with [libi86](https://github.com/tkchia/libi86/), *Netwide Assembler* and `zip`. If you have it, just run:
+Building requires Linux with *GNU Make*, *GNU Binutils*, [GCC for IA-16](https://github.com/tkchia/gcc-ia16/) with [libi86](https://github.com/tkchia/libi86/), and `zip`. If you have it, just run:
 ```sh
 make
 ```
