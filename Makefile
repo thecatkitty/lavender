@@ -34,7 +34,7 @@ ifneq ($(MAKECMDGOALS),clean)
 include $(ASMSOURCES:%.asm=$(OBJ)/%.asm.d)
 endif
 
-$(BIN)/lavender.com: $(ASMSOURCES:%.asm=$(OBJ)/%.asm.o) $(ASSOURCES:%.S=$(OBJ)/%.S.o) $(CCSOURCES:%.c=$(OBJ)/%.c.o)
+$(BIN)/lavender.com: $(OBJ)/version.o $(ASMSOURCES:%.asm=$(OBJ)/%.asm.o) $(ASSOURCES:%.S=$(OBJ)/%.S.o) $(CCSOURCES:%.c=$(OBJ)/%.c.o)
 	@mkdir -p $(BIN)
 	$(LD) -Map=$(OBJ)/lavender.map -o $@ $^ $(LDFLAGS)
 
@@ -55,6 +55,12 @@ $(OBJ)/%.asm.d: $(SRC)/%.asm
 	@mkdir -p $(@D)
 	@rm -f $@; \
 	 cat $< | grep '^\s*%include' | sed -r 's,.+"(.+)".*,inc/\1,g' | tr '\n' ' ' | sed -r 's,^,$(@:.d=.o) $@ : $< ,g' > $@
+
+$(OBJ)/version.o: $(OBJ)/version.txt
+	$(OBJCOPY) -I binary -O elf32-i386 -B i386 --rename-section .data=.startupB $^ $@
+
+$(OBJ)/version.txt:
+	/bin/echo -en "\rLavender $(shell git describe --tags $(GIT_COMMIT) --abbrev=0)-$(shell git rev-parse --short HEAD)\x1A" >$@
 
 clean:
 	rm -rf $(BIN)
