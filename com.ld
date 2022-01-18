@@ -20,6 +20,7 @@ SECTIONS
     /* Target text sections.  */
     .text : {
 		__stext = .;
+		*(SORT(.startupA.*))
 		*(.startupA)
 		*(.startupB)
 		*(.msdos_init) *(.msdos_init.*)
@@ -53,6 +54,12 @@ SECTIONS
 		*(.rodata) *(.rodata.*)
 		*(.data) *(.data.*)
 		*(.gcc_except_table)
+
+		__serrf = .;
+		*(.errf)
+		__serrm = .;
+		*(.errm)
+
 		__edata = .;
 	} > FILE
 

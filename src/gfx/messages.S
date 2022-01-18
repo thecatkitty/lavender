@@ -1,14 +1,14 @@
 #include <gfx.h>
 
 
-.section .ctors.errf
+.section .errf
 
 
 .byte   ERR_FACILITY_GFX
 .ascii  "Graphics$"
 
 
-.section .ctors.errm
+.section .errm
 
 
 .byte   ERR_GFX_FORMAT

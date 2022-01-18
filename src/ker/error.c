@@ -1,8 +1,8 @@
 #include <api/dos.h>
 #include <ker.h>
 
-extern const char ErrFacilities[];
-extern const char ErrMessages[];
+extern const char __serrf[];
+extern const char __serrm[];
 
 extern void
 PitDeinitialize(void);
@@ -19,9 +19,9 @@ KerTerminate(void)
     unsigned facility = error >> 5;
 
     DosPutS("ERROR: $");
-    DosPutS(ErrFindMessage(ErrFacilities, facility));
+    DosPutS(ErrFindMessage(__serrf, facility));
     DosPutS(" - $");
-    DosPutS(ErrFindMessage(ErrMessages, error));
+    DosPutS(ErrFindMessage(__serrm, error));
 
     PitDeinitialize();
     DosExit(KerLastError);

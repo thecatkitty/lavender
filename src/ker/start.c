@@ -11,10 +11,10 @@ extern void
 PitDeinitialize(void);
 
 void
-_start(void) __attribute__((section(".startupA")));
+_start(void) __attribute__((section(".startupA.0")));
 
 void
-KerEntry(void) __attribute__((section(".startupC")));
+KerEntry(void) __attribute__((section(".startupB")));
 
 void
 _start(void)

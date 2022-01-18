@@ -1,14 +1,14 @@
 #include <ker.h>
 
 
-.section .ctors.errf
+.section .errf
 
 
 .byte   ERR_FACILITY_KER
 .ascii  "Kernel$"
 
 
-.section .ctors.errm
+.section .errm
 
 
 .byte   ERR_OK

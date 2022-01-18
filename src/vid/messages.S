@@ -1,14 +1,14 @@
 #include <vid.h>
 
 
-.section .ctors.errf
+.section .errf
 
 
 .byte   ERR_FACILITY_VID
 .ascii  "Video$"
 
 
-.section .ctors.errm
+.section .errm
 
 
 .byte   ERR_VID_UNSUPPORTED

@@ -1,14 +1,14 @@
 #include <sld.h>
 
 
-.section .ctors.errf
+.section .errf
 
 
 .byte   ERR_FACILITY_SLD
 .ascii  "Slides$"
 
 
-.section .ctors.errm
+.section .errm
 
 
 .byte   ERR_SLD_INVALID_DELAY

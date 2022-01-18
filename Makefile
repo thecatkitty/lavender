@@ -1,5 +1,4 @@
 AS      = ia16-elf-gcc
-ASM     = nasm
 CC      = ia16-elf-gcc
 LD      = ia16-elf-ld
 OBJCOPY = ia16-elf-objcopy
@@ -28,13 +27,9 @@ include sources.mk
 
 $(BIN)/$(SSHOW): $(BIN)/lavender.com $(OBJ)/data.zip
 	cat $^ > $@
-	@if [ $$(stat -L -c %s $@) -gt 65280 ]; then echo >&2 "'$@' size exceedes 65,280 bytes"; false; fi
+	@if [ $$(stat -L -c %s $@) -gt 65280 ]; then echo >&2 "'$@' size exceeds 65,280 bytes"; false; fi
 
-ifneq ($(MAKECMDGOALS),clean)
-include $(ASMSOURCES:%.asm=$(OBJ)/%.asm.d)
-endif
-
-$(BIN)/lavender.com: $(OBJ)/version.o $(ASMSOURCES:%.asm=$(OBJ)/%.asm.o) $(ASSOURCES:%.S=$(OBJ)/%.S.o) $(CCSOURCES:%.c=$(OBJ)/%.c.o)
+$(BIN)/lavender.com: $(OBJ)/version.o $(ASSOURCES:%.S=$(OBJ)/%.S.o) $(CCSOURCES:%.c=$(OBJ)/%.c.o)
 	@mkdir -p $(BIN)
 	$(LD) -Map=$(OBJ)/lavender.map -o $@ $^ $(LDFLAGS)
 
@@ -45,21 +40,14 @@ $(OBJ)/%.S.o: $(SRC)/%.S
 	@mkdir -p $(@D)
 	$(AS) $(ASFLAGS) -o $@ $<
 
-$(OBJ)/%.asm.o: $(SRC)/%.asm
-	$(ASM) -o $@ -f elf32 -w-label-redef-late -iinc/ $<
-
 $(OBJ)/%.c.o: $(SRC)/%.c
 	$(CC) $(CFLAGS) -o $@ $<
 
-$(OBJ)/%.asm.d: $(SRC)/%.asm
-	@mkdir -p $(@D)
-	@rm -f $@; \
-	 cat $< | grep '^\s*%include' | sed -r 's,.+"(.+)".*,inc/\1,g' | tr '\n' ' ' | sed -r 's,^,$(@:.d=.o) $@ : $< ,g' > $@
-
 $(OBJ)/version.o: $(OBJ)/version.txt
-	$(OBJCOPY) -I binary -O elf32-i386 -B i386 --rename-section .data=.startupB $^ $@
+	$(OBJCOPY) -I binary -O elf32-i386 -B i386 --rename-section .data=.startupA.1 $^ $@
 
 $(OBJ)/version.txt:
+	@mkdir -p $(OBJ)
 	/bin/echo -en "\rLavender $(shell git describe --tags $(GIT_COMMIT) --abbrev=0)-$(shell git rev-parse --short HEAD)\x1A" >$@
 
 clean:
