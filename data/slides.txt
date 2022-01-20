@@ -1,6 +1,7 @@
 0   T   18  ^Lavender
 500 B   22  ^celolg<>.pbm
-500 T   19  ^Wersja 0.2
-500 T   23  ^Copyright (c) Mateusz Karcz, 2021. Wszelkie prawa zastrzeżone.
-500 T   24  ^Naciśnij dowolny klawisz, aby kontynuować.
+500 T   19  ^Version 0.2
+500 T   23  ^Copyright (c) Mateusz Karcz, 2021. Shared under the MIT License.
+500 T   0   <Pchnąć w tę łódź jeża lub ośm skrzyń fig.
+500 T   24  ^Press any key to continue.
 
