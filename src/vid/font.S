@@ -64,16 +64,17 @@ __VidFontData:
                                 DCHR    0x266B, 0x0E, 0   // BEAMED EIGHTH NOTES
 __VidFontDataEnd:               .word   0x0FFFF
 
-Acute:                          .byte   0x02, \
-                                        0b00011000, \
-                                        0b00110000
+Acute:                          .byte   0x01, \
+                                        0b00011100
 DotAbove:                       .byte   0x01, \
                                         0b00110000
-Ogonek:                         .byte   0x71, \
-                                        0b00011100
-Stroke:                         .byte   0x22, \
-                                        0b00011000, \
-                                        0b01100000
+Ogonek:                         .byte   0x62, \
+                                        0b00001110, \
+                                        0b00000111
+Stroke:                         .byte   0x23, \
+                                        0b00000100, \
+                                        0b01111000, \
+                                        0b10000000
 
 
                                 .global __VidExtendedFont
