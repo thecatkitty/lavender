@@ -14,6 +14,9 @@ extern VID_CHARACTER_DESCRIPTOR __VidFontData[];
 
 static isr PreviousFontPtr;
 
+static void
+FontExecuteGlyphTransformation(const char *gxf, char *glyph);
+
 static int
 VesaReadEdid(EDID *edid);
 
@@ -110,6 +113,11 @@ VidLoadFont(void)
             _fmemcpy(xfont, bfont + 8 * fdata->Base, 8);
         }
 
+        if (NULL != fdata->Transformation)
+        {
+            FontExecuteGlyphTransformation(fdata->Transformation, xfont);
+        }
+
         unsigned ovheight = fdata->Overlay[0] & 0xF;
         unsigned ovtop = (unsigned)fdata->Overlay[0] >> 4;
 
@@ -160,6 +168,44 @@ VidConvertToLocal(uint16_t wc)
     }
 
     return local;
+}
+
+void
+FontExecuteGlyphTransformation(const char *gxf, char *glyph)
+{
+    char *   selStart = glyph;
+    unsigned selLength = 1;
+    while (*gxf)
+    {
+        unsigned command = (unsigned)*gxf >> 4;
+        unsigned param = (unsigned)*gxf & 0xF;
+
+        switch (command)
+        {
+        case VID_GXF_CMD_GROW:
+            selLength += param;
+            break;
+
+        case VID_GXF_CMD_SELECT:
+            selStart = glyph + param;
+            selLength = 1;
+            break;
+
+        case VID_GXF_CMD_MOVE:
+            memmove(selStart + param, selStart, selLength);
+            memset(selStart, 0, param);
+            break;
+
+        case VID_GXF_CMD_CLEAR:
+            glyph[param] = 0;
+            break;
+
+        default:
+            break;
+        }
+
+        gxf++;
+    }
 }
 
 int
