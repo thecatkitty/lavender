@@ -90,8 +90,9 @@ VidLoadFont(void)
         MK_FP(CGA_BASIC_FONT_SEGMENT, CGA_BASIC_FONT_OFFSET);
     char *                    xfont = __VidExtendedFont;
     VID_CHARACTER_DESCRIPTOR *fdata = __VidFontData;
+    bool                      isDosBox = KerIsDosBox();
 
-    if (KerIsDosBox())
+    if (isDosBox)
     {
         xfont++; // DOSBox ROM font is moved one line to the bottom
     }
@@ -110,10 +111,16 @@ VidLoadFont(void)
         }
 
         unsigned ovheight = fdata->Overlay[0] & 0xF;
-        unsigned ovtop = fdata->Overlay[0] >> 4;
-        for (unsigned i = 1; i <= ovheight; i++)
+        unsigned ovtop = (unsigned)fdata->Overlay[0] >> 4;
+
+        if (isDosBox && (8 <= (ovtop + ovheight)))
         {
-            xfont[ovtop + i - 1] |= fdata->Overlay[i];
+            ovheight = 7 - ovtop;
+        }
+
+        for (unsigned i = 0; i < ovheight; i++)
+        {
+            xfont[ovtop + i] |= fdata->Overlay[1 + i];
         }
 
         fdata++;
