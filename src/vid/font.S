@@ -98,32 +98,32 @@ Diaeresis:                      .byte   0x01, \
 
 MoveTwoUpper:                   .byte   GXF_SELECT(0), \
                                         GXF_GROW(1), \
-                                        GFX_MOVE(2), \
-                                        GFX_END
+                                        GXF_MOVE(2), \
+                                        GXF_END
 SquishCapitalA:                 .byte   GXF_SELECT(0), \
                                         GXF_GROW(4), \
-                                        GFX_MOVE(1), \
+                                        GXF_MOVE(1), \
                                         GXF_SELECT(1), \
                                         GXF_GROW(1), \
-                                        GFX_MOVE(1), \
-                                        GFX_END
+                                        GXF_MOVE(1), \
+                                        GXF_END
 SquishCapitalE:                 .byte   GXF_SELECT(0), \
                                         GXF_GROW(1), \
-                                        GFX_MOVE(1), \
+                                        GXF_MOVE(1), \
                                         GXF_SELECT(1), \
                                         GXF_GROW(2), \
-                                        GFX_MOVE(1), \
-                                        GFX_END
+                                        GXF_MOVE(1), \
+                                        GXF_END
 SquishCapitalN:                 .byte   GXF_SELECT(1), \
                                         GXF_GROW(3), \
-                                        GFX_MOVE(1), \
-                                        GFX_CLEAR(0), \
-                                        GFX_END
+                                        GXF_MOVE(1), \
+                                        GXF_CLEAR(0), \
+                                        GXF_END
 SquishCapitalY:                 .byte   GXF_SELECT(1), \
                                         GXF_GROW(2), \
-                                        GFX_MOVE(1), \
-                                        GFX_CLEAR(0), \
-                                        GFX_END
+                                        GXF_MOVE(1), \
+                                        GXF_CLEAR(0), \
+                                        GXF_END
 
                                 .global __VidExtendedFont
 .lcomm __VidExtendedFont,       (__VidFontDataEnd - __VidFontData) / 7 * 8

@@ -65,9 +65,9 @@ VidConvertToLocal(uint16_t wc);
 
 #define GXF_GROW(n)   ((VID_GXF_CMD_GROW << 4) | (n & 0xF))
 #define GXF_SELECT(n) ((VID_GXF_CMD_SELECT << 4) | (n & 0xF))
-#define GFX_MOVE(n)   ((VID_GXF_CMD_MOVE << 4) | (n & 0xF))
-#define GFX_CLEAR(n)  ((VID_GXF_CMD_CLEAR << 4) | (n & 0xF))
-#define GFX_END       GXF_GROW(0)
+#define GXF_MOVE(n)   ((VID_GXF_CMD_MOVE << 4) | (n & 0xF))
+#define GXF_CLEAR(n)  ((VID_GXF_CMD_CLEAR << 4) | (n & 0xF))
+#define GXF_END       GXF_GROW(0)
 
 #endif // __ASSEMBLER__
 
