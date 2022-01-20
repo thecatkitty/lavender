@@ -41,10 +41,10 @@ SldExecuteText(SLD_ENTRY *sld)
     switch (sld->Horizontal)
     {
     case SLD_ALIGN_CENTER:
-        x = (SLD_ENTRY_MAX_LENGTH - sld->Length) / 2;
+        x = (VID_CGA_HIMONO_LINE - sld->Length) / 2;
         break;
     case SLD_ALIGN_RIGHT:
-        x = SLD_ENTRY_MAX_LENGTH - sld->Length;
+        x = VID_CGA_HIMONO_LINE - sld->Length;
         break;
     default:
         x = sld->Horizontal;

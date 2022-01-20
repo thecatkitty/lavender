@@ -75,10 +75,10 @@ VidDrawBitmap(GFX_BITMAP *bm, uint16_t x, uint16_t y)
 int
 VidDrawText(const char *str, uint16_t x, uint16_t y)
 {
-    BiosVideoSetCursorPosition(0, (y << 8) | x);
     while (*str)
     {
-        DosPutC(*str);
+        BiosVideoSetCursorPosition(0, (y << 8) | x++);
+        BiosVideoWriteCharacter(0, *str, 0, 1);
         str++;
     }
 }
@@ -165,6 +165,11 @@ VidConvertToLocal(uint16_t wc)
     if (wc != fdata->CodePoint)
     {
         return '?';
+    }
+
+    if (NULL == fdata->Overlay)
+    {
+        return fdata->Base;
     }
 
     return local;
