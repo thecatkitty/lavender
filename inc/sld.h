@@ -7,7 +7,7 @@
 
 #include <ker.h>
 
-#define SLD_ENTRY_MAX_LENGTH 80
+#define SLD_ENTRY_MAX_LENGTH 255
 
 #define SLD_TAG_TYPE_TEXT    'T'
 #define SLD_TAG_TYPE_BITMAP  'B'

@@ -30,6 +30,18 @@ BiosVideoSetCursorPosition(uint8_t page, uint16_t position)
                    "d"(position));
 }
 
+inline void
+BiosVideoWriteCharacter(uint8_t  page,
+                        uint8_t  character,
+                        uint8_t  attribute,
+                        uint16_t count)
+{
+    asm volatile("int $0x10"
+                 :
+                 : "a"((uint16_t)(0x09 << 8) | character),
+                   "b"((uint16_t)(page << 8) | attribute), "c"(count));
+}
+
 inline uint16_t
 BiosVideoGetMode()
 {
