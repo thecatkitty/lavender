@@ -16,8 +16,22 @@
 __VidFontData:
                                 DCHR    0x00A7, 0x15, 0, 0 // SECTION SIGN
                                 DCHR    0x00B6, 0x14, 0, 0 // PILCROW SIGN
+                                DCHR    0x00C1, 'A', Acute, SquishCapitalA
+                                DCHR    0x00C9, 'E', Acute, SquishCapitalE
+                                DCHR    0x00CD, 'I', Acute, MoveTwoUpper
+                                DCHR    0x00D1, 'N', Tilde, SquishCapitalN
                                 DCHR    0x00D3, 'O', Acute, MoveTwoUpper
+                                DCHR    0x00DA, 'U', Acute, MoveTwoUpper
+                                DCHR    0x00DC, 'U', Diaeresis, MoveTwoUpper
+                                DCHR    0x00DD, 'Y', Acute, SquishCapitalY
+                                DCHR    0x00E1, 'a', Acute, 0
+                                DCHR    0x00E9, 'e', Acute, 0
+                                DCHR    0x00ED, 'i', Acute, 0
+                                DCHR    0x00F1, 'n', Tilde, 0
                                 DCHR    0x00F3, 'o', Acute, 0
+                                DCHR    0x00FA, 'u', Acute, 0
+                                DCHR    0x00FC, 'u', Diaeresis, 0
+                                DCHR    0x00FD, 'y', Acute, 0
                                 DCHR    0x0104, 'A', Ogonek, 0
                                 DCHR    0x0105, 'a', Ogonek, 0
                                 DCHR    0x0106, 'C', Acute, MoveTwoUpper
@@ -26,7 +40,7 @@ __VidFontData:
                                 DCHR    0x0119, 'e', Ogonek, 0
                                 DCHR    0x0141, 'L', Stroke, 0
                                 DCHR    0x0142, 'l', Stroke, 0
-                                DCHR    0x0143, 'N', Acute, PrepareCapitalNUpper
+                                DCHR    0x0143, 'N', Acute, SquishCapitalN
                                 DCHR    0x0144, 'n', Acute, 0
                                 DCHR    0x015A, 's', Acute, 0
                                 DCHR    0x015B, 's', Acute, 0
@@ -77,13 +91,36 @@ Stroke:                         .byte   0x23, \
                                         0b00000100, \
                                         0b01111000, \
                                         0b10000000
+Tilde:                          .byte   0x01, \
+                                        0b01111100
+Diaeresis:                      .byte   0x01, \
+                                        0b11001100
 
 MoveTwoUpper:                   .byte   GXF_SELECT(0), \
                                         GXF_GROW(1), \
                                         GFX_MOVE(2), \
                                         GFX_END
-PrepareCapitalNUpper:           .byte   GXF_SELECT(1), \
+SquishCapitalA:                 .byte   GXF_SELECT(0), \
+                                        GXF_GROW(4), \
+                                        GFX_MOVE(1), \
+                                        GXF_SELECT(1), \
+                                        GXF_GROW(1), \
+                                        GFX_MOVE(1), \
+                                        GFX_END
+SquishCapitalE:                 .byte   GXF_SELECT(0), \
+                                        GXF_GROW(1), \
+                                        GFX_MOVE(1), \
+                                        GXF_SELECT(1), \
+                                        GXF_GROW(2), \
+                                        GFX_MOVE(1), \
+                                        GFX_END
+SquishCapitalN:                 .byte   GXF_SELECT(1), \
                                         GXF_GROW(3), \
+                                        GFX_MOVE(1), \
+                                        GFX_CLEAR(0), \
+                                        GFX_END
+SquishCapitalY:                 .byte   GXF_SELECT(1), \
+                                        GXF_GROW(2), \
                                         GFX_MOVE(1), \
                                         GFX_CLEAR(0), \
                                         GFX_END
