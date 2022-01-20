@@ -26,7 +26,7 @@ BiosVideoSetCursorPosition(uint8_t page, uint16_t position)
 {
     asm volatile("int $0x10"
                  :
-                 : "Rah"((uint8_t)0x02), "b"((uint16_t)page << 8),
+                 : "a"((uint16_t)(0x02 << 8)), "b"((uint16_t)page << 8),
                    "d"(position));
 }
 
