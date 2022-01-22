@@ -15,6 +15,18 @@ typedef struct
     void *   Bits;
 } GFX_BITMAP;
 
+typedef struct
+{
+    int Width;
+    int Height;
+} GFX_DIMENSIONS;
+
+typedef enum
+{
+    GFX_COLOR_BLACK,
+    GFX_COLOR_WHITE
+} GFX_COLOR;
+
 // Load bitmap picture
 // Return negative on error
 extern int
