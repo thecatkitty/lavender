@@ -39,6 +39,12 @@ SldLoadEntry(const char *line, SLD_ENTRY *out)
     case SLD_TAG_TYPE_BITMAP:
         out->Type = SLD_TYPE_BITMAP;
         break;
+    case SLD_TAG_TYPE_RECT:
+        out->Type = SLD_TYPE_RECT;
+        break;
+    case SLD_TAG_TYPE_RECTF:
+        out->Type = SLD_TYPE_RECTF;
+        break;
     default:
         ERR(SLD_UNKNOWN_TYPE);
     }
@@ -107,6 +113,20 @@ SldLoadEntry(const char *line, SLD_ENTRY *out)
         {
             return out->Length;
         }
+    }
+
+    // Convert dimensions and color
+    if ((SLD_TYPE_RECT == out->Type) || (SLD_TYPE_RECTF == out->Type))
+    {
+        const char *str = out->Content;
+        uint16_t width, height;
+
+        str += SldLoadU(str, &width);
+        str += SldLoadU(str, &height);
+
+        out->Shape.Color = ('W' == *str) ? GFX_COLOR_WHITE : GFX_COLOR_BLACK;
+        out->Shape.Dimensions.Width = width;
+        out->Shape.Dimensions.Height = height;
     }
 
     return cur - line;
