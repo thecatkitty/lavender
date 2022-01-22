@@ -167,6 +167,78 @@ VidDrawRectangle(GFX_DIMENSIONS *rect, uint16_t x, uint16_t y, GFX_COLOR color)
 }
 
 int
+VidFillRectangle(GFX_DIMENSIONS *rect, uint16_t x, uint16_t y, GFX_COLOR color)
+{
+    uint16_t xe = x + rect->Width;
+    uint16_t ye = y + rect->Height;
+
+    far char *plane;
+    uint8_t   leftStripe = (1 << (8 - (x % 8))) - 1;
+    uint8_t   rightStripe = ~((1 << (8 - (xe % 8))) - 1);
+    uint8_t   horizontalFill = (GFX_COLOR_WHITE == color) ? 0xFF : 0x00;
+
+    // Vertical stripes
+    plane = (far uint8_t *)((y % 2) ? CgaPlane1 : CgaPlane0);
+    if (GFX_COLOR_WHITE == color)
+    {
+        for (int16_t line = y; line < ye; line += 2)
+        {
+            plane[VID_CGA_HIMONO_XY(x, line)] |= leftStripe;
+            plane[VID_CGA_HIMONO_XY(xe, line)] |= rightStripe;
+        }
+    }
+    else
+    {
+        for (int16_t line = y; line < ye; line += 2)
+        {
+            plane[VID_CGA_HIMONO_XY(x, line)] &= ~leftStripe;
+            plane[VID_CGA_HIMONO_XY(xe, line)] &= ~rightStripe;
+        }
+    }
+
+    plane = (far uint8_t *)((y % 2) ? CgaPlane0 : CgaPlane1);
+    if (GFX_COLOR_WHITE == color)
+    {
+        for (int16_t line = y + 1; line < ye; line += 2)
+        {
+            plane[VID_CGA_HIMONO_XY(x, line)] |= leftStripe;
+            plane[VID_CGA_HIMONO_XY(xe, line)] |= rightStripe;
+        }
+    }
+    else
+    {
+        for (int16_t line = y + 1; line < ye; line += 2)
+        {
+            plane[VID_CGA_HIMONO_XY(x, line)] &= ~leftStripe;
+            plane[VID_CGA_HIMONO_XY(xe, line)] &= ~rightStripe;
+        }
+    }
+
+    // Internal fill
+    plane = (far uint8_t *)((y % 2) ? CgaPlane1 : CgaPlane0);
+    for (int16_t line = y; line < ye; line += 2)
+    {
+        uint16_t lineOffset = line / 2 * VID_CGA_HIMONO_LINE;
+        for (uint16_t byte = x / 8 + (0 != (x % 8)); byte < xe / 8; byte++)
+        {
+            plane[lineOffset + byte] = horizontalFill;
+        }
+    }
+
+    plane = (far uint8_t *)((y % 2) ? CgaPlane0 : CgaPlane1);
+    for (int16_t line = y + 1; line < ye; line += 2)
+    {
+        uint16_t lineOffset = line / 2 * VID_CGA_HIMONO_LINE;
+        for (uint16_t byte = x / 8 + (0 != (x % 8)); byte < xe / 8; byte++)
+        {
+            plane[lineOffset + byte] = horizontalFill;
+        }
+    }
+
+    return 0;
+}
+
+int
 VidDrawText(const char *str, uint16_t x, uint16_t y)
 {
     while (*str)
