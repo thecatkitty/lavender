@@ -12,6 +12,9 @@ static int
 SldExecuteBitmap(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip);
 
 static int
+SldExecuteRectangle(SLD_ENTRY *sld);
+
+static int
 SldFindBestBitmap(char *                  pattern,
                   unsigned                length,
                   ZIP_CDIR_END_HEADER *   zip,
@@ -28,6 +31,9 @@ SldExecuteEntry(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
         return SldExecuteText(sld);
     case SLD_TYPE_BITMAP:
         return SldExecuteBitmap(sld, zip);
+    case SLD_TYPE_RECT:
+    case SLD_TYPE_RECTF:
+        return SldExecuteRectangle(sld);
     }
 
     ERR(SLD_UNKNOWN_TYPE);
@@ -93,6 +99,27 @@ SldExecuteBitmap(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
     }
 
     return VidDrawBitmap(&bm, x, y);
+}
+
+int
+SldExecuteRectangle(SLD_ENTRY *sld)
+{
+    uint16_t x, y = sld->Vertical;
+    switch (sld->Horizontal)
+    {
+    case SLD_ALIGN_CENTER:
+        x = (VID_CGA_HIMONO_WIDTH - sld->Shape.Dimensions.Width) / 2;
+        break;
+    case SLD_ALIGN_RIGHT:
+        x = VID_CGA_HIMONO_HEIGHT - sld->Shape.Dimensions.Height;
+        break;
+    default:
+        x = sld->Horizontal;
+    }
+
+    int (*draw)(GFX_DIMENSIONS *, uint16_t, uint16_t, GFX_COLOR);
+    draw = (SLD_TYPE_RECT == sld->Type) ? VidDrawRectangle : VidFillRectangle;
+    return draw(&sld->Shape.Dimensions, x, y, sld->Shape.Color);
 }
 
 int

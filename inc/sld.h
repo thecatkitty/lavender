@@ -5,18 +5,26 @@
 
 #include <stdint.h>
 
+#include <gfx.h>
 #include <ker.h>
 
 #define SLD_ENTRY_MAX_LENGTH 255
 
 #define SLD_TAG_TYPE_TEXT    'T'
 #define SLD_TAG_TYPE_BITMAP  'B'
+#define SLD_TAG_TYPE_RECT    'R'
+#define SLD_TAG_TYPE_RECTF   'r'
 #define SLD_TAG_ALIGN_LEFT   '<'
 #define SLD_TAG_ALIGN_CENTER '^'
 #define SLD_TAG_ALIGN_RIGHT  '>'
 
-#define SLD_TYPE_TEXT   0
-#define SLD_TYPE_BITMAP 1
+typedef enum
+{
+    SLD_TYPE_TEXT,
+    SLD_TYPE_BITMAP,
+    SLD_TYPE_RECT,
+    SLD_TYPE_RECTF
+} SLD_TYPE;
 
 #define SLD_ALIGN_LEFT   0
 #define SLD_ALIGN_CENTER 0xFFF1
@@ -28,8 +36,15 @@ typedef struct
     uint16_t Horizontal;
     uint16_t Vertical;
     uint8_t  Type;
-    uint8_t  Content[SLD_ENTRY_MAX_LENGTH + 1];
-    uint8_t  Length;
+    union {
+        uint8_t Content[SLD_ENTRY_MAX_LENGTH + 1];
+        struct
+        {
+            GFX_DIMENSIONS Dimensions;
+            GFX_COLOR      Color;
+        } Shape;
+    };
+    uint8_t Length;
 } SLD_ENTRY;
 
 // Load the next line from the slideshow file
