@@ -8,11 +8,14 @@
 
 #define VID_PAR(dx, dy, sx, sy)                                                \
     (uint8_t)(64U * (unsigned)dy * (unsigned)sx / (unsigned)dx / (unsigned)sy)
+#define VID_CGA_HIMONO_XY(x, y) ((x) / 8 + (y / 2) * VID_CGA_HIMONO_LINE)
 
 extern char                     __VidExtendedFont[];
 extern VID_CHARACTER_DESCRIPTOR __VidFontData[];
 
-static isr PreviousFontPtr;
+static isr       PreviousFontPtr;
+static far void *CgaPlane0 = MK_FP(CGA_HIMONO_MEM, 0);
+static far void *CgaPlane1 = MK_FP(CGA_HIMONO_MEM, CGA_HIMONO_PLANE);
 
 static void
 FontExecuteGlyphTransformation(const char *gxf, char *glyph);
@@ -55,8 +58,8 @@ VidDrawBitmap(GFX_BITMAP *bm, uint16_t x, uint16_t y)
     }
 
     far void *bits = bm->Bits;
-    far void *plane0 = MK_FP(CGA_HIMONO_MEM, 0);
-    far void *plane1 = MK_FP(CGA_HIMONO_MEM, CGA_HIMONO_PLANE);
+    far void *plane0 = CgaPlane0;
+    far void *plane1 = CgaPlane1;
     plane0 += x + y * (VID_CGA_HIMONO_LINE / 2);
     plane1 += x + y * (VID_CGA_HIMONO_LINE / 2);
 
@@ -70,6 +73,97 @@ VidDrawBitmap(GFX_BITMAP *bm, uint16_t x, uint16_t y)
         plane1 += VID_CGA_HIMONO_LINE;
         bits += bm->WidthBytes;
     }
+}
+
+int
+VidDrawRectangle(GFX_DIMENSIONS *rect, uint16_t x, uint16_t y, GFX_COLOR color)
+{
+    uint16_t left = x - 1;
+    uint16_t right = x + rect->Width;
+    uint16_t top = y - 1;
+    uint16_t bottom = y + rect->Height;
+
+    far char *plane;
+    uint8_t   leftCorner = (1 << (8 - (left % 8))) - 1;
+    uint8_t   rightCorner = ~((1 << (7 - (right % 8))) - 1);
+    uint8_t   leftBorder = 1 << (7 - (left % 8));
+    uint8_t   rightBorder = 1 << (7 - (right % 8));
+    uint8_t   horizontalFill = (GFX_COLOR_WHITE == color) ? 0xFF : 0x00;
+
+    // Top line
+    plane = (far uint8_t *)((top % 2) ? CgaPlane1 : CgaPlane0);
+    if (GFX_COLOR_WHITE == color)
+    {
+        plane[VID_CGA_HIMONO_XY(left, top)] |= leftCorner;
+        plane[VID_CGA_HIMONO_XY(right, top)] |= rightCorner;
+    }
+    else
+    {
+        plane[VID_CGA_HIMONO_XY(left, top)] &= ~leftCorner;
+        plane[VID_CGA_HIMONO_XY(right, top)] &= ~rightCorner;
+    }
+
+    for (uint16_t byte = left / 8 + (0 != (left % 8)); byte < right / 8; byte++)
+    {
+        plane[top / 2 * VID_CGA_HIMONO_LINE + byte] = horizontalFill;
+    }
+
+    // Bottom line
+    plane = (far uint8_t *)((bottom % 2) ? CgaPlane1 : CgaPlane0);
+    if (GFX_COLOR_WHITE == color)
+    {
+        plane[VID_CGA_HIMONO_XY(left, bottom)] |= leftCorner;
+        plane[VID_CGA_HIMONO_XY(right, bottom)] |= rightCorner;
+    }
+    else
+    {
+        plane[VID_CGA_HIMONO_XY(left, bottom)] &= ~leftCorner;
+        plane[VID_CGA_HIMONO_XY(right, bottom)] &= ~rightCorner;
+    }
+
+    for (uint16_t byte = left / 8 + (0 != (left % 8)); byte < right / 8; byte++)
+    {
+        plane[bottom / 2 * VID_CGA_HIMONO_LINE + byte] = horizontalFill;
+    }
+
+    // Vertical lines
+    plane = (far uint8_t *)((y % 2) ? CgaPlane1 : CgaPlane0);
+    if (GFX_COLOR_WHITE == color)
+    {
+        for (int16_t line = y; line < bottom; line += 2)
+        {
+            plane[VID_CGA_HIMONO_XY(left, line)] |= leftBorder;
+            plane[VID_CGA_HIMONO_XY(right, line)] |= rightBorder;
+        }
+    }
+    else
+    {
+        for (int16_t line = y; line < bottom; line += 2)
+        {
+            plane[VID_CGA_HIMONO_XY(left, line)] &= ~leftBorder;
+            plane[VID_CGA_HIMONO_XY(right, line)] &= ~rightBorder;
+        }
+    }
+
+    plane = (far uint8_t *)((y % 2) ? CgaPlane0 : CgaPlane1);
+    if (GFX_COLOR_WHITE == color)
+    {
+        for (int16_t line = y + 1; line < bottom; line += 2)
+        {
+            plane[VID_CGA_HIMONO_XY(left, line)] |= leftBorder;
+            plane[VID_CGA_HIMONO_XY(right, line)] |= rightBorder;
+        }
+    }
+    else
+    {
+        for (int16_t line = y + 1; line < bottom; line += 2)
+        {
+            plane[VID_CGA_HIMONO_XY(left, line)] &= ~leftBorder;
+            plane[VID_CGA_HIMONO_XY(right, line)] &= ~rightBorder;
+        }
+    }
+
+    return 0;
 }
 
 int

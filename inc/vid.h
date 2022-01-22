@@ -37,6 +37,9 @@ extern int
 VidDrawBitmap(GFX_BITMAP *bm, uint16_t x, uint16_t y);
 
 extern int
+VidDrawRectangle(GFX_DIMENSIONS *rect, uint16_t x, uint16_t y, GFX_COLOR color);
+
+extern int
 VidDrawText(const char *str, uint16_t x, uint16_t y);
 
 extern void
