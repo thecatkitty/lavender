@@ -10,6 +10,7 @@
 
 #define SLD_ENTRY_MAX_LENGTH 255
 
+#define SLD_TAG_PREFIX_LABEL ':'
 #define SLD_TAG_TYPE_TEXT    'T'
 #define SLD_TAG_TYPE_BITMAP  'B'
 #define SLD_TAG_TYPE_RECT    'R'
@@ -20,6 +21,7 @@
 
 typedef enum
 {
+    SLD_TYPE_LABEL,
     SLD_TYPE_TEXT,
     SLD_TYPE_BITMAP,
     SLD_TYPE_RECT,

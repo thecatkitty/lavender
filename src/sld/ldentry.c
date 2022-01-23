@@ -21,6 +21,13 @@ SldLoadEntry(const char *line, SLD_ENTRY *out)
     int      length;
     uint16_t num;
 
+    if (SLD_TAG_PREFIX_LABEL == *cur)
+    {
+        out->Type = SLD_TYPE_LABEL;
+        cur++;
+        goto LoadContent;
+    }
+
     // Load delay
     length = SldLoadU(cur, &num);
     if (0 > length)
@@ -84,7 +91,9 @@ SldLoadEntry(const char *line, SLD_ENTRY *out)
     }
 
     // Load content
-    char *content = out->Content;
+    char *content;
+LoadContent:
+    content = out->Content;
     length = 0;
     while (('\r' != *cur) && ('\n' != *cur))
     {
@@ -119,7 +128,7 @@ SldLoadEntry(const char *line, SLD_ENTRY *out)
     if ((SLD_TYPE_RECT == out->Type) || (SLD_TYPE_RECTF == out->Type))
     {
         const char *str = out->Content;
-        uint16_t width, height;
+        uint16_t    width, height;
 
         str += SldLoadU(str, &width);
         str += SldLoadU(str, &height);
