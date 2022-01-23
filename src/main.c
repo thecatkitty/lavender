@@ -1,4 +1,3 @@
-#include <api/bios.h>
 #include <ker.h>
 #include <sld.h>
 #include <vid.h>
@@ -58,7 +57,6 @@ Main(void)
         KerTerminate();
     }
 
-    BiosKeyboardGetKeystroke();
     VidUnloadFont();
     VidSetMode(oldMode);
     return 0;
