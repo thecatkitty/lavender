@@ -23,5 +23,10 @@ SldFindLabel(const char *start, const char *label, const char **line)
         }
     }
 
-    return (0 > length) ? length : ERR_SLD_LABEL_NOT_FOUND;
+    if (0 > length)
+    {
+        return length;
+    }
+
+    ERR(SLD_LABEL_NOT_FOUND);
 }
