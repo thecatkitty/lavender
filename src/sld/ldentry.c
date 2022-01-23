@@ -61,7 +61,16 @@ SldLoadEntry(const char *line, SLD_ENTRY *out)
     case SLD_TAG_TYPE_WAITKEY:
         out->Type = SLD_TYPE_WAITKEY;
         goto LoadContent;
-        break;
+    case SLD_TAG_TYPE_KEYJUMP:
+        out->Type = SLD_TYPE_KEYJUMP;
+        cur++;
+        length = SldLoadU(cur, &out->Vertical);
+        if (0 > length)
+        {
+            ERR(SLD_INVALID_KEYCODE);
+        }
+        cur += length;
+        goto LoadContent;
     default:
         ERR(SLD_UNKNOWN_TYPE);
     }

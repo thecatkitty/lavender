@@ -45,6 +45,8 @@ SldExecuteEntry(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
     case SLD_TYPE_WAITKEY:
         LastKeyPress = BiosKeyboardGetKeystroke();
         return 0;
+    case SLD_TYPE_KEYJUMP:
+        return ((LastKeyPress >> 8) == sld->Vertical) ? INT_MAX : 0;
     }
 
     ERR(SLD_UNKNOWN_TYPE);
