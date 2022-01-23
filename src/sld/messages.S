@@ -25,3 +25,6 @@
 
 .byte   ERR_SLD_CONTENT_TOO_LONG
 .ascii  "Content too long$"
+
+.byte   ERR_SLD_LABEL_NOT_FOUND
+.ascii  "Label not found$"

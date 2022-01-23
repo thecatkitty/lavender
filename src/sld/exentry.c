@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <string.h>
 
 #include <gfx.h>
@@ -36,6 +37,8 @@ SldExecuteEntry(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
     case SLD_TYPE_RECT:
     case SLD_TYPE_RECTF:
         return SldExecuteRectangle(sld);
+    case SLD_TYPE_JUMP:
+        return INT_MAX;
     }
 
     ERR(SLD_UNKNOWN_TYPE);

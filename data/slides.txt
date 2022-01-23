@@ -24,6 +24,7 @@
 1000    T   0   <
 1000    T   0   <
 1000    r   0   <640 200 B
+0       J   ExtendedFont
 :End
 0       T   24  ^Press any key to continue.
 
