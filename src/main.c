@@ -1,3 +1,5 @@
+#include <limits.h>
+
 #include <ker.h>
 #include <sld.h>
 #include <vid.h>
@@ -35,18 +37,19 @@ Main(void)
     SLD_ENTRY   entry;
     while (0 < (length = SldLoadEntry(line, &entry)))
     {
-        if (SLD_TYPE_JUMP == entry.Type)
+        int status;
+        if (0 > (status = SldExecuteEntry(&entry, cdir)))
+        {
+            KerTerminate();
+        }
+
+        if (INT_MAX == status)
         {
             if (0 > (length = SldFindLabel((const char *)data, entry.Content, &line)))
             {
                 KerTerminate();
             }
             continue;
-        }
-
-        if (0 > SldExecuteEntry(&entry, cdir))
-        {
-            KerTerminate();
         }
 
         line += length;

@@ -1,18 +1,27 @@
 :Start
+0       r   0   <640 200 B
 0       T   18  ^Lavender
 500     B   22  ^celolg<>.pbm
 500     T   19  ^Version 0.2
 500     T   23  ^Copyright (c) Mateusz Karcz, 2021-2022. Shared under the MIT License.
 0       K
+0       j   3   ExtendedFont
+0       j   4   Rectangles
+0       j   1   End
+0       J   Start
 :ExtendedFont
-1000    r   0   <640 200 B
+0       r   0   <640 200 B
 0       T   0   ^Extended Font
 0       T   2   <ĄĆĘŁŃÓŚŹŻąćęłńóśźż
 0       T   3   >ÁÉÍÑÓÚÜÝáéíñóúüý
 0       T   4   ^•‼←↑→↓↔↕↨∟⌂▬▲►▼◄○◘◙☺☻☼♀♂♠♣♥♦♪♫
 0       K
+0       j   2   Start
+0       j   4   Rectangles
+0       j   1   End
+0       J   ExtendedFont
 :Rectangles
-1000    r   0   <640 200 B
+0       r   0   <640 200 B
 500     R   1   1   50  50  W
 500     R   53  53  50  50  W
 500     r   1   53  50  50  W
@@ -20,9 +29,11 @@
 500     R   25  25  50  50  B
 500     r   25  85  50  50  B
 0       K
-0       J   End
+0       j   2   Start
+0       j   3   ExtendedFont
+0       j   1   End
+0       J   Rectangles
 :End
-1000    r   0   <640 200 B
 0       T   24  ^Press any key to continue.
 0       K
 

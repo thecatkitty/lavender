@@ -17,6 +17,7 @@
 #define SLD_TAG_TYPE_RECTF   'r'
 #define SLD_TAG_TYPE_JUMP    'J'
 #define SLD_TAG_TYPE_WAITKEY 'K'
+#define SLD_TAG_TYPE_KEYJUMP 'j'
 #define SLD_TAG_ALIGN_LEFT   '<'
 #define SLD_TAG_ALIGN_CENTER '^'
 #define SLD_TAG_ALIGN_RIGHT  '>'
@@ -29,7 +30,8 @@ typedef enum
     SLD_TYPE_RECT,
     SLD_TYPE_RECTF,
     SLD_TYPE_JUMP,
-    SLD_TYPE_WAITKEY
+    SLD_TYPE_WAITKEY,
+    SLD_TYPE_KEYJUMP
 } SLD_TYPE;
 
 #define SLD_ALIGN_LEFT   0
@@ -78,5 +80,6 @@ SldFindLabel(const char *start, const char *label, const char **line);
 #define ERR_SLD_INVALID_HORIZONTAL ERR_CODE(ERR_FACILITY_SLD, 3)
 #define ERR_SLD_CONTENT_TOO_LONG   ERR_CODE(ERR_FACILITY_SLD, 4)
 #define ERR_SLD_LABEL_NOT_FOUND    ERR_CODE(ERR_FACILITY_SLD, 5)
+#define ERR_SLD_INVALID_KEYCODE    ERR_CODE(ERR_FACILITY_SLD, 6)
 
 #endif // _SLD_H_
