@@ -36,6 +36,15 @@ Main(void)
     SLD_ENTRY   entry;
     while (0 < (length = SldLoadEntry(line, &entry)))
     {
+        if (SLD_TYPE_JUMP == entry.Type)
+        {
+            if (0 > (length = SldFindLabel((const char *)data, entry.Content, &line)))
+            {
+                KerTerminate();
+            }
+            continue;
+        }
+
         if (0 > SldExecuteEntry(&entry, cdir))
         {
             KerTerminate();
