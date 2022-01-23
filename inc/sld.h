@@ -16,6 +16,7 @@
 #define SLD_TAG_TYPE_RECT    'R'
 #define SLD_TAG_TYPE_RECTF   'r'
 #define SLD_TAG_TYPE_JUMP    'J'
+#define SLD_TAG_TYPE_WAITKEY 'K'
 #define SLD_TAG_ALIGN_LEFT   '<'
 #define SLD_TAG_ALIGN_CENTER '^'
 #define SLD_TAG_ALIGN_RIGHT  '>'
@@ -27,7 +28,8 @@ typedef enum
     SLD_TYPE_BITMAP,
     SLD_TYPE_RECT,
     SLD_TYPE_RECTF,
-    SLD_TYPE_JUMP
+    SLD_TYPE_JUMP,
+    SLD_TYPE_WAITKEY
 } SLD_TYPE;
 
 #define SLD_ALIGN_LEFT   0

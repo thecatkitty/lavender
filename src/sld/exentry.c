@@ -1,10 +1,13 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <api/bios.h>
 #include <gfx.h>
 #include <ker.h>
 #include <sld.h>
 #include <vid.h>
+
+static uint16_t LastKeyPress = 0;
 
 static int
 SldExecuteText(SLD_ENTRY *sld);
@@ -39,6 +42,9 @@ SldExecuteEntry(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
         return SldExecuteRectangle(sld);
     case SLD_TYPE_JUMP:
         return INT_MAX;
+    case SLD_TYPE_WAITKEY:
+        LastKeyPress = BiosKeyboardGetKeystroke();
+        return 0;
     }
 
     ERR(SLD_UNKNOWN_TYPE);

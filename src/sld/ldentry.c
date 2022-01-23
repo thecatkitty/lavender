@@ -58,6 +58,10 @@ SldLoadEntry(const char *line, SLD_ENTRY *out)
         while (isspace(*cur))
             cur++;
         goto LoadContent;
+    case SLD_TAG_TYPE_WAITKEY:
+        out->Type = SLD_TYPE_WAITKEY;
+        goto LoadContent;
+        break;
     default:
         ERR(SLD_UNKNOWN_TYPE);
     }
