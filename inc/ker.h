@@ -77,6 +77,10 @@ KerSearchArchive(ZIP_CDIR_END_HEADER *   cdir,
 extern int
 KerGetArchiveData(ZIP_LOCAL_FILE_HEADER *lfh, void **data);
 
+// Start playing music
+extern void
+KerStartPlayer(void *music, uint16_t length);
+
 #endif // __ASSEMBLER__
 
 #include <err.h>
