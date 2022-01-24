@@ -32,7 +32,7 @@ PlayerIsr(void);
 unsigned
 KerGetTicksFromMs(unsigned ms)
 {
-    unsigned ticks = ms * KER_DELAY_MS_MULTIPLIER;
+    uint32_t ticks = (uint32_t)ms * KER_DELAY_MS_MULTIPLIER;
     ticks /= (10000000UL * KER_DELAY_MS_MULTIPLIER) * KER_PIT_FREQ_DIVISOR /
              KER_PIT_INPUT_FREQ;
     return ticks;
