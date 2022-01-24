@@ -1,5 +1,9 @@
+#include <string.h>
+
 #include <api/dos.h>
 #include <ker.h>
+
+extern char __sbss[], __ebss[];
 
 extern int
 Main(void);
@@ -25,6 +29,8 @@ _start(void)
 void
 KerEntry(void)
 {
+    memset(__sbss, 0, __ebss - __sbss);
+
     PitInitialize();
 
     int exitCode = Main();
