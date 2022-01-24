@@ -19,6 +19,9 @@ static int
 SldExecuteRectangle(SLD_ENTRY *sld);
 
 static int
+SldExecutePlay(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip);
+
+static int
 SldFindBestBitmap(char *                  pattern,
                   unsigned                length,
                   ZIP_CDIR_END_HEADER *   zip,
@@ -40,6 +43,8 @@ SldExecuteEntry(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
     case SLD_TYPE_RECT:
     case SLD_TYPE_RECTF:
         return SldExecuteRectangle(sld);
+    case SLD_TYPE_PLAY:
+        return SldExecutePlay(sld, zip);
     case SLD_TYPE_JUMP:
         return INT_MAX;
     case SLD_TYPE_WAITKEY:
@@ -133,6 +138,29 @@ SldExecuteRectangle(SLD_ENTRY *sld)
     int (*draw)(GFX_DIMENSIONS *, uint16_t, uint16_t, GFX_COLOR);
     draw = (SLD_TYPE_RECT == sld->Type) ? VidDrawRectangle : VidFillRectangle;
     return draw(&sld->Shape.Dimensions, x, y, sld->Shape.Color);
+}
+
+int
+SldExecutePlay(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
+{
+    int status;
+
+    ZIP_LOCAL_FILE_HEADER *lfh;
+    status = KerSearchArchive(zip, sld->Content, sld->Length, &lfh);
+    if (0 > status)
+    {
+        return status;
+    }
+
+    void *data;
+    status = KerGetArchiveData(lfh, &data);
+    if (0 > status)
+    {
+        return status;
+    }
+
+    KerStartPlayer(data, lfh->UncompressedSize);
+    return 0;
 }
 
 int

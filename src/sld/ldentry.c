@@ -52,6 +52,12 @@ SldLoadEntry(const char *line, SLD_ENTRY *out)
     case SLD_TAG_TYPE_RECTF:
         out->Type = SLD_TYPE_RECTF;
         break;
+    case SLD_TAG_TYPE_PLAY:
+        out->Type = SLD_TYPE_PLAY;
+        cur++;
+        while (isspace(*cur))
+            cur++;
+        goto LoadContent;
     case SLD_TAG_TYPE_JUMP:
         out->Type = SLD_TYPE_JUMP;
         cur++;

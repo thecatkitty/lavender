@@ -15,6 +15,7 @@
 #define SLD_TAG_TYPE_BITMAP  'B'
 #define SLD_TAG_TYPE_RECT    'R'
 #define SLD_TAG_TYPE_RECTF   'r'
+#define SLD_TAG_TYPE_PLAY    'P'
 #define SLD_TAG_TYPE_JUMP    'J'
 #define SLD_TAG_TYPE_WAITKEY 'K'
 #define SLD_TAG_TYPE_KEYJUMP 'j'
@@ -29,6 +30,7 @@ typedef enum
     SLD_TYPE_BITMAP,
     SLD_TYPE_RECT,
     SLD_TYPE_RECTF,
+    SLD_TYPE_PLAY,
     SLD_TYPE_JUMP,
     SLD_TYPE_WAITKEY,
     SLD_TYPE_KEYJUMP
