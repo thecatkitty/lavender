@@ -45,7 +45,8 @@ Main(void)
 
         if (INT_MAX == status)
         {
-            if (0 > (length = SldFindLabel((const char *)data, entry.Content, &line)))
+            if (0 > (length = SldFindLabel((const char *)data, entry.Content,
+                                           &line)))
             {
                 KerTerminate();
             }
