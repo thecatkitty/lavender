@@ -1,26 +1,53 @@
+#include <api/dos.h>
 #include <ker.h>
 #include <sld.h>
 #include <vid.h>
 
 const char SLIDES_TXT[] = "slides.txt";
 
+static bool
+IsEnvironmentCompatible(void);
+
 int
 Main(ZIP_CDIR_END_HEADER *zip)
 {
-    uint16_t oldMode = VidSetMode(VID_MODE_CGA_HIMONO);
-    VidLoadFont();
-
     ZIP_LOCAL_FILE_HEADER *lfh;
-    if (0 > KerSearchArchive(zip, SLIDES_TXT, sizeof(SLIDES_TXT) - 1, &lfh))
+    void *                 data;
+
+    // Check compatibility and display a message on unsupported systems
+    if (!IsEnvironmentCompatible())
+    {
+        const char support[] = "support.txt";
+        if (0 > KerSearchArchive(zip, support, sizeof(support) - 1, &lfh))
+        {
+            DosPutS("Lavender cannot run in your environment.$");
+            return 1;
+        }
+
+        if (0 > KerGetArchiveData(lfh, &data))
+        {
+            KerTerminate();
+        }
+
+        DosPutS((const char *)data);
+        return 1;
+    }
+
+    // Locate slideshow description
+    const char slides[] = "slides.txt";
+    if (0 > KerSearchArchive(zip, slides, sizeof(slides) - 1, &lfh))
     {
         KerTerminate();
     }
 
-    void *data;
     if (0 > KerGetArchiveData(lfh, &data))
     {
         KerTerminate();
     }
+
+    // Set video mode and start the slideshow
+    uint16_t oldMode = VidSetMode(VID_MODE_CGA_HIMONO);
+    VidLoadFont();
 
     const char *line = (const char *)data;
     int         length;
@@ -51,7 +78,20 @@ Main(ZIP_CDIR_END_HEADER *zip)
         KerTerminate();
     }
 
+    // Clean up
     VidUnloadFont();
     VidSetMode(oldMode);
     return 0;
+}
+
+bool
+IsEnvironmentCompatible(void)
+{
+    if (KerIsDosMajor(1))
+    {
+        // We're using DOS 2.0+ API here, so that's unfortunate.
+        return false;
+    }
+
+    return true;
 }

@@ -13,6 +13,9 @@ typedef void(interrupt *isr)(void) far;
 extern bool
 KerIsDosBox(void);
 
+extern bool
+KerIsDosMajor(uint8_t major);
+
 extern unsigned
 KerGetTicksFromMs(unsigned ms);
 
