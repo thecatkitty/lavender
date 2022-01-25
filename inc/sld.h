@@ -3,8 +3,6 @@
 
 #ifndef __ASSEMBLER__
 
-#include <stdint.h>
-
 #include <gfx.h>
 #include <ker.h>
 

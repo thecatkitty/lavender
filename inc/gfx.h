@@ -3,7 +3,7 @@
 
 #ifndef __ASSEMBLER__
 
-#include <stdint.h>
+#include <base.h>
 
 typedef struct
 {
