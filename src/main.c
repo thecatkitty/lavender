@@ -2,24 +2,16 @@
 #include <sld.h>
 #include <vid.h>
 
-extern char __edata[], __sbss[];
-
 const char SLIDES_TXT[] = "slides.txt";
 
 int
-Main(void)
+Main(ZIP_CDIR_END_HEADER *zip)
 {
     uint16_t oldMode = VidSetMode(VID_MODE_CGA_HIMONO);
     VidLoadFont();
 
-    ZIP_CDIR_END_HEADER *cdir;
-    if (0 > KerLocateArchive(__edata, __sbss, &cdir))
-    {
-        KerTerminate();
-    }
-
     ZIP_LOCAL_FILE_HEADER *lfh;
-    if (0 > KerSearchArchive(cdir, SLIDES_TXT, sizeof(SLIDES_TXT) - 1, &lfh))
+    if (0 > KerSearchArchive(zip, SLIDES_TXT, sizeof(SLIDES_TXT) - 1, &lfh))
     {
         KerTerminate();
     }
@@ -36,7 +28,7 @@ Main(void)
     while (0 < (length = SldLoadEntry(line, &entry)))
     {
         int status;
-        if (0 > (status = SldExecuteEntry(&entry, cdir)))
+        if (0 > (status = SldExecuteEntry(&entry, zip)))
         {
             KerTerminate();
         }
