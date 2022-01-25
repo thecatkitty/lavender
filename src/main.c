@@ -93,5 +93,10 @@ IsEnvironmentCompatible(void)
         return false;
     }
 
-    return true;
+    if (!KerIsWindowsNt())
+    {
+        return true;
+    }
+
+    return false;
 }

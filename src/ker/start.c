@@ -14,6 +14,8 @@ PitInitialize(void);
 extern void
 PitDeinitialize(void);
 
+DOS_PSP *KerPsp;
+
 void
 _start(void) __attribute__((section(".startupA.0")));
 
@@ -30,6 +32,7 @@ void
 KerEntry(void)
 {
     memset(__sbss, 0, __ebss - __sbss);
+    KerPsp = (DOS_PSP *)0;
 
     ZIP_CDIR_END_HEADER *zip;
     if (0 > KerLocateArchive(__edata, __sbss, &zip))

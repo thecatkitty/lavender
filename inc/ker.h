@@ -16,6 +16,12 @@ KerIsDosBox(void);
 extern bool
 KerIsDosMajor(uint8_t major);
 
+extern bool
+KerIsWindowsNt(void);
+
+extern far const char *
+KerGetEnvironmentVariable(const char *key);
+
 extern unsigned
 KerGetTicksFromMs(unsigned ms);
 
