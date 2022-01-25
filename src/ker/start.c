@@ -3,10 +3,10 @@
 #include <api/dos.h>
 #include <ker.h>
 
-extern char __sbss[], __ebss[];
+extern char __edata[], __sbss[], __ebss[];
 
 extern int
-Main(void);
+Main(ZIP_CDIR_END_HEADER *zip);
 
 extern void
 PitInitialize(void);
@@ -31,9 +31,15 @@ KerEntry(void)
 {
     memset(__sbss, 0, __ebss - __sbss);
 
+    ZIP_CDIR_END_HEADER *zip;
+    if (0 > KerLocateArchive(__edata, __sbss, &zip))
+    {
+        KerTerminate();
+    }
+
     PitInitialize();
 
-    int exitCode = Main();
+    int exitCode = Main(zip);
 
     PitDeinitialize();
 
