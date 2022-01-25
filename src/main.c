@@ -1,5 +1,3 @@
-#include <limits.h>
-
 #include <ker.h>
 #include <sld.h>
 #include <vid.h>

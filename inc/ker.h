@@ -3,15 +3,8 @@
 
 #ifndef __ASSEMBLER__
 
-#include <stdbool.h>
-
+#include <base.h>
 #include <fmt/zip.h>
-
-#ifndef EDITING
-#define far __far
-#else
-#define far
-#endif
 
 #define interrupt __attribute__((interrupt))
 

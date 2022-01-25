@@ -3,8 +3,6 @@
 
 #ifndef __ASSEMBLER__
 
-#include <stdint.h>
-
 #include <gfx.h>
 
 #define VID_MODE_CGA_HIMONO 6 // 640x200x1
