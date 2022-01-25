@@ -98,5 +98,5 @@ IsEnvironmentCompatible(void)
         return true;
     }
 
-    return false;
+    return 0x0600 > KerGetWindowsNtVersion();
 }

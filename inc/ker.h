@@ -22,6 +22,9 @@ KerIsWindowsNt(void);
 extern far const char *
 KerGetEnvironmentVariable(const char *key);
 
+extern uint16_t
+KerGetWindowsNtVersion(void);
+
 extern unsigned
 KerGetTicksFromMs(unsigned ms);
 

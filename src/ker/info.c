@@ -1,6 +1,9 @@
+#include <fcntl.h>
 #include <libi86/string.h>
+#include <unistd.h>
 
 #include <api/dos.h>
+#include <fmt/exe.h>
 #include <ker.h>
 
 extern DOS_PSP *KerPsp;
@@ -43,6 +46,52 @@ KerIsWindowsNt(void)
     // Does it claim to be Windows NT?
     const char windowsNt[] = "Windows_NT";
     return 0 == _fmemcmp(os, windowsNt, sizeof(windowsNt));
+}
+
+uint16_t
+KerGetWindowsNtVersion(void)
+{
+    far const char *systemRoot = KerGetEnvironmentVariable("SYSTEMROOT");
+    if (NULL == systemRoot)
+    {
+        return 0; // No system root
+    }
+
+    char smssPath[261];
+    _fmemcpy(smssPath, systemRoot, _fstrlen(systemRoot) + 1);
+    strcat(smssPath, "\\system32\\smss.exe");
+
+    int fd;
+    if (0 > (fd = open(smssPath, O_RDONLY)))
+    {
+        return 0; // No SMSS
+    }
+
+    union {
+        EXE_DOS_HEADER         DosHdr;
+        ULONG                  NewSignature;
+        EXE_PE_OPTIONAL_HEADER OptionalHeader;
+    } data;
+
+    read(fd, &data, sizeof(EXE_DOS_HEADER));
+    if (0x5A4D != data.DosHdr.e_magic)
+    {
+        return 0; // Invalid executable
+    }
+
+    lseek(fd, data.DosHdr.e_lfanew, SEEK_SET);
+    read(fd, &data, sizeof(ULONG));
+    if (0x00004550 != data.NewSignature)
+    {
+        return 0; // Invalid executable
+    }
+
+    lseek(fd, sizeof(EXE_PE_FILE_HEADER), SEEK_CUR);
+    read(fd, &data, sizeof(EXE_PE_OPTIONAL_HEADER));
+    close(fd);
+
+    return (data.OptionalHeader.MajorImageVersion << 8) |
+           data.OptionalHeader.MinorImageVersion;
 }
 
 far const char *
