@@ -105,16 +105,16 @@ KerCompareUtf8IgnoreCase(const char *str1, const char *str2, unsigned length)
             return 1;
         }
 
-        if ((fold1[0] == fold2[0]) && (fold1[1] == fold2[1]))
+        if ((fold1[0] != fold2[0]) || (fold1[1] != fold2[1]))
         {
-            return 0;
+            return 1;
         }
 
-        str1++;
-        str2++;
+        str1 += length1;
+        str2 += length2;
     }
 
-    return 1;
+    return 0;
 }
 
 // Get case folding for Unicode code point
