@@ -24,6 +24,7 @@ SldLoadEntry(const char *line, SLD_ENTRY *out)
     if (SLD_TAG_PREFIX_LABEL == *cur)
     {
         out->Type = SLD_TYPE_LABEL;
+        out->Delay = 0;
         cur++;
         goto LoadContent;
     }
