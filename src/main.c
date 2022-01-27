@@ -1,9 +1,8 @@
+#include <api/bios.h>
 #include <api/dos.h>
 #include <ker.h>
 #include <sld.h>
 #include <vid.h>
-
-const char SLIDES_TXT[] = "slides.txt";
 
 static bool
 IsEnvironmentCompatible(void);
@@ -30,6 +29,7 @@ Main(ZIP_CDIR_END_HEADER *zip)
         }
 
         DosPutS((const char *)data);
+        BiosKeyboardGetKeystroke();
         return 1;
     }
 
