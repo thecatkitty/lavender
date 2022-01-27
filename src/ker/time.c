@@ -14,7 +14,7 @@
 
 #define SPKR_ENABLE 3
 
-static volatile unsigned counter = 0xFFFF;
+static volatile uint32_t counter;
 static isr               biosIsr;
 
 static volatile unsigned playerTicks = 0;
@@ -41,13 +41,10 @@ KerGetTicksFromMs(unsigned ms)
 void
 KerSleep(unsigned ticks)
 {
-    unsigned last = counter;
-    while (0 != ticks)
+    uint32_t until = counter + ticks;
+    while (counter != until)
     {
         asm("hlt");
-        if (counter == last)
-            continue;
-        ticks--;
     }
 }
 
@@ -87,7 +84,7 @@ PitInitChannel(unsigned channel, unsigned mode, unsigned divisor)
 void
 PitInitialize()
 {
-    counter = 0xFFFF;
+    counter = 0;
     biosIsr = KerInstallIsr(PitIsr, INT_PIT);
     PitInitChannel(0, PIT_MODE_RATE_GEN, KER_PIT_FREQ_DIVISOR);
 }
