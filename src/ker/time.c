@@ -5,6 +5,7 @@
 #include <api/dos.h>
 #include <dev/pic.h>
 #include <dev/pit.h>
+#include <fmt/spk.h>
 #include <ker.h>
 
 #define KER_PIT_INPUT_FREQ      11931816667ULL
@@ -17,8 +18,7 @@ static volatile unsigned counter = 0xFFFF;
 static isr               biosIsr;
 
 static volatile unsigned playerTicks = 0;
-static uint16_t *volatile sequence = (uint16_t *)0;
-static uint16_t *sequenceEnd;
+static SPK_NOTE3 *volatile sequence = (SPK_NOTE3 *)0;
 
 static void
 PlayerStop(void);
@@ -55,8 +55,7 @@ void
 KerStartPlayer(void *music, uint16_t length)
 {
     KerDisableInterrupts();
-    sequence = (uint16_t *)music;
-    sequenceEnd = sequence + length;
+    sequence = (SPK_NOTE3 *)((uint8_t *)music + sizeof(SPK_HEADER));
     playerTicks = 0;
     KerEnableInterrupts();
 }
@@ -65,8 +64,8 @@ void
 PlayerStop(void)
 {
     KerDisableInterrupts();
-    sequence = (uint16_t *)0;
-    _outp(0x61, _inp(0x61) & (uint8_t)~SPKR_ENABLE);
+    sequence = (SPK_NOTE3 *)0;
+    nosound();
     KerEnableInterrupts();
 }
 
@@ -127,29 +126,28 @@ PlayerIsr(void)
     if (!sequence)
         return;
 
-    if (sequenceEnd <= sequence)
-    {
-        _outp(0x61, _inp(0x61) & (uint8_t)~SPKR_ENABLE);
-        sequence = (uint16_t *)0;
-    }
-
     if (0 != playerTicks)
     {
         playerTicks--;
         return;
     }
 
-    sequence += 2;
-    playerTicks = sequence[0] - 1;
-
-    uint16_t divisor = sequence[1];
-    if (0 == divisor)
+    if (SPK_NOTE_DURATION_STOP == sequence->Duration)
     {
-        _outp(0x61, _inp(0x61) & (uint8_t)~SPKR_ENABLE);
+        PlayerStop();
+        return;
+    }
+
+    playerTicks = sequence->Duration - 1;
+    if (0 == sequence->Divisor)
+    {
+        nosound();
     }
     else
     {
-        PitInitChannel(2, PIT_MODE_SQUARE_WAVE_GEN, divisor);
+        PitInitChannel(2, PIT_MODE_SQUARE_WAVE_GEN, sequence->Divisor);
         _outp(0x61, _inp(0x61) | SPKR_ENABLE);
     }
+
+    sequence++;
 }
