@@ -43,12 +43,23 @@ $(OBJ)/%.S.o: $(SRC)/%.S
 $(OBJ)/%.c.o: $(SRC)/%.c
 	$(CC) $(CFLAGS) -o $@ $<
 
-$(OBJ)/version.o: $(OBJ)/version.txt
-	$(OBJCOPY) -I binary -O elf32-i386 -B i386 --rename-section .data=.startupA.1 $^ $@
+GIT_TAG     = $(shell git describe --abbrev=0)
+GIT_COMMITS = $(shell git rev-list $(GIT_TAG)..HEAD --count)
 
-$(OBJ)/version.txt:
+ifeq ($(GIT_COMMITS),0)
+VERSION = $(GIT_TAG)
+else
+VERSION = $(GIT_TAG)-$(GIT_COMMITS)
+endif
+
+$(OBJ)/version.o: $(OBJ)/version.txt .FORCE
+	$(OBJCOPY) -I binary -O elf32-i386 -B i386 --rename-section .data=.startupA.1 $< $@
+
+$(OBJ)/version.txt: .FORCE
 	@mkdir -p $(OBJ)
-	/bin/echo -en "\rLavender $(shell git describe --tags $(GIT_COMMIT) --abbrev=0)-$(shell git rev-parse --short HEAD)\x1A" >$@
+	/bin/echo -en "\rLavender $(VERSION)\x1A" >$@
+
+ .FORCE:
 
 clean:
 	rm -rf $(BIN)
