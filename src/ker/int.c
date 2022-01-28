@@ -6,17 +6,17 @@
 isr
 KerInstallIsr(isr routine, unsigned number)
 {
-    KerDisableInterrupts();
+    _disable();
     isr previous = _dos_getvect(number);
     _dos_setvect(number, routine);
-    KerEnableInterrupts();
+    _enable();
     return previous;
 }
 
 void
 KerUninstallIsr(isr previous, unsigned number)
 {
-    KerDisableInterrupts();
+    _disable();
     _dos_setvect(number, previous);
-    KerEnableInterrupts();
+    _enable();
 }

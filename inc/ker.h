@@ -37,18 +37,6 @@ KerInstallIsr(isr routine, unsigned number);
 extern void
 KerUninstallIsr(isr previous, unsigned number);
 
-inline void
-KerDisableInterrupts()
-{
-    asm("cli");
-}
-
-inline void
-KerEnableInterrupts()
-{
-    asm("sti");
-}
-
 // Get code point from UTF-8 sequence
 // Returns the length of the sequence (0 when NUL), negative on error
 extern int
