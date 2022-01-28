@@ -84,8 +84,12 @@ PitInitChannel(unsigned channel, unsigned mode, unsigned divisor)
 void
 PitInitialize()
 {
+    _disable();
+    biosIsr = _dos_getvect(INT_PIT);
+    _dos_setvect(INT_PIT, PitIsr);
+    _enable();
+
     counter = 0;
-    biosIsr = KerInstallIsr(PitIsr, INT_PIT);
     PitInitChannel(0, PIT_MODE_RATE_GEN, KER_PIT_FREQ_DIVISOR);
 }
 
@@ -93,7 +97,7 @@ void
 PitDeinitialize()
 {
     PlayerStop();
-    KerUninstallIsr(biosIsr, INT_PIT);
+    _dos_setvect(INT_PIT, biosIsr);
     PitInitChannel(0, PIT_MODE_RATE_GEN, 0);
 }
 

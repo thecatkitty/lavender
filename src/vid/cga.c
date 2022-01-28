@@ -252,8 +252,10 @@ VidDrawText(const char *str, uint16_t x, uint16_t y)
 void
 VidLoadFont(void)
 {
-    PreviousFontPtr =
-        KerInstallIsr((isr)__VidExtendedFont, INT_CGA_EXTENDED_FONT_PTR);
+    _disable();
+    PreviousFontPtr = _dos_getvect(INT_CGA_EXTENDED_FONT_PTR);
+    _dos_setvect(INT_CGA_EXTENDED_FONT_PTR, (isr)__VidExtendedFont);
+    _enable();
 
     far const char *bfont =
         MK_FP(CGA_BASIC_FONT_SEGMENT, CGA_BASIC_FONT_OFFSET);
@@ -305,7 +307,7 @@ VidLoadFont(void)
 void
 VidUnloadFont(void)
 {
-    KerUninstallIsr((isr)PreviousFontPtr, INT_CGA_EXTENDED_FONT_PTR);
+    _dos_setvect(INT_CGA_EXTENDED_FONT_PTR, (isr)PreviousFontPtr);
 }
 
 char
