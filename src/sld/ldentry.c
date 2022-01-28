@@ -14,8 +14,8 @@ SldLoadEntry(const char *line, SLD_ENTRY *out)
     const char *cur = line;
     if ('\r' == *cur)
     {
-        out->Length = 0;
-        return 0;
+        out->Type = SLD_TYPE_LABEL;
+        return ('\n' == cur[1]) ? 2 : 1;
     }
 
     int      length;

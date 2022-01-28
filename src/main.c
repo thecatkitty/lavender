@@ -52,8 +52,13 @@ Main(ZIP_CDIR_END_HEADER *zip)
     const char *line = (const char *)data;
     int         length;
     SLD_ENTRY   entry;
-    while (0 < (length = SldLoadEntry(line, &entry)))
+    while (line < (const char *)data + lfh->UncompressedSize)
     {
+        if (0 > (length = SldLoadEntry(line, &entry)))
+        {
+            KerTerminate();
+        }
+
         int status;
         if (0 > (status = SldExecuteEntry(&entry, zip)))
         {
@@ -62,8 +67,9 @@ Main(ZIP_CDIR_END_HEADER *zip)
 
         if (INT_MAX == status)
         {
-            if (0 > (length = SldFindLabel((const char *)data, entry.Content,
-                                           &line)))
+            if (0 > (length = SldFindLabel((const char *)data,
+                                           data + lfh->UncompressedSize,
+                                           entry.Content, &line)))
             {
                 KerTerminate();
             }
@@ -71,11 +77,6 @@ Main(ZIP_CDIR_END_HEADER *zip)
         }
 
         line += length;
-    }
-
-    if (0 > length)
-    {
-        KerTerminate();
     }
 
     // Clean up

@@ -4,7 +4,10 @@
 #include <sld.h>
 
 int
-SldFindLabel(const char *start, const char *label, const char **line)
+SldFindLabel(const char * start,
+             const char * end,
+             const char * label,
+             const char **line)
 {
     SLD_ENTRY entry;
     int       length;
