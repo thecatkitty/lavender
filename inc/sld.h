@@ -68,7 +68,10 @@ SldExecuteEntry(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip);
 // Find the first line after the given label
 // Returns negative on error
 extern int
-SldFindLabel(const char *start, const char *label, const char **line);
+SldFindLabel(const char * start,
+             const char * end,
+             const char * label,
+             const char **line);
 
 #endif // __ASSEMBLER__
 
