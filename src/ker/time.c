@@ -51,19 +51,19 @@ KerSleep(unsigned ticks)
 void
 KerStartPlayer(void *music, uint16_t length)
 {
-    KerDisableInterrupts();
+    _disable();
     sequence = (SPK_NOTE3 *)((uint8_t *)music + sizeof(SPK_HEADER));
     playerTicks = 0;
-    KerEnableInterrupts();
+    _enable();
 }
 
 void
 PlayerStop(void)
 {
-    KerDisableInterrupts();
+    _disable();
     sequence = (SPK_NOTE3 *)0;
     nosound();
-    KerEnableInterrupts();
+    _enable();
 }
 
 void
@@ -73,12 +73,12 @@ PitInitChannel(unsigned channel, unsigned mode, unsigned divisor)
         return;
     mode &= PIT_MODE_MASK;
 
-    KerDisableInterrupts();
+    _disable();
     _outp(PIT_IO_COMMAND, (mode << PIT_MODE) | (channel << PIT_CHANNEL) |
                               (1 << PIT_BYTE_HI) | (1 << PIT_BYTE_LO));
     _outp(PIT_IO + channel, divisor & 0xFF);
     _outp(PIT_IO + channel, divisor >> 8);
-    KerEnableInterrupts();
+    _enable();
 }
 
 void
@@ -100,7 +100,7 @@ PitDeinitialize()
 interrupt void far
 PitIsr(void)
 {
-    KerDisableInterrupts();
+    _disable();
     counter++;
 
     if (0 == (counter % 32))
@@ -114,7 +114,7 @@ PitIsr(void)
     }
 
     _outp(PIC1_IO_COMMAND, PIC_COMMAND_EOI);
-    KerEnableInterrupts();
+    _enable();
 }
 
 void
