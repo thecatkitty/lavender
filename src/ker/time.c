@@ -103,17 +103,20 @@ PitIsr(void)
     _disable();
     counter++;
 
-    if (0 == (counter % 32))
-    {
-        biosIsr();
-    }
-
     if (0 == (counter % 10))
     {
         PlayerIsr();
     }
 
-    _outp(PIC1_IO_COMMAND, PIC_COMMAND_EOI);
+    if (0 == (counter % 32))
+    {
+        biosIsr();
+    }
+    else
+    {
+        _outp(PIC1_IO_COMMAND, PIC_COMMAND_EOI);
+    }
+
     _enable();
 }
 
