@@ -1,4 +1,4 @@
-#include <format>
+#include <iomanip>
 #include <iostream>
 
 #include "key.hpp"
@@ -48,7 +48,8 @@ main(int argc, char *argv[])
         uint32_t disk_id = ((uint32_t)disk_id_high << 16) | disk_id_low;
 
         uint64_t key = decode_key(disk_id, secret);
-        std::cout << std::format("{:012X}", key) << std::endl;
+        std::cout << std::hex << std::setfill('0') << std::setw(12)
+                  << std::noshowbase << std::uppercase << key << std::endl;
     }
 
     return 0;

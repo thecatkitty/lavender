@@ -1,11 +1,12 @@
 #pragma once
 
+#include <climits>
 #include <cstdint>
 
 inline constexpr uint64_t
 umaxval(unsigned bits)
 {
-    return (1Ui64 << bits) - 1;
+    return (1ULL << bits) - 1;
 }
 
 template <typename T>
