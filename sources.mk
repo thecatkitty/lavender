@@ -11,3 +11,6 @@ DIR	    := sld
 include $(SRC)/$(DIR)/module.mk
 
 CCSOURCES += main.c
+
+DIR	    := tools
+include $(SRC)/$(DIR)/module.mk

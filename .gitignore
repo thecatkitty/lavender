@@ -2,9 +2,3 @@
 .vscode
 bin
 obj
-
-.vs*
-*.exe
-*.ilk
-*.obj
-*.pdb

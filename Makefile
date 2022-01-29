@@ -23,6 +23,8 @@ else
 SSHOW   = sshow.com
 endif
 
+sshow: $(BIN)/$(SSHOW)
+
 include sources.mk
 
 $(BIN)/$(SSHOW): $(BIN)/lavender.com $(OBJ)/data.zip
