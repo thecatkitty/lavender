@@ -1,4 +1,4 @@
-#include <format>
+#include <iomanip>
 #include <iostream>
 
 #include "key.hpp"
@@ -51,8 +51,10 @@ main(int argc, char *argv[])
                 continue;
             }
 
-            std::cout << std::format("{:04X}-{:04X}\t{:06}", disk_id >> 16,
-                                     disk_id & ((1 << 16) - 1), secret)
+            std::cout << std::hex << std::setfill('0') << std::noshowbase
+                      << std::uppercase << std::setw(4) << (disk_id >> 16)
+                      << '-' << std::setw(4) << (disk_id & ((1 << 16) - 1))
+                      << '\t' << std::dec << std::setw(6) << secret
                       << std::endl;
         }
     }

@@ -20,6 +20,8 @@ Building requires Linux with *GNU Make*, *GNU Binutils*, [GCC for IA-16](https:/
 make
 ```
 
+Building additional tools requires GCC and MinGW-w64.
+
 If you want to change the output slideshow application file name (`sshow.com` is default) or the slideshow source directory, you can set `LAV_SSHOW` and `LAV_DATA` environmental variables respectively.
 
 ## Format of `slides.txt`
