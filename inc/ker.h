@@ -64,6 +64,18 @@ KerSearchArchive(ZIP_CDIR_END_HEADER *   cdir,
 extern int
 KerGetArchiveData(ZIP_LOCAL_FILE_HEADER *lfh, void **data);
 
+// Calculate ZIP-compatible CRC-32 checksum of a buffer
+// Returns checksum value
+uint32_t
+KerCalculateZipCrc(uint8_t *buffer, int length);
+
+// Calculate ZIP-compatible CRC-32 checksum of a data stream
+// Returns checksum value
+uint32_t
+KerCalculateZipCrcIndirect(uint8_t (*stream)(void *, int),
+                           void *context,
+                           int   length);
+
 // Start playing music
 extern void
 KerStartPlayer(void *music, uint16_t length);
@@ -78,5 +90,6 @@ KerStartPlayer(void *music, uint16_t length);
 #define ERR_KER_ARCHIVE_TOO_LARGE ERR_CODE(ERR_FACILITY_KER, 4)
 #define ERR_KER_ARCHIVE_INVALID   ERR_CODE(ERR_FACILITY_KER, 5)
 #define ERR_KER_INVALID_SEQUENCE  ERR_CODE(ERR_FACILITY_KER, 6)
+#define ERR_KER_INTEGRITY         ERR_CODE(ERR_FACILITY_KER, 7)
 
 #endif // _KER_H_

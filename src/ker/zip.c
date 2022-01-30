@@ -88,7 +88,13 @@ KerGetArchiveData(ZIP_LOCAL_FILE_HEADER *lfh, void **data)
         ERR(KER_UNSUPPORTED);
     }
 
-    *data = (void *)(lfh + 1) + lfh->NameLength + lfh->ExtraLength;
+    uint8_t *buffer = (uint8_t *)(lfh + 1) + lfh->NameLength + lfh->ExtraLength;
+    if (KerCalculateZipCrc(buffer, lfh->UncompressedSize) != lfh->Crc32)
+    {
+        ERR(KER_INTEGRITY);
+    }
+
+    *data = buffer;
     return 0;
 }
 
@@ -167,4 +173,38 @@ ZipMatchFileName(const char *          name,
     }
 
     return 1;
+}
+
+static uint32_t ZipCrcTable[] = {
+    0x00000000, 0x1DB71064, 0x3B6E20C8, 0x26D930AC, 0x76DC4190, 0x6B6B51F4,
+    0x4DB26158, 0x5005713C, 0xEDB88320, 0xF00F9344, 0xD6D6A3E8, 0xCB61B38C,
+    0x9B64C2B0, 0x86D3D2D4, 0xA00AE278, 0xBDBDF21C};
+
+uint32_t
+KerCalculateZipCrc(uint8_t *buffer, int length)
+{
+    uint32_t crc = 0xFFFFFFFF;
+    for (int i = 0; i < length; i++)
+    {
+        uint8_t b = *buffer++;
+        crc = (crc >> 4) ^ ZipCrcTable[(crc & 0xF) ^ (b & 0xF)];
+        crc = (crc >> 4) ^ ZipCrcTable[(crc & 0xF) ^ (b >> 4)];
+    }
+    return ~crc;
+}
+
+uint32_t
+KerCalculateZipCrcIndirect(uint8_t (*stream)(void *, int),
+                           void *context,
+                           int   length)
+{
+    uint32_t crc = 0xFFFFFFFF;
+
+    for (int i = 0; i < length; i++)
+    {
+        crc = ((crc >> 8) & 0xFFFFFF) ^
+              ZipCrcTable[(crc & 0xFF) ^ stream(context, i)];
+    }
+
+    return crc;
 }
