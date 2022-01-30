@@ -7,7 +7,7 @@
 #include <sld.h>
 #include <vid.h>
 
-static uint16_t LastKeyPress = 0;
+static uint16_t Accumulator = 0;
 
 static int
 SldExecuteText(SLD_ENTRY *sld);
@@ -45,13 +45,13 @@ SldExecuteEntry(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
         return SldExecuteRectangle(sld);
     case SLD_TYPE_PLAY:
         return SldExecutePlay(sld, zip);
+    case SLD_TYPE_WAITKEY:
+        Accumulator = BiosKeyboardGetKeystroke() >> 8;
+        return 0;
     case SLD_TYPE_JUMP:
         return INT_MAX;
-    case SLD_TYPE_WAITKEY:
-        LastKeyPress = BiosKeyboardGetKeystroke();
-        return 0;
-    case SLD_TYPE_KEYJUMP:
-        return ((LastKeyPress >> 8) == sld->Vertical) ? INT_MAX : 0;
+    case SLD_TYPE_JUMPE:
+        return (Accumulator == sld->Vertical) ? INT_MAX : 0;
     }
 
     ERR(SLD_UNKNOWN_TYPE);

@@ -59,22 +59,22 @@ SldLoadEntry(const char *line, SLD_ENTRY *out)
         while (isspace(*cur))
             cur++;
         goto LoadContent;
+    case SLD_TAG_TYPE_WAITKEY:
+        out->Type = SLD_TYPE_WAITKEY;
+        goto LoadContent;
     case SLD_TAG_TYPE_JUMP:
         out->Type = SLD_TYPE_JUMP;
         cur++;
         while (isspace(*cur))
             cur++;
         goto LoadContent;
-    case SLD_TAG_TYPE_WAITKEY:
-        out->Type = SLD_TYPE_WAITKEY;
-        goto LoadContent;
-    case SLD_TAG_TYPE_KEYJUMP:
-        out->Type = SLD_TYPE_KEYJUMP;
+    case SLD_TAG_TYPE_JUMPE:
+        out->Type = SLD_TYPE_JUMPE;
         cur++;
         length = SldLoadU(cur, &out->Vertical);
         if (0 > length)
         {
-            ERR(SLD_INVALID_KEYCODE);
+            ERR(SLD_INVALID_COMPARISON);
         }
         cur += length;
         goto LoadContent;
