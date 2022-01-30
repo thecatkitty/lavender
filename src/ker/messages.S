@@ -31,3 +31,6 @@
 
 .byte   ERR_KER_INVALID_SEQUENCE
 .ascii  "Invalid or unsupported UTF-8 sequence$"
+
+.byte   ERR_KER_INTEGRITY
+.ascii  "Data corrupted$"
