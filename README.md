@@ -76,6 +76,8 @@ The slideshow file consists of entries specifying various actions. Each entry en
 <delay> K
 ```
 
+Stores the scan code in the *Accumulator*.
+
 #### Unconditional jump
 ```
 <delay> J <label>
@@ -83,10 +85,10 @@ The slideshow file consists of entries specifying various actions. Each entry en
 
 ### Conditional jump
 ```
-<delay> j <scan code> <label>
+<delay> = <value> <label>
 ```
 
-`<scan code>` denotes the BIOS keyboard scan code of the last key press.
+Jumps to `<label>` if the *Accumulator* is equal to the `<value>`.
 
 ## Format of the PC speaker music file
 ```

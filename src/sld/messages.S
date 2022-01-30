@@ -28,3 +28,6 @@
 
 .byte   ERR_SLD_LABEL_NOT_FOUND
 .ascii  "Label not found$"
+
+.byte   ERR_SLD_INVALID_COMPARISON
+.ascii  "Invalid value in comparison$"
