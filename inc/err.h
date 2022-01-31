@@ -12,15 +12,13 @@
 
 #ifndef __ASSEMBLER__
 
-extern char KerLastError;
-
 #define ERR(e)                                                                 \
     {                                                                          \
-        return -(KerLastError = ERR_##e);                                      \
+        return -(ERR_##e);                                                     \
     }
 
 void
-KerTerminate(void);
+KerTerminate(int error);
 
 #endif // __ASSEMBLER__
 

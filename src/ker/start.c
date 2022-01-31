@@ -31,25 +31,27 @@ _start(void)
 void
 KerEntry(void)
 {
+    int status;
+
     memset(__sbss, 0, __ebss - __sbss);
     KerPsp = (DOS_PSP *)0;
 
     ZIP_CDIR_END_HEADER *zip;
-    if (0 > KerLocateArchive(__edata, __sbss, &zip))
+    if (0 > (status = KerLocateArchive(__edata, __sbss, &zip)))
     {
-        KerTerminate();
+        KerTerminate(-status);
     }
 
     PitInitialize();
 
-    int exitCode = Main(zip);
+    status = Main(zip);
 
     PitDeinitialize();
 
-    if (0 > exitCode)
+    if (0 > status)
     {
-        KerTerminate();
+        KerTerminate(-status);
     }
 
-    DosExit(exitCode);
+    DosExit(status);
 }
