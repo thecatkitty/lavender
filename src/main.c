@@ -40,43 +40,13 @@ Main(ZIP_CDIR_END_HEADER *zip)
         KerTerminate();
     }
 
-    if (0 > KerGetArchiveData(lfh, &data))
-    {
-        KerTerminate();
-    }
-
     // Set video mode and start the slideshow
     uint16_t oldMode = VidSetMode(VID_MODE_CGA_HIMONO);
     VidLoadFont();
 
-    const char *line = (const char *)data;
-    int         length;
-    SLD_ENTRY   entry;
-    while (line < (const char *)data + lfh->UncompressedSize)
+    if (0 > SldExecuteFile(lfh, zip))
     {
-        if (0 > (length = SldLoadEntry(line, &entry)))
-        {
-            KerTerminate();
-        }
-
-        int status;
-        if (0 > (status = SldExecuteEntry(&entry, zip)))
-        {
-            KerTerminate();
-        }
-
-        if (INT_MAX == status)
-        {
-            if (0 > (length = SldFindLabel((const char *)data,
-                                           data + lfh->UncompressedSize,
-                                           entry.Content, &line)))
-            {
-                KerTerminate();
-            }
-            continue;
-        }
-
-        line += length;
+        KerTerminate();
     }
 
     // Clean up

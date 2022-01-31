@@ -55,6 +55,11 @@ typedef struct
     uint8_t Length;
 } SLD_ENTRY;
 
+// Execute a slideshow file
+// Returns negative on error
+extern int
+SldExecuteFile(ZIP_LOCAL_FILE_HEADER *file, ZIP_CDIR_END_HEADER *zip);
+
 // Load the next line from the slideshow file
 // Returns total line length in bytes, negative on error
 extern int
