@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <stdlib.h>
 
 #include <api/dos.h>
 #include <ker.h>
@@ -15,10 +16,13 @@ static int
 SldConvertText(const char *, SLD_ENTRY *inOut);
 
 static int
-SldLoadConditional(const char *line, SLD_ENTRY *out);
+SldLoadConditional(const char *str, SLD_ENTRY *out);
 
 static int
-SldLoadShape(const char *line, SLD_ENTRY *out);
+SldLoadShape(const char *str, SLD_ENTRY *out);
+
+static int
+SldLoadFileExecution(const char *str, SLD_ENTRY *out);
 
 static int
 SldLoadU(const char *str, uint16_t *out);
@@ -107,6 +111,10 @@ SldLoadEntry(const char *line, SLD_ENTRY *out)
         out->Type = SLD_TYPE_JUMPE;
         PROCESS_LOAD_PIPELINE(SldLoadConditional, cur, out);
         PROCESS_LOAD_PIPELINE(SldLoadContent, cur, out);
+        break;
+    case SLD_TAG_TYPE_EXECUTE:
+        out->Type = SLD_TYPE_EXECUTE;
+        PROCESS_LOAD_PIPELINE(SldLoadFileExecution, cur, out);
         break;
     default:
         ERR(SLD_UNKNOWN_TYPE);
@@ -239,6 +247,48 @@ SldLoadShape(const char *str, SLD_ENTRY *out)
     out->Shape.Dimensions.Width = width;
     out->Shape.Dimensions.Height = height;
     cur++;
+
+    return cur - str;
+}
+
+int
+SldLoadFileExecution(const char *str, SLD_ENTRY *out)
+{
+    const char *cur = str;
+    uint16_t method, parameter;
+    int         length;
+
+    cur += SldLoadU(cur, &out->FileExecution.Method);
+
+    length = 0;
+    while (!isspace(*cur))
+    {
+        if ((sizeof(out->FileExecution.FileName) - 1) < length)
+        {
+            ERR(SLD_CONTENT_TOO_LONG);
+        }
+        out->FileExecution.FileName[length] = *(cur++);
+        length++;
+    }
+    out->FileExecution.FileName[length] = 0;
+    out->Length = length;
+
+    out->FileExecution.Crc32 = strtoul(cur, &cur, 16);
+
+    cur += SldLoadU(cur, &out->FileExecution.Parameter);
+
+    length = 0;
+    while (('\r' != *cur) && ('\n' != *cur))
+    {
+        if ((sizeof(out->FileExecution.Data) - 1) < length)
+        {
+            ERR(SLD_CONTENT_TOO_LONG);
+        }
+        out->FileExecution.Data[length] = *(cur++);
+        length++;
+    }
+    out->FileExecution.Data[length] = 0;
+    cur += length;
 
     return cur - str;
 }
