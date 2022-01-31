@@ -17,6 +17,7 @@
 #define SLD_TAG_TYPE_WAITKEY 'K'
 #define SLD_TAG_TYPE_JUMP    'J'
 #define SLD_TAG_TYPE_JUMPE   '='
+#define SLD_TAG_TYPE_EXECUTE '!'
 #define SLD_TAG_ALIGN_LEFT   '<'
 #define SLD_TAG_ALIGN_CENTER '^'
 #define SLD_TAG_ALIGN_RIGHT  '>'
@@ -31,12 +32,15 @@ typedef enum
     SLD_TYPE_PLAY,
     SLD_TYPE_WAITKEY,
     SLD_TYPE_JUMP,
-    SLD_TYPE_JUMPE
+    SLD_TYPE_JUMPE,
+    SLD_TYPE_EXECUTE
 } SLD_TYPE;
 
 #define SLD_ALIGN_LEFT   0
 #define SLD_ALIGN_CENTER 0xFFF1
 #define SLD_ALIGN_RIGHT  0xFFF2
+
+#define SLD_METHOD_STORE 0
 
 typedef struct
 {
@@ -51,6 +55,14 @@ typedef struct
             GFX_DIMENSIONS Dimensions;
             GFX_COLOR      Color;
         } Shape;
+        struct
+        {
+            uint16_t Method;
+            char     FileName[64];
+            uint32_t Crc32;
+            uint16_t Parameter;
+            char     Data[128];
+        } FileExecution;
     };
     uint8_t Length;
 } SLD_ENTRY;
