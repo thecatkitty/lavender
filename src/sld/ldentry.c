@@ -6,7 +6,32 @@
 #include <vid.h>
 
 static int
+SldLoadPosition(const char *str, SLD_ENTRY *out);
+
+static int
+SldLoadContent(const char *str, SLD_ENTRY *out);
+
+static int
+SldConvertText(const char *, SLD_ENTRY *inOut);
+
+static int
+SldLoadConditional(const char *line, SLD_ENTRY *out);
+
+static int
+SldLoadShape(const char *line, SLD_ENTRY *out);
+
+static int
 SldLoadU(const char *str, uint16_t *out);
+
+#define PROCESS_LOAD_PIPELINE(stage, str, out)                                 \
+    {                                                                          \
+        int length;                                                            \
+        if (0 > (length = stage(str, out)))                                    \
+        {                                                                      \
+            return length;                                                     \
+        };                                                                     \
+        str += length;                                                         \
+    }
 
 extern int
 SldLoadEntry(const char *line, SLD_ENTRY *out)
@@ -26,7 +51,8 @@ SldLoadEntry(const char *line, SLD_ENTRY *out)
         out->Type = SLD_TYPE_LABEL;
         out->Delay = 0;
         cur++;
-        goto LoadContent;
+        PROCESS_LOAD_PIPELINE(SldLoadContent, cur, out);
+        goto End;
     }
 
     // Load delay
@@ -39,49 +65,74 @@ SldLoadEntry(const char *line, SLD_ENTRY *out)
     cur += length;
 
     // Load type
-    switch (*cur)
+    uint8_t typeTag = *cur;
+    cur++;
+
+    // Process all parts
+    switch (typeTag)
     {
     case SLD_TAG_TYPE_TEXT:
         out->Type = SLD_TYPE_TEXT;
+        PROCESS_LOAD_PIPELINE(SldLoadPosition, cur, out);
+        PROCESS_LOAD_PIPELINE(SldLoadContent, cur, out);
+        PROCESS_LOAD_PIPELINE(SldConvertText, cur, out);
         break;
     case SLD_TAG_TYPE_BITMAP:
         out->Type = SLD_TYPE_BITMAP;
+        PROCESS_LOAD_PIPELINE(SldLoadPosition, cur, out);
+        PROCESS_LOAD_PIPELINE(SldLoadContent, cur, out);
         break;
     case SLD_TAG_TYPE_RECT:
         out->Type = SLD_TYPE_RECT;
+        PROCESS_LOAD_PIPELINE(SldLoadPosition, cur, out);
+        PROCESS_LOAD_PIPELINE(SldLoadShape, cur, out);
         break;
     case SLD_TAG_TYPE_RECTF:
         out->Type = SLD_TYPE_RECTF;
+        PROCESS_LOAD_PIPELINE(SldLoadPosition, cur, out);
+        PROCESS_LOAD_PIPELINE(SldLoadShape, cur, out);
         break;
     case SLD_TAG_TYPE_PLAY:
+        PROCESS_LOAD_PIPELINE(SldLoadContent, cur, out);
         out->Type = SLD_TYPE_PLAY;
-        cur++;
-        while (isspace(*cur))
-            cur++;
-        goto LoadContent;
+        break;
     case SLD_TAG_TYPE_WAITKEY:
         out->Type = SLD_TYPE_WAITKEY;
-        goto LoadContent;
+        break;
     case SLD_TAG_TYPE_JUMP:
         out->Type = SLD_TYPE_JUMP;
-        cur++;
-        while (isspace(*cur))
-            cur++;
-        goto LoadContent;
+        PROCESS_LOAD_PIPELINE(SldLoadContent, cur, out);
+        break;
     case SLD_TAG_TYPE_JUMPE:
         out->Type = SLD_TYPE_JUMPE;
-        cur++;
-        length = SldLoadU(cur, &out->Vertical);
-        if (0 > length)
-        {
-            ERR(SLD_INVALID_COMPARISON);
-        }
-        cur += length;
-        goto LoadContent;
+        PROCESS_LOAD_PIPELINE(SldLoadConditional, cur, out);
+        PROCESS_LOAD_PIPELINE(SldLoadContent, cur, out);
+        break;
     default:
         ERR(SLD_UNKNOWN_TYPE);
     }
+
+End:
+    // Ignore rest of the line
+    while (('\r' != *cur) && ('\n' != *cur))
+    {
+        cur++;
+    }
+
+    if (*cur == '\r')
+    {
+        cur++;
+    }
     cur++;
+
+    return cur - line;
+}
+
+int
+SldLoadPosition(const char *str, SLD_ENTRY *out)
+{
+    const char *cur = str;
+    int         length;
 
     // Load vertical position
     length = SldLoadU(cur, &out->Vertical);
@@ -116,11 +167,21 @@ SldLoadEntry(const char *line, SLD_ENTRY *out)
         cur++;
     }
 
-    // Load content
-    char *content;
-LoadContent:
-    content = out->Content;
-    length = 0;
+    return cur - str;
+}
+
+int
+SldLoadContent(const char *str, SLD_ENTRY *out)
+{
+    const char *cur = str;
+    char *      content = out->Content;
+    int         length = 0;
+
+    while (isspace(*cur))
+    {
+        cur++;
+    }
+
     while (('\r' != *cur) && ('\n' != *cur))
     {
         if (SLD_ENTRY_MAX_LENGTH < length)
@@ -132,39 +193,54 @@ LoadContent:
     }
     *content = 0;
 
-    if (*cur == '\r')
-    {
-        cur++;
-    }
-    cur++;
     out->Length = length;
+    return cur - str;
+}
 
-    // Convert from UTF-8
-    if (SLD_TYPE_TEXT == out->Type)
+int
+SldConvertText(const char *str, SLD_ENTRY *inOut)
+{
+    inOut->Length =
+        KerConvertFromUtf8(inOut->Content, inOut->Content, VidConvertToLocal);
+    if (0 > inOut->Length)
     {
-        out->Length =
-            KerConvertFromUtf8(out->Content, out->Content, VidConvertToLocal);
-        if (0 > out->Length)
-        {
-            return out->Length;
-        }
+        return inOut->Length;
     }
 
-    // Convert dimensions and color
-    if ((SLD_TYPE_RECT == out->Type) || (SLD_TYPE_RECTF == out->Type))
+    return 0;
+}
+
+int
+SldLoadConditional(const char *str, SLD_ENTRY *out)
+{
+    const char *cur = str;
+    int         length = 0;
+
+    length = SldLoadU(cur, &out->Vertical);
+    if (0 > length)
     {
-        const char *str = out->Content;
-        uint16_t    width, height;
-
-        str += SldLoadU(str, &width);
-        str += SldLoadU(str, &height);
-
-        out->Shape.Color = ('W' == *str) ? GFX_COLOR_WHITE : GFX_COLOR_BLACK;
-        out->Shape.Dimensions.Width = width;
-        out->Shape.Dimensions.Height = height;
+        ERR(SLD_INVALID_COMPARISON);
     }
+    cur += length;
 
-    return cur - line;
+    return cur - str;
+}
+
+int
+SldLoadShape(const char *str, SLD_ENTRY *out)
+{
+    const char *cur = str;
+    uint16_t    width, height;
+
+    cur += SldLoadU(cur, &width);
+    cur += SldLoadU(cur, &height);
+
+    out->Shape.Color = ('W' == *cur) ? GFX_COLOR_WHITE : GFX_COLOR_BLACK;
+    out->Shape.Dimensions.Width = width;
+    out->Shape.Dimensions.Height = height;
+    cur++;
+
+    return cur - str;
 }
 
 int
