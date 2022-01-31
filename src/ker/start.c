@@ -46,5 +46,10 @@ KerEntry(void)
 
     PitDeinitialize();
 
+    if (0 > exitCode)
+    {
+        KerTerminate();
+    }
+
     DosExit(exitCode);
 }
