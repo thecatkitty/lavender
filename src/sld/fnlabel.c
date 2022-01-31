@@ -1,4 +1,3 @@
-#include <api/dos.h>
 #include <string.h>
 
 #include <sld.h>
@@ -13,8 +12,14 @@ SldFindLabel(const char * start,
     int       length;
 
     *line = start;
-    while (0 < (length = SldLoadEntry(*line, &entry)))
+    while (*line < end)
     {
+        length = SldLoadEntry(*line, &entry);
+        if (0 > length)
+        {
+            return length;
+        }
+
         *line += length;
 
         if (SLD_TYPE_LABEL != entry.Type)
@@ -24,11 +29,6 @@ SldFindLabel(const char * start,
         {
             return 0;
         }
-    }
-
-    if (0 > length)
-    {
-        return length;
     }
 
     ERR(SLD_LABEL_NOT_FOUND);
