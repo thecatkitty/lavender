@@ -37,6 +37,8 @@ SldExecuteEntry(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
 
     switch (sld->Type)
     {
+    case SLD_TYPE_BLANK:
+        return 0;
     case SLD_TYPE_LABEL:
         return 0;
     case SLD_TYPE_TEXT:

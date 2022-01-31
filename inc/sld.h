@@ -24,6 +24,7 @@
 
 typedef enum
 {
+    SLD_TYPE_BLANK,
     SLD_TYPE_LABEL,
     SLD_TYPE_TEXT,
     SLD_TYPE_BITMAP,
