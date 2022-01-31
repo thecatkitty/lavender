@@ -34,6 +34,4 @@
 0       =   1   End
 0       J   Rectangles
 :End
-0       T   24  ^Press any key to continue.
-0       K
-
+0       !   0   presskey.txt    7184231F    0
