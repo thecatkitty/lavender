@@ -12,6 +12,7 @@ Main(ZIP_CDIR_END_HEADER *zip)
 {
     ZIP_LOCAL_FILE_HEADER *lfh;
     void *                 data;
+    int                    status;
 
     // Check compatibility and display a message on unsupported systems
     if (!IsEnvironmentCompatible())
@@ -23,9 +24,9 @@ Main(ZIP_CDIR_END_HEADER *zip)
             return 1;
         }
 
-        if (0 > KerGetArchiveData(lfh, &data))
+        if (0 > (status = KerGetArchiveData(lfh, &data)))
         {
-            KerTerminate();
+            return status;
         }
 
         DosPutS((const char *)data);
@@ -35,24 +36,22 @@ Main(ZIP_CDIR_END_HEADER *zip)
 
     // Locate slideshow description
     const char slides[] = "slides.txt";
-    if (0 > KerSearchArchive(zip, slides, sizeof(slides) - 1, &lfh))
+    if (0 > (status = KerSearchArchive(zip, slides, sizeof(slides) - 1, &lfh)))
     {
-        KerTerminate();
+        return status;
     }
 
-    // Set video mode and start the slideshow
+    // Set video mode
     uint16_t oldMode = VidSetMode(VID_MODE_CGA_HIMONO);
     VidLoadFont();
 
-    if (0 > SldExecuteFile(lfh, zip))
-    {
-        KerTerminate();
-    }
+    // Start the slideshow
+    status = SldExecuteFile(lfh, zip);
 
     // Clean up
     VidUnloadFont();
     VidSetMode(oldMode);
-    return 0;
+    return status;
 }
 
 bool
