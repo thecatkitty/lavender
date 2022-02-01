@@ -58,8 +58,8 @@ typedef struct
         } Shape;
         struct
         {
-            uint16_t Method;
             char     FileName[64];
+            uint16_t Method;
             uint32_t Crc32;
             uint16_t Parameter;
             char     Data[128];
