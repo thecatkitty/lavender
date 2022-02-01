@@ -34,4 +34,4 @@
 0       =   1   End
 0       J   Rectangles
 :End
-0       !   presskey.txt
+0       !   presskey.txt    1   CB7B00C7    0   FFFFFFFFFFFF
