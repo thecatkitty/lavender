@@ -1,6 +1,8 @@
+#include <stdlib.h>
 #include <string.h>
 
 #include <api/bios.h>
+#include <crg.h>
 #include <gfx.h>
 #include <ker.h>
 #include <sld.h>
@@ -188,6 +190,29 @@ SldExecuteScriptCall(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
         return status;
     }
 
+    // Run if stored as plain text
+    if (SLD_METHOD_STORE == sld->ScriptCall.Method)
+    {
+        return SldRunScript(data, lfh->UncompressedSize, zip);
+    }
+
+    // Run if already decrypted
+    if (sld->ScriptCall.Crc32 ==
+        KerCalculateZipCrc((uint8_t *)data, lfh->UncompressedSize))
+    {
+        return SldRunScript(data, lfh->UncompressedSize, zip);
+    }
+
+    uint64_t key = strtoull(sld->ScriptCall.Data, NULL, 16);
+
+    // Check the key
+    if (!CrgIsXorKeyValid(data, lfh->UncompressedSize, (const uint8_t *)&key, 6,
+                          sld->ScriptCall.Crc32))
+    {
+        return 0;
+    }
+
+    CrgXor(data, data, lfh->UncompressedSize, (const uint8_t *)&key, 6);
     return SldRunScript(data, lfh->UncompressedSize, zip);
 }
 
