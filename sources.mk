@@ -1,6 +1,9 @@
 DIR	    := ker
 include $(SRC)/$(DIR)/module.mk
 
+DIR	    := crg
+include $(SRC)/$(DIR)/module.mk
+
 DIR	    := vid
 include $(SRC)/$(DIR)/module.mk
 
