@@ -199,12 +199,11 @@ KerCalculateZipCrcIndirect(uint8_t (*stream)(void *, int),
                            int   length)
 {
     uint32_t crc = 0xFFFFFFFF;
-
     for (int i = 0; i < length; i++)
     {
-        crc = ((crc >> 8) & 0xFFFFFF) ^
-              ZipCrcTable[(crc & 0xFF) ^ stream(context, i)];
+        uint8_t b = stream(context, i);
+        crc = (crc >> 4) ^ ZipCrcTable[(crc & 0xF) ^ (b & 0xF)];
+        crc = (crc >> 4) ^ ZipCrcTable[(crc & 0xF) ^ (b >> 4)];
     }
-
-    return crc;
+    return ~crc;
 }
