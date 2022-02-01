@@ -22,7 +22,7 @@ static int
 SldLoadShape(const char *str, SLD_ENTRY *out);
 
 static int
-SldLoadFileExecution(const char *str, SLD_ENTRY *out);
+SldLoadScriptCall(const char *str, SLD_ENTRY *out);
 
 static int
 SldLoadU(const char *str, uint16_t *out);
@@ -114,7 +114,7 @@ SldLoadEntry(const char *line, SLD_ENTRY *out)
         break;
     case SLD_TAG_TYPE_CALL:
         out->Type = SLD_TYPE_CALL;
-        PROCESS_LOAD_PIPELINE(SldLoadFileExecution, cur, out);
+        PROCESS_LOAD_PIPELINE(SldLoadScriptCall, cur, out);
         break;
     default:
         ERR(SLD_UNKNOWN_TYPE);
@@ -252,7 +252,7 @@ SldLoadShape(const char *str, SLD_ENTRY *out)
 }
 
 int
-SldLoadFileExecution(const char *str, SLD_ENTRY *out)
+SldLoadScriptCall(const char *str, SLD_ENTRY *out)
 {
     const char *cur = str;
     uint16_t    method, parameter;
@@ -300,7 +300,6 @@ SldLoadFileExecution(const char *str, SLD_ENTRY *out)
         length++;
     }
     out->ScriptCall.Data[length] = 0;
-    cur += length;
 
     return cur - str;
 }
