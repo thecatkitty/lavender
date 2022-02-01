@@ -17,7 +17,7 @@
 #define SLD_TAG_TYPE_WAITKEY 'K'
 #define SLD_TAG_TYPE_JUMP    'J'
 #define SLD_TAG_TYPE_JUMPE   '='
-#define SLD_TAG_TYPE_EXECUTE '!'
+#define SLD_TAG_TYPE_CALL    '!'
 #define SLD_TAG_ALIGN_LEFT   '<'
 #define SLD_TAG_ALIGN_CENTER '^'
 #define SLD_TAG_ALIGN_RIGHT  '>'
@@ -34,7 +34,7 @@ typedef enum
     SLD_TYPE_WAITKEY,
     SLD_TYPE_JUMP,
     SLD_TYPE_JUMPE,
-    SLD_TYPE_EXECUTE
+    SLD_TYPE_CALL
 } SLD_TYPE;
 
 #define SLD_ALIGN_LEFT   0
@@ -63,22 +63,22 @@ typedef struct
             uint32_t Crc32;
             uint16_t Parameter;
             char     Data[128];
-        } FileExecution;
+        } ScriptCall;
     };
     uint8_t Length;
 } SLD_ENTRY;
 
-// Execute a slideshow file
+// Execute a script
 // Returns negative on error
 extern int
-SldExecuteFile(ZIP_LOCAL_FILE_HEADER *file, ZIP_CDIR_END_HEADER *zip);
+SldRunScript(ZIP_LOCAL_FILE_HEADER *file, ZIP_CDIR_END_HEADER *zip);
 
-// Load the next line from the slideshow file
+// Load the next line from the script
 // Returns total line length in bytes, negative on error
 extern int
 SldLoadEntry(const char *line, SLD_ENTRY *out);
 
-// Execute a line loaded from the slideshow file
+// Execute a line loaded from the script
 // Returns negative on error
 extern int
 SldExecuteEntry(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip);

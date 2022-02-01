@@ -46,7 +46,7 @@ Main(ZIP_CDIR_END_HEADER *zip)
     VidLoadFont();
 
     // Start the slideshow
-    status = SldExecuteFile(lfh, zip);
+    status = SldRunScript(lfh, zip);
 
     // Clean up
     VidUnloadFont();

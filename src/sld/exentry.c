@@ -22,7 +22,7 @@ static int
 SldExecutePlay(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip);
 
 static int
-SldExecuteFileExecution(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip);
+SldExecuteScriptCall(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip);
 
 static int
 SldFindBestBitmap(char *                  pattern,
@@ -57,8 +57,8 @@ SldExecuteEntry(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
         return INT_MAX;
     case SLD_TYPE_JUMPE:
         return (Accumulator == sld->Vertical) ? INT_MAX : 0;
-    case SLD_TYPE_EXECUTE:
-        return SldExecuteFileExecution(sld, zip);
+    case SLD_TYPE_CALL:
+        return SldExecuteScriptCall(sld, zip);
     }
 
     ERR(SLD_UNKNOWN_TYPE);
@@ -171,18 +171,19 @@ SldExecutePlay(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
 }
 
 int
-SldExecuteFileExecution(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
+SldExecuteScriptCall(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
 {
     int status;
 
     ZIP_LOCAL_FILE_HEADER *lfh;
-    status = KerSearchArchive(zip, sld->FileExecution.FileName, sld->Length, &lfh);
+    status =
+        KerSearchArchive(zip, sld->ScriptCall.FileName, sld->Length, &lfh);
     if (0 > status)
     {
         return status;
     }
 
-    return SldExecuteFile(lfh, zip);
+    return SldRunScript(lfh, zip);
 }
 
 int
