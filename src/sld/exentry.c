@@ -1,4 +1,3 @@
-#include <stdint.h>
 #include <string.h>
 
 #include <api/bios.h>
@@ -182,7 +181,14 @@ SldExecuteScriptCall(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
         return status;
     }
 
-    return SldRunScript(lfh, zip);
+    void *data;
+    status = KerGetArchiveData(lfh, &data);
+    if (0 > status)
+    {
+        return status;
+    }
+
+    return SldRunScript(data, lfh->UncompressedSize, zip);
 }
 
 int

@@ -41,12 +41,19 @@ Main(ZIP_CDIR_END_HEADER *zip)
         return status;
     }
 
+    // Get script
+    status = KerGetArchiveData(lfh, &data);
+    if (0 > status)
+    {
+        return status;
+    }
+
     // Set video mode
     uint16_t oldMode = VidSetMode(VID_MODE_CGA_HIMONO);
     VidLoadFont();
 
     // Start the slideshow
-    status = SldRunScript(lfh, zip);
+    status = SldRunScript(data, lfh->UncompressedSize, zip);
 
     // Clean up
     VidUnloadFont();
