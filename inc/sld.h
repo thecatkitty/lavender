@@ -42,6 +42,7 @@ typedef enum
 #define SLD_ALIGN_RIGHT  0xFFF2
 
 #define SLD_METHOD_STORE 0
+#define SLD_METHOD_XOR48 1
 
 typedef struct
 {
