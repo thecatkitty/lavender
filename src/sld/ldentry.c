@@ -112,8 +112,8 @@ SldLoadEntry(const char *line, SLD_ENTRY *out)
         PROCESS_LOAD_PIPELINE(SldLoadConditional, cur, out);
         PROCESS_LOAD_PIPELINE(SldLoadContent, cur, out);
         break;
-    case SLD_TAG_TYPE_EXECUTE:
-        out->Type = SLD_TYPE_EXECUTE;
+    case SLD_TAG_TYPE_CALL:
+        out->Type = SLD_TYPE_CALL;
         PROCESS_LOAD_PIPELINE(SldLoadFileExecution, cur, out);
         break;
     default:
@@ -255,39 +255,39 @@ int
 SldLoadFileExecution(const char *str, SLD_ENTRY *out)
 {
     const char *cur = str;
-    uint16_t method, parameter;
+    uint16_t    method, parameter;
     int         length;
 
-    cur += SldLoadU(cur, &out->FileExecution.Method);
+    cur += SldLoadU(cur, &out->ScriptCall.Method);
 
     length = 0;
     while (!isspace(*cur))
     {
-        if ((sizeof(out->FileExecution.FileName) - 1) < length)
+        if ((sizeof(out->ScriptCall.FileName) - 1) < length)
         {
             ERR(SLD_CONTENT_TOO_LONG);
         }
-        out->FileExecution.FileName[length] = *(cur++);
+        out->ScriptCall.FileName[length] = *(cur++);
         length++;
     }
-    out->FileExecution.FileName[length] = 0;
+    out->ScriptCall.FileName[length] = 0;
     out->Length = length;
 
-    out->FileExecution.Crc32 = strtoul(cur, &cur, 16);
+    out->ScriptCall.Crc32 = strtoul(cur, (char **)&cur, 16);
 
-    cur += SldLoadU(cur, &out->FileExecution.Parameter);
+    cur += SldLoadU(cur, &out->ScriptCall.Parameter);
 
     length = 0;
     while (('\r' != *cur) && ('\n' != *cur))
     {
-        if ((sizeof(out->FileExecution.Data) - 1) < length)
+        if ((sizeof(out->ScriptCall.Data) - 1) < length)
         {
             ERR(SLD_CONTENT_TOO_LONG);
         }
-        out->FileExecution.Data[length] = *(cur++);
+        out->ScriptCall.Data[length] = *(cur++);
         length++;
     }
-    out->FileExecution.Data[length] = 0;
+    out->ScriptCall.Data[length] = 0;
     cur += length;
 
     return cur - str;

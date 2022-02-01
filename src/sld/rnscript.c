@@ -1,7 +1,7 @@
 #include <sld.h>
 
 int
-SldExecuteFile(ZIP_LOCAL_FILE_HEADER *file, ZIP_CDIR_END_HEADER *zip)
+SldRunScript(ZIP_LOCAL_FILE_HEADER *file, ZIP_CDIR_END_HEADER *zip)
 {
     int   status;
     void *data;
