@@ -71,7 +71,7 @@ typedef struct
 // Execute a script
 // Returns negative on error
 extern int
-SldRunScript(ZIP_LOCAL_FILE_HEADER *file, ZIP_CDIR_END_HEADER *zip);
+SldRunScript(void *script, int size, ZIP_CDIR_END_HEADER *zip);
 
 // Load the next line from the script
 // Returns total line length in bytes, negative on error

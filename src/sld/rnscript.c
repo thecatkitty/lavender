@@ -1,19 +1,12 @@
 #include <sld.h>
 
 int
-SldRunScript(ZIP_LOCAL_FILE_HEADER *file, ZIP_CDIR_END_HEADER *zip)
+SldRunScript(void *script, int size, ZIP_CDIR_END_HEADER *zip)
 {
-    int   status;
-    void *data;
-    if (0 > (status = KerGetArchiveData(file, &data)))
-    {
-        return status;
-    }
-
-    const char *line = (const char *)data;
+    const char *line = (const char *)script;
     int         length;
     SLD_ENTRY   entry;
-    while (line < (const char *)data + file->UncompressedSize)
+    while (line < (const char *)script + size)
     {
         if (0 > (length = SldLoadEntry(line, &entry)))
         {
@@ -28,8 +21,7 @@ SldRunScript(ZIP_LOCAL_FILE_HEADER *file, ZIP_CDIR_END_HEADER *zip)
 
         if (INT_MAX == status)
         {
-            if (0 > (length = SldFindLabel((const char *)data,
-                                           data + file->UncompressedSize,
+            if (0 > (length = SldFindLabel((const char *)script, script + size,
                                            entry.Content, &line)))
             {
                 return length;
