@@ -190,6 +190,8 @@ SldExecuteScriptCall(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
         return status;
     }
 
+    Accumulator = 0;
+
     // Run if stored as plain text
     if (SLD_METHOD_STORE == sld->ScriptCall.Method)
     {
@@ -209,6 +211,7 @@ SldExecuteScriptCall(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
     if (!CrgIsXorKeyValid(data, lfh->UncompressedSize, (const uint8_t *)&key, 6,
                           sld->ScriptCall.Crc32))
     {
+        Accumulator = UINT16_MAX;
         return 0;
     }
 
