@@ -176,8 +176,7 @@ SldExecuteScriptCall(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
     int status;
 
     ZIP_LOCAL_FILE_HEADER *lfh;
-    status =
-        KerSearchArchive(zip, sld->ScriptCall.FileName, sld->Length, &lfh);
+    status = KerSearchArchive(zip, sld->ScriptCall.FileName, sld->Length, &lfh);
     if (0 > status)
     {
         return status;

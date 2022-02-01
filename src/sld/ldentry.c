@@ -258,7 +258,10 @@ SldLoadFileExecution(const char *str, SLD_ENTRY *out)
     uint16_t    method, parameter;
     int         length;
 
-    cur += SldLoadU(cur, &out->ScriptCall.Method);
+    while (isspace(*cur))
+    {
+        cur++;
+    }
 
     length = 0;
     while (!isspace(*cur))
@@ -273,9 +276,18 @@ SldLoadFileExecution(const char *str, SLD_ENTRY *out)
     out->ScriptCall.FileName[length] = 0;
     out->Length = length;
 
-    out->ScriptCall.Crc32 = strtoul(cur, (char **)&cur, 16);
-
-    cur += SldLoadU(cur, &out->ScriptCall.Parameter);
+    if (('\r' == *cur) || ('\n' == *cur))
+    {
+        out->ScriptCall.Method = SLD_METHOD_STORE;
+        out->ScriptCall.Crc32 = 0;
+        out->ScriptCall.Parameter = 0;
+    }
+    else
+    {
+        cur += SldLoadU(cur, &out->ScriptCall.Method);
+        out->ScriptCall.Crc32 = strtoul(cur, (char **)&cur, 16);
+        cur += SldLoadU(cur, &out->ScriptCall.Parameter);
+    }
 
     length = 0;
     while (('\r' != *cur) && ('\n' != *cur))
