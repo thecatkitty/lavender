@@ -7,6 +7,7 @@
 0       K
 0       =   3   ExtendedFont
 0       =   4   Rectangles
+0       =   5   Encryption
 0       =   1   End
 0       J   Start
 :ExtendedFont
@@ -18,6 +19,7 @@
 0       K
 0       =   2   Start
 0       =   4   Rectangles
+0       =   5   Encryption
 0       =   1   End
 0       J   ExtendedFont
 :Rectangles
@@ -31,7 +33,17 @@
 0       K
 0       =   2   Start
 0       =   3   ExtendedFont
+0       =   5   Encryption
 0       =   1   End
 0       J   Rectangles
+:Encryption
+0       r   0   <640 200 B
+0       !   presskey.txt    1   CB7B00C7    0   FF00FF00FF00
+
+0       =   65535   Invalid key
+0       T   0   <This line should never be displayed.
+0       J   End
+:Invalid key
+0       T   0   <Invalid key successfully detected!
 :End
 0       !   presskey.txt    1   CB7B00C7    0   FFFFFFFFFFFF
