@@ -127,11 +127,10 @@ End:
         cur++;
     }
 
-    if (*cur == '\r')
+    while (('\r' == *cur) || ('\n' == *cur))
     {
         cur++;
     }
-    cur++;
 
     return cur - line;
 }
