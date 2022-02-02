@@ -11,6 +11,7 @@ This is still work in progress, but I'm doing my best to separate working versio
 * displaying PBM bitmaps
 * drawing and filling rectangles
 * jumping between slides with key presses
+* inclusion of other scripts from within a script
 * PC speaker music playback
 * reporting the unsupported environment (DOS 1.x, Windows Vista and newer)
 
@@ -89,6 +90,19 @@ Stores the scan code in the *Accumulator*.
 ```
 
 Jumps to `<label>` if the *Accumulator* is equal to the `<value>`.
+
+### Script call
+```
+<delay> ! <script>
+- or -
+<delay> ! <script> <method> <crc32> <parameter> <data>
+```
+
+Calls a script file named `<script>` as plain text or using some encryption method.
+`<method>` is 0 for plain text, 1 for XOR48.
+`<crc32>` is hexadecimal.
+`<parameter>` is a decimal integer.
+`<data>` is up to 63 characters.
 
 ## Format of the PC speaker music file
 ```
