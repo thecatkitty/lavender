@@ -13,7 +13,7 @@ steps:
 - script: |
     sudo add-apt-repository ppa:tkchia/build-ia16
     sudo apt update
-    sudo apt install nasm gcc-ia16-elf libi86-ia16-elf mingw-w64 zip -y
+    sudo apt install gcc-ia16-elf g++-mingw-w64-i686 libi86-ia16-elf zip -y
   displayName: 'Install additional tools'
 
 - script: make
