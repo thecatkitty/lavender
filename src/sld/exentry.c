@@ -199,8 +199,7 @@ SldExecuteScriptCall(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
     }
 
     // Run if already decrypted
-    if (sld->ScriptCall.Crc32 ==
-        KerCalculateZipCrc((uint8_t *)data, lfh->UncompressedSize))
+    if (lfh->Crc32 == sld->ScriptCall.Crc32)
     {
         return SldRunScript(data, lfh->UncompressedSize, zip);
     }
@@ -216,6 +215,7 @@ SldExecuteScriptCall(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
     }
 
     CrgXor(data, data, lfh->UncompressedSize, (const uint8_t *)&key, 6);
+    lfh->Crc32 = KerCalculateZipCrc((uint8_t *)data, lfh->UncompressedSize);
     return SldRunScript(data, lfh->UncompressedSize, zip);
 }
 
