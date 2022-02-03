@@ -64,7 +64,7 @@ The slideshow file consists of entries specifying various actions. Each entry en
 ```
 
 `R` is rectangle border, `r` is rectangle fill. In border width, height, and position refer to the inner box.
-`<color>` is either `B` for black or `W` for white.
+`<color>` is `B` for black, `W` for white, or `G` for _gray_ (checkered pattern).
 
 ### Play music
 ```
