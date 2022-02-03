@@ -244,7 +244,7 @@ VidDrawText(const char *str, uint16_t x, uint16_t y)
     while (*str)
     {
         BiosVideoSetCursorPosition(0, (y << 8) | x++);
-        BiosVideoWriteCharacter(0, *str, 0, 1);
+        BiosVideoWriteCharacter(0, *str, 0x80, 1);
         str++;
     }
 }
