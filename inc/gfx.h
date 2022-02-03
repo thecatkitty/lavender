@@ -24,7 +24,8 @@ typedef struct
 typedef enum
 {
     GFX_COLOR_BLACK,
-    GFX_COLOR_WHITE
+    GFX_COLOR_WHITE,
+    GFX_COLOR_GRAY50
 } GFX_COLOR;
 
 // Load bitmap picture

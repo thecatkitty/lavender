@@ -31,6 +31,7 @@ static far void *CgaPlane1 = MK_FP(CGA_HIMONO_MEM, CGA_HIMONO_PLANE);
 
 static const char BrushBlack[] = {0x00};
 static const char BrushWhite[] = {0xFF};
+static const char BrushGray50[] = {0x55, 0xAA};
 
 static void
 CgaDrawBlock(far char *plane,
@@ -321,6 +322,9 @@ CgaGetBrush(GFX_COLOR color, int *height)
     case GFX_COLOR_BLACK:
         *height = sizeof(BrushBlack);
         return BrushBlack;
+    case GFX_COLOR_GRAY50:
+        *height = sizeof(BrushGray50);
+        return BrushGray50;
     default:
         *height = sizeof(BrushWhite);
         return BrushWhite;
