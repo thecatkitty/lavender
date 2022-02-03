@@ -29,6 +29,9 @@ static isr       PreviousFontPtr;
 static far void *CgaPlane0 = MK_FP(CGA_HIMONO_MEM, 0);
 static far void *CgaPlane1 = MK_FP(CGA_HIMONO_MEM, CGA_HIMONO_PLANE);
 
+static const char BrushBlack[] = {0x00};
+static const char BrushWhite[] = {0xFF};
+
 static void
 CgaDrawBlock(far char *plane,
              uint16_t  x,
@@ -40,6 +43,9 @@ CgaDrawBlock(far char *plane,
 static void
 CgaDrawLine(
     far char *plane, uint16_t y, uint16_t left, uint16_t right, char pattern);
+
+static const char *
+CgaGetBrush(GFX_COLOR color, int *height);
 
 static void
 FontExecuteGlyphTransformation(const char *gxf, char *glyph);
@@ -112,10 +118,14 @@ VidDrawRectangle(GFX_DIMENSIONS *rect, uint16_t x, uint16_t y, GFX_COLOR color)
     uint8_t   rightMask = ~((1 << (7 - (right % 8))) - 1);
     uint8_t   leftBorder = 1 << (7 - (left % 8));
     uint8_t   rightBorder = 1 << (7 - (right % 8));
-    uint8_t   pattern = (GFX_COLOR_WHITE == color) ? 0xFF : 0x00;
+
+    int         brushHeight;
+    const char *brush = CgaGetBrush(color, &brushHeight);
+    char        pattern;
 
     // Top line
     plane = CGA_PLANE(top);
+    pattern = brush[top % brushHeight];
     CgaDrawBlock(plane, left, top, leftMask, ~leftMask, pattern);
     CgaDrawBlock(plane, right, top, rightMask, ~rightMask, pattern);
 
@@ -126,6 +136,7 @@ VidDrawRectangle(GFX_DIMENSIONS *rect, uint16_t x, uint16_t y, GFX_COLOR color)
 
     // Bottom line
     plane = CGA_PLANE(bottom);
+    pattern = brush[bottom % brushHeight];
     CgaDrawBlock(plane, left, bottom, leftMask, ~leftMask, pattern);
     CgaDrawBlock(plane, right, bottom, rightMask, ~rightMask, pattern);
 
@@ -136,6 +147,7 @@ VidDrawRectangle(GFX_DIMENSIONS *rect, uint16_t x, uint16_t y, GFX_COLOR color)
 
     // Vertical lines
     CGA_FOR_LINES(y, bottom, {
+        pattern = brush[line % brushHeight];
         CgaDrawBlock(plane, left, line, leftBorder, ~leftBorder, pattern);
         CgaDrawBlock(plane, right, line, rightBorder, ~rightBorder, pattern);
     });
@@ -153,16 +165,22 @@ VidFillRectangle(GFX_DIMENSIONS *rect, uint16_t x, uint16_t y, GFX_COLOR color)
 
     uint8_t leftMask = (1 << (8 - (x % 8))) - 1;
     uint8_t rightMask = ~((1 << (8 - (right % 8))) - 1);
-    uint8_t pattern = (GFX_COLOR_WHITE == color) ? 0xFF : 0x00;
+
+    int         brushHeight;
+    const char *brush = CgaGetBrush(color, &brushHeight);
+    char        pattern;
 
     // Vertical stripes
     CGA_FOR_LINES(y, bottom, {
+        pattern = brush[line % brushHeight];
         CgaDrawBlock(plane, left, line, leftMask, ~leftMask, pattern);
         CgaDrawBlock(plane, right, line, rightMask, ~rightMask, pattern);
     });
 
     // Internal fill
-    CGA_FOR_LINES(y, bottom, CgaDrawLine(plane, line, left, right, pattern));
+    CGA_FOR_LINES(
+        y, bottom,
+        CgaDrawLine(plane, line, left, right, brush[line % brushHeight]));
 
     return 0;
 }
@@ -292,6 +310,20 @@ CgaDrawLine(
     for (uint16_t byte = left / 8 + (0 != (left % 8)); byte < right / 8; byte++)
     {
         plane[offset + byte] = pattern;
+    }
+}
+
+const char *
+CgaGetBrush(GFX_COLOR color, int *height)
+{
+    switch (color)
+    {
+    case GFX_COLOR_BLACK:
+        *height = sizeof(BrushBlack);
+        return BrushBlack;
+    default:
+        *height = sizeof(BrushWhite);
+        return BrushWhite;
     }
 }
 
