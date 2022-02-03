@@ -242,7 +242,17 @@ SldLoadShape(const char *str, SLD_ENTRY *out)
     cur += SldLoadU(cur, &width);
     cur += SldLoadU(cur, &height);
 
-    out->Shape.Color = ('W' == *cur) ? GFX_COLOR_WHITE : GFX_COLOR_BLACK;
+    switch (*cur)
+    {
+    case 'B':
+        out->Shape.Color = GFX_COLOR_BLACK;
+        break;
+    case 'G':
+        out->Shape.Color = GFX_COLOR_GRAY50;
+        break;
+    default:
+        out->Shape.Color = GFX_COLOR_WHITE;
+    }
     out->Shape.Dimensions.Width = width;
     out->Shape.Dimensions.Height = height;
     cur++;
