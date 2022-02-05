@@ -5,17 +5,17 @@
 #include <gfx.h>
 #include <vid.h>
 
+GFX_DIMENSIONS screen = {640, 200};
+
 int
-DlgShowFrame(DLG_FRAME *frame, const char *title)
+DlgDrawBackground(void)
 {
-    const GFX_DIMENSIONS screen = {640, 200};
+    VidFillRectangle(&screen, 0, 0, GFX_COLOR_GRAY50);
 
     GFX_DIMENSIONS bar = {screen.Width, 9};
-    GFX_DIMENSIONS hline = {screen.Width, 1};
-    GFX_DIMENSIONS bg = {screen.Width, screen.Height - 2 * bar.Height};
-    GFX_DIMENSIONS window = {8 * (frame->Columns + 3), 8 * (frame->Lines + 3)};
-
     VidFillRectangle(&bar, 0, 0, GFX_COLOR_WHITE);
+
+    GFX_DIMENSIONS hline = {screen.Width - 1, 1};
     VidDrawLine(&hline, 0, bar.Height, GFX_COLOR_BLACK);
 
     const char *brand = (const char *)0x100;
@@ -30,10 +30,17 @@ DlgShowFrame(DLG_FRAME *frame, const char *title)
         BiosVideoWriteCharacter(0, brand[i], 0x80, 1);
     }
 
-    VidFillRectangle(&bg, 0, bar.Height + 1, GFX_COLOR_GRAY50);
-
+    VidFillRectangle(&bar, 0, screen.Height - bar.Height, GFX_COLOR_BLACK);
     VidDrawText("(C) 2021-2022", 1, 24);
     VidDrawText("https://github.com/thecatkitty/lavender/", 39, 24);
+
+    return 0;
+}
+
+int
+DlgDrawFrame(DLG_FRAME *frame, const char *title)
+{
+    GFX_DIMENSIONS window = {8 * (frame->Columns + 3), 8 * (frame->Lines + 3)};
 
     int left = (screen.Width - window.Width) / 2;
     int top = (screen.Height - window.Height) / 16 * 8;
