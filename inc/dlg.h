@@ -10,7 +10,10 @@ typedef struct
 } DLG_FRAME;
 
 extern int
-DlgShowFrame(DLG_FRAME *frame, const char *title);
+DlgDrawBackground(void);
+
+extern int
+DlgDrawFrame(DLG_FRAME *frame, const char *title);
 
 extern int
 DlgDrawText(DLG_FRAME *frame, const char *str, int line);
