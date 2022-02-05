@@ -7,6 +7,7 @@
 
 .byte   ERR_FACILITY_VID
 IF_LANG(ENU, .ascii  "Video$")
+IF_LANG(PLP, .ascii  "Wideo$")
 
 
 .section .errm
@@ -14,9 +15,12 @@ IF_LANG(ENU, .ascii  "Video$")
 
 .byte   ERR_VID_UNSUPPORTED
 IF_LANG(ENU, .ascii  "Unsupported feature requested$")
+IF_LANG(PLP, .ascii  "Zazadano niewspieranej funkcjonalnosci$")
 
 .byte   ERR_VID_FAILED
 IF_LANG(ENU, .ascii  "Operation failed$")
+IF_LANG(PLP, .ascii  "Operacja nie powiodla sie$")
 
 .byte   ERR_VID_FORMAT
 IF_LANG(ENU, .ascii  "Improper graphics format$")
+IF_LANG(PLP, .ascii  "Niewlasciwy format grafiki$")
