@@ -16,7 +16,12 @@ steps:
     sudo apt install gcc-ia16-elf g++-mingw-w64-i686 libi86-ia16-elf zip -y
   displayName: 'Install additional tools'
 
-- script: make
+- script: |
+    LAV_LANG=PLP make
+    mkdir bin/PLP
+    mv bin/*.com bin/PLP/
+    rm obj/*/*.S.o
+    make
   displayName: 'Build Lavender'
 
 - script: make tools
