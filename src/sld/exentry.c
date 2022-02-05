@@ -204,7 +204,23 @@ SldExecuteScriptCall(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
         return SldRunScript(data, lfh->UncompressedSize, zip);
     }
 
-    uint64_t key = strtoull(sld->ScriptCall.Data, NULL, 16);
+    uint8_t key[48 / 8];
+    switch (sld->ScriptCall.Parameter)
+    {
+    case SLD_PARAMETER_XOR48_INLINE:
+        *(uint64_t *)&key = strtoull(sld->ScriptCall.Data, NULL, 16);
+        break;
+    case SLD_PARAMETER_XOR48_PROMPT:
+        if (!CrgPromptKey(key, sizeof(key), 16))
+        {
+            Accumulator = UINT16_MAX;
+            return 0;
+        }
+        break;
+    default:
+        Accumulator = UINT16_MAX;
+        return 0;
+    }
 
     // Check the key
     if (!CrgIsXorKeyValid(data, lfh->UncompressedSize, (const uint8_t *)&key, 6,

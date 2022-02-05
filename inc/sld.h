@@ -44,6 +44,9 @@ typedef enum
 #define SLD_METHOD_STORE 0
 #define SLD_METHOD_XOR48 1
 
+#define SLD_PARAMETER_XOR48_INLINE 0
+#define SLD_PARAMETER_XOR48_PROMPT 1
+
 typedef struct
 {
     uint16_t Delay;
