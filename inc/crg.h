@@ -19,6 +19,9 @@ CrgXor(const void *   src,
        const uint8_t *key,
        int            keyLength);
 
+extern bool
+CrgPromptKey(uint8_t *key, int keyLength, int base);
+
 #endif // __ASSEMBLER__
 
 #endif // _CRG_H_
