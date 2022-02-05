@@ -1,16 +1,20 @@
 #include <crg.h>
+#include <nls.h>
 
 
 .section .rodata
 
                                 .global StrCrgEnterPassword
-StrCrgEnterPassword:            .asciz  "Enter Password"
+StrCrgEnterPassword:
+IF_LANG(ENU,                    .asciz  "Enter Password")
 
                                 .global StrCrgEncryptedLine1
-StrCrgEncryptedLine1:           .asciz  "This content is encrypted."
+StrCrgEncryptedLine1:
+IF_LANG(ENU,                    .asciz  "This content is encrypted.")
 
                                 .global StrCrgEncryptedLine2
-StrCrgEncryptedLine2:           .asciz  "You need to provide the access key."
+StrCrgEncryptedLine2:
+IF_LANG(ENU,                    .asciz  "You need to provide the access key.")
 
 
 .section .errf
