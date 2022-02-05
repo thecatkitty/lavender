@@ -3,7 +3,11 @@ CC      = ia16-elf-gcc
 LD      = ia16-elf-ld
 OBJCOPY = ia16-elf-objcopy
 
-ASFLAGS = -c -march=i8088 -Iinc/ -Wa,--divide
+ifndef LAV_LANG
+LAV_LANG = ENU
+endif
+
+ASFLAGS = -c -march=i8088 -Iinc/ -DLANG=LCID_$(LAV_LANG) -Wa,--divide
 CFLAGS  = -c -march=i8088 -Os -Iinc/
 LDFLAGS = -L/usr/lib/x86_64-linux-gnu/gcc/ia16-elf/6.3.0 -L/usr/ia16-elf/lib -T com.ld -li86 --nmagic
 

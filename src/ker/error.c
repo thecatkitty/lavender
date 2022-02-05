@@ -11,17 +11,18 @@ PitDeinitialize(void);
 static const char *
 ErrFindMessage(const char *messages, unsigned key);
 
+extern const char StrKerError[];
+
 void
 KerTerminate(int error)
 {
     unsigned facility = error >> 5;
 
-    DosPutS("ERROR: $");
+    DosPutS(StrKerError);
     DosPutS(ErrFindMessage(__serrf, facility));
     DosPutS(" - $");
     DosPutS(ErrFindMessage(__serrm, error));
 
-    PitDeinitialize();
     DosExit(error);
 }
 
