@@ -51,6 +51,10 @@ CrgXor(const void *   src,
     }
 }
 
+extern const char StrCrgEnterPassword[];
+extern const char StrCrgEncryptedLine1[];
+extern const char StrCrgEncryptedLine2[];
+
 bool
 CrgPromptKey(uint8_t *key, int keyLength, int base)
 {
@@ -58,9 +62,9 @@ CrgPromptKey(uint8_t *key, int keyLength, int base)
 
     char *    buffer = (char *)alloca(keyLength * 3 + 1);
     DLG_FRAME frame = {36, 4};
-    DlgDrawFrame(&frame, "Enter Password");
-    DlgDrawText(&frame, "This content is encrypted.", 0);
-    DlgDrawText(&frame, "You need to provide the access key.", 1);
+    DlgDrawFrame(&frame, StrCrgEnterPassword);
+    DlgDrawText(&frame, StrCrgEncryptedLine1, 0);
+    DlgDrawText(&frame, StrCrgEncryptedLine2, 1);
 
     int length = DlgInputText(&frame, buffer, keyLength * 2,
                               (16 == base) ? IsHexString : NULL, 3);
