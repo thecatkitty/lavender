@@ -3,6 +3,8 @@
 
 #ifndef __ASSEMBLER__
 
+#include <base.h>
+
 typedef struct
 {
     int Columns;
@@ -17,6 +19,13 @@ DlgDrawFrame(DLG_FRAME *frame, const char *title);
 
 extern int
 DlgDrawText(DLG_FRAME *frame, const char *str, int line);
+
+extern int
+DlgInputText(DLG_FRAME *frame,
+             char *     buffer,
+             int        size,
+             bool (*validate)(const char *),
+             int line);
 
 #endif // __ASSEMBLER__
 
