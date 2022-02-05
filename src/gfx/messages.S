@@ -1,18 +1,19 @@
 #include <gfx.h>
+#include <nls.h>
 
 
 .section .errf
 
 
 .byte   ERR_FACILITY_GFX
-.ascii  "Graphics$"
+IF_LANG(ENU, .ascii  "Graphics$")
 
 
 .section .errm
 
 
 .byte   ERR_GFX_FORMAT
-.ascii  "Unsupported format$"
+IF_LANG(ENU, .ascii  "Unsupported format$")
 
 .byte   ERR_GFX_MALFORMED_FILE
-.ascii  "Malformed file$"
+IF_LANG(ENU, .ascii  "Malformed file$")

@@ -1,11 +1,12 @@
 #include <ker.h>
+#include <nls.h>
 
 
 .section .errf
 
 
 .byte   ERR_FACILITY_KER
-.ascii  "Kernel$"
+IF_LANG(ENU, .ascii  "Kernel$")
 
 
 .section .errm
@@ -15,22 +16,22 @@
 .ascii  "OK$"
 
 .byte   ERR_KER_UNSUPPORTED
-.ascii  "Unsupported feature requested$"
+IF_LANG(ENU, .ascii  "Unsupported feature requested$")
 
 .byte   ERR_KER_NOT_FOUND
-.ascii  "Item not found$"
+IF_LANG(ENU, .ascii  "Item not found$")
 
 .byte   ERR_KER_ARCHIVE_NOT_FOUND
-.ascii  "Archive not found$"
+IF_LANG(ENU, .ascii  "Archive not found$")
 
 .byte   ERR_KER_ARCHIVE_TOO_LARGE
-.ascii  "Archive is too large$"
+IF_LANG(ENU, .ascii  "Archive is too large$")
 
 .byte   ERR_KER_ARCHIVE_INVALID
-.ascii  "Archive is invalid$"
+IF_LANG(ENU, .ascii  "Archive is invalid$")
 
 .byte   ERR_KER_INVALID_SEQUENCE
-.ascii  "Invalid or unsupported UTF-8 sequence$"
+IF_LANG(ENU, .ascii  "Invalid or unsupported UTF-8 sequence$")
 
 .byte   ERR_KER_INTEGRITY
-.ascii  "Data corrupted$"
+IF_LANG(ENU, .ascii  "Data corrupted$")
