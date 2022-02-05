@@ -12,7 +12,7 @@ DlgInputText(DLG_FRAME *frame,
 {
     int fieldWidth = (frame->Columns > size) ? size : frame->Columns;
     int fieldLeft = (80 - fieldWidth) / 2;
-    int fieldTop = (25 - frame->Lines) / 2 + line;
+    int fieldTop = (22 - frame->Lines) / 2 + 2 + line;
 
     GFX_DIMENSIONS box = {fieldWidth * 8 + 2, 10};
     int            boxTop = fieldTop * 8 - 1;
