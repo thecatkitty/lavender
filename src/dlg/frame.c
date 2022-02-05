@@ -1,8 +1,10 @@
+#include <stdlib.h>
 #include <string.h>
 
 #include <api/bios.h>
 #include <dlg.h>
 #include <gfx.h>
+#include <ker.h>
 #include <vid.h>
 
 GFX_DIMENSIONS screen = {640, 200};
@@ -52,7 +54,10 @@ DlgDrawFrame(DLG_FRAME *frame, const char *title)
     GFX_DIMENSIONS titleLine = {window.Width - 1, 1};
     VidDrawLine(&titleLine, left, top + 9, GFX_COLOR_BLACK);
 
-    int            titleLength = strlen(title);
+    char *titleConv = alloca(strlen(title) + 1);
+    KerConvertFromUtf8(title, titleConv, VidConvertToLocal);
+
+    int            titleLength = strlen(titleConv);
     GFX_DIMENSIONS stripe = {(window.Width - ((titleLength + 2) * 8)) / 2 - 1,
                              1};
     for (int i = 0; i < 4; i++)
@@ -63,6 +68,6 @@ DlgDrawFrame(DLG_FRAME *frame, const char *title)
                     GFX_COLOR_BLACK);
     }
 
-    VidDrawText(title, (80 - titleLength) / 2, top / 8);
+    VidDrawText(titleConv, (80 - titleLength) / 2, top / 8);
     return 0;
 }
