@@ -107,6 +107,32 @@ VidDrawBitmap(GFX_BITMAP *bm, uint16_t x, uint16_t y)
 }
 
 int
+VidDrawLine(GFX_DIMENSIONS *dim, uint16_t x, uint16_t y, GFX_COLOR color)
+{
+    uint16_t left = x;
+    uint16_t right = x + dim->Width;
+
+    if (1 != dim->Height)
+    {
+        ERR(KER_UNSUPPORTED);
+    }
+
+    far void *plane = CGA_PLANE(y);
+    uint8_t   leftMask = (1 << (8 - (left % 8))) - 1;
+    uint8_t   rightMask = ~((1 << (7 - (right % 8))) - 1);
+
+    int         brushHeight;
+    const char *brush = CgaGetBrush(color, &brushHeight);
+    char        pattern = brush[y % brushHeight];
+
+    CgaDrawBlock(plane, left, y, leftMask, ~leftMask, pattern);
+    CgaDrawLine(plane, y, left, right, pattern);
+    CgaDrawBlock(plane, right, y, rightMask, ~rightMask, pattern);
+
+    return 0;
+}
+
+int
 VidDrawRectangle(GFX_DIMENSIONS *rect, uint16_t x, uint16_t y, GFX_COLOR color)
 {
     uint16_t left = x - 1;
