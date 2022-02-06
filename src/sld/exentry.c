@@ -13,6 +13,7 @@ typedef struct
     const void *Data;
     int         DataLength;
     uint32_t    Crc;
+    uint32_t *  LongPart;
 } SLD_KEY_VALIDATION;
 
 static uint16_t Accumulator = 0;
@@ -214,30 +215,41 @@ SldExecuteScriptCall(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
         return SldRunScript(data, lfh->UncompressedSize, zip);
     }
 
-    uint8_t key[48 / 8];
+    uint8_t            key[sizeof(uint64_t)];
+    SLD_KEY_VALIDATION context = {data, lfh->UncompressedSize,
+                                  sld->ScriptCall.Crc32, NULL};
+    bool               invalid = false;
+
+    memset(key, 0, sizeof(key));
     switch (sld->ScriptCall.Parameter)
     {
     case SLD_PARAMETER_XOR48_INLINE:
         *(uint64_t *)&key = strtoull(sld->ScriptCall.Data, NULL, 16);
         break;
-    case SLD_PARAMETER_XOR48_PROMPT: {
-        SLD_KEY_VALIDATION context = {data, lfh->UncompressedSize,
-                                      sld->ScriptCall.Crc32};
-        if (!CrgPromptKey(key, sizeof(key), 16, SldIsXorKeyValid, &context))
+    case SLD_PARAMETER_XOR48_PROMPT:
+        invalid = !CrgPromptKey(key, 6, 16, SldIsXorKeyValid, &context);
+        break;
+    case SLD_PARAMETER_XOR48_SPLIT: {
+        uint32_t longPart = strtoul(sld->ScriptCall.Data, NULL, 16);
+        context.LongPart = &longPart;
+        if (!CrgPromptKey(key, 3, 10, SldIsXorKeyValid, &context))
         {
-            Accumulator = UINT16_MAX;
-            return 0;
+            invalid = true;
+            break;
         }
+
+        *(uint64_t *)&key =
+            CrgDecodeSplitKey(longPart, *(const uint32_t *)&key);
+        context.LongPart = NULL;
         break;
     }
     default:
-        Accumulator = UINT16_MAX;
-        return 0;
+        invalid = true;
+        break;
     }
 
     // Check the key
-    if (!CrgIsXorKeyValid(data, lfh->UncompressedSize, (const uint8_t *)&key, 6,
-                          sld->ScriptCall.Crc32))
+    if (invalid || !SldIsXorKeyValid((const uint8_t *)&key, 6, &context))
     {
         Accumulator = UINT16_MAX;
         return 0;
@@ -290,6 +302,16 @@ bool
 SldIsXorKeyValid(const uint8_t *key, int keyLength, void *context)
 {
     SLD_KEY_VALIDATION *keyValidation = (SLD_KEY_VALIDATION *)context;
-    return CrgIsXorKeyValid(keyValidation->Data, keyValidation->DataLength, key,
-                            keyLength, keyValidation->Crc);
+
+    if (!keyValidation->LongPart)
+    {
+        return CrgIsXorKeyValid(keyValidation->Data, keyValidation->DataLength,
+                                key, keyLength, keyValidation->Crc);
+    }
+
+    // 48-bit split key
+    uint64_t fullKey =
+        CrgDecodeSplitKey(*keyValidation->LongPart, *(const uint32_t *)key);
+    return CrgIsXorKeyValid(keyValidation->Data, keyValidation->DataLength,
+                            (uint8_t *)&fullKey, 6, keyValidation->Crc);
 }

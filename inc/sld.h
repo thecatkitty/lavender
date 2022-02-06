@@ -46,6 +46,7 @@ typedef enum
 
 #define SLD_PARAMETER_XOR48_INLINE 0
 #define SLD_PARAMETER_XOR48_PROMPT 1
+#define SLD_PARAMETER_XOR48_SPLIT  2
 
 typedef struct
 {
