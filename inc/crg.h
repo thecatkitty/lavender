@@ -30,6 +30,9 @@ CrgPromptKey(uint8_t *         key,
              CRG_KEY_VALIDATOR validate,
              void *            context);
 
+extern uint64_t
+CrgDecodeSplitKey(uint32_t longPart, uint32_t shortPart);
+
 #endif // __ASSEMBLER__
 
 #endif // _CRG_H_
