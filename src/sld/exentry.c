@@ -8,6 +8,13 @@
 #include <sld.h>
 #include <vid.h>
 
+typedef struct
+{
+    const void *Data;
+    int         DataLength;
+    uint32_t    Crc;
+} SLD_KEY_VALIDATION;
+
 static uint16_t Accumulator = 0;
 
 static int
@@ -30,6 +37,9 @@ SldFindBestBitmap(char *                  pattern,
                   unsigned                length,
                   ZIP_CDIR_END_HEADER *   zip,
                   ZIP_LOCAL_FILE_HEADER **lfh);
+
+static bool
+SldIsXorKeyValid(const uint8_t *key, int keyLength, void *context);
 
 int
 SldExecuteEntry(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
@@ -210,13 +220,16 @@ SldExecuteScriptCall(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
     case SLD_PARAMETER_XOR48_INLINE:
         *(uint64_t *)&key = strtoull(sld->ScriptCall.Data, NULL, 16);
         break;
-    case SLD_PARAMETER_XOR48_PROMPT:
-        if (!CrgPromptKey(key, sizeof(key), 16, NULL, NULL))
+    case SLD_PARAMETER_XOR48_PROMPT: {
+        SLD_KEY_VALIDATION context = {data, lfh->UncompressedSize,
+                                      sld->ScriptCall.Crc32};
+        if (!CrgPromptKey(key, sizeof(key), 16, SldIsXorKeyValid, &context))
         {
             Accumulator = UINT16_MAX;
             return 0;
         }
         break;
+    }
     default:
         Accumulator = UINT16_MAX;
         return 0;
@@ -271,4 +284,12 @@ SldFindBestBitmap(char *                  pattern,
     }
 
     ERR(KER_NOT_FOUND);
+}
+
+bool
+SldIsXorKeyValid(const uint8_t *key, int keyLength, void *context)
+{
+    SLD_KEY_VALIDATION *keyValidation = (SLD_KEY_VALIDATION *)context;
+    return CrgIsXorKeyValid(keyValidation->Data, keyValidation->DataLength, key,
+                            keyLength, keyValidation->Crc);
 }
