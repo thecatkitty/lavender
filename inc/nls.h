@@ -2,7 +2,7 @@
 #define _NLS_H_
 
 #define LCID_ENU 1033
-#define LCID_PLP 1045
+#define LCID_PLK 1045
 
 #ifndef LANG
 #define LANG LCID_ENU
@@ -14,10 +14,10 @@
 #define IF_LANG_ENU(x)
 #endif
 
-#if LANG == LCID_PLP
-#define IF_LANG_PLP(x) x
+#if LANG == LCID_PLK
+#define IF_LANG_PLK(x) x
 #else
-#define IF_LANG_PLP(x)
+#define IF_LANG_PLK(x)
 #endif
 
 #define IF_LANG(lcid, x) IF_LANG_##lcid(x)
