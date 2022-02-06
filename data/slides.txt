@@ -39,14 +39,11 @@
 :Encryption
 0       r   0   <640 200 B
 0       !   presskey.txt    1   A53AB4CC    1   FFFFFFFFFFFF
-0       =   65535   Invalid key
-0       r   0   <640 200 B
-0       T   0   <The key was valid.
-0       K
+0       =   65535   Key not provided
 0       J   Start
-:Invalid key
+:Key not provided
 0       r   0   <640 200 B
-0       T   0   <The key is invalid.
+0       T   0   <No key provided.
 0       K
 0       J   Start
 :End
