@@ -5,6 +5,10 @@
 
 #include <base.h>
 
+typedef bool (*CRG_KEY_VALIDATOR)(const uint8_t *key,
+                                  int            keyLength,
+                                  void *         context);
+
 extern bool
 CrgIsXorKeyValid(const void *   data,
                  int            dataLength,
@@ -20,7 +24,11 @@ CrgXor(const void *   src,
        int            keyLength);
 
 extern bool
-CrgPromptKey(uint8_t *key, int keyLength, int base);
+CrgPromptKey(uint8_t *         key,
+             int               keyLength,
+             int               base,
+             CRG_KEY_VALIDATOR validate,
+             void *            context);
 
 #endif // __ASSEMBLER__
 

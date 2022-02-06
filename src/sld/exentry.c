@@ -211,7 +211,7 @@ SldExecuteScriptCall(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
         *(uint64_t *)&key = strtoull(sld->ScriptCall.Data, NULL, 16);
         break;
     case SLD_PARAMETER_XOR48_PROMPT:
-        if (!CrgPromptKey(key, sizeof(key), 16))
+        if (!CrgPromptKey(key, sizeof(key), 16, NULL, NULL))
         {
             Accumulator = UINT16_MAX;
             return 0;
