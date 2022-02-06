@@ -19,6 +19,11 @@ StrCrgEncryptedLine2:
 IF_LANG(ENU,                    .asciz  "You need to provide the access key.")
 IF_LANG(PLK,                    .asciz  "Musisz podać klucz dostępu.")
 
+                                .global StrCrgKeyInvalid
+StrCrgKeyInvalid:
+IF_LANG(ENU,                    .asciz  "Provided key is invalid!")
+IF_LANG(PLK,                    .asciz  "Wprowadzony klucz jest niepoprawny!")
+
 
 .section .errf
 
