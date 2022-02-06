@@ -13,6 +13,12 @@ extern const char StrCrgEncryptedLine2[];
 extern const char StrCrgKeyInvalid[];
 
 static bool
+AllCharacters(const char *str, bool (*predicate)(int));
+
+static bool
+IsDecString(const char *str);
+
+static bool
 IsHexString(const char *str);
 
 bool
@@ -33,8 +39,19 @@ CrgPromptKey(uint8_t *         key,
         DlgDrawText(&frame, StrCrgEncryptedLine1, 0);
         DlgDrawText(&frame, StrCrgEncryptedLine2, 1);
 
-        int length = DlgInputText(&frame, buffer, keyLength * 2,
-                                  (16 == base) ? IsHexString : NULL, 3);
+        bool (*inputValidator)(const char *) = NULL;
+        switch (base)
+        {
+        case 10:
+            inputValidator = IsDecString;
+            break;
+        case 16:
+            inputValidator = IsHexString;
+            break;
+        }
+
+        int length =
+            DlgInputText(&frame, buffer, keyLength * 2, inputValidator, 3);
         if (0 == length)
         {
             return false;
@@ -67,7 +84,7 @@ CrgPromptKey(uint8_t *         key,
 }
 
 bool
-IsHexString(const char *str)
+AllCharacters(const char *str, bool (*predicate)(int))
 {
     if (!*str)
     {
@@ -76,7 +93,7 @@ IsHexString(const char *str)
 
     while (*str)
     {
-        if (!isxdigit(*str))
+        if (!predicate(*str))
         {
             return false;
         }
@@ -84,4 +101,16 @@ IsHexString(const char *str)
     }
 
     return true;
+}
+
+bool
+IsHexString(const char *str)
+{
+    return AllCharacters(str, (bool (*)(int))isxdigit);
+}
+
+bool
+IsDecString(const char *str)
+{
+    return AllCharacters(str, (bool (*)(int))isdigit);
 }
