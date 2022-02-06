@@ -17,9 +17,9 @@ steps:
   displayName: 'Install additional tools'
 
 - script: |
-    LAV_LANG=PLP make
-    mkdir bin/PLP
-    mv bin/*.com bin/PLP/
+    LAV_LANG=PLK make
+    mkdir bin/PLK
+    mv bin/*.com bin/PLK/
     rm obj/*/*.S.o
     make
   displayName: 'Build Lavender'

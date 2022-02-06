@@ -7,7 +7,7 @@
 
 .byte   ERR_FACILITY_GFX
 IF_LANG(ENU, .ascii  "Graphics$")
-IF_LANG(PLP, .ascii  "Grafika$")
+IF_LANG(PLK, .ascii  "Grafika$")
 
 
 .section .errm
@@ -15,8 +15,8 @@ IF_LANG(PLP, .ascii  "Grafika$")
 
 .byte   ERR_GFX_FORMAT
 IF_LANG(ENU, .ascii  "Unsupported format$")
-IF_LANG(PLP, .ascii  "Niewspierany format$")
+IF_LANG(PLK, .ascii  "Niewspierany format$")
 
 .byte   ERR_GFX_MALFORMED_FILE
 IF_LANG(ENU, .ascii  "Malformed file$")
-IF_LANG(PLP, .ascii  "Niepoprawny plik$")
+IF_LANG(PLK, .ascii  "Niepoprawny plik$")

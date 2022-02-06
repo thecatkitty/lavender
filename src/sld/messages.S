@@ -7,7 +7,7 @@
 
 .byte   ERR_FACILITY_SLD
 IF_LANG(ENU, .ascii  "Slides$")
-IF_LANG(PLP, .ascii  "Slajdy$")
+IF_LANG(PLK, .ascii  "Slajdy$")
 
 
 .section .errm
@@ -15,28 +15,28 @@ IF_LANG(PLP, .ascii  "Slajdy$")
 
 .byte   ERR_SLD_INVALID_DELAY
 IF_LANG(ENU, .ascii  "Invalid delay$")
-IF_LANG(PLP, .ascii  "Niepoprawne opoznienie$")
+IF_LANG(PLK, .ascii  "Niepoprawne opoznienie$")
 
 .byte   ERR_SLD_UNKNOWN_TYPE
 IF_LANG(ENU, .ascii  "Unknown type$")
-IF_LANG(PLP, .ascii  "Nieznany typ$")
+IF_LANG(PLK, .ascii  "Nieznany typ$")
 
 .byte   ERR_SLD_INVALID_VERTICAL
 IF_LANG(ENU, .ascii  "Invalid vertical position$")
-IF_LANG(PLP, .ascii  "Niepoprawne polozenie pionowe$")
+IF_LANG(PLK, .ascii  "Niepoprawne polozenie pionowe$")
 
 .byte   ERR_SLD_INVALID_HORIZONTAL
 IF_LANG(ENU, .ascii  "Invalid horizontal position$")
-IF_LANG(PLP, .ascii  "Niepoprawne polozenie poziome$")
+IF_LANG(PLK, .ascii  "Niepoprawne polozenie poziome$")
 
 .byte   ERR_SLD_CONTENT_TOO_LONG
 IF_LANG(ENU, .ascii  "Content too long$")
-IF_LANG(PLP, .ascii  "Zawartosc za dluga$")
+IF_LANG(PLK, .ascii  "Zawartosc za dluga$")
 
 .byte   ERR_SLD_LABEL_NOT_FOUND
 IF_LANG(ENU, .ascii  "Label not found$")
-IF_LANG(PLP, .ascii  "Nie znaleziono etykiety$")
+IF_LANG(PLK, .ascii  "Nie znaleziono etykiety$")
 
 .byte   ERR_SLD_INVALID_COMPARISON
 IF_LANG(ENU, .ascii  "Invalid value in comparison$")
-IF_LANG(PLP, .ascii  "Niepoprawna wartosc w porownaniu$")
+IF_LANG(PLK, .ascii  "Niepoprawna wartosc w porownaniu$")
