@@ -44,7 +44,23 @@ DlgInputText(DLG_FRAME *frame,
 
         if (0x1C == scanCode)
         {
-            return cursor;
+            if (validate && validate(buffer))
+            {
+                return cursor;
+            }
+
+            if (!validate)
+            {
+                return cursor;
+            }
+
+            VidDrawRectangle(&box, boxLeft, boxTop, GFX_COLOR_BLACK);
+            KerSleep(KerGetTicksFromMs(63));
+            VidDrawRectangle(&box, boxLeft, boxTop, GFX_COLOR_GRAY50);
+            KerSleep(KerGetTicksFromMs(63));
+            VidDrawRectangle(&box, boxLeft, boxTop, GFX_COLOR_BLACK);
+            KerSleep(KerGetTicksFromMs(63));
+            continue;
         }
 
         if ((0x0E == scanCode) && (0 < cursor))
