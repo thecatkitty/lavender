@@ -2,6 +2,24 @@
 #include <nls.h>
 
 
+.section .rodata
+
+                                .global StrSldEnterSerial
+StrSldEnterSerial:
+IF_LANG(ENU,                    .asciz  "Enter Disk Serial Number")
+IF_LANG(PLK,                    .asciz  "Wprowadź numer seryjny dysku")
+
+                                .global StrSldSerialLine1
+StrSldSerialLine1:
+IF_LANG(ENU,                    .asciz  "Please type the serial number")
+IF_LANG(PLK,                    .asciz  "Proszę podać numer seryjny dołączony")
+
+                                .global StrSldSerialLine2
+StrSldSerialLine2:
+IF_LANG(ENU,                    .asciz  "attached to Your program diskette.")
+IF_LANG(PLK,                    .asciz  "do dyskietki z programem.")
+
+
 .section .errf
 
 

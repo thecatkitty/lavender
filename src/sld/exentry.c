@@ -1,12 +1,19 @@
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include <api/bios.h>
 #include <crg.h>
+#include <dlg.h>
 #include <gfx.h>
 #include <ker.h>
 #include <sld.h>
 #include <vid.h>
+
+extern const char StrSldEnterSerial[];
+extern const char StrCrgEncryptedLine1[];
+extern const char StrSldSerialLine1[];
+extern const char StrSldSerialLine2[];
 
 typedef struct
 {
@@ -41,6 +48,12 @@ SldFindBestBitmap(char *                  pattern,
 
 static bool
 SldIsXorKeyValid(const uint8_t *key, int keyLength, void *context);
+
+static bool
+SldPromptVolumeSerialNumber(char *sn);
+
+static bool
+SldIsVolumeSerialNumberValid(const char *sn);
 
 int
 SldExecuteEntry(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
@@ -257,8 +270,16 @@ SldExecuteScriptCall(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
 
         if (2 == drive)
         {
-            invalid = true;
-            break;
+            char sn[10];
+            if (!SldPromptVolumeSerialNumber(sn))
+            {
+                invalid = true;
+                break;
+            }
+
+            uint32_t highPart = strtoul(sn, NULL, 16);
+            uint32_t lowPart = strtoul(sn + 5, NULL, 16);
+            volume.SerialNumber = (highPart << 16) | lowPart;
         }
 
         context.LongPart = &volume.SerialNumber;
@@ -344,4 +365,54 @@ SldIsXorKeyValid(const uint8_t *key, int keyLength, void *context)
         CrgDecodeSplitKey(*keyValidation->LongPart, *(const uint32_t *)key);
     return CrgIsXorKeyValid(keyValidation->Data, keyValidation->DataLength,
                             (uint8_t *)&fullKey, 6, keyValidation->Crc);
+}
+
+bool
+SldPromptVolumeSerialNumber(char *sn)
+{
+    DlgDrawBackground();
+
+    DLG_FRAME frame = {40, 5};
+
+    DlgDrawFrame(&frame, StrSldEnterSerial);
+    DlgDrawText(&frame, StrCrgEncryptedLine1, 0);
+    DlgDrawText(&frame, StrSldSerialLine1, 1);
+    DlgDrawText(&frame, StrSldSerialLine2, 2);
+
+    int length = DlgInputText(&frame, sn, 9, SldIsVolumeSerialNumberValid, 4);
+    if (0 == length)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+bool
+SldIsVolumeSerialNumberValid(const char *sn)
+{
+    if (9 != strlen(sn))
+    {
+        return false;
+    }
+
+    for (int i = 0; i < 9; i++)
+    {
+        if (4 == i)
+        {
+            if ('-' != sn[i])
+            {
+                return false;
+            }
+        }
+        else
+        {
+            if (!isxdigit(sn[i]))
+            {
+                return false;
+            }
+        }
+    }
+
+    return true;
 }
