@@ -10,7 +10,7 @@
     (uint8_t)(64U * (unsigned)dy * (unsigned)sx / (unsigned)dx / (unsigned)sy)
 #define VID_CGA_HIMONO_XY(x, y) ((x) / 8 + (y / 2) * VID_CGA_HIMONO_LINE)
 
-#define CGA_PLANE(y) (((y) % 2) ? CgaPlane1 : CgaPlane0)
+#define CGA_PLANE(y) (((y) % 2) ? CGA_PLANE1 : CGA_PLANE0)
 #define CGA_FOR_LINES(start, end, body)                                        \
     {                                                                          \
         far char *plane = CGA_PLANE(start);                                    \
@@ -25,13 +25,14 @@
 extern char                     __VidExtendedFont[];
 extern VID_CHARACTER_DESCRIPTOR __VidFontData[];
 
-static isr       PreviousFontPtr;
-static far void *CgaPlane0 = MK_FP(CGA_HIMONO_MEM, 0);
-static far void *CgaPlane1 = MK_FP(CGA_HIMONO_MEM, CGA_HIMONO_PLANE);
+static far void *const CGA_PLANE0 = MK_FP(CGA_HIMONO_MEM, 0);
+static far void *const CGA_PLANE1 = MK_FP(CGA_HIMONO_MEM, CGA_HIMONO_PLANE);
 
-static const char BrushBlack[] = {0x00};
-static const char BrushWhite[] = {0xFF};
-static const char BrushGray50[] = {0x55, 0xAA};
+static const char BRUSH_BLACK[] = {0x00};
+static const char BRUSH_WHITE[] = {0xFF};
+static const char BRUSH_GRAY50[] = {0x55, 0xAA};
+
+static ISR s_PreviousFontPtr;
 
 static void
 CgaDrawBlock(far char *plane,
@@ -89,8 +90,8 @@ VidDrawBitmap(GFX_BITMAP *bm, uint16_t x, uint16_t y)
     }
 
     far void *bits = bm->Bits;
-    far void *plane0 = CgaPlane0;
-    far void *plane1 = CgaPlane1;
+    far void *plane0 = CGA_PLANE0;
+    far void *plane1 = CGA_PLANE1;
     plane0 += x + y * (VID_CGA_HIMONO_LINE / 2);
     plane1 += x + y * (VID_CGA_HIMONO_LINE / 2);
 
@@ -227,8 +228,8 @@ void
 VidLoadFont(void)
 {
     _disable();
-    PreviousFontPtr = _dos_getvect(INT_CGA_EXTENDED_FONT_PTR);
-    _dos_setvect(INT_CGA_EXTENDED_FONT_PTR, (isr)__VidExtendedFont);
+    s_PreviousFontPtr = _dos_getvect(INT_CGA_EXTENDED_FONT_PTR);
+    _dos_setvect(INT_CGA_EXTENDED_FONT_PTR, (ISR)__VidExtendedFont);
     _enable();
 
     far const char *bfont =
@@ -281,7 +282,7 @@ VidLoadFont(void)
 void
 VidUnloadFont(void)
 {
-    _dos_setvect(INT_CGA_EXTENDED_FONT_PTR, (isr)PreviousFontPtr);
+    _dos_setvect(INT_CGA_EXTENDED_FONT_PTR, (ISR)s_PreviousFontPtr);
 }
 
 char
@@ -346,14 +347,14 @@ CgaGetBrush(GFX_COLOR color, int *height)
     switch (color)
     {
     case GFX_COLOR_BLACK:
-        *height = sizeof(BrushBlack);
-        return BrushBlack;
+        *height = sizeof(BRUSH_BLACK);
+        return BRUSH_BLACK;
     case GFX_COLOR_GRAY50:
-        *height = sizeof(BrushGray50);
-        return BrushGray50;
+        *height = sizeof(BRUSH_GRAY50);
+        return BRUSH_GRAY50;
     default:
-        *height = sizeof(BrushWhite);
-        return BrushWhite;
+        *height = sizeof(BRUSH_WHITE);
+        return BRUSH_WHITE;
     }
 }
 

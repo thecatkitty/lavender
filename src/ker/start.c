@@ -29,7 +29,7 @@ _start(void)
     asm("jmp KerEntry");
 }
 
-const uint64_t StackFillPattern = 0x0123456789ABCDEFULL;
+static const uint64_t STACK_FILL_PATTERN = 0x0123456789ABCDEFULL;
 
 void
 KerEntry(void)
@@ -41,7 +41,7 @@ KerEntry(void)
 #ifdef STACK_PROFILING
     uint64_t *stackStart = (uint64_t *)((unsigned)__ebss / 8 * 8) + 1;
     for (uint64_t *ptr = stackStart; ptr < (uint64_t *)0xFFF8; ptr++)
-        *ptr = StackFillPattern;
+        *ptr = STACK_FILL_PATTERN;
 #endif // STACK_PROFILING
 
     KerPsp = (DOS_PSP *)0;
@@ -61,7 +61,7 @@ KerEntry(void)
     uint64_t *untouched;
     for (untouched = stackStart; untouched < (uint64_t *)0xFFF8; untouched++)
     {
-        if (StackFillPattern != *untouched)
+        if (STACK_FILL_PATTERN != *untouched)
             break;
     }
 
