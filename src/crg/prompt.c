@@ -31,13 +31,13 @@ CrgPromptKey(uint8_t *         key,
     DlgDrawBackground();
 
     char *    buffer = (char *)alloca(keyLength * 3 + 1);
-    DLG_FRAME frame = {36, 4};
+    DLG_FRAME frame = {36, 5};
 
     while (true)
     {
         DlgDrawFrame(&frame, StrCrgEnterPassword);
         DlgDrawText(&frame, StrCrgEncryptedLine1, 0);
-        DlgDrawText(&frame, StrCrgEncryptedLine2, 1);
+        DlgDrawText(&frame, StrCrgEncryptedLine2, 2);
 
         bool (*inputValidator)(const char *) = NULL;
         switch (base)
@@ -51,7 +51,7 @@ CrgPromptKey(uint8_t *         key,
         }
 
         int length =
-            DlgInputText(&frame, buffer, keyLength * 2, inputValidator, 3);
+            DlgInputText(&frame, buffer, keyLength * 2, inputValidator, 4);
         if (0 == length)
         {
             return false;

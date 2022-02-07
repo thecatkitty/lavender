@@ -372,14 +372,14 @@ SldPromptVolumeSerialNumber(char *sn)
 {
     DlgDrawBackground();
 
-    DLG_FRAME frame = {40, 5};
+    DLG_FRAME frame = {40, 6};
 
     DlgDrawFrame(&frame, StrSldEnterSerial);
     DlgDrawText(&frame, StrCrgEncryptedLine1, 0);
-    DlgDrawText(&frame, StrSldSerialLine1, 1);
-    DlgDrawText(&frame, StrSldSerialLine2, 2);
+    DlgDrawText(&frame, StrSldSerialLine1, 2);
+    DlgDrawText(&frame, StrSldSerialLine2, 3);
 
-    int length = DlgInputText(&frame, sn, 9, SldIsVolumeSerialNumberValid, 4);
+    int length = DlgInputText(&frame, sn, 9, SldIsVolumeSerialNumberValid, 5);
     if (0 == length)
     {
         return false;
