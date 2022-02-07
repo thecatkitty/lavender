@@ -42,7 +42,7 @@ CrgXor(const void *   src,
     }
 }
 
-static uint8_t
+uint8_t
 XorGetByte(void *context, int i)
 {
     XOR_STREAM *stream = (XOR_STREAM *)context;

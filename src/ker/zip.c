@@ -4,9 +4,9 @@
 #include <ker.h>
 
 static int
-ZipMatchFileName(const char *          name,
-                 uint16_t              nameLength,
-                 ZIP_CDIR_FILE_HEADER *cdirFile);
+MatchFileName(const char *          name,
+              uint16_t              nameLength,
+              ZIP_CDIR_FILE_HEADER *cdirFile);
 
 int
 KerLocateArchive(void *from, void *to, ZIP_CDIR_END_HEADER **cdir)
@@ -44,7 +44,7 @@ KerSearchArchive(ZIP_CDIR_END_HEADER *   cdir,
     ZIP_LOCAL_FILE_HEADER *pLfh = NULL;
     while (!pLfh)
     {
-        int status = ZipMatchFileName(name, nameLength, cdirFile);
+        int status = MatchFileName(name, nameLength, cdirFile);
         if (0 > status)
             return status;
 
@@ -101,9 +101,9 @@ KerGetArchiveData(ZIP_LOCAL_FILE_HEADER *lfh, void **data)
 // Check if ZIP Central Directory File Header matches provided name
 // Returns 0 on match, 1 on no match, negative on error
 int
-ZipMatchFileName(const char *          name,
-                 uint16_t              nameLength,
-                 ZIP_CDIR_FILE_HEADER *cdirFile)
+MatchFileName(const char *          name,
+              uint16_t              nameLength,
+              ZIP_CDIR_FILE_HEADER *cdirFile)
 {
     if (ZIP_PK_SIGN != cdirFile->PkSignature)
     {
