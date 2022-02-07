@@ -9,7 +9,7 @@ extern void
 PitDeinitialize(void);
 
 static const char *
-ErrFindMessage(const char *messages, unsigned key);
+FindMessage(const char *messages, unsigned key);
 
 extern const char StrKerError[];
 
@@ -19,9 +19,9 @@ KerTerminate(int error)
     unsigned facility = error >> 5;
 
     DosPutS(StrKerError);
-    DosPutS(ErrFindMessage(__serrf, facility));
+    DosPutS(FindMessage(__serrf, facility));
     DosPutS(" - $");
-    DosPutS(ErrFindMessage(__serrm, error));
+    DosPutS(FindMessage(__serrm, error));
 
     DosExit(error);
 }
@@ -29,7 +29,7 @@ KerTerminate(int error)
 // Find a message using its key byte
 //   WILL CRASH IF MESSAGE NOT FOUND!
 const char *
-ErrFindMessage(const char *messages, unsigned key)
+FindMessage(const char *messages, unsigned key)
 {
     while (true)
     {

@@ -186,7 +186,7 @@ KerGetVolumeInfo(uint8_t drive, KER_VOLUME_INFO *out)
     return 0;
 }
 
-static void
+void
 CopyVolumeLabel(char *dst, const char *src)
 {
     memcpy(dst, src, 11);
