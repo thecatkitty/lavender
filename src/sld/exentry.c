@@ -243,6 +243,36 @@ SldExecuteScriptCall(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
         context.LongPart = NULL;
         break;
     }
+    case SLD_PARAMETER_XOR48_DISKID: {
+        KER_VOLUME_INFO volume = {{0}, 0};
+        uint8_t         drive;
+        for (drive = 0; drive < 2; drive++)
+        {
+            if (0 > KerGetVolumeInfo(drive, &volume))
+                continue;
+
+            if (0 == strcmp(volume.Label, sld->ScriptCall.Data))
+                break;
+        }
+
+        if (2 == drive)
+        {
+            invalid = true;
+            break;
+        }
+
+        context.LongPart = &volume.SerialNumber;
+        if (!CrgPromptKey(key, 3, 10, SldIsXorKeyValid, &context))
+        {
+            invalid = true;
+            break;
+        }
+
+        *(uint64_t *)&key =
+            CrgDecodeSplitKey(volume.SerialNumber, *(const uint32_t *)&key);
+        context.LongPart = NULL;
+        break;
+    }
     default:
         invalid = true;
         break;
