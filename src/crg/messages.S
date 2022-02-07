@@ -16,8 +16,8 @@ IF_LANG(PLK,                    .asciz  "Ta zawartość jest zaszyfrowana.")
 
                                 .global StrCrgEncryptedLine2
 StrCrgEncryptedLine2:
-IF_LANG(ENU,                    .asciz  "You need to provide the access key.")
-IF_LANG(PLK,                    .asciz  "Musisz podać klucz dostępu.")
+IF_LANG(ENU,                    .asciz  "Please enter the access key.")
+IF_LANG(PLK,                    .asciz  "Proszę podać klucz dostępu.")
 
                                 .global StrCrgKeyInvalid
 StrCrgKeyInvalid:
