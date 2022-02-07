@@ -69,4 +69,18 @@ DosExit(int code)
         ;
 }
 
+inline unsigned
+DosReadDiskAbsolute(uint8_t  drive,
+                    uint16_t sectors,
+                    uint16_t start,
+                    char *   buffer)
+{
+    unsigned short ax;
+    asm volatile("int $0x25; popf"
+                 : "=a"(ax)
+                 : "Ral"(drive), "c"(sectors), "d"(start), "b"(buffer)
+                 : "memory");
+    return ax;
+}
+
 #endif // _API_DOS_H
