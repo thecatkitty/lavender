@@ -77,12 +77,12 @@ KerGetArchiveData(ZIP_LOCAL_FILE_HEADER *lfh, void **data);
 
 // Calculate ZIP-compatible CRC-32 checksum of a buffer
 // Returns checksum value
-uint32_t
+extern uint32_t
 KerCalculateZipCrc(uint8_t *buffer, int length);
 
 // Calculate ZIP-compatible CRC-32 checksum of a data stream
 // Returns checksum value
-uint32_t
+extern uint32_t
 KerCalculateZipCrcIndirect(uint8_t (*stream)(void *, int),
                            void *context,
                            int   length);
