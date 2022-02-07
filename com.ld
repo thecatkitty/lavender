@@ -10,8 +10,8 @@ GROUP(-lc -lgcc -ldos-t -lm)
 
 MEMORY
   {
-    FILE : ORIGIN = 0x0100, LENGTH = 0xCF00 /* 52K */
-    REST : ORIGIN = 0xD000, LENGTH = 0x1000 /* 12K */
+    FILE : ORIGIN = 0x0100, LENGTH = 0xDF00 /* 55.75K */
+    REST : ORIGIN = 0xE000, LENGTH = 0x1D00 /*  7.25K */
   }
 
 SECTIONS
