@@ -10,6 +10,12 @@
 
 typedef void(interrupt *isr)(void) far;
 
+typedef struct
+{
+    char     Label[12];
+    uint32_t SerialNumber;
+} KER_VOLUME_INFO;
+
 extern bool
 KerIsDosBox(void);
 
@@ -24,6 +30,11 @@ KerGetEnvironmentVariable(const char *key);
 
 extern uint16_t
 KerGetWindowsNtVersion(void);
+
+// Get volume identification information
+// Returns 0 on success, negative on error
+extern int
+KerGetVolumeInfo(uint8_t drive, KER_VOLUME_INFO *out);
 
 extern unsigned
 KerGetTicksFromMs(unsigned ms);
@@ -91,5 +102,6 @@ KerStartPlayer(void *music, uint16_t length);
 #define ERR_KER_ARCHIVE_INVALID   ERR_CODE(ERR_FACILITY_KER, 5)
 #define ERR_KER_INVALID_SEQUENCE  ERR_CODE(ERR_FACILITY_KER, 6)
 #define ERR_KER_INTEGRITY         ERR_CODE(ERR_FACILITY_KER, 7)
+#define ERR_KER_DISK_ACCESS       ERR_CODE(ERR_FACILITY_KER, 8)
 
 #endif // _KER_H_

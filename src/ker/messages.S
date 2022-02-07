@@ -52,3 +52,7 @@ IF_LANG(PLK, .ascii  "Niepoprawna lub niewspierana sekwencja UTF-8$")
 .byte   ERR_KER_INTEGRITY
 IF_LANG(ENU, .ascii  "Data corrupted$")
 IF_LANG(PLK, .ascii  "Dane uszkodzone$")
+
+.byte   ERR_KER_DISK_ACCESS
+IF_LANG(ENU, .ascii  "Could not access disk$")
+IF_LANG(PLK, .ascii  "Nie udalo sie uzyskac dostepu do dysku$")
