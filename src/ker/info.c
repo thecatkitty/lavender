@@ -3,10 +3,14 @@
 #include <unistd.h>
 
 #include <api/dos.h>
+#include <fmt/bootsect.h>
 #include <fmt/exe.h>
 #include <ker.h>
 
 extern DOS_PSP *KerPsp;
+
+static void
+CopyVolumeLabel(char *dst, const char *src);
 
 bool
 KerIsDosBox(void)
@@ -111,4 +115,85 @@ KerGetEnvironmentVariable(const char *key)
     }
 
     return MK_FP(0, 0);
+}
+
+int
+KerGetVolumeInfo(uint8_t drive, KER_VOLUME_INFO *out)
+{
+    BOOT_SECTOR bs;
+    if (0 != DosReadDiskAbsolute(drive, 1, 0, (char *)&bs))
+    {
+        ERR(KER_DISK_ACCESS);
+    }
+
+    if (0xAA55U != bs.Magic)
+    {
+        ERR(KER_UNSUPPORTED);
+    }
+
+    int offset, size;
+    switch ((uint8_t)bs.Jump[0])
+    {
+    case 0xEB: // JMP rel8
+        offset = *(int8_t *)(bs.Jump + 1);
+        size = offset - (sizeof(bs.OemString) + 1);
+        break;
+    case 0xE9: // JMP rel16
+        offset = *(int16_t *)(bs.Jump + 1);
+        size = offset - sizeof(bs.OemString);
+        break;
+    default:
+        ERR(KER_UNSUPPORTED);
+    }
+
+    switch (size)
+    {
+    case sizeof(BPB_DOS20):
+    case sizeof(BPB_DOS30):
+    case sizeof(BPB_DOS32):
+    case sizeof(BPB_DOS33):
+        out->SerialNumber = 0;
+        out->Label[0] = 0;
+        break;
+    case sizeof(BPB_DOS34): {
+        BPB_DOS34 *bpb = (BPB_DOS34 *)bs.Payload;
+        out->SerialNumber = bpb->SerialNumber;
+        out->Label[0] = 0;
+        break;
+    }
+    case sizeof(BPB_DOS40): {
+        BPB_DOS40 *bpb = (BPB_DOS40 *)bs.Payload;
+        out->SerialNumber = bpb->Bpb34.SerialNumber;
+        CopyVolumeLabel(out->Label, bpb->Label);
+        break;
+    }
+    case sizeof(BPB_DOS71): {
+        BPB_DOS71 *bpb = (BPB_DOS71 *)bs.Payload;
+        out->SerialNumber = bpb->SerialNumber;
+        out->Label[0] = 0;
+        break;
+    }
+    case sizeof(BPB_DOS71_FULL): {
+        BPB_DOS71_FULL *bpb = (BPB_DOS71_FULL *)bs.Payload;
+        out->SerialNumber = bpb->Bpb71.SerialNumber;
+        CopyVolumeLabel(out->Label, bpb->Label);
+        break;
+    }
+    default:
+        ERR(KER_UNSUPPORTED);
+    }
+
+    return 0;
+}
+
+static void
+CopyVolumeLabel(char *dst, const char *src)
+{
+    memcpy(dst, src, 11);
+
+    char *last = dst + 11;
+    last[0] = ' ';
+    while (' ' == *last)
+        last--;
+    last[1] = 0;
 }
