@@ -17,7 +17,7 @@
         return -(ERR_##e);                                                     \
     }
 
-void
+extern void
 KerTerminate(int error);
 
 #endif // __ASSEMBLER__
