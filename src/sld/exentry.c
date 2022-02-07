@@ -23,7 +23,7 @@ typedef struct
     uint32_t *  LongPart;
 } SLD_KEY_VALIDATION;
 
-static uint16_t Accumulator = 0;
+static uint16_t s_Accumulator = 0;
 
 static int
 SldExecuteText(SLD_ENTRY *sld);
@@ -76,12 +76,12 @@ SldExecuteEntry(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
     case SLD_TYPE_PLAY:
         return SldExecutePlay(sld, zip);
     case SLD_TYPE_WAITKEY:
-        Accumulator = BiosKeyboardGetKeystroke() >> 8;
+        s_Accumulator = BiosKeyboardGetKeystroke() >> 8;
         return 0;
     case SLD_TYPE_JUMP:
         return INT_MAX;
     case SLD_TYPE_JUMPE:
-        return (Accumulator == sld->Vertical) ? INT_MAX : 0;
+        return (s_Accumulator == sld->Vertical) ? INT_MAX : 0;
     case SLD_TYPE_CALL:
         return SldExecuteScriptCall(sld, zip);
     }
@@ -214,7 +214,7 @@ SldExecuteScriptCall(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
         return status;
     }
 
-    Accumulator = 0;
+    s_Accumulator = 0;
 
     // Run if stored as plain text
     if (SLD_METHOD_STORE == sld->ScriptCall.Method)
@@ -302,7 +302,7 @@ SldExecuteScriptCall(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
     // Check the key
     if (invalid || !SldIsXorKeyValid((const uint8_t *)&key, 6, &context))
     {
-        Accumulator = UINT16_MAX;
+        s_Accumulator = UINT16_MAX;
         return 0;
     }
 

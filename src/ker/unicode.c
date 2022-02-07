@@ -2,7 +2,7 @@
 
 #include <ker.h>
 
-static const uint16_t FoldingSingleCharacters[] = {
+static const uint16_t FOLDING_SINGLE[] = {
     0x00B5, 0x03BC, // MICRO SIGN
     0x0178, 0x00FF, // LATIN CAPITAL LETTER Y WITH DIAERESIS
     0x0179, 0x017A, // LATIN CAPITAL LETTER Z WITH ACUTE
@@ -66,7 +66,7 @@ static const uint16_t FoldingSingleCharacters[] = {
     0x0245, 0x028C, // LATIN CAPITAL LETTER TURNED V
     0xFFFF};
 
-static const uint16_t FoldingDoubleCharacters[] = {
+static const uint16_t FOLDING_DOUBLE[] = {
     0x00DF, 0x0073, 0x0073, // LATIN SMALL LETTER SHARP S
     0x0130, 0x0069, 0x0307, // LATIN CAPITAL LETTER I WITH DOT ABOVE
     0x0149, 0x02BC, 0x006E, // LATIN SMALL LETTER N PRECEDED BY APOSTROPHE
@@ -240,7 +240,7 @@ FoldCase(uint16_t codePoint, uint16_t *buff)
         return 1;
     }
 
-    const uint16_t *mapping = FoldingSingleCharacters;
+    const uint16_t *mapping = FOLDING_SINGLE;
     while (mapping[0] != 0xFFFF)
     {
         if (codePoint == mapping[0])
@@ -252,7 +252,7 @@ FoldCase(uint16_t codePoint, uint16_t *buff)
         mapping += 2;
     }
 
-    mapping = FoldingDoubleCharacters;
+    mapping = FOLDING_DOUBLE;
     while (mapping[0] != 0xFFFF)
     {
         if (codePoint == mapping[0])

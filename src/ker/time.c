@@ -14,11 +14,11 @@
 
 #define SPKR_ENABLE 3
 
-static volatile uint32_t counter;
-static isr               biosIsr;
+static volatile uint32_t s_Counter;
+static ISR               s_BiosIsr;
 
-static volatile unsigned playerTicks = 0;
-static SPK_NOTE3 *volatile sequence = (SPK_NOTE3 *)0;
+static volatile unsigned s_PlayerTicks = 0;
+static SPK_NOTE3 *volatile s_Sequence = (SPK_NOTE3 *)0;
 
 static void
 PlayerStop(void);
@@ -41,8 +41,8 @@ KerGetTicksFromMs(unsigned ms)
 void
 KerSleep(unsigned ticks)
 {
-    uint32_t until = counter + ticks;
-    while (counter != until)
+    uint32_t until = s_Counter + ticks;
+    while (s_Counter != until)
     {
         asm("hlt");
     }
@@ -52,8 +52,8 @@ void
 KerStartPlayer(void *music, uint16_t length)
 {
     _disable();
-    sequence = (SPK_NOTE3 *)((uint8_t *)music + sizeof(SPK_HEADER));
-    playerTicks = 0;
+    s_Sequence = (SPK_NOTE3 *)((uint8_t *)music + sizeof(SPK_HEADER));
+    s_PlayerTicks = 0;
     _enable();
 }
 
@@ -61,7 +61,7 @@ void
 PlayerStop(void)
 {
     _disable();
-    sequence = (SPK_NOTE3 *)0;
+    s_Sequence = (SPK_NOTE3 *)0;
     nosound();
     _enable();
 }
@@ -85,11 +85,11 @@ void
 PitInitialize()
 {
     _disable();
-    biosIsr = _dos_getvect(INT_PIT);
+    s_BiosIsr = _dos_getvect(INT_PIT);
     _dos_setvect(INT_PIT, PitIsr);
     _enable();
 
-    counter = 0;
+    s_Counter = 0;
     PitInitChannel(0, PIT_MODE_RATE_GEN, KER_PIT_FREQ_DIVISOR);
 }
 
@@ -97,7 +97,7 @@ void
 PitDeinitialize()
 {
     PlayerStop();
-    _dos_setvect(INT_PIT, biosIsr);
+    _dos_setvect(INT_PIT, s_BiosIsr);
     PitInitChannel(0, PIT_MODE_RATE_GEN, 0);
 }
 
@@ -105,16 +105,16 @@ interrupt void far
 PitIsr(void)
 {
     _disable();
-    counter++;
+    s_Counter++;
 
-    if (0 == (counter % 10))
+    if (0 == (s_Counter % 10))
     {
         PlayerIsr();
     }
 
-    if (0 == (counter % 32))
+    if (0 == (s_Counter % 32))
     {
-        biosIsr();
+        s_BiosIsr();
     }
     else
     {
@@ -127,31 +127,31 @@ PitIsr(void)
 void
 PlayerIsr(void)
 {
-    if (!sequence)
+    if (!s_Sequence)
         return;
 
-    if (0 != playerTicks)
+    if (0 != s_PlayerTicks)
     {
-        playerTicks--;
+        s_PlayerTicks--;
         return;
     }
 
-    if (SPK_NOTE_DURATION_STOP == sequence->Duration)
+    if (SPK_NOTE_DURATION_STOP == s_Sequence->Duration)
     {
         PlayerStop();
         return;
     }
 
-    playerTicks = sequence->Duration - 1;
-    if (0 == sequence->Divisor)
+    s_PlayerTicks = s_Sequence->Duration - 1;
+    if (0 == s_Sequence->Divisor)
     {
         nosound();
     }
     else
     {
-        PitInitChannel(2, PIT_MODE_SQUARE_WAVE_GEN, sequence->Divisor);
+        PitInitChannel(2, PIT_MODE_SQUARE_WAVE_GEN, s_Sequence->Divisor);
         _outp(0x61, _inp(0x61) | SPKR_ENABLE);
     }
 
-    sequence++;
+    s_Sequence++;
 }

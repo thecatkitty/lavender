@@ -8,7 +8,7 @@
 
 #define interrupt __attribute__((interrupt))
 
-typedef void(interrupt *isr)(void) far;
+typedef void(interrupt *ISR)(void) far;
 
 typedef struct
 {
