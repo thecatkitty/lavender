@@ -31,6 +31,9 @@ KerGetEnvironmentVariable(const char *key);
 extern uint16_t
 KerGetWindowsNtVersion(void);
 
+extern int
+KerGetFloppyDriveCount(void);
+
 // Get volume identification information
 // Returns 0 on success, negative on error
 extern int
