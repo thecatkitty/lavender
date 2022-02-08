@@ -258,8 +258,12 @@ SldExecuteScriptCall(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
     }
     case SLD_PARAMETER_XOR48_DISKID: {
         KER_VOLUME_INFO volume = {{0}, 0};
-        uint8_t         drive;
-        for (drive = 0; drive < 2; drive++)
+        int             maxDrives = KerGetFloppyDriveCount();
+        if (2 < maxDrives)
+            maxDrives = 2;
+
+        uint8_t drive;
+        for (drive = 0; drive < maxDrives; drive++)
         {
             if (0 > KerGetVolumeInfo(drive, &volume))
                 continue;
@@ -268,7 +272,7 @@ SldExecuteScriptCall(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
                 break;
         }
 
-        if (2 == drive)
+        if (maxDrives == drive)
         {
             char sn[10];
             if (!SldPromptVolumeSerialNumber(sn))
