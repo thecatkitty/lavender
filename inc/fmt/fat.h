@@ -1,9 +1,19 @@
-#ifndef _FMT_BOOTSECT_H
-#define _FMT_BOOTSECT_H
+#ifndef _FMT_FAT_H_
+#define _FMT_FAT_H_
 
 #include <assert.h>
 
 #include <base.h>
+
+#define FAT_ATTRIBUTE_READ_ONLY 0x01
+#define FAT_ATTRIBUTE_HIDDEN    0x02
+#define FAT_ATTRIBUTE_SYSTEM    0x04
+#define FAT_ATTRIBUTE_VOLUME_ID 0x08
+#define FAT_ATTRIBUTE_DIRECTORY 0x10
+#define FAT_ATTRIBUTE_ARCHIVE   0x20
+#define FAT_ATTRIBUTE_LFN                                                      \
+    (FAT_ATTRIBUTE_READ_ONLY | FAT_ATTRIBUTE_HIDDEN | FAT_ATTRIBUTE_SYSTEM |   \
+     FAT_ATTRIBUTE_VOLUME_ID)
 
 #pragma pack(push, 1)
 
@@ -116,6 +126,45 @@ typedef struct
 static_assert(79 == sizeof(BPB_DOS71_FULL),
               "DOS 7.1 full BPB size doesn't match specification");
 
+typedef struct
+{
+    unsigned DoubleSecond : 5;
+    unsigned Minute : 6;
+    unsigned Hour : 5;
+} FAT_TIME;
+
+static_assert(sizeof(uint16_t) == sizeof(FAT_TIME),
+              "FAT time struct size doesn't match specification");
+
+typedef struct
+{
+    unsigned Day : 5;
+    unsigned Month : 4;
+    unsigned Year : 7;
+} FAT_DATE;
+
+static_assert(sizeof(uint16_t) == sizeof(FAT_DATE),
+              "FAT date struct size doesn't match specification");
+
+typedef struct
+{
+    char     FileName[11];
+    uint8_t  Attributes;
+    uint8_t  Reserved;
+    uint8_t  CreationCentiseconds;
+    FAT_TIME CreationTime;
+    FAT_DATE CreationDate;
+    FAT_DATE AccessDate;
+    uint16_t FirstClusterHigh;
+    FAT_TIME ModificationTime;
+    FAT_DATE ModificationDate;
+    uint16_t FirstClusterLow;
+    uint32_t Size;
+} FAT_DIRECTORY_ENTRY;
+
+static_assert(32 == sizeof(FAT_DIRECTORY_ENTRY),
+              "FAT directory entry size doesn't match specification");
+
 #pragma pack(pop)
 
-#endif // _FMT_BOOTSECT_H
+#endif // _FMT_FAT_H_
