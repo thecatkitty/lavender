@@ -1,10 +1,31 @@
 #ifndef _API_BIOS_H
 #define _API_BIOS_H
 
+#include <assert.h>
 #include <i86.h>
 
 #include <fmt/edid.h>
 #include <ker.h>
+
+#pragma pack(push, 1)
+typedef struct
+{
+    bool     FloppyDisk : 1;
+    bool     X87 : 1;
+    unsigned OnBoardMemory : 2;
+    unsigned InitialVideoMode : 2;
+    unsigned FloppyDrives : 2;
+    bool     NoDma : 1;
+    unsigned SerialPorts : 3;
+    bool     GamePort : 1;
+    bool     SerialPrinter : 1;
+    unsigned ParallelPorts : 2;
+} BIOS_EQUIPMENT;
+
+static_assert(sizeof(uint16_t) == sizeof(BIOS_EQUIPMENT),
+              "BIOS equipment list size doesn't match specification");
+
+#pragma pack(pop)
 
 inline uint16_t
 BiosKeyboardGetKeystroke(void)
@@ -58,6 +79,14 @@ BiosVideoVbeDcCapabilities()
 {
     unsigned short ax;
     asm volatile("int $0x10" : "=a"(ax) : "a"(0x4F15), "b"(0));
+    return ax;
+}
+
+inline short
+BiosGetEquipmentList(void)
+{
+    unsigned short ax;
+    asm volatile("int $0x11" : "=a"(ax));
     return ax;
 }
 

@@ -2,6 +2,7 @@
 #include <libi86/string.h>
 #include <unistd.h>
 
+#include <api/bios.h>
 #include <api/dos.h>
 #include <fmt/bootsect.h>
 #include <fmt/exe.h>
@@ -115,6 +116,14 @@ KerGetEnvironmentVariable(const char *key)
     }
 
     return MK_FP(0, 0);
+}
+
+int
+KerGetFloppyDriveCount(void)
+{
+    BIOS_EQUIPMENT equipment;
+    *(short *)&equipment = BiosGetEquipmentList();
+    return equipment.FloppyDisk ? (equipment.FloppyDrives + 1) : 0;
 }
 
 int
