@@ -96,10 +96,10 @@ BiosVideoVbeDcReadEdid(far EDID *edid)
     unsigned short ax, es, di;
     es = FP_SEG(edid);
     di = FP_OFF(edid);
-    asm volatile("mov %%bx, %%es; mov $1, %%bx; int $0x10"
+    asm volatile("push %%es; mov %%bx, %%es; mov $1, %%bx; int $0x10; pop %%es"
                  : "=a"(ax)
-                 : "a"(0x4F15), "b"(es), "D"(di)
-                 : "c", "d", "memory");
+                 : "a"(0x4F15), "b"(es), "c"(0), "d"(0), "D"(di)
+                 : "memory");
     return ax;
 }
 
