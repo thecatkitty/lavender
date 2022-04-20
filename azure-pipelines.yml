@@ -21,6 +21,10 @@ steps:
     mkdir bin/PLK
     mv bin/*.com bin/PLK/
     rm obj/*/*.S.o
+    LAV_LANG=CSY make
+    mkdir bin/CSY
+    mv bin/*.com bin/CSY/
+    rm obj/*/*.S.o
     make
   displayName: 'Build Lavender'
 

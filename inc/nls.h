@@ -1,11 +1,18 @@
 #ifndef _NLS_H_
 #define _NLS_H_
 
+#define LCID_CSY 1029
 #define LCID_ENU 1033
 #define LCID_PLK 1045
 
 #ifndef LANG
 #define LANG LCID_ENU
+#endif
+
+#if LANG == LCID_CSY
+#define IF_LANG_CSY(x) x
+#else
+#define IF_LANG_CSY(x)
 #endif
 
 #if LANG == LCID_ENU
