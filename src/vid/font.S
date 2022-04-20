@@ -36,18 +36,36 @@ __VidFontData:
                                 DCHR    0x0105, 'a', Ogonek, 0
                                 DCHR    0x0106, 'C', Acute, MoveTwoUpper
                                 DCHR    0x0107, 'c', Acute, 0
+                                DCHR    0x010C, 'C', Caron, MoveTwoUpper
+                                DCHR    0x010D, 'c', Caron, 0
+                                DCHR    0x010E, 'D', Caron, MoveTwoUpper
+                                DCHR    0x010F, 'd', Apostrophe, 0
                                 DCHR    0x0118, 'E', Ogonek, 0
                                 DCHR    0x0119, 'e', Ogonek, 0
+                                DCHR    0x011A, 'E', Caron, SquishCapitalE
+                                DCHR    0x011B, 'e', Caron, 0
                                 DCHR    0x0141, 'L', Stroke, 0
                                 DCHR    0x0142, 'l', Stroke, 0
                                 DCHR    0x0143, 'N', Acute, SquishCapitalN
                                 DCHR    0x0144, 'n', Acute, 0
+                                DCHR    0x0147, 'N', Caron, SquishCapitalN
+                                DCHR    0x0148, 'n', Caron, 0
+                                DCHR    0x0158, 'R', Caron, MoveTwoUpper
+                                DCHR    0x0159, 'r', Caron, 0
                                 DCHR    0x015A, 's', Acute, 0
                                 DCHR    0x015B, 's', Acute, 0
+                                DCHR    0x0160, 's', Caron, 0
+                                DCHR    0x0161, 's', Caron, 0
+                                DCHR    0x0164, 'T', Caron, MoveTwoUpper
+                                DCHR    0x0165, 't', Apostrophe, 0
+                                DCHR    0x016E, 'U', Ring, MoveTwoUpper
+                                DCHR    0x016F, 'u', Ring, 0
                                 DCHR    0x0179, 'z', Acute, 0
                                 DCHR    0x017A, 'z', Acute, 0
                                 DCHR    0x017B, 'z', DotAbove, 0
                                 DCHR    0x017C, 'z', DotAbove, 0
+                                DCHR    0x017D, 'z', Caron, 0
+                                DCHR    0x017E, 'z', Caron, 0
                                 DCHR    0x2022, 0x07, 0, 0 // BULLET
                                 DCHR    0x203C, 0x13, 0, 0 // DOUBLE EXCLAMATION MARK
                                 DCHR    0x2190, 0x1B, 0, 0 // LEFTWARDS ARROW
@@ -95,6 +113,14 @@ Tilde:                          .byte   0x01, \
                                         0b01111100
 Diaeresis:                      .byte   0x01, \
                                         0b11001100
+Caron:                          .byte   0x02, \
+                                        0b01101100, \
+                                        0b00111000
+Ring:                           .byte   0x02, \
+                                        0b00110000, \
+                                        0b00110000
+Apostrophe:                     .byte   0x01, \
+                                        0b00000011
 
 MoveTwoUpper:                   .byte   GXF_SELECT(0), \
                                         GXF_GROW(1), \
