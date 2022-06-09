@@ -47,6 +47,7 @@ $(OBJ)/%.S.o: $(SRC)/%.S
 	$(AS) $(ASFLAGS) -o $@ $<
 
 $(OBJ)/%.c.o: $(SRC)/%.c
+	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -o $@ $<
 
 GIT_TAG     = $(shell git describe --abbrev=0)
