@@ -7,12 +7,11 @@
 #include <dev/pit.h>
 #include <fmt/spk.h>
 #include <ker.h>
+#include <pal.h>
 
 #define KER_PIT_INPUT_FREQ      11931816667ULL
 #define KER_PIT_FREQ_DIVISOR    2048ULL
 #define KER_DELAY_MS_MULTIPLIER 100ULL
-
-#define SPKR_ENABLE 3
 
 static volatile uint32_t s_Counter;
 static ISR               s_BiosIsr;
@@ -149,8 +148,7 @@ PlayerIsr(void)
     }
     else
     {
-        PitInitChannel(2, PIT_MODE_SQUARE_WAVE_GEN, s_Sequence->Divisor);
-        _outp(0x61, _inp(0x61) | SPKR_ENABLE);
+        pal_beep(s_Sequence->Divisor);
     }
 
     s_Sequence++;

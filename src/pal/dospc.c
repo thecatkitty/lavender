@@ -1,9 +1,13 @@
+#include <conio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include <api/dos.h>
+#include <dev/pit.h>
 #include <ker.h>
 #include <pal.h>
+
+#define SPKR_ENABLE 3
 
 extern char __edata[], __sbss[], __ebss[];
 
@@ -12,6 +16,9 @@ PitInitialize(void);
 
 extern void
 PitDeinitialize(void);
+
+extern void
+PitInitChannel(unsigned channel, unsigned mode, unsigned divisor);
 
 #ifdef STACK_PROFILING
 static uint64_t      *_stack_start;
@@ -63,4 +70,11 @@ pal_cleanup(void)
 
     DosPutS("\r\n$");
 #endif // STACK_PROFILING
+}
+
+void
+pal_beep(uint16_t divisor)
+{
+    PitInitChannel(2, PIT_MODE_SQUARE_WAVE_GEN, divisor);
+    _outp(0x61, _inp(0x61) | SPKR_ENABLE);
 }
