@@ -1,5 +1,6 @@
 #include <fcntl.h>
 #include <libi86/string.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 #include <api/bios.h>
@@ -7,8 +8,6 @@
 #include <fmt/exe.h>
 #include <fmt/fat.h>
 #include <ker.h>
-
-extern DOS_PSP *KerPsp;
 
 static void
 CopyVolumeLabel(char *dst, const char *src);
@@ -102,20 +101,7 @@ KerGetWindowsNtVersion(void)
 far const char *
 KerGetEnvironmentVariable(const char *key)
 {
-    far const char *env = MK_FP(KerPsp->EnvironmentSegment, 0);
-    size_t          keyLength = strlen(key);
-
-    while (*env)
-    {
-        if ((0 == _fmemcmp(key, env, keyLength)) && ('=' == env[keyLength]))
-        {
-            return env + keyLength + 1;
-        }
-
-        env += _fstrlen(env) + 1;
-    }
-
-    return MK_FP(0, 0);
+    return getenv(key);
 }
 
 int
