@@ -71,7 +71,7 @@ _pit_isr(void)
 }
 
 void
-pal_initialize(ZIP_CDIR_END_HEADER **zip)
+pal_initialize(void)
 {
     memset(__sbss, 0, __ebss - __sbss);
 
@@ -96,7 +96,6 @@ pal_initialize(ZIP_CDIR_END_HEADER **zip)
     _pit_init_channel(0, PIT_MODE_RATE_GEN, PIT_FREQ_DIVISOR);
 
     memset(_assets, 0, sizeof(_assets));
-    *zip = _cdir;
 }
 
 void

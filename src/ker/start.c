@@ -1,3 +1,5 @@
+#include <errno.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -6,7 +8,9 @@
 #include <pal.h>
 
 extern int
-Main(ZIP_CDIR_END_HEADER *zip);
+Main();
+
+extern const char StrKerError[];
 
 void
 _start(void) __attribute__((section(".startupA.0")));
@@ -23,16 +27,25 @@ _start(void)
 void
 KerEntry(void)
 {
-    ZIP_CDIR_END_HEADER *zip;
-    pal_initialize(&zip);
+    pal_initialize();
 
-    int status = Main(zip);
+    int status = Main();
 
     pal_cleanup();
 
     if (0 > status)
     {
         KerTerminate(-status);
+    }
+
+    if (EXIT_ERRNO == status)
+    {
+        DosPutS(StrKerError);
+        
+        char code[10];
+        itoa(errno, code, 10);
+        code[strlen(code)] = '$';
+        DosPutS(code);
     }
 
     DosExit(status);

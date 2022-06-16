@@ -11,7 +11,7 @@ typedef struct
 } * hasset;
 
 extern void
-pal_initialize(ZIP_CDIR_END_HEADER **zip);
+pal_initialize(void);
 
 extern void
 pal_cleanup(void);
