@@ -16,6 +16,8 @@ typedef struct
     uint32_t SerialNumber;
 } KER_VOLUME_INFO;
 
+#define EXIT_ERRNO 512
+
 extern bool
 KerIsDosBox(void);
 
