@@ -11,6 +11,9 @@ extern void
 pal_cleanup(void);
 
 extern void
+pal_sleep(unsigned ms);
+
+extern void
 pal_beep(uint16_t divisor);
 
 #endif // _PAL_H_

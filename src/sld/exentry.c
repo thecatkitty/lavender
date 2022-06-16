@@ -7,6 +7,7 @@
 #include <dlg.h>
 #include <gfx.h>
 #include <ker.h>
+#include <pal.h>
 #include <sld.h>
 #include <vid.h>
 
@@ -58,7 +59,7 @@ SldIsVolumeSerialNumberValid(const char *sn);
 int
 SldExecuteEntry(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
 {
-    KerSleep(sld->Delay);
+    pal_sleep(sld->Delay);
 
     switch (sld->Type)
     {

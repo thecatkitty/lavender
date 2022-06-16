@@ -65,7 +65,7 @@ SldLoadEntry(const char *line, SLD_ENTRY *out)
     {
         ERR(SLD_INVALID_DELAY);
     }
-    out->Delay = KerGetTicksFromMs(num);
+    out->Delay = num;
     cur += length;
 
     // Load type

@@ -8,7 +8,7 @@
 
 #define interrupt __attribute__((interrupt))
 
-typedef void(interrupt *ISR)(void) far;
+typedef void interrupt far (*ISR)(void);
 
 typedef struct
 {
@@ -38,12 +38,6 @@ KerGetFloppyDriveCount(void);
 // Returns 0 on success, negative on error
 extern int
 KerGetVolumeInfo(uint8_t drive, KER_VOLUME_INFO *out);
-
-extern unsigned
-KerGetTicksFromMs(unsigned ms);
-
-extern void
-KerSleep(unsigned ticks);
 
 // Get code point from UTF-8 sequence
 // Returns the length of the sequence (0 when NUL), negative on error

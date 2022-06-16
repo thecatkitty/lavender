@@ -1,6 +1,7 @@
 #include <api/bios.h>
 #include <dlg.h>
 #include <gfx.h>
+#include <pal.h>
 #include <vid.h>
 
 int
@@ -55,11 +56,11 @@ DlgInputText(DLG_FRAME *frame,
             }
 
             VidDrawRectangle(&box, boxLeft, boxTop, GFX_COLOR_BLACK);
-            KerSleep(KerGetTicksFromMs(63));
+            pal_sleep(63);
             VidDrawRectangle(&box, boxLeft, boxTop, GFX_COLOR_GRAY50);
-            KerSleep(KerGetTicksFromMs(63));
+            pal_sleep(63);
             VidDrawRectangle(&box, boxLeft, boxTop, GFX_COLOR_BLACK);
-            KerSleep(KerGetTicksFromMs(63));
+            pal_sleep(63);
             continue;
         }
 
