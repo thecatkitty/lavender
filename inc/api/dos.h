@@ -43,25 +43,25 @@ typedef struct _DOS_PSP
 } DOS_PSP;
 #pragma pack(pop)
 
-inline void
+static inline void
 DosPutC(int c)
 {
     bdos(0x02, c, 0);
 }
 
-inline void
+static inline void
 DosPutS(const char *str)
 {
     bdos(0x09, (unsigned)str, 0);
 }
 
-inline unsigned
+static inline unsigned
 DosGetVersion(void)
 {
     return bdos(0x30, 0, 0);
 }
 
-inline void
+static inline void
 DosExit(int code)
 {
     bdos(0x4C, 0, code);
@@ -69,7 +69,7 @@ DosExit(int code)
         ;
 }
 
-inline unsigned
+static inline unsigned
 DosReadDiskAbsolute(uint8_t  drive,
                     uint16_t sectors,
                     uint16_t start,

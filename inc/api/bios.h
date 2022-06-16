@@ -27,7 +27,7 @@ static_assert(sizeof(uint16_t) == sizeof(BIOS_EQUIPMENT),
 
 #pragma pack(pop)
 
-inline uint16_t
+static inline uint16_t
 BiosKeyboardGetKeystroke(void)
 {
     uint16_t ax;
@@ -35,14 +35,14 @@ BiosKeyboardGetKeystroke(void)
     return ax;
 }
 
-inline void
+static inline void
 BiosVideoSetMode(uint8_t mode)
 {
     uint16_t ax;
     asm volatile("int $0x10" : "=a"(ax) : "0"(mode) : "cc", "bx", "cx", "dx");
 }
 
-inline void
+static inline void
 BiosVideoSetCursorPosition(uint8_t page, uint16_t position)
 {
     asm volatile("int $0x10"
@@ -51,7 +51,7 @@ BiosVideoSetCursorPosition(uint8_t page, uint16_t position)
                    "d"(position));
 }
 
-inline void
+static inline void
 BiosVideoWriteCharacter(uint8_t  page,
                         uint8_t  character,
                         uint8_t  attribute,
@@ -63,7 +63,7 @@ BiosVideoWriteCharacter(uint8_t  page,
                    "b"((uint16_t)(page << 8) | attribute), "c"(count));
 }
 
-inline uint16_t
+static inline uint16_t
 BiosVideoGetMode()
 {
     uint16_t ax;
@@ -74,7 +74,7 @@ BiosVideoGetMode()
     return ax;
 }
 
-inline short
+static inline short
 BiosVideoVbeDcCapabilities()
 {
     unsigned short ax;
@@ -82,7 +82,7 @@ BiosVideoVbeDcCapabilities()
     return ax;
 }
 
-inline short
+static inline short
 BiosGetEquipmentList(void)
 {
     unsigned short ax;
@@ -90,7 +90,7 @@ BiosGetEquipmentList(void)
     return ax;
 }
 
-inline short
+static inline short
 BiosVideoVbeDcReadEdid(far EDID *edid)
 {
     unsigned short ax, es, di;
