@@ -13,6 +13,7 @@
 typedef struct
 {
     ZIP_LOCAL_FILE_HEADER *zip_header;
+    int                    flags;
 } _asset;
 
 #define SPKR_ENABLE         3
@@ -149,7 +150,7 @@ pal_beep(uint16_t divisor)
 }
 
 hasset
-pal_open_asset(const char *name)
+pal_open_asset(const char *name, int flags)
 {
     int slot;
     while (NULL != _assets[slot].zip_header)
@@ -167,6 +168,7 @@ pal_open_asset(const char *name)
         KerSearchArchive(_cdir, name, strlen(name), &_assets[slot].zip_header))
     {
     case 0:
+        _assets[slot].flags = flags;
         return (hasset)(_assets + slot);
 
     case -ERR_KER_NOT_FOUND:
@@ -218,6 +220,11 @@ pal_get_asset_data(hasset asset)
         return (char *)data;
 
     case -ERR_KER_INTEGRITY:
+        if (O_RDWR == (ptr->flags & O_ACCMODE))
+        {
+            return (char *)data;
+        }
+
         errno = EIO;
         return NULL;
 
