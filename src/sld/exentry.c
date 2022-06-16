@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -21,7 +22,7 @@ typedef struct
     const void *Data;
     int         DataLength;
     uint32_t    Crc;
-    uint32_t *  LongPart;
+    uint32_t   *LongPart;
 } SLD_KEY_VALIDATION;
 
 static uint16_t s_Accumulator = 0;
@@ -30,22 +31,19 @@ static int
 SldExecuteText(SLD_ENTRY *sld);
 
 static int
-SldExecuteBitmap(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip);
+SldExecuteBitmap(SLD_ENTRY *sld);
 
 static int
 SldExecuteRectangle(SLD_ENTRY *sld);
 
 static int
-SldExecutePlay(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip);
+SldExecutePlay(SLD_ENTRY *sld);
 
 static int
-SldExecuteScriptCall(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip);
+SldExecuteScriptCall(SLD_ENTRY *sld);
 
-static int
-SldFindBestBitmap(char *                  pattern,
-                  unsigned                length,
-                  ZIP_CDIR_END_HEADER *   zip,
-                  ZIP_LOCAL_FILE_HEADER **lfh);
+static hasset
+SldFindBestBitmap(char *pattern);
 
 static bool
 SldIsXorKeyValid(const uint8_t *key, int keyLength, void *context);
@@ -57,7 +55,7 @@ static bool
 SldIsVolumeSerialNumberValid(const char *sn);
 
 int
-SldExecuteEntry(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
+SldExecuteEntry(SLD_ENTRY *sld)
 {
     pal_sleep(sld->Delay);
 
@@ -70,12 +68,12 @@ SldExecuteEntry(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
     case SLD_TYPE_TEXT:
         return SldExecuteText(sld);
     case SLD_TYPE_BITMAP:
-        return SldExecuteBitmap(sld, zip);
+        return SldExecuteBitmap(sld);
     case SLD_TYPE_RECT:
     case SLD_TYPE_RECTF:
         return SldExecuteRectangle(sld);
     case SLD_TYPE_PLAY:
-        return SldExecutePlay(sld, zip);
+        return SldExecutePlay(sld);
     case SLD_TYPE_WAITKEY:
         s_Accumulator = BiosKeyboardGetKeystroke() >> 8;
         return 0;
@@ -84,7 +82,7 @@ SldExecuteEntry(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
     case SLD_TYPE_JUMPE:
         return (s_Accumulator == sld->Vertical) ? INT_MAX : 0;
     case SLD_TYPE_CALL:
-        return SldExecuteScriptCall(sld, zip);
+        return SldExecuteScriptCall(sld);
     }
 
     ERR(SLD_UNKNOWN_TYPE);
@@ -111,22 +109,20 @@ SldExecuteText(SLD_ENTRY *sld)
 }
 
 int
-SldExecuteBitmap(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
+SldExecuteBitmap(SLD_ENTRY *sld)
 {
     int status;
 
-    ZIP_LOCAL_FILE_HEADER *lfh;
-    status = SldFindBestBitmap(sld->Content, sld->Length, zip, &lfh);
-    if (0 > status)
+    hasset bitmap = SldFindBestBitmap(sld->Content);
+    if (NULL == bitmap)
     {
-        return status;
+        ERR(KER_NOT_FOUND);
     }
 
-    void *data;
-    status = KerGetArchiveData(lfh, &data);
-    if (0 > status)
+    char *data = pal_get_asset_data(bitmap);
+    if (NULL == data)
     {
-        return status;
+        ERR(KER_NOT_FOUND);
     }
 
     GFX_BITMAP bm;
@@ -149,7 +145,10 @@ SldExecuteBitmap(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
         x = sld->Horizontal;
     }
 
-    return VidDrawBitmap(&bm, x, y);
+    status = VidDrawBitmap(&bm, x, y);
+
+    pal_close_asset(bitmap);
+    return status;
 }
 
 int
@@ -174,64 +173,52 @@ SldExecuteRectangle(SLD_ENTRY *sld)
 }
 
 int
-SldExecutePlay(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
+SldExecutePlay(SLD_ENTRY *sld)
 {
-    int status;
-
-    ZIP_LOCAL_FILE_HEADER *lfh;
-    status = KerSearchArchive(zip, sld->Content, sld->Length, &lfh);
-    if (0 > status)
+    hasset music = pal_open_asset(sld->Content, O_RDONLY);
+    if (NULL == music)
     {
-        return status;
+        ERR(KER_NOT_FOUND);
     }
 
-    void *data;
-    status = KerGetArchiveData(lfh, &data);
-    if (0 > status)
+    char *data = pal_get_asset_data(music);
+    if (NULL == data)
     {
-        return status;
+        ERR(KER_NOT_FOUND);
     }
 
-    KerStartPlayer(data, lfh->UncompressedSize);
+    KerStartPlayer(data, pal_get_asset_size(music));
     return 0;
 }
 
 int
-SldExecuteScriptCall(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
+SldExecuteScriptCall(SLD_ENTRY *sld)
 {
     int status;
 
-    ZIP_LOCAL_FILE_HEADER *lfh;
-    status = KerSearchArchive(zip, sld->ScriptCall.FileName, sld->Length, &lfh);
-    if (0 > status)
+    hasset script = pal_open_asset(sld->ScriptCall.FileName, O_RDWR);
+    if (NULL == script)
     {
-        return status;
+        ERR(KER_NOT_FOUND);
     }
 
-    void *data;
-    status = KerGetArchiveData(lfh, &data);
-    if (0 > status)
+    char *data = pal_get_asset_data(script);
+    if (NULL == data)
     {
-        return status;
+        ERR(KER_NOT_FOUND);
     }
 
+    int size = pal_get_asset_size(script);
     s_Accumulator = 0;
 
     // Run if stored as plain text
     if (SLD_METHOD_STORE == sld->ScriptCall.Method)
     {
-        return SldRunScript(data, lfh->UncompressedSize, zip);
-    }
-
-    // Run if already decrypted
-    if (lfh->Crc32 == sld->ScriptCall.Crc32)
-    {
-        return SldRunScript(data, lfh->UncompressedSize, zip);
+        return SldRunScript(data, size);
     }
 
     uint8_t            key[sizeof(uint64_t)];
-    SLD_KEY_VALIDATION context = {data, lfh->UncompressedSize,
-                                  sld->ScriptCall.Crc32, NULL};
+    SLD_KEY_VALIDATION context = {data, size, sld->ScriptCall.Crc32, NULL};
     bool               invalid = false;
 
     memset(key, 0, sizeof(key));
@@ -311,22 +298,22 @@ SldExecuteScriptCall(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip)
         return 0;
     }
 
-    CrgXor(data, data, lfh->UncompressedSize, (const uint8_t *)&key, 6);
-    lfh->Crc32 = KerCalculateZipCrc((uint8_t *)data, lfh->UncompressedSize);
-    return SldRunScript(data, lfh->UncompressedSize, zip);
+    CrgXor(data, data, size, (const uint8_t *)&key, 6);
+    sld->ScriptCall.Method = SLD_METHOD_STORE;
+    status = SldRunScript(data, size);
+
+    pal_close_asset(script);
+    return status;
 }
 
-int
-SldFindBestBitmap(char *                  pattern,
-                  unsigned                length,
-                  ZIP_CDIR_END_HEADER *   zip,
-                  ZIP_LOCAL_FILE_HEADER **lfh)
+hasset
+SldFindBestBitmap(char *pattern)
 {
     const char *hex = "0123456789ABCDEF";
-    char *      placeholder = strstr(pattern, "<>");
+    char       *placeholder = strstr(pattern, "<>");
     if (NULL == placeholder)
     {
-        return KerSearchArchive(zip, pattern, length, lfh);
+        return pal_open_asset(pattern, O_RDONLY);
     }
 
     int par = (int)VidGetPixelAspectRatio();
@@ -338,9 +325,10 @@ SldFindBestBitmap(char *                  pattern,
         {
             placeholder[0] = hex[(par + offset) / 16];
             placeholder[1] = hex[(par + offset) % 16];
-            if (0 == KerSearchArchive(zip, pattern, length, lfh))
+            hasset asset = pal_open_asset(pattern, O_RDONLY);
+            if (NULL != asset)
             {
-                return 0;
+                return asset;
             }
         }
 
@@ -351,7 +339,7 @@ SldFindBestBitmap(char *                  pattern,
         offset = -offset;
     }
 
-    ERR(KER_NOT_FOUND);
+    return NULL;
 }
 
 bool
