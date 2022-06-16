@@ -1,22 +1,34 @@
 #include <conio.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include <api/dos.h>
 #include <dev/pic.h>
 #include <dev/pit.h>
+#include <fmt/zip.h>
 #include <ker.h>
 #include <pal.h>
+
+typedef struct
+{
+    ZIP_LOCAL_FILE_HEADER *zip_header;
+} _asset;
 
 #define SPKR_ENABLE         3
 #define PIT_INPUT_FREQ      11931816667ULL
 #define PIT_FREQ_DIVISOR    2048ULL
 #define DELAY_MS_MULTIPLIER 100ULL
 
+#define MAX_OPEN_ASSETS 8
+
 extern char __edata[], __sbss[], __ebss[];
 
 static volatile uint32_t _counter;
 static ISR               _bios_isr;
+
+static ZIP_CDIR_END_HEADER *_cdir;
+static _asset               _assets[MAX_OPEN_ASSETS];
 
 #ifdef STACK_PROFILING
 static uint64_t      *_stack_start;
@@ -69,7 +81,7 @@ pal_initialize(ZIP_CDIR_END_HEADER **zip)
 #endif // STACK_PROFILING
 
     int status;
-    if (0 > (status = KerLocateArchive(__edata, __sbss, zip)))
+    if (0 > (status = KerLocateArchive(__edata, __sbss, &_cdir)))
     {
         KerTerminate(-status);
     }
@@ -81,6 +93,9 @@ pal_initialize(ZIP_CDIR_END_HEADER **zip)
 
     _counter = 0;
     _pit_init_channel(0, PIT_MODE_RATE_GEN, PIT_FREQ_DIVISOR);
+
+    memset(_assets, 0, sizeof(_assets));
+    *zip = _cdir;
 }
 
 void
@@ -131,4 +146,104 @@ pal_beep(uint16_t divisor)
 {
     _pit_init_channel(2, PIT_MODE_SQUARE_WAVE_GEN, divisor);
     _outp(0x61, _inp(0x61) | SPKR_ENABLE);
+}
+
+hasset
+pal_open_asset(const char *name)
+{
+    int slot;
+    while (NULL != _assets[slot].zip_header)
+    {
+        slot++;
+
+        if (MAX_OPEN_ASSETS == slot)
+        {
+            errno = ENOMEM;
+            return NULL;
+        }
+    }
+
+    switch (
+        KerSearchArchive(_cdir, name, strlen(name), &_assets[slot].zip_header))
+    {
+    case 0:
+        return (hasset)(_assets + slot);
+
+    case -ERR_KER_NOT_FOUND:
+        errno = ENOENT;
+        return NULL;
+
+    case -ERR_KER_ARCHIVE_TOO_LARGE:
+        errno = EFBIG;
+        return NULL;
+
+    case -ERR_KER_ARCHIVE_INVALID:
+        errno = EFTYPE;
+        return NULL;
+
+    default:
+        errno = EINVAL;
+        return NULL;
+    }
+}
+
+bool
+pal_close_asset(hasset asset)
+{
+    _asset *ptr = (_asset *)asset;
+    if (NULL == ptr->zip_header)
+    {
+        errno = EBADF;
+        return false;
+    }
+
+    ptr->zip_header = NULL;
+    return true;
+}
+
+char *
+pal_get_asset_data(hasset asset)
+{
+    _asset *ptr = (_asset *)asset;
+    if (NULL == ptr->zip_header)
+    {
+        errno = EBADF;
+        return NULL;
+    }
+
+    void *data = NULL;
+    switch (KerGetArchiveData(ptr->zip_header, &data))
+    {
+    case 0:
+        return (char *)data;
+
+    case -ERR_KER_INTEGRITY:
+        errno = EIO;
+        return NULL;
+
+    case -ERR_KER_UNSUPPORTED:
+        errno = ENOSYS;
+        return NULL;
+
+    case -ERR_KER_ARCHIVE_INVALID:
+        errno = EFTYPE;
+        return NULL;
+
+    default:
+        errno = EINVAL;
+        return NULL;
+    }
+}
+
+int
+pal_get_asset_size(hasset asset)
+{
+    _asset *ptr = (_asset *)asset;
+    if (NULL == ptr->zip_header)
+    {
+        errno = EBADF;
+        return -1;
+    }
+
+    return ptr->zip_header->CompressedSize;
 }
