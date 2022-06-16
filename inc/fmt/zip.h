@@ -1,6 +1,7 @@
 #ifndef _FMT_ZIP_H_
 #define _FMT_ZIP_H_
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #define ZIP_PK_SIGN         0x4B50
@@ -147,5 +148,27 @@ typedef struct
     uint32_t NameCrc32;
     char     UnicodeName[];
 } ZIP_EXTRA_INFOZIP_UNICODE_PATH_FIELD;
+
+// Locate ZIP local file header structure
+// Returns NULL on error
+extern ZIP_LOCAL_FILE_HEADER *
+zip_search(ZIP_CDIR_END_HEADER *cdir, const char *name, uint16_t length);
+
+// Locate ZIP file data
+// Returns NULL on error
+extern char *
+zip_get_data(ZIP_LOCAL_FILE_HEADER *lfh, bool ignore_crc);
+
+// Calculate ZIP-compatible CRC-32 checksum of a buffer
+// Returns checksum value
+extern uint32_t
+zip_calculate_crc(uint8_t *buffer, int length);
+
+// Calculate ZIP-compatible CRC-32 checksum of a data stream
+// Returns checksum value
+extern uint32_t
+zip_calculate_crc_indirect(uint8_t (*stream)(void *, int),
+                           void *context,
+                           int   length);
 
 #endif // _FMT_ZIP_H_
