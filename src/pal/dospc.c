@@ -37,6 +37,25 @@ static uint64_t      *_stack_end = (uint64_t *)0xFFE8;
 static const uint64_t STACK_FILL_PATTERN = 0x0123456789ABCDEFULL;
 #endif // STACK_PROFILING
 
+static ZIP_CDIR_END_HEADER *
+_locate_cdir(void *from, void *to)
+{
+    const void *ptr = to - sizeof(ZIP_CDIR_END_HEADER);
+    while (ptr >= from)
+    {
+        ZIP_CDIR_END_HEADER *cdir = (ZIP_CDIR_END_HEADER *)ptr;
+        if ((ZIP_PK_SIGN == cdir->PkSignature) &&
+            (ZIP_CDIR_END_SIGN == cdir->HeaderSignature))
+        {
+            return cdir;
+        }
+
+        ptr--;
+    }
+
+    return NULL;
+}
+
 static void
 _pit_init_channel(unsigned channel, unsigned mode, unsigned divisor)
 {
@@ -81,10 +100,9 @@ pal_initialize(void)
         *ptr = STACK_FILL_PATTERN;
 #endif // STACK_PROFILING
 
-    int status;
-    if (0 > (status = KerLocateArchive(__edata, __sbss, &_cdir)))
+    if (NULL == (_cdir = _locate_cdir(__edata, __sbss)))
     {
-        KerTerminate(-status);
+        KerTerminate(ERR_KER_ARCHIVE_NOT_FOUND);
     }
 
     _disable();

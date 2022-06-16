@@ -56,11 +56,6 @@ KerConvertFromUtf8(const char *src, char *dst, char (*encoder)(uint16_t));
 extern int
 KerCompareUtf8IgnoreCase(const char *str1, const char *str2, unsigned length);
 
-// Locate ZIP central directory end structure
-// Returns 0 when found, negative on error
-extern int
-KerLocateArchive(void *from, void *to, ZIP_CDIR_END_HEADER **cdir);
-
 // Locate ZIP local file header structure
 // Returns 0 when found, negative on error
 extern int
