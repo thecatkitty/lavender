@@ -1,4 +1,5 @@
 #include <crg.h>
+#include <fmt/zip.h>
 #include <ker.h>
 
 typedef struct
@@ -23,7 +24,7 @@ CrgIsXorKeyValid(const void *   data,
     stream.Key = key;
     stream.KeyLength = keyLength;
 
-    return crc == KerCalculateZipCrcIndirect(XorGetByte, &stream, dataLength);
+    return crc == zip_calculate_crc_indirect(XorGetByte, &stream, dataLength);
 }
 
 void

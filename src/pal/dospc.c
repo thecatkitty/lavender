@@ -181,29 +181,14 @@ pal_open_asset(const char *name, int flags)
         }
     }
 
-    switch (
-        KerSearchArchive(_cdir, name, strlen(name), &_assets[slot].zip_header))
+    if (NULL ==
+        (_assets[slot].zip_header = zip_search(_cdir, name, strlen(name))))
     {
-    case 0:
-        _assets[slot].flags = flags;
-        return (hasset)(_assets + slot);
-
-    case -ERR_KER_NOT_FOUND:
-        errno = ENOENT;
-        return NULL;
-
-    case -ERR_KER_ARCHIVE_TOO_LARGE:
-        errno = EFBIG;
-        return NULL;
-
-    case -ERR_KER_ARCHIVE_INVALID:
-        errno = EFTYPE;
-        return NULL;
-
-    default:
-        errno = EINVAL;
         return NULL;
     }
+
+    _assets[slot].flags = flags;
+    return (hasset)(_assets + slot);
 }
 
 bool
@@ -230,33 +215,7 @@ pal_get_asset_data(hasset asset)
         return NULL;
     }
 
-    void *data = NULL;
-    switch (KerGetArchiveData(ptr->zip_header, &data))
-    {
-    case 0:
-        return (char *)data;
-
-    case -ERR_KER_INTEGRITY:
-        if (O_RDWR == (ptr->flags & O_ACCMODE))
-        {
-            return (char *)data;
-        }
-
-        errno = EIO;
-        return NULL;
-
-    case -ERR_KER_UNSUPPORTED:
-        errno = ENOSYS;
-        return NULL;
-
-    case -ERR_KER_ARCHIVE_INVALID:
-        errno = EFTYPE;
-        return NULL;
-
-    default:
-        errno = EINVAL;
-        return NULL;
-    }
+    return zip_get_data(ptr->zip_header, O_RDWR == (ptr->flags & O_ACCMODE));
 }
 
 int
