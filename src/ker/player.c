@@ -1,10 +1,3 @@
-#include <conio.h>
-#include <dos.h>
-#include <stdint.h>
-
-#include <api/dos.h>
-#include <dev/pic.h>
-#include <dev/pit.h>
 #include <fmt/spk.h>
 #include <ker.h>
 #include <pal.h>
@@ -21,24 +14,29 @@ PlayerIsr(void);
 void
 KerStartPlayer(void *music, uint16_t length)
 {
+#ifdef TODO__PLAYER
     _disable();
     s_Sequence = (SPK_NOTE3 *)((uint8_t *)music + sizeof(SPK_HEADER));
     s_PlayerTicks = 0;
     _enable();
+#endif
 }
 
 void
 PlayerStop(void)
 {
+#ifdef TODO__PLAYER
     _disable();
     s_Sequence = (SPK_NOTE3 *)0;
     nosound();
     _enable();
+#endif
 }
 
 void
 PlayerIsr()
 {
+#ifdef TODO__PLAYER
     if (!s_Sequence)
         return;
 
@@ -65,4 +63,5 @@ PlayerIsr()
     }
 
     s_Sequence++;
+#endif
 }
