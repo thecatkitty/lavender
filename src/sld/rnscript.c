@@ -1,7 +1,7 @@
 #include <sld.h>
 
 int
-SldRunScript(void *script, int size, ZIP_CDIR_END_HEADER *zip)
+SldRunScript(void *script, int size)
 {
     const char *line = (const char *)script;
     int         length;
@@ -14,7 +14,7 @@ SldRunScript(void *script, int size, ZIP_CDIR_END_HEADER *zip)
         }
 
         int status;
-        if (0 > (status = SldExecuteEntry(&entry, zip)))
+        if (0 > (status = SldExecuteEntry(&entry)))
         {
             return status;
         }

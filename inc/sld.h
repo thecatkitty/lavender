@@ -77,7 +77,7 @@ typedef struct
 // Execute a script
 // Returns negative on error
 extern int
-SldRunScript(void *script, int size, ZIP_CDIR_END_HEADER *zip);
+SldRunScript(void *script, int size);
 
 // Load the next line from the script
 // Returns total line length in bytes, negative on error
@@ -87,7 +87,7 @@ SldLoadEntry(const char *line, SLD_ENTRY *out);
 // Execute a line loaded from the script
 // Returns negative on error
 extern int
-SldExecuteEntry(SLD_ENTRY *sld, ZIP_CDIR_END_HEADER *zip);
+SldExecuteEntry(SLD_ENTRY *sld);
 
 // Find the first line after the given label
 // Returns negative on error
