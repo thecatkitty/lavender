@@ -1,6 +1,8 @@
 #ifndef _PAL_H_
 #define _PAL_H_
 
+#include <fcntl.h>
+
 #include <base.h>
 #include <ker.h>
 
@@ -21,7 +23,7 @@ extern void
 pal_beep(uint16_t divisor);
 
 extern hasset
-pal_open_asset(const char *name);
+pal_open_asset(const char *name, int flags);
 
 extern bool
 pal_close_asset(hasset asset);
