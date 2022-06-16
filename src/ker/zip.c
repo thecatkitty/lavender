@@ -9,26 +9,6 @@ MatchFileName(const char *          name,
               ZIP_CDIR_FILE_HEADER *cdirFile);
 
 int
-KerLocateArchive(void *from, void *to, ZIP_CDIR_END_HEADER **cdir)
-{
-    const void *ptr = to - sizeof(ZIP_CDIR_END_HEADER);
-    while (ptr >= from)
-    {
-        ZIP_CDIR_END_HEADER *pCdir = (ZIP_CDIR_END_HEADER *)ptr;
-        if ((ZIP_PK_SIGN == pCdir->PkSignature) &&
-            (ZIP_CDIR_END_SIGN == pCdir->HeaderSignature))
-        {
-            *cdir = pCdir;
-            return 0;
-        }
-
-        ptr--;
-    }
-
-    ERR(KER_ARCHIVE_NOT_FOUND);
-}
-
-int
 KerSearchArchive(ZIP_CDIR_END_HEADER *   cdir,
                  const char *            name,
                  uint16_t                nameLength,
