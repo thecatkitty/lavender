@@ -91,6 +91,7 @@ KerGetArchiveData(ZIP_LOCAL_FILE_HEADER *lfh, void **data)
     uint8_t *buffer = (uint8_t *)(lfh + 1) + lfh->NameLength + lfh->ExtraLength;
     if (KerCalculateZipCrc(buffer, lfh->UncompressedSize) != lfh->Crc32)
     {
+        *data = buffer;
         ERR(KER_INTEGRITY);
     }
 
