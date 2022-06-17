@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include <api/dos.h>
+#include <cvt.h>
 #include <ker.h>
 #include <sld.h>
 #include <vid.h>
@@ -181,7 +182,7 @@ int
 SldLoadContent(const char *str, SLD_ENTRY *out)
 {
     const char *cur = str;
-    char *      content = out->Content;
+    char       *content = out->Content;
     int         length = 0;
 
     while (isspace(*cur))
@@ -208,10 +209,10 @@ int
 SldConvertText(const char *str, SLD_ENTRY *inOut)
 {
     inOut->Length =
-        KerConvertFromUtf8(inOut->Content, inOut->Content, VidConvertToLocal);
+        cvt_utf8_encode(inOut->Content, inOut->Content, VidConvertToLocal);
     if (0 > inOut->Length)
     {
-        return inOut->Length;
+        ERR(KER_INVALID_SEQUENCE);
     }
 
     return 0;

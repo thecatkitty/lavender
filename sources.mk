@@ -7,6 +7,9 @@ include $(SRC)/$(DIR)/module.mk
 DIR	    := fmt
 include $(SRC)/$(DIR)/module.mk
 
+DIR	    := cvt
+include $(SRC)/$(DIR)/module.mk
+
 DIR	    := crg
 include $(SRC)/$(DIR)/module.mk
 
