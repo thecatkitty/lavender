@@ -20,15 +20,6 @@ typedef struct
 extern bool
 KerIsDosBox(void);
 
-extern bool
-KerIsDosMajor(uint8_t major);
-
-extern bool
-KerIsWindowsNt(void);
-
-extern uint16_t
-KerGetWindowsNtVersion(void);
-
 extern int
 KerGetFloppyDriveCount(void);
 
