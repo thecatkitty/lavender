@@ -1,17 +1,18 @@
 #include <conio.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <libi86/string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <libi86/string.h>
 
 #include <api/bios.h>
 #include <api/dos.h>
 #include <dev/pic.h>
 #include <dev/pit.h>
 #include <fmt/exe.h>
+#include <fmt/fat.h>
 #include <fmt/zip.h>
 #include <ker.h>
 #include <pal.h>
@@ -394,6 +395,149 @@ pal_get_asset_size(hasset asset)
     }
 
     return ptr->zip_header->CompressedSize;
+}
+
+static void
+_copy_volume_label(char *dst, const char *src)
+{
+    memcpy(dst, src, 11);
+
+    char *last = dst + 11;
+    last[0] = ' ';
+    while (' ' == *last)
+        last--;
+    last[1] = 0;
+}
+
+typedef struct
+{
+    char     label[12];
+    uint32_t serial_number;
+} _volume_info;
+
+static bool
+_get_volume_info(uint8_t drive, _volume_info *out)
+{
+    union {
+        char                bytes[512];
+        BOOT_SECTOR         boot;
+        FAT_DIRECTORY_ENTRY root[512 / sizeof(FAT_DIRECTORY_ENTRY)];
+    } sector;
+
+    if (0 != DosReadDiskAbsolute(drive, 1, 0, sector.bytes))
+    {
+        return false;
+    }
+
+    if (0xAA55U != sector.boot.Magic)
+    {
+        return false;
+    }
+
+    int offset, size;
+    switch ((uint8_t)sector.boot.Jump[0])
+    {
+    case 0xEB: // JMP rel8
+        offset = *(int8_t *)(sector.boot.Jump + 1);
+        size = offset - (sizeof(sector.boot.OemString) + 1);
+        break;
+    case 0xE9: // JMP rel16
+        offset = *(int16_t *)(sector.boot.Jump + 1);
+        size = offset - sizeof(sector.boot.OemString);
+        break;
+    default:
+        return false;
+    }
+
+    switch (size)
+    {
+    case sizeof(BPB_DOS20):
+    case sizeof(BPB_DOS30):
+    case sizeof(BPB_DOS32):
+    case sizeof(BPB_DOS33):
+        out->serial_number = 0;
+        out->label[0] = 0;
+        break;
+    case sizeof(BPB_DOS34): {
+        BPB_DOS34 *bpb = (BPB_DOS34 *)sector.boot.Payload;
+        out->serial_number = bpb->SerialNumber;
+        out->label[0] = 0;
+        break;
+    }
+    case sizeof(BPB_DOS40): {
+        BPB_DOS40 *bpb = (BPB_DOS40 *)sector.boot.Payload;
+        out->serial_number = bpb->Bpb34.SerialNumber;
+        _copy_volume_label(out->label, bpb->Label);
+        break;
+    }
+    case sizeof(BPB_DOS71): {
+        BPB_DOS71 *bpb = (BPB_DOS71 *)sector.boot.Payload;
+        out->serial_number = bpb->SerialNumber;
+        out->label[0] = 0;
+        break;
+    }
+    case sizeof(BPB_DOS71_FULL): {
+        BPB_DOS71_FULL *bpb = (BPB_DOS71_FULL *)sector.boot.Payload;
+        out->serial_number = bpb->Bpb71.SerialNumber;
+        _copy_volume_label(out->label, bpb->Label);
+        break;
+    }
+    default:
+        return false;
+    }
+
+    BPB_DOS20 *bpb = (BPB_DOS20 *)sector.boot.Payload;
+    uint16_t   root_entries = bpb->RootEntries;
+    uint16_t   root_sectors = ((root_entries * sizeof(FAT_DIRECTORY_ENTRY)) +
+                             (bpb->BytesPerSector - 1)) /
+                            bpb->BytesPerSector;
+    uint16_t first_data_sector =
+        bpb->ReservedSectors + (bpb->Fats * bpb->SectorsPerFat) + root_sectors;
+    uint16_t first_root_sector = first_data_sector - root_sectors;
+
+    if (0 != DosReadDiskAbsolute(drive, 1, first_root_sector, sector.bytes))
+    {
+        return false;
+    }
+
+    for (int i = 0; i < (sizeof(sector) / sizeof(FAT_DIRECTORY_ENTRY)); i++)
+    {
+        if (FAT_ATTRIBUTE_VOLUME_ID != sector.root[i].Attributes)
+            continue;
+
+        _copy_volume_label(out->label, sector.root[i].FileName);
+        return true;
+    }
+
+    return false;
+}
+
+uint32_t
+pal_get_medium_id(const char *tag)
+{
+    BIOS_EQUIPMENT equipment;
+    *(short *)&equipment = BiosGetEquipmentList();
+
+    int drives = equipment.FloppyDisk ? (equipment.FloppyDrives + 1) : 0;
+    if (2 < drives)
+    {
+        drives = 2;
+    }
+
+    _volume_info volume;
+
+    uint8_t drive;
+    for (drive = 0; drive < drives; drive++)
+    {
+        if (!_get_volume_info(drive, &volume))
+            continue;
+
+        if (0 == strcmp(volume.label, tag))
+            return volume.serial_number;
+    }
+
+    errno = ENOENT;
+    return 0;
 }
 
 const char *

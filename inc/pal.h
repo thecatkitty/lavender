@@ -37,4 +37,7 @@ pal_get_asset_size(hasset asset);
 extern const char *
 pal_get_version_string(void);
 
+extern uint32_t
+pal_get_medium_id(const char *tag);
+
 #endif // _PAL_H_

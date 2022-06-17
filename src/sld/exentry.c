@@ -245,22 +245,8 @@ SldExecuteScriptCall(SLD_ENTRY *sld)
         break;
     }
     case SLD_PARAMETER_XOR48_DISKID: {
-        KER_VOLUME_INFO volume = {{0}, 0};
-        int             maxDrives = KerGetFloppyDriveCount();
-        if (2 < maxDrives)
-            maxDrives = 2;
-
-        uint8_t drive;
-        for (drive = 0; drive < maxDrives; drive++)
-        {
-            if (0 > KerGetVolumeInfo(drive, &volume))
-                continue;
-
-            if (0 == strcmp(volume.Label, sld->ScriptCall.Data))
-                break;
-        }
-
-        if (maxDrives == drive)
+        uint32_t medium_id = pal_get_medium_id(sld->ScriptCall.Data);
+        if (0 == medium_id)
         {
             char sn[10];
             if (!SldPromptVolumeSerialNumber(sn))
@@ -271,10 +257,10 @@ SldExecuteScriptCall(SLD_ENTRY *sld)
 
             uint32_t highPart = strtoul(sn, NULL, 16);
             uint32_t lowPart = strtoul(sn + 5, NULL, 16);
-            volume.SerialNumber = (highPart << 16) | lowPart;
+            medium_id = (highPart << 16) | lowPart;
         }
 
-        context.LongPart = &volume.SerialNumber;
+        context.LongPart = &medium_id;
         if (!CrgPromptKey(key, 3, 10, SldIsXorKeyValid, &context))
         {
             invalid = true;
@@ -282,7 +268,7 @@ SldExecuteScriptCall(SLD_ENTRY *sld)
         }
 
         *(uint64_t *)&key =
-            CrgDecodeSplitKey(volume.SerialNumber, *(const uint32_t *)&key);
+            CrgDecodeSplitKey(medium_id, *(const uint32_t *)&key);
         context.LongPart = NULL;
         break;
     }
