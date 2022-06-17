@@ -9,21 +9,7 @@
 
 typedef void interrupt far (*ISR)(void);
 
-typedef struct
-{
-    char     Label[12];
-    uint32_t SerialNumber;
-} KER_VOLUME_INFO;
-
 #define EXIT_ERRNO 512
-
-extern int
-KerGetFloppyDriveCount(void);
-
-// Get volume identification information
-// Returns 0 on success, negative on error
-extern int
-KerGetVolumeInfo(uint8_t drive, KER_VOLUME_INFO *out);
 
 // Start playing music
 extern void
