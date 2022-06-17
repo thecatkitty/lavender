@@ -1,5 +1,6 @@
 #include <conio.h>
 #include <errno.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -25,6 +26,11 @@ typedef struct
 
 extern char __edata[], __sbss[], __ebss[];
 extern char _binary_obj_version_txt_start[];
+
+
+extern const char __serrf[];
+extern const char __serrm[];
+extern const char StrKerError[];
 
 static volatile uint32_t _counter;
 static ISR               _bios_isr;
@@ -90,6 +96,51 @@ _pit_isr(void)
     _enable();
 }
 
+// Find a message using its key byte
+//   WILL CRASH IF MESSAGE NOT FOUND!
+const char *
+_find_message(const char *messages, unsigned key)
+{
+    while (true)
+    {
+        if (key == *messages)
+        {
+            return messages + 1;
+        }
+
+        while ('$' != *messages)
+        {
+            messages++;
+        }
+
+        messages++;
+    }
+}
+
+static void
+_die_errno(void)
+{
+    DosPutS(StrKerError);
+        
+    char code[10];
+    itoa(errno, code, 10);
+    code[strlen(code)] = '$';
+    DosPutS(code);
+}
+
+static void
+_die_status(int error)
+{
+    unsigned facility = error >> 5;
+
+    DosPutS(StrKerError);
+    DosPutS(_find_message(__serrf, facility));
+    DosPutS(" - $");
+    DosPutS(_find_message(__serrm, error));
+
+    DosExit(error);
+}
+
 void
 pal_initialize(void)
 {
@@ -101,7 +152,7 @@ pal_initialize(void)
 
     if (NULL == (_cdir = _locate_cdir(__edata, __sbss)))
     {
-        KerTerminate(ERR_KER_ARCHIVE_NOT_FOUND);
+        _die_status(ERR_KER_ARCHIVE_NOT_FOUND);
     }
 
     _disable();
@@ -116,12 +167,22 @@ pal_initialize(void)
 }
 
 void
-pal_cleanup(void)
+pal_cleanup(int status)
 {
     _dos_setvect(INT_PIT, _bios_isr);
     _pit_init_channel(0, PIT_MODE_RATE_GEN, 0);
 
     nosound();
+
+    if (0 > status)
+    {
+        _die_status(status);
+    }
+
+    if (EXIT_ERRNO == status)
+    {
+        _die_errno();
+    }
 
 #ifdef STACK_PROFILING
     uint64_t *untouched;

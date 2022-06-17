@@ -17,9 +17,6 @@
         return -(ERR_##e);                                                     \
     }
 
-extern void
-KerTerminate(int error);
-
 #endif // __ASSEMBLER__
 
 #endif // _ERR_H_
