@@ -24,6 +24,7 @@ typedef struct
 #define MAX_OPEN_ASSETS 8
 
 extern char __edata[], __sbss[], __ebss[];
+extern char _binary_obj_version_txt_start[];
 
 static volatile uint32_t _counter;
 static ISR               _bios_isr;
@@ -229,4 +230,10 @@ pal_get_asset_size(hasset asset)
     }
 
     return ptr->zip_header->CompressedSize;
+}
+
+const char *
+pal_get_version_string(void)
+{
+    return _binary_obj_version_txt_start;
 }

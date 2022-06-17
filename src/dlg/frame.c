@@ -5,6 +5,7 @@
 #include <dlg.h>
 #include <gfx.h>
 #include <ker.h>
+#include <pal.h>
 #include <vid.h>
 
 GFX_DIMENSIONS screen = {640, 200};
@@ -20,13 +21,8 @@ DlgDrawBackground(void)
     GFX_DIMENSIONS hline = {screen.Width - 1, 1};
     VidDrawLine(&hline, 0, bar.Height, GFX_COLOR_BLACK);
 
-    const char *brand = (const char *)0x100;
-    while ('L' != *brand)
-    {
-        brand++;
-    }
-
-    for (int i = 0; 0x1A != brand[i]; i++)
+    const char *brand = pal_get_version_string();
+    for (int i = 0; brand[i]; i++)
     {
         BiosVideoSetCursorPosition(0, i + 1);
         BiosVideoWriteCharacter(0, brand[i], 0x80, 1);

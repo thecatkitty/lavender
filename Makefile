@@ -60,11 +60,11 @@ VERSION = $(GIT_TAG)-$(GIT_COMMITS)
 endif
 
 $(OBJ)/version.o: $(OBJ)/version.txt .FORCE
-	$(OBJCOPY) -I binary -O elf32-i386 -B i386 --rename-section .data=.startupA.1 $< $@
+	$(OBJCOPY) -I binary -O elf32-i386 -B i386 --rename-section .data=.rodata $< $@
 
 $(OBJ)/version.txt: .FORCE
 	@mkdir -p $(OBJ)
-	/bin/echo -en "\rLavender $(VERSION)\x1A" >$@
+	/bin/echo -en "Lavender $(VERSION)\x00" >$@
 
  .FORCE:
 
