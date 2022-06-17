@@ -14,7 +14,7 @@ extern void
 pal_initialize(void);
 
 extern void
-pal_cleanup(void);
+pal_cleanup(int status);
 
 extern void
 pal_sleep(unsigned ms);
