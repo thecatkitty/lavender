@@ -26,9 +26,6 @@ KerIsDosMajor(uint8_t major);
 extern bool
 KerIsWindowsNt(void);
 
-extern far const char *
-KerGetEnvironmentVariable(const char *key);
-
 extern uint16_t
 KerGetWindowsNtVersion(void);
 
