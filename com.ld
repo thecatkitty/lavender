@@ -1,11 +1,12 @@
 /* Linker script for DOS executables with combined data and text segment,
-   without startup files, with default libraries, and without
+   with startup files, with default libraries, and without
    DPMI support.
 
    Generated from dos-mt.ld.in.  */
 
 OUTPUT_FORMAT(binary)
 ENTRY(_start)
+INPUT(-l:crtbegin.o -l:crtend.o -l:dos-t-c0.o)
 GROUP(-lc -lgcc -ldos-t -lm)
 
 MEMORY
@@ -20,13 +21,14 @@ SECTIONS
     /* Target text sections.  */
     .text : {
 		__stext = .;
-		*(SORT(.startupA.*))
 		*(.startupA)
+		*(.head) *(.head.*)
 		*(.startupB)
-		*(.msdos_init) *(.msdos_init.*)
 		*(.startupC)
-		*(.init)
+		*(.msdos_init) *(.msdos_init.*)
 		*(.startupD)
+		*(.init)
+		*(.startupE)
 		*(.exitA)
 		*(.fini)
 		*(.exitB)
@@ -52,6 +54,47 @@ SECTIONS
 
 		*(.msdos_init_rodata) *(.msdos_init_rodata.*)
 		*(.rodata) *(.rodata.*)
+		*(.autofloat_stdio.__ia16_have_printf_float.dprintf.v2)
+		*(.autofloat_stdio.__ia16_have_printf_float._dprintf_r.v2)
+		*(.autofloat_stdio.__ia16_have_printf_float.vdprintf.v2)
+		*(.autofloat_stdio.__ia16_have_printf_float._vdprintf_r.v2)
+		*(.autofloat_stdio.__ia16_have_printf_float.sprintf.v2)
+		*(.autofloat_stdio.__ia16_have_printf_float._sprintf_r.v2)
+		*(.autofloat_stdio.__ia16_have_printf_float.fprintf.v2)
+		*(.autofloat_stdio.__ia16_have_printf_float._fprintf_r.v2)
+		*(.autofloat_stdio.__ia16_have_printf_float.printf.v2)
+		*(.autofloat_stdio.__ia16_have_printf_float._printf_r.v2)
+		*(.autofloat_stdio.__ia16_have_printf_float.snprintf.v2)
+		*(.autofloat_stdio.__ia16_have_printf_float._snprintf_r.v2)
+		*(.autofloat_stdio.__ia16_have_printf_float.asprintf.v2)
+		*(.autofloat_stdio.__ia16_have_printf_float._asprintf_r.v2)
+		*(.autofloat_stdio.__ia16_have_printf_float.asnprintf.v2)
+		*(.autofloat_stdio.__ia16_have_printf_float._asnprintf_r.v2)
+		*(.autofloat_stdio.__ia16_have_printf_float.vprintf.v2)
+		*(.autofloat_stdio.__ia16_have_printf_float._vprintf_r.v2)
+		*(.autofloat_stdio.__ia16_have_printf_float.vfprintf.v2)
+		*(.autofloat_stdio.__ia16_have_printf_float._vfprintf_r.v2)
+		*(.autofloat_stdio.__ia16_have_printf_float.vsprintf.v2)
+		*(.autofloat_stdio.__ia16_have_printf_float._vsprintf_r.v2)
+		*(.autofloat_stdio.__ia16_have_printf_float.vsnprintf.v2)
+		*(.autofloat_stdio.__ia16_have_printf_float._vsnprintf_r.v2)
+		*(.autofloat_stdio.__ia16_have_printf_float.vasprintf.v2)
+		*(.autofloat_stdio.__ia16_have_printf_float._vasprintf_r.v2)
+		*(.autofloat_stdio.__ia16_have_printf_float.vasnprintf.v2)
+		*(.autofloat_stdio.__ia16_have_printf_float._vasnprintf_r.v2)
+		*(.autofloat_stdio.__ia16_have_scanf_float.sscanf.v2)
+		*(.autofloat_stdio.__ia16_have_scanf_float._sscanf_r.v2)
+		*(.autofloat_stdio.__ia16_have_scanf_float.fscanf.v2)
+		*(.autofloat_stdio.__ia16_have_scanf_float._fscanf_r.v2)
+		*(.autofloat_stdio.__ia16_have_scanf_float.scanf.v2)
+		*(.autofloat_stdio.__ia16_have_scanf_float._scanf_r.v2)
+		*(.autofloat_stdio.__ia16_have_scanf_float.vscanf.v2)
+		*(.autofloat_stdio.__ia16_have_scanf_float._vscanf_r.v2)
+		*(.autofloat_stdio.__ia16_have_scanf_float.vfscanf.v2)
+		*(.autofloat_stdio.__ia16_have_scanf_float._vfscanf_r.v2)
+		*(.autofloat_stdio.__ia16_have_scanf_float.vsscanf.v2)
+		*(.autofloat_stdio.__ia16_have_scanf_float._vsscanf_r.v2)
+		. = .;
 		*(.data) *(.data.*)
 		*(.gcc_except_table)
 

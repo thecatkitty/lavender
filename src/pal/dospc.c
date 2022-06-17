@@ -93,8 +93,6 @@ _pit_isr(void)
 void
 pal_initialize(void)
 {
-    memset(__sbss, 0, __ebss - __sbss);
-
 #ifdef STACK_PROFILING
     _stack_start = (uint64_t *)((unsigned)__ebss / 8 * 8) + 1;
     for (uint64_t *ptr = _stack_start; ptr < _stack_end; ptr++)
