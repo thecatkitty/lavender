@@ -1,8 +1,89 @@
+#include <errno.h>
 #include <stdint.h>
 
-#include <ker.h>
+#include <cvt.h>
 
-static const uint16_t FOLDING_SINGLE[] = {
+uint16_t
+cvt_utf8_get_codepoint(const char *sequence, int *length)
+{
+    unsigned leadBits = *sequence & 0b11000000;
+
+    if (0b10000000 == leadBits)
+    {
+        errno = EILSEQ;
+        *length = 0;
+        return 0;
+    }
+
+    if (0b11000000 != leadBits)
+    {
+        *length = 1;
+        return *sequence;
+    }
+
+    // At first, assume two-byte sequence
+    int      continuation = 1;
+    uint16_t cp = *sequence & 0b00011111;
+
+    if (0 != (*sequence & 0b00100000))
+    {
+        // Then assume three-byte sequence
+        continuation++;
+        cp &= 0b00001111;
+
+        if (0 != (*sequence & 0b00010000))
+        {
+            // Then assume four-byte sequence
+            continuation++;
+            cp &= 0b00000111;
+
+            if (0 != (*sequence & 0b00001000))
+            {
+                errno = EILSEQ;
+                *length = 0;
+                return 0;
+            }
+        }
+    }
+
+    for (int i = 1; i <= continuation; i++)
+    {
+        if (0b10000000 != (sequence[i] & 0b11000000))
+        {
+            errno = EILSEQ;
+            *length = 0;
+            return 0;
+        }
+
+        cp = (cp << 6) | (sequence[i] & 0b00111111);
+    }
+
+    *length = continuation + 1;
+    return cp;
+}
+
+int
+cvt_utf8_encode(const char *src, char *dst, char (*encoder)(uint16_t))
+{
+    int i;
+    for (i = 0; *src; i++)
+    {
+        int      length;
+        uint16_t code = cvt_utf8_get_codepoint(src, &length);
+        if (0 == length)
+        {
+            return -1;
+        }
+
+        dst[i] = encoder(code);
+        src += length;
+    }
+
+    dst[i] = 0;
+    return i;
+}
+
+static const uint16_t _FOLDING_SINGLE[] = {
     0x00B5, 0x03BC, // MICRO SIGN
     0x0178, 0x00FF, // LATIN CAPITAL LETTER Y WITH DIAERESIS
     0x0179, 0x017A, // LATIN CAPITAL LETTER Z WITH ACUTE
@@ -66,184 +147,72 @@ static const uint16_t FOLDING_SINGLE[] = {
     0x0245, 0x028C, // LATIN CAPITAL LETTER TURNED V
     0xFFFF};
 
-static const uint16_t FOLDING_DOUBLE[] = {
+static const uint16_t _FOLDING_DOUBLE[] = {
     0x00DF, 0x0073, 0x0073, // LATIN SMALL LETTER SHARP S
     0x0130, 0x0069, 0x0307, // LATIN CAPITAL LETTER I WITH DOT ABOVE
     0x0149, 0x02BC, 0x006E, // LATIN SMALL LETTER N PRECEDED BY APOSTROPHE
     0x01F0, 0x006A, 0x030C, // LATIN SMALL LETTER J WITH CARON
     0xFFFF};
 
-static int
-FoldCase(uint16_t codePoint, uint16_t *buff);
-
-int
-KerGetCharacterFromUtf8(const char *sequence, uint16_t *codePoint)
-{
-    unsigned leadBits = *sequence & 0b11000000;
-
-    if (0b10000000 == leadBits)
-    {
-        ERR(KER_INVALID_SEQUENCE);
-    }
-
-    if (0b11000000 != leadBits)
-    {
-        *codePoint = *sequence;
-        return (0 == *codePoint) ? 0 : 1;
-    }
-
-    // At first, assume two-byte sequence
-    int continuationBytes = 1;
-    *codePoint = *sequence & 0b00011111;
-
-    if (0 != (*sequence & 0b00100000))
-    {
-        // Then assume three-byte sequence
-        continuationBytes++;
-        *codePoint &= 0b00001111;
-
-        if (0 != (*sequence & 0b00010000))
-        {
-            // Then assume four-byte sequence
-            continuationBytes++;
-            *codePoint &= 0b00000111;
-
-            if (0 != (*sequence & 0b00001000))
-            {
-                ERR(KER_INVALID_SEQUENCE);
-            }
-        }
-    }
-
-    for (int i = 1; i <= continuationBytes; i++)
-    {
-        if (0b10000000 != (sequence[i] & 0b11000000))
-        {
-            ERR(KER_INVALID_SEQUENCE);
-        }
-
-        *codePoint = (*codePoint << 6) | (sequence[i] & 0b00111111);
-    }
-
-    return continuationBytes + 1;
-}
-
-int
-KerConvertFromUtf8(const char *src, char *dst, char (*encoder)(uint16_t))
-{
-    int i;
-    for (i = 0; *src; i++)
-    {
-        uint16_t code;
-        int      length = KerGetCharacterFromUtf8(src, &code);
-        if (0 > length)
-        {
-            return length;
-        }
-
-        dst[i] = encoder(code);
-        src += length;
-    }
-
-    dst[i] = 0;
-    return i;
-}
-
-int
-KerCompareUtf8IgnoreCase(const char *str1, const char *str2, unsigned length)
-{
-    uint16_t code1, code2;
-    int      length1, length2;
-    uint16_t fold1[2], fold2[2];
-
-    for (unsigned i = 0; i < length; i++)
-    {
-        if (0 > (length1 = KerGetCharacterFromUtf8(str1, &code1)))
-        {
-            return length1;
-        }
-
-        if (0 > (length2 = KerGetCharacterFromUtf8(str2, &code2)))
-        {
-            return length2;
-        }
-
-        if (FoldCase(code1, fold1) != FoldCase(code2, fold2))
-        {
-            return 1;
-        }
-
-        if ((fold1[0] != fold2[0]) || (fold1[1] != fold2[1]))
-        {
-            return 1;
-        }
-
-        str1 += length1;
-        str2 += length2;
-    }
-
-    return 0;
-}
-
 // Get case folding for Unicode code point
 // Returns length of folding in Unicode code points
-int
-FoldCase(uint16_t codePoint, uint16_t *buff)
+static int
+_fold_case(uint16_t cp, uint16_t *buff)
 {
-    buff[0] = codePoint;
+    buff[0] = cp;
     buff[1] = 0;
 
     // NULL CHARACTER -- AT SIGN
-    if ((codePoint < 0x0041)
+    if ((cp < 0x0041)
         // LEFT SQUARE BRACKET -- INVERTED QUESTION MARK
-        || ((codePoint >= 0x005B) && (codePoint <= 0x00BF)))
+        || ((cp >= 0x005B) && (cp <= 0x00BF)))
     {
         return 1;
     }
 
     // LATIN CAPITAL LETTER A -- LATIN CAPITAL LETTER Z
-    if (((codePoint >= 0x0041) && (codePoint <= 0x005A)) ||
-        ((codePoint >= 0x00C0) && (codePoint <= 0x00DE)))
+    if (((cp >= 0x0041) && (cp <= 0x005A)) ||
+        ((cp >= 0x00C0) && (cp <= 0x00DE)))
     {
         buff[0] += 32;
         return 1;
     }
 
     // LATIN CAPITAL LETTER A WITH MACRON -- LATIN SMALL LETTER I WITH OGONEK
-    if (((codePoint >= 0x0100) && (codePoint <= 0x012F))
+    if (((cp >= 0x0100) && (cp <= 0x012F))
         // LATIN CAPITAL LIGATURE IJ -- LATIN SMALL LETTER K WITH CEDILLA
-        || ((codePoint >= 0x0132) && (codePoint <= 0x0137))
+        || ((cp >= 0x0132) && (cp <= 0x0137))
         // LATIN CAPITAL LETTER ENG -- LATIN SMALL LETTER Y WITH CIRCUMFLEX
-        || ((codePoint >= 0x014A) && (codePoint <= 0x0177))
+        || ((cp >= 0x014A) && (cp <= 0x0177))
         // LATIN CAPITAL LETTER A WITH DIAERESIS AND MACRON -- LATIN SMALL
         // LETTER EZH WITH CARON
-        || ((codePoint >= 0x01DE) && (codePoint <= 0x01EF))
+        || ((cp >= 0x01DE) && (cp <= 0x01EF))
         // LATIN CAPITAL LETTER N WITH GRAVE -- LATIN SMALL LETTER H WITH CARON
-        || ((codePoint >= 0x01F8) && (codePoint <= 0x021F))
+        || ((cp >= 0x01F8) && (cp <= 0x021F))
         // LATIN CAPITAL LETTER OU -- LATIN SMALL LETTER Y WITH MACRON
-        || ((codePoint >= 0x0222) && (codePoint <= 0x0233))
+        || ((cp >= 0x0222) && (cp <= 0x0233))
         // LATIN CAPITAL LETTER E WITH STROKE -- LATIN SMALL LETTER Y WITH
         // STROKE
-        || ((codePoint >= 0x0246) && (codePoint <= 0x024F)))
+        || ((cp >= 0x0246) && (cp <= 0x024F)))
     {
         buff[0] |= 1;
         return 1;
     }
 
     // LATIN CAPITAL LETTER L WITH ACUTE -- LATIN SMALL LETTER N WITH CARON
-    if (((codePoint >= 0x0139) && (codePoint <= 0x0148))
+    if (((cp >= 0x0139) && (cp <= 0x0148))
         // LATIN CAPITAL LETTER A WITH CARON -- LATIN SMALL LETTER U WITH
         // DIAERESIS AND GRAVE
-        || ((codePoint >= 0x01CD) && (codePoint <= 0x01DC)))
+        || ((cp >= 0x01CD) && (cp <= 0x01DC)))
     {
         buff[0] += buff[0] % 2;
         return 1;
     }
 
-    const uint16_t *mapping = FOLDING_SINGLE;
+    const uint16_t *mapping = _FOLDING_SINGLE;
     while (mapping[0] != 0xFFFF)
     {
-        if (codePoint == mapping[0])
+        if (cp == mapping[0])
         {
             buff[0] = mapping[1];
             return 1;
@@ -252,10 +221,10 @@ FoldCase(uint16_t codePoint, uint16_t *buff)
         mapping += 2;
     }
 
-    mapping = FOLDING_DOUBLE;
+    mapping = _FOLDING_DOUBLE;
     while (mapping[0] != 0xFFFF)
     {
-        if (codePoint == mapping[0])
+        if (cp == mapping[0])
         {
             buff[0] = mapping[1];
             buff[1] = mapping[2];
@@ -266,4 +235,39 @@ FoldCase(uint16_t codePoint, uint16_t *buff)
     }
 
     return 1;
+}
+
+int
+cvt_utf8_strncasecmp(const char *str1, const char *str2, unsigned length)
+{
+    errno = 0;
+
+    uint16_t code1, code2;
+    int      length1, length2;
+    uint16_t fold1[2], fold2[2];
+
+    for (unsigned i = 0; i < length; i++)
+    {
+        code1 = cvt_utf8_get_codepoint(str1, &length1);
+        code2 = cvt_utf8_get_codepoint(str2, &length2);
+
+        _fold_case(code1, fold1);
+        _fold_case(code2, fold2);
+
+        int index = fold1[0] == fold2[0];
+        if (fold1[index] < fold2[index])
+        {
+            return -1;
+        }
+
+        if (fold1[index] > fold2[index])
+        {
+            return 1;
+        }
+
+        str1 += length1;
+        str2 += length2;
+    }
+
+    return 0;
 }

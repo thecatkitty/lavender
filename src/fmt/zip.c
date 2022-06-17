@@ -2,8 +2,8 @@
 #include <errno.h>
 #include <string.h>
 
+#include <cvt.h>
 #include <fmt/zip.h>
-#include <ker.h>
 
 static int
 _match_file_name(const char *name, uint16_t length, ZIP_CDIR_FILE_HEADER *cfh);
@@ -122,7 +122,7 @@ _match_file_name(const char *name, uint16_t length, ZIP_CDIR_FILE_HEADER *cfh)
 
     // Case-insensitive comparison
     if ((length == cfh->NameLength) &&
-        (0 == KerCompareUtf8IgnoreCase(name, cfh->Name, cfh->NameLength)))
+        (0 == cvt_utf8_strncasecmp(name, cfh->Name, cfh->NameLength)))
     {
         return 0;
     }
@@ -144,8 +144,8 @@ _match_file_name(const char *name, uint16_t length, ZIP_CDIR_FILE_HEADER *cfh)
             (ZIP_EXTRA_INFOZIP_UNICODE_PATH_FIELD *)hdr;
         uint16_t uni_name_length =
             uni_name->TotalSize - sizeof(ZIP_EXTRA_INFOZIP_UNICODE_PATH_FIELD);
-        if (0 == KerCompareUtf8IgnoreCase(name, uni_name->UnicodeName,
-                                          uni_name_length))
+        if (0 ==
+            cvt_utf8_strncasecmp(name, uni_name->UnicodeName, uni_name_length))
         {
             return 0;
         }

@@ -28,21 +28,6 @@ KerGetFloppyDriveCount(void);
 extern int
 KerGetVolumeInfo(uint8_t drive, KER_VOLUME_INFO *out);
 
-// Get code point from UTF-8 sequence
-// Returns the length of the sequence (0 when NUL), negative on error
-extern int
-KerGetCharacterFromUtf8(const char *sequence, uint16_t *codePoint);
-
-// Convert string from UTF-8 to another encoding
-// Returns the length of the converted string, negative on error
-extern int
-KerConvertFromUtf8(const char *src, char *dst, char (*encoder)(uint16_t));
-
-// Conduct a case-insensitive comparison of two UTF-8 strings
-// Returns 0 when equal, 1 when different, negative on error
-extern int
-KerCompareUtf8IgnoreCase(const char *str1, const char *str2, unsigned length);
-
 // Start playing music
 extern void
 KerStartPlayer(void *music, uint16_t length);
