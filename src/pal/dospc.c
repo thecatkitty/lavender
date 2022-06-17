@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <api/bios.h>
 #include <api/dos.h>
 #include <dev/pic.h>
 #include <dev/pit.h>
@@ -141,6 +142,23 @@ _die_status(int error)
     DosExit(error);
 }
 
+bool
+_is_compatible(void)
+{
+    if (KerIsDosMajor(1))
+    {
+        // We're using DOS 2.0+ API here, so that's unfortunate.
+        return false;
+    }
+
+    if (!KerIsWindowsNt())
+    {
+        return true;
+    }
+
+    return 0x0600 > KerGetWindowsNtVersion();
+}
+
 void
 pal_initialize(void)
 {
@@ -153,6 +171,26 @@ pal_initialize(void)
     if (NULL == (_cdir = _locate_cdir(__edata, __sbss)))
     {
         _die_status(ERR_KER_ARCHIVE_NOT_FOUND);
+    }
+
+    if (!_is_compatible())
+    {
+        hasset support = pal_open_asset("support.txt", O_RDONLY);
+        if (NULL == support)
+        {
+            DosPutS("Lavender cannot run in your environment.$");
+            DosExit(1);
+        }
+
+        char *data = pal_get_asset_data(support);
+        if (NULL == data)
+        {
+            DosExit(1);
+        }
+
+        DosPutS(data);
+        BiosKeyboardGetKeystroke();
+        DosExit(1);
     }
 
     _disable();
