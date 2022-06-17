@@ -9,10 +9,12 @@ static bool
 IsEnvironmentCompatible(void);
 
 int
-Main(void)
+main(int argc, char *argv[])
 {
     char *data;
     int   status;
+
+    pal_initialize();
 
     // Check compatibility and display a message on unsupported systems
     if (!IsEnvironmentCompatible())
@@ -39,14 +41,16 @@ Main(void)
     hasset slides = pal_open_asset("slides.txt", O_RDONLY);
     if (NULL == slides)
     {
-        return EXIT_ERRNO;
+        status = EXIT_ERRNO;
+        goto cleanup;
     }
 
     // Get script
     data = pal_get_asset_data(slides);
     if (NULL == data)
     {
-        return EXIT_ERRNO;
+        status = EXIT_ERRNO;
+        goto cleanup;
     }
 
     // Set video mode
@@ -59,6 +63,9 @@ Main(void)
     // Clean up
     VidUnloadFont();
     VidSetMode(oldMode);
+
+cleanup:
+    pal_cleanup(status);
     return status;
 }
 
