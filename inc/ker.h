@@ -17,9 +17,6 @@ typedef struct
 
 #define EXIT_ERRNO 512
 
-extern bool
-KerIsDosBox(void);
-
 extern int
 KerGetFloppyDriveCount(void);
 

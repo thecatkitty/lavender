@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <libi86/string.h>
 
 #include <api/bios.h>
 #include <api/dos.h>
@@ -14,6 +15,7 @@
 #include <fmt/zip.h>
 #include <ker.h>
 #include <pal.h>
+#include <pal/dospc.h>
 
 typedef struct
 {
@@ -217,7 +219,7 @@ _get_winnt_version(void)
            data.OptionalHeader.MinorImageVersion;
 }
 
-bool
+static bool
 _is_compatible(void)
 {
     // We're using DOS 2.0+ API here, and we can't run on Vista and above.
@@ -398,4 +400,10 @@ const char *
 pal_get_version_string(void)
 {
     return _binary_obj_version_txt_start;
+}
+
+bool
+dospc_is_dosbox(void)
+{
+    return 0 == _fmemcmp((const char far *)0xF000E061, "DOSBox", 6);
 }

@@ -4,6 +4,7 @@
 #include <api/dos.h>
 #include <dev/cga.h>
 #include <ker.h>
+#include <pal/dospc.h>
 #include <vid.h>
 
 #define VID_PAR(dx, dy, sx, sy)                                                \
@@ -236,7 +237,7 @@ VidLoadFont(void)
         MK_FP(CGA_BASIC_FONT_SEGMENT, CGA_BASIC_FONT_OFFSET);
     char *                    xfont = __VidExtendedFont;
     VID_CHARACTER_DESCRIPTOR *fdata = __VidFontData;
-    bool                      isDosBox = KerIsDosBox();
+    bool                      isDosBox = dospc_is_dosbox();
 
     if (isDosBox)
     {
