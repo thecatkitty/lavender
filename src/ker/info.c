@@ -1,4 +1,4 @@
-#include <libi86/string.h>
+#include <string.h>
 
 #include <api/bios.h>
 #include <api/dos.h>
@@ -7,12 +7,6 @@
 
 static void
 CopyVolumeLabel(char *dst, const char *src);
-
-bool
-KerIsDosBox(void)
-{
-    return 0 == _fmemcmp((const char far *)0xF000E061, "DOSBox", 6);
-}
 
 int
 KerGetFloppyDriveCount(void)
