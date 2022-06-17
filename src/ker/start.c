@@ -12,20 +12,8 @@ Main();
 
 extern const char StrKerError[];
 
-void
-_start(void) __attribute__((section(".startupA.0")));
-
-void
-KerEntry(void) __attribute__((section(".startupB")));
-
-void
-_start(void)
-{
-    asm("jmp KerEntry");
-}
-
-void
-KerEntry(void)
+int
+main(int argc, char *argv[])
 {
     pal_initialize();
 
@@ -48,5 +36,5 @@ KerEntry(void)
         DosPutS(code);
     }
 
-    DosExit(status);
+    return status;
 }
