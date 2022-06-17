@@ -15,13 +15,7 @@ CopyVolumeLabel(char *dst, const char *src);
 bool
 KerIsDosBox(void)
 {
-    const char far *str = (const char far *)0xF000E061;
-    for (const char *i = "DOSBox"; *i; i++, str++)
-    {
-        if (*i != *str)
-            return false;
-    }
-    return true;
+    return 0 == _fmemcmp((const char far *)0xF000E061, "DOSBox", 6);
 }
 
 bool
@@ -41,32 +35,31 @@ KerIsWindowsNt(void)
     }
 
     // Does it have %OS% environment variable?
-    far const char *os = KerGetEnvironmentVariable("OS");
-    if (0 == FP_SEG(os))
+    const char *os = getenv("OS");
+    if (NULL == os)
     {
         return false; // It's just a regular DOS 5.
     }
 
     // Does it claim to be Windows NT?
-    const char windowsNt[] = "Windows_NT";
-    return 0 == _fmemcmp(os, windowsNt, sizeof(windowsNt));
+    return 0 == strcmp(os, "Windows_NT");
 }
 
 uint16_t
 KerGetWindowsNtVersion(void)
 {
-    far const char *systemRoot = KerGetEnvironmentVariable("SYSTEMROOT");
-    if (NULL == systemRoot)
+    const char *sysroot = getenv("SYSTEMROOT");
+    if (NULL == sysroot)
     {
         return 0; // No system root
     }
 
-    char smssPath[261];
-    _fmemcpy(smssPath, systemRoot, _fstrlen(systemRoot) + 1);
-    strcat(smssPath, "\\system32\\smss.exe");
+    char smss[261];
+    strcpy(smss, sysroot);
+    strcat(smss, "\\system32\\smss.exe");
 
     int fd;
-    if (0 > (fd = open(smssPath, O_RDONLY)))
+    if (0 > (fd = open(smss, O_RDONLY)))
     {
         return 0; // No SMSS
     }
@@ -96,12 +89,6 @@ KerGetWindowsNtVersion(void)
 
     return (data.OptionalHeader.MajorImageVersion << 8) |
            data.OptionalHeader.MinorImageVersion;
-}
-
-far const char *
-KerGetEnvironmentVariable(const char *key)
-{
-    return getenv(key);
 }
 
 int
