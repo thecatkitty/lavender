@@ -53,7 +53,7 @@ static void
 FontExecuteGlyphTransformation(const char *gxf, char *glyph);
 
 static int
-VesaReadEdid(EDID *edid);
+VesaReadEdid(edid_block *edid);
 
 uint16_t
 VidSetMode(uint16_t mode)
@@ -72,13 +72,13 @@ VidGetPixelAspectRatio(void)
         VID_PAR(5, 4, VID_CGA_HIMONO_WIDTH, VID_CGA_HIMONO_HEIGHT),
         VID_PAR(16, 9, VID_CGA_HIMONO_WIDTH, VID_CGA_HIMONO_HEIGHT)};
 
-    EDID edid;
+    edid_block edid;
     if (0 > VesaReadEdid(&edid))
     {
         return ratios[EDID_TIMING_ASPECT_4_3];
     }
 
-    return ratios[edid.StandardTiming[0] >> EDID_TIMING_ASPECT];
+    return ratios[edid.standard_timing[0] >> EDID_TIMING_ASPECT];
 }
 
 int
@@ -397,7 +397,7 @@ FontExecuteGlyphTransformation(const char *gxf, char *glyph)
 }
 
 int
-VesaReadEdid(EDID *edid)
+VesaReadEdid(edid_block *edid)
 {
     short ax;
 
