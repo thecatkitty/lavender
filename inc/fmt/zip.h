@@ -82,82 +82,82 @@
 
 typedef struct
 {
-    uint16_t PkSignature;
-    uint16_t HeaderSignature;
-    uint16_t DiskNumber;
-    uint16_t CentralDirectoryDisk;
-    uint16_t DiskEntries;
-    uint16_t TotalEntries;
-    uint32_t CentralDirectorySize;
-    uint32_t CentralDirectoryOffset;
-    uint16_t CommentLength;
-    char     Comment[];
-} ZIP_CDIR_END_HEADER;
+    uint16_t pk_signature;
+    uint16_t header_signature;
+    uint16_t disk_number;
+    uint16_t cdir_disk;
+    uint16_t disk_entries;
+    uint16_t total_entries;
+    uint32_t cdir_size;
+    uint32_t cdir_offset;
+    uint16_t comment_length;
+    char     comment[];
+} zip_cdir_end_header;
 
 typedef struct
 {
-    uint16_t PkSignature;
-    uint16_t HeaderSignature;
-    uint16_t Version;
-    uint16_t VersionNeeded;
-    uint16_t Flags;
-    uint16_t Compression;
-    uint16_t ModificationTime;
-    uint16_t ModificationDate;
-    uint32_t Crc32;
-    uint32_t CompressedSize;
-    uint32_t UncompressedSize;
-    uint16_t NameLength;
-    uint16_t ExtraLength;
-    uint16_t CommentLength;
-    uint16_t StartDiskNumber;
-    uint16_t InternalAttributes;
-    uint32_t ExternalAttributes;
-    uint32_t LocalHeaderOffset;
-    char     Name[];
-} ZIP_CDIR_FILE_HEADER;
+    uint16_t pk_signature;
+    uint16_t header_signature;
+    uint16_t version;
+    uint16_t version_needed;
+    uint16_t flags;
+    uint16_t compression;
+    uint16_t modification_time;
+    uint16_t modification_date;
+    uint32_t crc32;
+    uint32_t compressed_size;
+    uint32_t uncompressed_size;
+    uint16_t name_length;
+    uint16_t extra_length;
+    uint16_t comment_length;
+    uint16_t start_disk_number;
+    uint16_t internal_attrs;
+    uint32_t external_attrs;
+    uint32_t lfh_offset;
+    char     name[];
+} zip_cdir_file_header;
 
 typedef struct
 {
-    uint16_t PkSignature;
-    uint16_t HeaderSignature;
-    uint16_t Version;
-    uint16_t Flags;
-    uint16_t Compression;
-    uint16_t ModificationTime;
-    uint16_t ModificationDate;
-    uint32_t Crc32;
-    uint32_t CompressedSize;
-    uint32_t UncompressedSize;
-    uint16_t NameLength;
-    uint16_t ExtraLength;
-    char     Name[];
-} ZIP_LOCAL_FILE_HEADER;
+    uint16_t pk_signature;
+    uint16_t header_signature;
+    uint16_t version;
+    uint16_t flags;
+    uint16_t compression;
+    uint16_t modification_time;
+    uint16_t modification_date;
+    uint32_t crc32;
+    uint32_t compressed_size;
+    uint32_t uncompressed_size;
+    uint16_t name_length;
+    uint16_t extra_length;
+    char     name[];
+} zip_local_file_header;
 
 typedef struct
 {
-    uint16_t Signature;
-    uint16_t TotalSize;
-} ZIP_EXTRA_FIELD_HEADER;
+    uint16_t signature;
+    uint16_t total_size;
+} zip_extra_fields_header;
 
 typedef struct
 {
-    uint16_t Signature;
-    uint16_t TotalSize;
-    uint16_t Version;
-    uint32_t NameCrc32;
-    char     UnicodeName[];
-} ZIP_EXTRA_INFOZIP_UNICODE_PATH_FIELD;
+    uint16_t signature;
+    uint16_t total_size;
+    uint16_t version;
+    uint32_t name_crc32;
+    char     unicode_name[];
+} zip_extra_unicode_path_field;
 
 // Locate ZIP local file header structure
 // Returns NULL on error
-extern ZIP_LOCAL_FILE_HEADER *
-zip_search(ZIP_CDIR_END_HEADER *cdir, const char *name, uint16_t length);
+extern zip_local_file_header *
+zip_search(zip_cdir_end_header *cdir, const char *name, uint16_t length);
 
 // Locate ZIP file data
 // Returns NULL on error
 extern char *
-zip_get_data(ZIP_LOCAL_FILE_HEADER *lfh, bool ignore_crc);
+zip_get_data(zip_local_file_header *lfh, bool ignore_crc);
 
 // Calculate ZIP-compatible CRC-32 checksum of a buffer
 // Returns checksum value
