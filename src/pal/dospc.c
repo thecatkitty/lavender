@@ -443,8 +443,8 @@ _get_volume_info(uint8_t drive, _volume_info *out)
 {
     union {
         char                bytes[512];
-        BOOT_SECTOR         boot;
-        FAT_DIRECTORY_ENTRY root[512 / sizeof(FAT_DIRECTORY_ENTRY)];
+        fat_boot_sector     boot;
+        fat_directory_entry root[512 / sizeof(fat_directory_entry)];
     } sector;
 
     if (0 != dos_read_disk(drive, 1, 0, sector.bytes))
@@ -474,34 +474,34 @@ _get_volume_info(uint8_t drive, _volume_info *out)
 
     switch (size)
     {
-    case sizeof(BPB_DOS20):
-    case sizeof(BPB_DOS30):
-    case sizeof(BPB_DOS32):
-    case sizeof(BPB_DOS33):
+    case sizeof(fat_bpb20):
+    case sizeof(fat_bpb30):
+    case sizeof(fat_bpb32):
+    case sizeof(fat_bpb33):
         out->serial_number = 0;
         out->label[0] = 0;
         break;
-    case sizeof(BPB_DOS34): {
-        BPB_DOS34 *bpb = (BPB_DOS34 *)sector.boot.Payload;
+    case sizeof(fat_bpb34): {
+        fat_bpb34 *bpb = (fat_bpb34 *)sector.boot.Payload;
         out->serial_number = bpb->Id;
         out->label[0] = 0;
         break;
     }
-    case sizeof(BPB_DOS40): {
-        BPB_DOS40 *bpb = (BPB_DOS40 *)sector.boot.Payload;
-        out->serial_number = bpb->Bpb34.Id;
+    case sizeof(fat_bpb40): {
+        fat_bpb40 *bpb = (fat_bpb40 *)sector.boot.Payload;
+        out->serial_number = bpb->bpb34.Id;
         _copy_volume_label(out->label, bpb->FatLabel);
         break;
     }
-    case sizeof(BPB_DOS71): {
-        BPB_DOS71 *bpb = (BPB_DOS71 *)sector.boot.Payload;
+    case sizeof(fat_bpb71): {
+        fat_bpb71 *bpb = (fat_bpb71 *)sector.boot.Payload;
         out->serial_number = bpb->Id;
         out->label[0] = 0;
         break;
     }
-    case sizeof(BPB_DOS71_FULL): {
-        BPB_DOS71_FULL *bpb = (BPB_DOS71_FULL *)sector.boot.Payload;
-        out->serial_number = bpb->Bpb71.Id;
+    case sizeof(fat_bpb71_full): {
+        fat_bpb71_full *bpb = (fat_bpb71_full *)sector.boot.Payload;
+        out->serial_number = bpb->bpb71.Id;
         _copy_volume_label(out->label, bpb->FatLabel);
         break;
     }
@@ -509,10 +509,10 @@ _get_volume_info(uint8_t drive, _volume_info *out)
         return false;
     }
 
-    BPB_DOS20 *bpb = (BPB_DOS20 *)sector.boot.Payload;
+    fat_bpb20 *bpb = (fat_bpb20 *)sector.boot.Payload;
     uint16_t   root_entries = bpb->RootEntries;
     uint16_t   root_sectors =
-        ((root_entries * sizeof(FAT_DIRECTORY_ENTRY)) + (bpb->SectorSize - 1)) /
+        ((root_entries * sizeof(fat_directory_entry)) + (bpb->SectorSize - 1)) /
         bpb->SectorSize;
     uint16_t first_data_sector = bpb->ReservedSectors +
                                  (bpb->NoFats * bpb->SectorsPerFat) +
@@ -524,7 +524,7 @@ _get_volume_info(uint8_t drive, _volume_info *out)
         return false;
     }
 
-    for (int i = 0; i < (sizeof(sector) / sizeof(FAT_DIRECTORY_ENTRY)); i++)
+    for (int i = 0; i < (sizeof(sector) / sizeof(fat_directory_entry)); i++)
     {
         if (FAT_ATTRIBUTE_VOLUME_ID != sector.root[i].Attributes)
             continue;
