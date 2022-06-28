@@ -1,11 +1,11 @@
 #include <dos.h>
 
 #include <fmt/spk.h>
-#include <snd.h>
 #include <pal.h>
+#include <snd.h>
 
 static volatile unsigned _ticks = 0;
-static SPK_NOTE3 *volatile _sequence = (SPK_NOTE3 *)0;
+static spk_note3 *volatile _sequence = (spk_note3 *)0;
 
 static htimer _timer;
 
@@ -21,21 +21,21 @@ _callback(void *context)
         return;
     }
 
-    if (SPK_NOTE_DURATION_STOP == _sequence->Duration)
+    if (SPK_NOTE_DURATION_STOP == _sequence->duration)
     {
         pal_unregister_timer_callback(_timer);
         nosound();
         return;
     }
 
-    _ticks = _sequence->Duration - 1;
-    if (0 == _sequence->Divisor)
+    _ticks = _sequence->duration - 1;
+    if (0 == _sequence->divisor)
     {
         nosound();
     }
     else
     {
-        pal_beep(_sequence->Divisor);
+        pal_beep(_sequence->divisor);
     }
 
     _sequence++;
@@ -44,7 +44,7 @@ _callback(void *context)
 void
 snd_play(void *music, uint16_t length)
 {
-    _sequence = (SPK_NOTE3 *)((uint8_t *)music + sizeof(SPK_HEADER));
+    _sequence = (spk_note3 *)((uint8_t *)music + sizeof(spk_header));
     _ticks = 0;
 
     _timer = pal_register_timer_callback(_callback, NULL);
