@@ -26,7 +26,7 @@ typedef struct
 
 typedef struct
 {
-    ZIP_LOCAL_FILE_HEADER *zip_header;
+    zip_local_file_header *zip_header;
     int                    flags;
 } _asset;
 
@@ -46,7 +46,7 @@ static volatile uint32_t       _counter;
 static ISR                     _bios_isr;
 static volatile _timer_handler _timer_handlers[MAX_TIMER_HANDLERS];
 
-static ZIP_CDIR_END_HEADER *_cdir;
+static zip_cdir_end_header *_cdir;
 static _asset               _assets[MAX_OPEN_ASSETS];
 
 #ifdef STACK_PROFILING
@@ -55,15 +55,15 @@ static uint64_t      *_stack_end = (uint64_t *)0xFFE8;
 static const uint64_t STACK_FILL_PATTERN = 0x0123456789ABCDEFULL;
 #endif // STACK_PROFILING
 
-static ZIP_CDIR_END_HEADER *
+static zip_cdir_end_header *
 _locate_cdir(void *from, void *to)
 {
-    const void *ptr = to - sizeof(ZIP_CDIR_END_HEADER);
+    const void *ptr = to - sizeof(zip_cdir_end_header);
     while (ptr >= from)
     {
-        ZIP_CDIR_END_HEADER *cdir = (ZIP_CDIR_END_HEADER *)ptr;
-        if ((ZIP_PK_SIGN == cdir->PkSignature) &&
-            (ZIP_CDIR_END_SIGN == cdir->HeaderSignature))
+        zip_cdir_end_header *cdir = (zip_cdir_end_header *)ptr;
+        if ((ZIP_PK_SIGN == cdir->pk_signature) &&
+            (ZIP_CDIR_END_SIGN == cdir->header_signature))
         {
             return cdir;
         }
@@ -417,7 +417,7 @@ pal_get_asset_size(hasset asset)
         return -1;
     }
 
-    return ptr->zip_header->CompressedSize;
+    return ptr->zip_header->compressed_size;
 }
 
 static void

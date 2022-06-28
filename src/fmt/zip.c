@@ -6,20 +6,20 @@
 #include <fmt/zip.h>
 
 static int
-_match_file_name(const char *name, uint16_t length, ZIP_CDIR_FILE_HEADER *cfh);
+_match_file_name(const char *name, uint16_t length, zip_cdir_file_header *cfh);
 
-ZIP_LOCAL_FILE_HEADER *
-zip_search(ZIP_CDIR_END_HEADER *cdir, const char *name, uint16_t length)
+zip_local_file_header *
+zip_search(zip_cdir_end_header *cdir, const char *name, uint16_t length)
 {
-    if (cdir->CentralDirectorySize > UINT16_MAX)
+    if (cdir->cdir_size > UINT16_MAX)
     {
         errno = EFBIG;
         return NULL;
     }
 
-    ZIP_CDIR_FILE_HEADER *cfh =
-        (ZIP_CDIR_FILE_HEADER *)((void *)cdir - cdir->CentralDirectorySize);
-    ZIP_LOCAL_FILE_HEADER *lfh = NULL;
+    zip_cdir_file_header *cfh =
+        (zip_cdir_file_header *)((void *)cdir - cdir->cdir_size);
+    zip_local_file_header *lfh = NULL;
     while (!lfh)
     {
         int status = _match_file_name(name, length, cfh);
@@ -30,18 +30,17 @@ zip_search(ZIP_CDIR_END_HEADER *cdir, const char *name, uint16_t length)
 
         if (0 == status)
         {
-            void *base = (void *)cdir - cdir->CentralDirectoryOffset -
-                         cdir->CentralDirectorySize;
-            lfh = (ZIP_LOCAL_FILE_HEADER *)(base + cfh->LocalHeaderOffset);
+            void *base = (void *)cdir - cdir->cdir_offset - cdir->cdir_size;
+            lfh = (zip_local_file_header *)(base + cfh->lfh_offset);
         }
 
-        cfh = (ZIP_CDIR_FILE_HEADER *)((void *)cfh + cfh->NameLength +
-                                       cfh->ExtraLength + cfh->CommentLength);
+        cfh = (zip_cdir_file_header *)((void *)cfh + cfh->name_length +
+                                       cfh->extra_length + cfh->comment_length);
         cfh++;
     }
 
-    if ((ZIP_PK_SIGN != lfh->PkSignature) ||
-        (ZIP_LOCAL_FILE_SIGN != lfh->HeaderSignature))
+    if ((ZIP_PK_SIGN != lfh->pk_signature) ||
+        (ZIP_LOCAL_FILE_SIGN != lfh->header_signature))
     {
         errno = EFTYPE;
         return NULL;
@@ -51,25 +50,26 @@ zip_search(ZIP_CDIR_END_HEADER *cdir, const char *name, uint16_t length)
 }
 
 char *
-zip_get_data(ZIP_LOCAL_FILE_HEADER *lfh, bool ignore_crc)
+zip_get_data(zip_local_file_header *lfh, bool ignore_crc)
 {
-    if ((ZIP_PK_SIGN != lfh->PkSignature) ||
-        (ZIP_LOCAL_FILE_SIGN != lfh->HeaderSignature))
+    if ((ZIP_PK_SIGN != lfh->pk_signature) ||
+        (ZIP_LOCAL_FILE_SIGN != lfh->header_signature))
     {
         errno = EFTYPE;
         return NULL;
     }
 
-    if ((ZIP_METHOD_STORE != lfh->Compression) ||
-        (0 != (lfh->Flags & ~ZIP_FLAGS_SUPPORTED)))
+    if ((ZIP_METHOD_STORE != lfh->compression) ||
+        (0 != (lfh->flags & ~ZIP_FLAGS_SUPPORTED)))
     {
         errno = ENOSYS;
         return NULL;
     }
 
-    uint8_t *buffer = (uint8_t *)(lfh + 1) + lfh->NameLength + lfh->ExtraLength;
+    uint8_t *buffer =
+        (uint8_t *)(lfh + 1) + lfh->name_length + lfh->extra_length;
     if (!ignore_crc &&
-        (zip_calculate_crc(buffer, lfh->UncompressedSize) != lfh->Crc32))
+        (zip_calculate_crc(buffer, lfh->uncompressed_size) != lfh->crc32))
     {
         errno = EIO;
         return NULL;
@@ -81,38 +81,38 @@ zip_get_data(ZIP_LOCAL_FILE_HEADER *lfh, bool ignore_crc)
 // Check if ZIP Central Directory File Header matches provided name
 // Returns 0 on match, 1 on no match, negative on error
 int
-_match_file_name(const char *name, uint16_t length, ZIP_CDIR_FILE_HEADER *cfh)
+_match_file_name(const char *name, uint16_t length, zip_cdir_file_header *cfh)
 {
-    if (ZIP_PK_SIGN != cfh->PkSignature)
+    if (ZIP_PK_SIGN != cfh->pk_signature)
     {
         errno = EFTYPE;
         return -1;
     }
 
-    if (ZIP_CDIR_END_SIGN == cfh->HeaderSignature)
+    if (ZIP_CDIR_END_SIGN == cfh->header_signature)
     {
         errno = ENOENT;
         return -1;
     }
 
-    if (ZIP_CDIR_FILE_SIGN != cfh->HeaderSignature)
+    if (ZIP_CDIR_FILE_SIGN != cfh->header_signature)
     {
         errno = EFTYPE;
         return -1;
     }
 
-    uint16_t file_system = (cfh->Version >> 8) & 0xFF;
+    uint16_t file_system = (cfh->version >> 8) & 0xFF;
     if ((ZIP_VERSION_FS_MSDOS != file_system) &&
         (ZIP_VERSION_FS_NTFS != file_system) &&
         (ZIP_VERSION_FS_VFAT != file_system))
     {
         // Regular comparison
-        if (length != cfh->NameLength)
+        if (length != cfh->name_length)
         {
             return 1;
         }
 
-        if (0 != memcmp(name, cfh->Name, cfh->NameLength))
+        if (0 != memcmp(name, cfh->name, cfh->name_length))
         {
             return 1;
         }
@@ -121,31 +121,31 @@ _match_file_name(const char *name, uint16_t length, ZIP_CDIR_FILE_HEADER *cfh)
     }
 
     // Case-insensitive comparison
-    if ((length == cfh->NameLength) &&
-        (0 == cvt_utf8_strncasecmp(name, cfh->Name, cfh->NameLength)))
+    if ((length == cfh->name_length) &&
+        (0 == cvt_utf8_strncasecmp(name, cfh->name, cfh->name_length)))
     {
         return 0;
     }
 
-    ZIP_EXTRA_FIELD_HEADER *hdr =
-        (ZIP_EXTRA_FIELD_HEADER *)((void *)(cfh + 1) + cfh->NameLength);
-    ZIP_EXTRA_FIELD_HEADER *end =
-        (ZIP_EXTRA_FIELD_HEADER *)((void *)hdr + cfh->ExtraLength);
+    zip_extra_fields_header *hdr =
+        (zip_extra_fields_header *)((void *)(cfh + 1) + cfh->name_length);
+    zip_extra_fields_header *end =
+        (zip_extra_fields_header *)((void *)hdr + cfh->extra_length);
     while (hdr < end)
     {
-        if (ZIP_EXTRA_INFOZIP_UNICODE_PATH != hdr->Signature)
+        if (ZIP_EXTRA_INFOZIP_UNICODE_PATH != hdr->signature)
         {
-            hdr = (ZIP_EXTRA_FIELD_HEADER *)((void *)hdr + hdr->TotalSize);
+            hdr = (zip_extra_fields_header *)((void *)hdr + hdr->total_size);
             hdr++;
             continue;
         }
 
-        ZIP_EXTRA_INFOZIP_UNICODE_PATH_FIELD *uni_name =
-            (ZIP_EXTRA_INFOZIP_UNICODE_PATH_FIELD *)hdr;
+        zip_extra_unicode_path_field *uni_name =
+            (zip_extra_unicode_path_field *)hdr;
         uint16_t uni_name_length =
-            uni_name->TotalSize - sizeof(ZIP_EXTRA_INFOZIP_UNICODE_PATH_FIELD);
+            uni_name->total_size - sizeof(zip_extra_unicode_path_field);
         if (0 ==
-            cvt_utf8_strncasecmp(name, uni_name->UnicodeName, uni_name_length))
+            cvt_utf8_strncasecmp(name, uni_name->unicode_name, uni_name_length))
         {
             return 0;
         }
