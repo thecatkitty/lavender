@@ -6,15 +6,15 @@
 #pragma pack(push, 1)
 typedef struct
 {
-    uint8_t Format;
-    uint8_t TicksPerSecond;
-} SPK_HEADER;
+    uint8_t format;
+    uint8_t ticks_per_second;
+} spk_header;
 
 typedef struct
 {
-    uint8_t  Duration;
-    uint16_t Divisor;
-} SPK_NOTE3;
+    uint8_t  duration;
+    uint16_t divisor;
+} spk_note3;
 #pragma pack(pop)
 
 #define SPK_FORMAT_NOTE3 3
