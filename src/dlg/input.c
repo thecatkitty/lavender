@@ -6,7 +6,7 @@
 
 int
 DlgInputText(DLG_FRAME *frame,
-             char *     buffer,
+             char      *buffer,
              int        size,
              bool (*validate)(const char *),
              int line)
@@ -36,7 +36,7 @@ DlgInputText(DLG_FRAME *frame,
         VidFillRectangle(&box, boxLeft, boxTop, GFX_COLOR_WHITE);
         VidDrawText(buffer, fieldLeft, fieldTop);
 
-        uint16_t key = BiosKeyboardGetKeystroke();
+        uint16_t key = bios_get_keystroke();
         uint8_t  scanCode = key >> 8, character = key & 0xFF;
         if (0x01 == scanCode)
         {

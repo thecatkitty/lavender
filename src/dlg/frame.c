@@ -24,8 +24,8 @@ DlgDrawBackground(void)
     const char *brand = pal_get_version_string();
     for (int i = 0; brand[i]; i++)
     {
-        BiosVideoSetCursorPosition(0, i + 1);
-        BiosVideoWriteCharacter(0, brand[i], 0x80, 1);
+        bios_set_cursor_position(0, i + 1);
+        bios_write_character(0, brand[i], 0x80, 1);
     }
 
     VidFillRectangle(&bar, 0, screen.Height - bar.Height, GFX_COLOR_BLACK);

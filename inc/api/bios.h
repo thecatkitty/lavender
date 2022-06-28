@@ -10,25 +10,25 @@
 #pragma pack(push, 1)
 typedef struct
 {
-    bool     FloppyDisk : 1;
-    bool     X87 : 1;
-    unsigned OnBoardMemory : 2;
-    unsigned InitialVideoMode : 2;
-    unsigned FloppyDrives : 2;
-    bool     NoDma : 1;
-    unsigned SerialPorts : 3;
-    bool     GamePort : 1;
-    bool     SerialPrinter : 1;
-    unsigned ParallelPorts : 2;
-} BIOS_EQUIPMENT;
+    bool     floppy_disk : 1;
+    bool     x87 : 1;
+    unsigned onboard_memory : 2;
+    unsigned initial_video_mode : 2;
+    unsigned floppy_drives : 2;
+    bool     no_dma : 1;
+    unsigned serial_ports : 3;
+    bool     game_port : 1;
+    bool     serial_printer : 1;
+    unsigned parallel_ports : 2;
+} bios_equipment;
 
-static_assert(sizeof(uint16_t) == sizeof(BIOS_EQUIPMENT),
+static_assert(sizeof(uint16_t) == sizeof(bios_equipment),
               "BIOS equipment list size doesn't match specification");
 
 #pragma pack(pop)
 
 static inline uint16_t
-BiosKeyboardGetKeystroke(void)
+bios_get_keystroke(void)
 {
     uint16_t ax;
     asm volatile("int $0x16" : "=a"(ax) : "Rah"((uint8_t)0x00));
@@ -36,14 +36,14 @@ BiosKeyboardGetKeystroke(void)
 }
 
 static inline void
-BiosVideoSetMode(uint8_t mode)
+bios_set_video_mode(uint8_t mode)
 {
     uint16_t ax;
     asm volatile("int $0x10" : "=a"(ax) : "0"(mode) : "cc", "bx", "cx", "dx");
 }
 
 static inline void
-BiosVideoSetCursorPosition(uint8_t page, uint16_t position)
+bios_set_cursor_position(uint8_t page, uint16_t position)
 {
     asm volatile("int $0x10"
                  :
@@ -52,10 +52,10 @@ BiosVideoSetCursorPosition(uint8_t page, uint16_t position)
 }
 
 static inline void
-BiosVideoWriteCharacter(uint8_t  page,
-                        uint8_t  character,
-                        uint8_t  attribute,
-                        uint16_t count)
+bios_write_character(uint8_t  page,
+                     uint8_t  character,
+                     uint8_t  attribute,
+                     uint16_t count)
 {
     asm volatile("int $0x10"
                  :
@@ -64,7 +64,7 @@ BiosVideoWriteCharacter(uint8_t  page,
 }
 
 static inline uint16_t
-BiosVideoGetMode()
+bios_get_video_mode()
 {
     uint16_t ax;
     asm volatile("int $0x10"
@@ -75,7 +75,7 @@ BiosVideoGetMode()
 }
 
 static inline short
-BiosVideoVbeDcCapabilities()
+bios_get_vbedc_capabilities()
 {
     unsigned short ax;
     asm volatile("int $0x10" : "=a"(ax) : "a"(0x4F15), "b"(0));
@@ -83,7 +83,7 @@ BiosVideoVbeDcCapabilities()
 }
 
 static inline short
-BiosGetEquipmentList(void)
+bios_get_equipment_list(void)
 {
     unsigned short ax;
     asm volatile("int $0x11" : "=a"(ax));
@@ -91,7 +91,7 @@ BiosGetEquipmentList(void)
 }
 
 static inline short
-BiosVideoVbeDcReadEdid(far EDID *edid)
+bios_read_edid(far EDID *edid)
 {
     unsigned short ax, es, di;
     es = FP_SEG(edid);

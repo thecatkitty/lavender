@@ -22,15 +22,15 @@ static bool
 IsHexString(const char *str);
 
 bool
-CrgPromptKey(uint8_t *         key,
+CrgPromptKey(uint8_t          *key,
              int               keyLength,
              int               base,
              CRG_KEY_VALIDATOR validate,
-             void *            context)
+             void             *context)
 {
     DlgDrawBackground();
 
-    char *    buffer = (char *)alloca(keyLength * 3 + 1);
+    char     *buffer = (char *)alloca(keyLength * 3 + 1);
     DLG_FRAME frame = {36, 5};
 
     while (true)
@@ -79,7 +79,7 @@ CrgPromptKey(uint8_t *         key,
 
         DlgDrawFrame(&frame, StrCrgEnterPassword);
         DlgDrawText(&frame, StrCrgKeyInvalid, 1);
-        BiosKeyboardGetKeystroke();
+        bios_get_keystroke();
     }
 }
 
