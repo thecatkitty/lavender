@@ -58,8 +58,8 @@ VesaReadEdid(EDID *edid);
 uint16_t
 VidSetMode(uint16_t mode)
 {
-    uint16_t previous = BiosVideoGetMode() & 0xFF;
-    BiosVideoSetMode((uint8_t)mode);
+    uint16_t previous = bios_get_video_mode() & 0xFF;
+    bios_set_video_mode((uint8_t)mode);
     return previous;
 }
 
@@ -218,8 +218,8 @@ VidDrawText(const char *str, uint16_t x, uint16_t y)
 {
     while (*str)
     {
-        BiosVideoSetCursorPosition(0, (y << 8) | x++);
-        BiosVideoWriteCharacter(0, *str, 0x80, 1);
+        bios_set_cursor_position(0, (y << 8) | x++);
+        bios_write_character(0, *str, 0x80, 1);
         str++;
     }
 }
@@ -234,7 +234,7 @@ VidLoadFont(void)
 
     far const char *bfont =
         MK_FP(CGA_BASIC_FONT_SEGMENT, CGA_BASIC_FONT_OFFSET);
-    char *                    xfont = __VidExtendedFont;
+    char                     *xfont = __VidExtendedFont;
     VID_CHARACTER_DESCRIPTOR *fdata = __VidFontData;
     bool                      isDosBox = dospc_is_dosbox();
 
@@ -361,7 +361,7 @@ CgaGetBrush(GFX_COLOR color, int *height)
 void
 FontExecuteGlyphTransformation(const char *gxf, char *glyph)
 {
-    char *   selStart = glyph;
+    char    *selStart = glyph;
     unsigned selLength = 1;
     while (*gxf)
     {
@@ -401,7 +401,7 @@ VesaReadEdid(EDID *edid)
 {
     short ax;
 
-    ax = BiosVideoVbeDcCapabilities();
+    ax = bios_get_vbedc_capabilities();
     if (0x4F != (ax & 0xFF))
     {
         ERR(VID_UNSUPPORTED);
@@ -412,7 +412,7 @@ VesaReadEdid(EDID *edid)
         ERR(VID_FAILED);
     }
 
-    ax = BiosVideoVbeDcReadEdid(edid);
+    ax = bios_read_edid(edid);
     if (0x4F != (ax & 0xFF))
     {
         ERR(VID_UNSUPPORTED);

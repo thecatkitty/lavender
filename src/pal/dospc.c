@@ -278,7 +278,7 @@ pal_initialize(void)
         }
 
         DosPutS(data);
-        BiosKeyboardGetKeystroke();
+        bios_get_keystroke();
         DosExit(1);
     }
 
@@ -541,10 +541,10 @@ _get_volume_info(uint8_t drive, _volume_info *out)
 uint32_t
 pal_get_medium_id(const char *tag)
 {
-    BIOS_EQUIPMENT equipment;
-    *(short *)&equipment = BiosGetEquipmentList();
+    bios_equipment equipment;
+    *(short *)&equipment = bios_get_equipment_list();
 
-    int drives = equipment.FloppyDisk ? (equipment.FloppyDrives + 1) : 0;
+    int drives = equipment.floppy_disk ? (equipment.floppy_drives + 1) : 0;
     if (2 < drives)
     {
         drives = 2;

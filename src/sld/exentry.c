@@ -75,7 +75,7 @@ SldExecuteEntry(SLD_ENTRY *sld)
     case SLD_TYPE_PLAY:
         return SldExecutePlay(sld);
     case SLD_TYPE_WAITKEY:
-        s_Accumulator = BiosKeyboardGetKeystroke() >> 8;
+        s_Accumulator = bios_get_keystroke() >> 8;
         return 0;
     case SLD_TYPE_JUMP:
         return INT_MAX;
