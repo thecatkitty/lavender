@@ -7,7 +7,6 @@
 #include <crg.h>
 #include <dlg.h>
 #include <gfx.h>
-#include <ker.h>
 #include <pal.h>
 #include <sld.h>
 #include <snd.h>

@@ -4,7 +4,6 @@
 #ifndef __ASSEMBLER__
 
 #include <gfx.h>
-#include <ker.h>
 
 #define SLD_ENTRY_MAX_LENGTH 255
 

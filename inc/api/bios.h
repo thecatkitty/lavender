@@ -4,8 +4,8 @@
 #include <assert.h>
 #include <i86.h>
 
+#include <base.h>
 #include <fmt/edid.h>
-#include <ker.h>
 
 #pragma pack(push, 1)
 typedef struct

@@ -3,7 +3,6 @@
 #include <api/bios.h>
 #include <api/dos.h>
 #include <dev/cga.h>
-#include <ker.h>
 #include <pal/dospc.h>
 #include <vid.h>
 

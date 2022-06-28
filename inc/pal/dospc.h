@@ -3,6 +3,10 @@
 
 #include <base.h>
 
+#define interrupt __attribute__((interrupt))
+
+typedef void interrupt far (*ISR)(void);
+
 extern bool
 dospc_is_dosbox(void);
 
