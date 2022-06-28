@@ -1,6 +1,3 @@
-DIR	    := ker
-include $(SRC)/$(DIR)/module.mk
-
 DIR	    := pal
 include $(SRC)/$(DIR)/module.mk
 
@@ -17,6 +14,9 @@ DIR	    := vid
 include $(SRC)/$(DIR)/module.mk
 
 DIR	    := gfx
+include $(SRC)/$(DIR)/module.mk
+
+DIR	    := snd
 include $(SRC)/$(DIR)/module.mk
 
 DIR	    := dlg

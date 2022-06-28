@@ -11,10 +11,6 @@ typedef void interrupt far (*ISR)(void);
 
 #define EXIT_ERRNO 512
 
-// Start playing music
-extern void
-KerStartPlayer(void *music, uint16_t length);
-
 #endif // __ASSEMBLER__
 
 #include <err.h>

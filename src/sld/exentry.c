@@ -10,6 +10,7 @@
 #include <ker.h>
 #include <pal.h>
 #include <sld.h>
+#include <snd.h>
 #include <vid.h>
 
 extern const char StrSldEnterSerial[];
@@ -187,7 +188,7 @@ SldExecutePlay(SLD_ENTRY *sld)
         ERR(KER_NOT_FOUND);
     }
 
-    KerStartPlayer(data, pal_get_asset_size(music));
+    snd_play(data, pal_get_asset_size(music));
     return 0;
 }
 
