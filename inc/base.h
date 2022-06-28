@@ -12,4 +12,9 @@
 #define far
 #endif
 
+#define DEFINE_HANDLE(x)                                                       \
+    typedef struct                                                             \
+    {                                                                          \
+    } * x
+
 #endif // _BASE_H_

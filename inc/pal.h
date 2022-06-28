@@ -4,11 +4,8 @@
 #include <fcntl.h>
 
 #include <base.h>
-#include <ker.h>
 
-typedef struct
-{
-} * hasset;
+DEFINE_HANDLE(hasset);
 
 extern void
 pal_initialize(void);
