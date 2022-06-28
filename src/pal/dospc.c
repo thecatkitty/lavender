@@ -458,15 +458,15 @@ _get_volume_info(uint8_t drive, _volume_info *out)
     }
 
     int offset, size;
-    switch ((uint8_t)sector.boot.Jump[0])
+    switch ((uint8_t)sector.boot.Ia32Jump[0])
     {
     case 0xEB: // JMP rel8
-        offset = *(int8_t *)(sector.boot.Jump + 1);
-        size = offset - (sizeof(sector.boot.OemString) + 1);
+        offset = *(int8_t *)(sector.boot.Ia32Jump + 1);
+        size = offset - (sizeof(sector.boot.OemId) + 1);
         break;
     case 0xE9: // JMP rel16
-        offset = *(int16_t *)(sector.boot.Jump + 1);
-        size = offset - sizeof(sector.boot.OemString);
+        offset = *(int16_t *)(sector.boot.Ia32Jump + 1);
+        size = offset - sizeof(sector.boot.OemId);
         break;
     default:
         return false;
@@ -483,26 +483,26 @@ _get_volume_info(uint8_t drive, _volume_info *out)
         break;
     case sizeof(BPB_DOS34): {
         BPB_DOS34 *bpb = (BPB_DOS34 *)sector.boot.Payload;
-        out->serial_number = bpb->SerialNumber;
+        out->serial_number = bpb->Id;
         out->label[0] = 0;
         break;
     }
     case sizeof(BPB_DOS40): {
         BPB_DOS40 *bpb = (BPB_DOS40 *)sector.boot.Payload;
-        out->serial_number = bpb->Bpb34.SerialNumber;
-        _copy_volume_label(out->label, bpb->Label);
+        out->serial_number = bpb->Bpb34.Id;
+        _copy_volume_label(out->label, bpb->FatLabel);
         break;
     }
     case sizeof(BPB_DOS71): {
         BPB_DOS71 *bpb = (BPB_DOS71 *)sector.boot.Payload;
-        out->serial_number = bpb->SerialNumber;
+        out->serial_number = bpb->Id;
         out->label[0] = 0;
         break;
     }
     case sizeof(BPB_DOS71_FULL): {
         BPB_DOS71_FULL *bpb = (BPB_DOS71_FULL *)sector.boot.Payload;
-        out->serial_number = bpb->Bpb71.SerialNumber;
-        _copy_volume_label(out->label, bpb->Label);
+        out->serial_number = bpb->Bpb71.Id;
+        _copy_volume_label(out->label, bpb->FatLabel);
         break;
     }
     default:
@@ -511,11 +511,12 @@ _get_volume_info(uint8_t drive, _volume_info *out)
 
     BPB_DOS20 *bpb = (BPB_DOS20 *)sector.boot.Payload;
     uint16_t   root_entries = bpb->RootEntries;
-    uint16_t   root_sectors = ((root_entries * sizeof(FAT_DIRECTORY_ENTRY)) +
-                             (bpb->BytesPerSector - 1)) /
-                            bpb->BytesPerSector;
-    uint16_t first_data_sector =
-        bpb->ReservedSectors + (bpb->Fats * bpb->SectorsPerFat) + root_sectors;
+    uint16_t   root_sectors =
+        ((root_entries * sizeof(FAT_DIRECTORY_ENTRY)) + (bpb->SectorSize - 1)) /
+        bpb->SectorSize;
+    uint16_t first_data_sector = bpb->ReservedSectors +
+                                 (bpb->NoFats * bpb->SectorsPerFat) +
+                                 root_sectors;
     uint16_t first_root_sector = first_data_sector - root_sectors;
 
     if (0 != dos_read_disk(drive, 1, first_root_sector, sector.bytes))
