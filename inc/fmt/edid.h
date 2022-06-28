@@ -66,28 +66,28 @@
 
 typedef struct
 {
-    uint8_t  Padding[8];
-    uint16_t ManufacturerId;
-    uint16_t ModelId;
-    uint32_t SerialNumber;
-    uint8_t  Week;
-    uint8_t  Year;
-    uint8_t  EdidVersion;
-    uint8_t  EdidRevision;
-    uint8_t  InputType;
-    uint8_t  HorizontalSize;
-    uint8_t  VerticalSize;
-    uint8_t  Gamma;
-    uint8_t  Features;
-    uint8_t  Chroma[10];
-    uint8_t  EstablishedModes[3];
-    uint16_t StandardTiming[8];
-    uint8_t  DetailedTiming1[18];
-    uint8_t  DetailedTiming2[18];
-    uint8_t  DetailedTiming3[18];
-    uint8_t  DetailedTiming4[18];
-    uint8_t  Extensions;
-    uint8_t  Checksum;
-} EDID;
+    uint8_t  padding[8];
+    uint16_t manufacturer_id;
+    uint16_t model_id;
+    uint32_t serial_number;
+    uint8_t  week;
+    uint8_t  year;
+    uint8_t  edid_version;
+    uint8_t  edid_revision;
+    uint8_t  input_type;
+    uint8_t  horizontal_size;
+    uint8_t  vertical_size;
+    uint8_t  gamma;
+    uint8_t  features;
+    uint8_t  chroma[10];
+    uint8_t  established_modes[3];
+    uint16_t standard_timing[8];
+    uint8_t  detailed_timing1[18];
+    uint8_t  detailed_timing2[18];
+    uint8_t  detailed_timing3[18];
+    uint8_t  detailed_timing4[18];
+    uint8_t  extensions;
+    uint8_t  checksum;
+} edid_block;
 
 #endif // _FMT_EDID_H_

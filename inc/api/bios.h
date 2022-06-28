@@ -91,7 +91,7 @@ bios_get_equipment_list(void)
 }
 
 static inline short
-bios_read_edid(far EDID *edid)
+bios_read_edid(far edid_block *edid)
 {
     unsigned short ax, es, di;
     es = FP_SEG(edid);
