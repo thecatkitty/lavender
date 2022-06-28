@@ -9,14 +9,14 @@
 
 #include <api/bios.h>
 #include <api/dos.h>
-#include <dev/pic.h>
-#include <dev/pit.h>
 #include <err.h>
 #include <fmt/exe.h>
 #include <fmt/fat.h>
 #include <fmt/zip.h>
 #include <pal.h>
 #include <pal/dospc.h>
+
+#include "dospc.h"
 
 typedef struct
 {
@@ -30,9 +30,6 @@ typedef struct
     int                    flags;
 } _asset;
 
-#define SPKR_ENABLE         3
-#define PIT_INPUT_FREQ      11931816667ULL
-#define PIT_FREQ_DIVISOR    2048ULL
 #define DELAY_MS_MULTIPLIER 100ULL
 
 #define MAX_OPEN_ASSETS    8
