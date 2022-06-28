@@ -3,7 +3,6 @@
 
 #include <api/dos.h>
 #include <cvt.h>
-#include <ker.h>
 #include <sld.h>
 #include <vid.h>
 

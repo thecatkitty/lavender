@@ -11,10 +11,10 @@
 #include <api/dos.h>
 #include <dev/pic.h>
 #include <dev/pit.h>
+#include <err.h>
 #include <fmt/exe.h>
 #include <fmt/fat.h>
 #include <fmt/zip.h>
-#include <ker.h>
 #include <pal.h>
 #include <pal/dospc.h>
 
