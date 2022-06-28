@@ -19,8 +19,8 @@
 
 typedef struct
 {
-    char     Jump[3];
-    char     OemString[8];
+    char     Ia32Jump[3];
+    char     OemId[8];
     char     Payload[512 - (3 + 8 + sizeof(uint16_t))];
     uint16_t Magic;
 } BOOT_SECTOR;
@@ -30,13 +30,13 @@ static_assert(512 == sizeof(BOOT_SECTOR),
 
 typedef struct
 {
-    uint16_t BytesPerSector;
+    uint16_t SectorSize;
     uint8_t  SectorsPerCluster;
     uint16_t ReservedSectors;
-    uint8_t  Fats;
+    uint8_t  NoFats;
     uint16_t RootEntries;
     uint16_t Sectors;
-    uint8_t  MediaDescriptor;
+    uint8_t  Media;
     uint16_t SectorsPerFat;
 } BPB_DOS20;
 
@@ -69,7 +69,7 @@ typedef struct
     uint16_t  SectorsPerTrack;
     uint16_t  Heads;
     uint32_t  HiddenSectors;
-    uint32_t  Sectors;
+    uint32_t  LargeSectors;
 } BPB_DOS33;
 
 static_assert(25 == sizeof(BPB_DOS33),
@@ -78,10 +78,10 @@ static_assert(25 == sizeof(BPB_DOS33),
 typedef struct
 {
     BPB_DOS33 Bpb33;
-    uint8_t   DriveNumber;
-    uint8_t   Flags;
-    uint8_t   EbSignature;
-    uint32_t  SerialNumber;
+    uint8_t   PhysicalDriveNumber;
+    uint8_t   CurrentHead;
+    uint8_t   Signature;
+    uint32_t  Id;
 } BPB_DOS34;
 
 static_assert(32 == sizeof(BPB_DOS34),
@@ -90,8 +90,8 @@ static_assert(32 == sizeof(BPB_DOS34),
 typedef struct
 {
     BPB_DOS34 Bpb34;
-    char      Label[11];
-    char      FsType[8];
+    char      FatLabel[11];
+    char      SystemId[8];
 } BPB_DOS40;
 
 static_assert(51 == sizeof(BPB_DOS40),
@@ -100,17 +100,17 @@ static_assert(51 == sizeof(BPB_DOS40),
 typedef struct
 {
     BPB_DOS33 Bpb33;
-    uint32_t  SectorsPerFat;
-    uint16_t  Flags1;
-    uint16_t  Version;
-    uint32_t  RootCluster;
+    uint32_t  LargeSectorsPerFat;
+    uint16_t  ExtendedFlags;
+    uint16_t  FsVersion;
+    uint32_t  RootDirFirstCluster;
     uint16_t  FsInfoSector;
-    uint16_t  BackupSector;
+    uint16_t  BackupBootSector;
     char      Reserved[12];
-    uint8_t   DriveNumber;
-    uint8_t   Flags2;
-    uint8_t   EbSignature;
-    uint32_t  SerialNumber;
+    uint8_t   PhysicalDriveNumber;
+    uint8_t   CurrentHead;
+    uint8_t   Signature;
+    uint32_t  Id;
 } BPB_DOS71;
 
 static_assert(60 == sizeof(BPB_DOS71),
@@ -119,8 +119,8 @@ static_assert(60 == sizeof(BPB_DOS71),
 typedef struct
 {
     BPB_DOS71 Bpb71;
-    char      Label[11];
-    char      FsType[8];
+    char      FatLabel[11];
+    char      SystemId[8];
 } BPB_DOS71_FULL;
 
 static_assert(79 == sizeof(BPB_DOS71_FULL),
@@ -148,18 +148,25 @@ static_assert(sizeof(uint16_t) == sizeof(FAT_DATE),
 
 typedef struct
 {
-    char     FileName[11];
-    uint8_t  Attributes;
-    uint8_t  Reserved;
-    uint8_t  CreationCentiseconds;
-    FAT_TIME CreationTime;
-    FAT_DATE CreationDate;
-    FAT_DATE AccessDate;
-    uint16_t FirstClusterHigh;
-    FAT_TIME ModificationTime;
-    FAT_DATE ModificationDate;
-    uint16_t FirstClusterLow;
-    uint32_t Size;
+    FAT_TIME Time;
+    FAT_DATE Date;
+} FAT_DATE_TIME;
+
+static_assert(sizeof(uint32_t) == sizeof(FAT_DATE_TIME),
+              "FAT date and time struct size doesn't match specification");
+
+typedef struct
+{
+    char          FileName[11];
+    uint8_t       Attributes;
+    uint8_t       CaseFlag;
+    uint8_t       CreateMillisecond;
+    FAT_DATE_TIME FileCreateTime;
+    FAT_DATE      FileLastAccess;
+    uint16_t      FileClusterHigh;
+    FAT_DATE_TIME FileModificationTime;
+    uint16_t      FileCluster;
+    uint32_t      FileSize;
 } FAT_DIRECTORY_ENTRY;
 
 static_assert(32 == sizeof(FAT_DIRECTORY_ENTRY),
