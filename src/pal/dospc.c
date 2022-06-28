@@ -212,12 +212,12 @@ _get_winnt_version(void)
     }
 
     union {
-        EXE_DOS_HEADER         DosHdr;
+        exe_dos_header         DosHdr;
         ULONG                  NewSignature;
-        EXE_PE_OPTIONAL_HEADER OptionalHeader;
+        exe_pe_optional_header OptionalHeader;
     } data;
 
-    read(fd, &data, sizeof(EXE_DOS_HEADER));
+    read(fd, &data, sizeof(exe_dos_header));
     if (0x5A4D != data.DosHdr.e_magic)
     {
         return 0; // Invalid executable
@@ -230,8 +230,8 @@ _get_winnt_version(void)
         return 0; // Invalid executable
     }
 
-    lseek(fd, sizeof(EXE_PE_FILE_HEADER), SEEK_CUR);
-    read(fd, &data, sizeof(EXE_PE_OPTIONAL_HEADER));
+    lseek(fd, sizeof(exe_pe_file_header), SEEK_CUR);
+    read(fd, &data, sizeof(exe_pe_optional_header));
     close(fd);
 
     return (data.OptionalHeader.MajorImageVersion << 8) |

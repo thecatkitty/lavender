@@ -30,7 +30,7 @@ typedef struct
     USHORT e_oeminfo;  // OEM information; e_oemid specific
     USHORT e_res2[10]; // Reserved words
     LONG   e_lfanew;   // File address of new exe header
-} EXE_DOS_HEADER;
+} exe_dos_header;
 
 typedef struct
 {
@@ -41,7 +41,7 @@ typedef struct
     ULONG  NumberOfSymbols;
     USHORT SizeOfOptionalHeader;
     USHORT Characteristics;
-} EXE_PE_FILE_HEADER;
+} exe_pe_file_header;
 
 typedef struct
 {
@@ -82,7 +82,7 @@ typedef struct
     ULONG  LoaderFlags;
     ULONG  NumberOfRvaAndSizes;
     //    IMAGE_DATA_DIRECTORY DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
-} EXE_PE_OPTIONAL_HEADER;
+} exe_pe_optional_header;
 #pragma pack(pop)
 
 #endif // _FMT_EXE_H_
