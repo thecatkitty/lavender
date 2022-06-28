@@ -212,20 +212,20 @@ _get_winnt_version(void)
     }
 
     union {
-        exe_dos_header         DosHdr;
-        ULONG                  NewSignature;
-        exe_pe_optional_header OptionalHeader;
+        exe_dos_header         dos_header;
+        ULONG                  new_signature;
+        exe_pe_optional_header optional_header;
     } data;
 
     read(fd, &data, sizeof(exe_dos_header));
-    if (0x5A4D != data.DosHdr.e_magic)
+    if (0x5A4D != data.dos_header.e_magic)
     {
         return 0; // Invalid executable
     }
 
-    lseek(fd, data.DosHdr.e_lfanew, SEEK_SET);
+    lseek(fd, data.dos_header.e_lfanew, SEEK_SET);
     read(fd, &data, sizeof(ULONG));
-    if (0x00004550 != data.NewSignature)
+    if (0x00004550 != data.new_signature)
     {
         return 0; // Invalid executable
     }
@@ -234,8 +234,8 @@ _get_winnt_version(void)
     read(fd, &data, sizeof(exe_pe_optional_header));
     close(fd);
 
-    return (data.OptionalHeader.MajorImageVersion << 8) |
-           data.OptionalHeader.MinorImageVersion;
+    return (data.optional_header.MajorImageVersion << 8) |
+           data.optional_header.MinorImageVersion;
 }
 
 static bool
