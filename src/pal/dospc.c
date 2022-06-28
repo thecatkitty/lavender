@@ -20,6 +20,12 @@
 
 typedef struct
 {
+    pal_timer_callback callback;
+    void              *context;
+} _timer_handler;
+
+typedef struct
+{
     ZIP_LOCAL_FILE_HEADER *zip_header;
     int                    flags;
 } _asset;
@@ -29,7 +35,8 @@ typedef struct
 #define PIT_FREQ_DIVISOR    2048ULL
 #define DELAY_MS_MULTIPLIER 100ULL
 
-#define MAX_OPEN_ASSETS 8
+#define MAX_OPEN_ASSETS    8
+#define MAX_TIMER_HANDLERS 2
 
 extern char __edata[], __sbss[], __ebss[];
 extern char _binary_obj_version_txt_start[];
@@ -38,8 +45,9 @@ extern const char __serrf[];
 extern const char __serrm[];
 extern const char StrKerError[];
 
-static volatile uint32_t _counter;
-static ISR               _bios_isr;
+static volatile uint32_t       _counter;
+static ISR                     _bios_isr;
+static volatile _timer_handler _timer_handlers[MAX_TIMER_HANDLERS];
 
 static ZIP_CDIR_END_HEADER *_cdir;
 static _asset               _assets[MAX_OPEN_ASSETS];
@@ -89,6 +97,19 @@ _pit_isr(void)
 {
     _disable();
     _counter++;
+
+    if (0 == (_counter % 10))
+    {
+        for (int i = 0; i < MAX_TIMER_HANDLERS; i++)
+        {
+            if (NULL == _timer_handlers[i].callback)
+            {
+                continue;
+            }
+
+            _timer_handlers[i].callback(_timer_handlers[i].context);
+        }
+    }
 
     if (0 == (_counter & 0x11111))
     {
@@ -259,6 +280,11 @@ pal_initialize(void)
         DosPutS(data);
         BiosKeyboardGetKeystroke();
         DosExit(1);
+    }
+
+    for (int i = 0; i < MAX_TIMER_HANDLERS; i++)
+    {
+        _timer_handlers[i].callback = NULL;
     }
 
     _disable();
@@ -544,6 +570,49 @@ const char *
 pal_get_version_string(void)
 {
     return _binary_obj_version_txt_start;
+}
+
+htimer
+pal_register_timer_callback(pal_timer_callback callback, void *context)
+{
+    int i;
+
+    _disable();
+    for (i = 0; i < MAX_TIMER_HANDLERS; i++)
+    {
+        if (NULL != _timer_handlers[i].callback)
+        {
+            continue;
+        }
+
+        _timer_handlers[i].callback = callback;
+        _timer_handlers[i].context = context;
+        break;
+    }
+    _enable();
+
+    if (MAX_TIMER_HANDLERS == i)
+    {
+        errno = ENOMEM;
+        i = -1;
+    }
+
+    return (htimer)i;
+}
+
+bool
+pal_unregister_timer_callback(htimer timer)
+{
+    int i = (int)timer;
+    if (MAX_TIMER_HANDLERS <= i)
+    {
+        errno = ENOENT;
+        return false;
+    }
+
+    _disable();
+    _timer_handlers[i].callback = NULL;
+    _enable();
 }
 
 bool
