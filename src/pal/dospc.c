@@ -147,12 +147,12 @@ _find_message(const char *messages, unsigned key)
 static void
 _die_errno(void)
 {
-    DosPutS(StrKerError);
+    dos_puts(StrKerError);
 
     char code[10];
     itoa(errno, code, 10);
     code[strlen(code)] = '$';
-    DosPutS(code);
+    dos_puts(code);
 }
 
 static void
@@ -160,18 +160,18 @@ _die_status(int error)
 {
     unsigned facility = error >> 5;
 
-    DosPutS(StrKerError);
-    DosPutS(_find_message(__serrf, facility));
-    DosPutS(" - $");
-    DosPutS(_find_message(__serrm, error));
+    dos_puts(StrKerError);
+    dos_puts(_find_message(__serrf, facility));
+    dos_puts(" - $");
+    dos_puts(_find_message(__serrm, error));
 
-    DosExit(error);
+    dos_exit(error);
 }
 
 static bool
 _is_dos(uint8_t major)
 {
-    uint8_t dosMajor = DosGetVersion() & 0xFF;
+    uint8_t dosMajor = dos_get_version() & 0xFF;
     return (1 == major) ? (0 == dosMajor) : (major == dosMajor);
 }
 
@@ -267,19 +267,19 @@ pal_initialize(void)
         hasset support = pal_open_asset("support.txt", O_RDONLY);
         if (NULL == support)
         {
-            DosPutS("Lavender cannot run in your environment.$");
-            DosExit(1);
+            dos_puts("Lavender cannot run in your environment.$");
+            dos_exit(1);
         }
 
         char *data = pal_get_asset_data(support);
         if (NULL == data)
         {
-            DosExit(1);
+            dos_exit(1);
         }
 
-        DosPutS(data);
+        dos_puts(data);
         bios_get_keystroke();
-        DosExit(1);
+        dos_exit(1);
     }
 
     for (int i = 0; i < MAX_TIMER_HANDLERS; i++)
@@ -326,14 +326,14 @@ pal_cleanup(int status)
 
     int stack_size = (int)(0x10000UL - (uint16_t)untouched);
 
-    DosPutS("Stack usage: $");
+    dos_puts("Stack usage: $");
 
     char buffer[6];
     itoa(stack_size, buffer, 10);
     for (int i = 0; buffer[i]; i++)
-        DosPutC(buffer[i]);
+        dos_putc(buffer[i]);
 
-    DosPutS("\r\n$");
+    dos_puts("\r\n$");
 #endif // STACK_PROFILING
 }
 
@@ -450,7 +450,7 @@ _get_volume_info(uint8_t drive, _volume_info *out)
         FAT_DIRECTORY_ENTRY root[512 / sizeof(FAT_DIRECTORY_ENTRY)];
     } sector;
 
-    if (0 != DosReadDiskAbsolute(drive, 1, 0, sector.bytes))
+    if (0 != dos_read_disk(drive, 1, 0, sector.bytes))
     {
         return false;
     }
@@ -521,7 +521,7 @@ _get_volume_info(uint8_t drive, _volume_info *out)
         bpb->ReservedSectors + (bpb->Fats * bpb->SectorsPerFat) + root_sectors;
     uint16_t first_root_sector = first_data_sector - root_sectors;
 
-    if (0 != DosReadDiskAbsolute(drive, 1, first_root_sector, sector.bytes))
+    if (0 != dos_read_disk(drive, 1, first_root_sector, sector.bytes))
     {
         return false;
     }
