@@ -19,4 +19,7 @@
     {                                                                          \
     } * x
 
+extern long long
+rstrtoull(const char *restrict str, int base);
+
 #endif // _BASE_H_

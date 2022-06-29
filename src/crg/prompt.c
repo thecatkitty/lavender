@@ -63,7 +63,7 @@ CrgPromptKey(uint8_t          *key,
         }
         else
         {
-            uint64_t value = strtoull(buffer, NULL, base);
+            uint64_t value = rstrtoull(buffer, base);
             memcpy(key, &value, keyLength);
         }
 

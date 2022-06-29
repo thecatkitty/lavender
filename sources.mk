@@ -25,7 +25,7 @@ include $(SRC)/$(DIR)/module.mk
 DIR	    := sld
 include $(SRC)/$(DIR)/module.mk
 
-CCSOURCES += main.c
+CCSOURCES += main.c rstd.c
 
 DIR	    := tools
 include $(SRC)/$(DIR)/module.mk

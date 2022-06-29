@@ -225,7 +225,7 @@ SldExecuteScriptCall(SLD_ENTRY *sld)
     switch (sld->ScriptCall.Parameter)
     {
     case SLD_PARAMETER_XOR48_INLINE:
-        *(uint64_t *)&key = strtoull(sld->ScriptCall.Data, NULL, 16);
+        *(uint64_t *)&key = rstrtoull(sld->ScriptCall.Data, 16);
         break;
     case SLD_PARAMETER_XOR48_PROMPT:
         invalid = !CrgPromptKey(key, 6, 16, SldIsXorKeyValid, &context);
