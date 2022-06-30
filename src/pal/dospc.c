@@ -43,7 +43,7 @@ extern const char __serrm[];
 extern const char StrKerError[];
 
 static volatile uint32_t       _counter;
-static ISR                     _bios_isr;
+static dospc_isr               _bios_isr;
 static volatile _timer_handler _timer_handlers[MAX_TIMER_HANDLERS];
 
 static zip_cdir_end_header *_cdir;

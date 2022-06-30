@@ -34,7 +34,7 @@ static const char BRUSH_BLACK[] = {0x00};
 static const char BRUSH_WHITE[] = {0xFF};
 static const char BRUSH_GRAY50[] = {0x55, 0xAA};
 
-static ISR s_PreviousFontPtr;
+static dospc_isr s_PreviousFontPtr;
 
 static void
 CgaDrawBlock(far char *plane,
@@ -231,7 +231,7 @@ VidLoadFont(void)
 {
     _disable();
     s_PreviousFontPtr = _dos_getvect(INT_CGA_EXTENDED_FONT_PTR);
-    _dos_setvect(INT_CGA_EXTENDED_FONT_PTR, (ISR)__vid_xfont);
+    _dos_setvect(INT_CGA_EXTENDED_FONT_PTR, (dospc_isr)__vid_xfont);
     _enable();
 
     far const char *bfont =
@@ -284,7 +284,7 @@ VidLoadFont(void)
 void
 VidUnloadFont(void)
 {
-    _dos_setvect(INT_CGA_EXTENDED_FONT_PTR, (ISR)s_PreviousFontPtr);
+    _dos_setvect(INT_CGA_EXTENDED_FONT_PTR, (dospc_isr)s_PreviousFontPtr);
 }
 
 char
