@@ -1,10 +1,10 @@
 #include <errno.h>
 #include <stdint.h>
 
-#include <cvt.h>
+#include <fmt/utf8.h>
 
 uint16_t
-cvt_utf8_get_codepoint(const char *sequence, int *length)
+utf8_get_codepoint(const char *sequence, int *length)
 {
     unsigned lead = *sequence & 0b11000000;
 
@@ -63,13 +63,13 @@ cvt_utf8_get_codepoint(const char *sequence, int *length)
 }
 
 int
-cvt_utf8_encode(const char *src, char *dst, char (*encoder)(uint16_t))
+utf8_encode(const char *src, char *dst, char (*encoder)(uint16_t))
 {
     int i;
     for (i = 0; *src; i++)
     {
         int      length;
-        uint16_t code = cvt_utf8_get_codepoint(src, &length);
+        uint16_t code = utf8_get_codepoint(src, &length);
         if (0 == length)
         {
             return -1;
@@ -238,7 +238,7 @@ _fold_case(uint16_t cp, uint16_t *buff)
 }
 
 int
-cvt_utf8_strncasecmp(const char *str1, const char *str2, unsigned length)
+utf8_strncasecmp(const char *str1, const char *str2, unsigned length)
 {
     errno = 0;
 
@@ -248,8 +248,8 @@ cvt_utf8_strncasecmp(const char *str1, const char *str2, unsigned length)
 
     for (unsigned i = 0; i < length; i++)
     {
-        code1 = cvt_utf8_get_codepoint(str1, &length1);
-        code2 = cvt_utf8_get_codepoint(str2, &length2);
+        code1 = utf8_get_codepoint(str1, &length1);
+        code2 = utf8_get_codepoint(str2, &length2);
 
         _fold_case(code1, fold1);
         _fold_case(code2, fold2);
