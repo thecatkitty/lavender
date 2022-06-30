@@ -7,9 +7,6 @@
 
 #include "glyph.h"
 
-#define VID_PAR(dx, dy, sx, sy)                                                \
-    (uint8_t)(64U * (unsigned)dy * (unsigned)sx / (unsigned)dx / (unsigned)sy)
-
 #define CGA_HIMONO_WIDTH     640
 #define CGA_HIMONO_HEIGHT    200
 #define CGA_HIMONO_LINE      (CGA_HIMONO_WIDTH / 8)
@@ -69,7 +66,7 @@ static void
 FontExecuteGlyphTransformation(const char *gxf, char *glyph);
 
 static int
-VesaReadEdid(edid_block *edid);
+_read_edid(edid_block *edid);
 
 uint16_t
 VidSetMode(uint16_t mode)
@@ -84,24 +81,6 @@ VidGetScreenDimensions(GFX_DIMENSIONS *dim)
 {
     dim->Width = CGA_HIMONO_WIDTH;
     dim->Height = CGA_HIMONO_HEIGHT;
-}
-
-uint16_t
-VidGetPixelAspectRatio(void)
-{
-    const uint8_t ratios[4] = {
-        VID_PAR(16, 10, CGA_HIMONO_WIDTH, CGA_HIMONO_HEIGHT),
-        VID_PAR(4, 3, CGA_HIMONO_WIDTH, CGA_HIMONO_HEIGHT),
-        VID_PAR(5, 4, CGA_HIMONO_WIDTH, CGA_HIMONO_HEIGHT),
-        VID_PAR(16, 9, CGA_HIMONO_WIDTH, CGA_HIMONO_HEIGHT)};
-
-    edid_block edid;
-    if (0 > VesaReadEdid(&edid))
-    {
-        return ratios[EDID_TIMING_ASPECT_4_3];
-    }
-
-    return ratios[edid.standard_timing[0] >> EDID_TIMING_ASPECT];
 }
 
 int
@@ -417,34 +396,4 @@ FontExecuteGlyphTransformation(const char *gxf, char *glyph)
 
         gxf++;
     }
-}
-
-int
-VesaReadEdid(edid_block *edid)
-{
-    short ax;
-
-    ax = bios_get_vbedc_capabilities();
-    if (0x4F != (ax & 0xFF))
-    {
-        ERR(VID_UNSUPPORTED);
-    }
-
-    if (0 != (ax & 0xFF00))
-    {
-        ERR(VID_FAILED);
-    }
-
-    ax = bios_read_edid(edid);
-    if (0x4F != (ax & 0xFF))
-    {
-        ERR(VID_UNSUPPORTED);
-    }
-
-    if (0 != (ax & 0xFF00))
-    {
-        ERR(VID_UNSUPPORTED);
-    }
-
-    return 0;
 }

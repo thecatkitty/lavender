@@ -47,8 +47,6 @@ VidConvertToLocal(uint16_t wc);
 
 #include <err.h>
 
-#define ERR_VID_UNSUPPORTED ERR_CODE(ERR_FACILITY_VID, 0)
-#define ERR_VID_FAILED      ERR_CODE(ERR_FACILITY_VID, 1)
 #define ERR_VID_FORMAT      ERR_CODE(ERR_FACILITY_VID, 2)
 
 #endif // _VID_H_
