@@ -14,16 +14,6 @@ IF_LANG(PLK, .ascii  "Wideo$")
 .section .errm
 
 
-.byte   ERR_VID_UNSUPPORTED
-IF_LANG(CSY, .ascii  "Byla pozadovana nepodporovana funkce$")
-IF_LANG(ENU, .ascii  "Unsupported feature requested$")
-IF_LANG(PLK, .ascii  "Zazadano niewspieranej funkcjonalnosci$")
-
-.byte   ERR_VID_FAILED
-IF_LANG(CSY, .ascii  "Operace se nezdarila$")
-IF_LANG(ENU, .ascii  "Operation failed$")
-IF_LANG(PLK, .ascii  "Operacja nie powiodla sie$")
-
 .byte   ERR_VID_FORMAT
 IF_LANG(CSY, .ascii  "Nevhodny graficky format$")
 IF_LANG(ENU, .ascii  "Improper graphics format$")
