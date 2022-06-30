@@ -5,10 +5,11 @@
 
 #include <gfx.h>
 
-// Set video mode
-// Returns previous video mode
-extern uint16_t
-VidSetMode(uint16_t mode);
+extern bool
+VidInitialize(void);
+
+extern void
+VidCleanup(void);
 
 // Get width and height of the screen area in pixels
 extern void
@@ -34,12 +35,6 @@ VidFillRectangle(GFX_DIMENSIONS *rect, uint16_t x, uint16_t y, GFX_COLOR color);
 extern int
 VidDrawText(const char *str, uint16_t x, uint16_t y);
 
-extern void
-VidLoadFont(void);
-
-extern void
-VidUnloadFont(void);
-
 extern char
 VidConvertToLocal(uint16_t wc);
 
@@ -47,6 +42,6 @@ VidConvertToLocal(uint16_t wc);
 
 #include <err.h>
 
-#define ERR_VID_FORMAT      ERR_CODE(ERR_FACILITY_VID, 2)
+#define ERR_VID_FORMAT ERR_CODE(ERR_FACILITY_VID, 2)
 
 #endif // _VID_H_
