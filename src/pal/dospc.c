@@ -348,13 +348,6 @@ pal_sleep(unsigned ms)
     }
 }
 
-void
-pal_beep(uint16_t divisor)
-{
-    _pit_init_channel(2, PIT_MODE_SQUARE_WAVE_GEN, divisor);
-    _outp(0x61, _inp(0x61) | SPKR_ENABLE);
-}
-
 hasset
 pal_open_asset(const char *name, int flags)
 {
@@ -617,4 +610,17 @@ bool
 dospc_is_dosbox(void)
 {
     return 0 == _fmemcmp((const char far *)0xF000E061, "DOSBox", 6);
+}
+
+void
+dospc_beep(uint16_t divisor)
+{
+    _pit_init_channel(2, PIT_MODE_SQUARE_WAVE_GEN, divisor);
+    _outp(0x61, _inp(0x61) | SPKR_ENABLE);
+}
+
+void
+dospc_silence(void)
+{
+    nosound();
 }

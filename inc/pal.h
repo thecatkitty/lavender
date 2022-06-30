@@ -24,9 +24,6 @@ pal_cleanup(int status);
 extern void
 pal_sleep(unsigned ms);
 
-extern void
-pal_beep(uint16_t divisor);
-
 extern hasset
 pal_open_asset(const char *name, int flags);
 
