@@ -12,6 +12,10 @@
 #include <snd.h>
 #include <vid.h>
 
+#define CGA_HIMONO_WIDTH  640
+#define CGA_HIMONO_HEIGHT 200
+#define CGA_HIMONO_LINE   (CGA_HIMONO_WIDTH / 8)
+
 extern const char StrSldEnterSerial[];
 extern const char StrCrgEncryptedLine1[];
 extern const char StrSldSerialLine1[];
@@ -96,10 +100,10 @@ SldExecuteText(SLD_ENTRY *sld)
     switch (sld->Horizontal)
     {
     case SLD_ALIGN_CENTER:
-        x = (VID_CGA_HIMONO_LINE - sld->Length) / 2;
+        x = (CGA_HIMONO_LINE - sld->Length) / 2;
         break;
     case SLD_ALIGN_RIGHT:
-        x = VID_CGA_HIMONO_LINE - sld->Length;
+        x = CGA_HIMONO_LINE - sld->Length;
         break;
     default:
         x = sld->Horizontal;
@@ -136,10 +140,10 @@ SldExecuteBitmap(SLD_ENTRY *sld)
     switch (sld->Horizontal)
     {
     case SLD_ALIGN_CENTER:
-        x = (VID_CGA_HIMONO_LINE - bm.WidthBytes) / 2;
+        x = (CGA_HIMONO_LINE - bm.WidthBytes) / 2;
         break;
     case SLD_ALIGN_RIGHT:
-        x = VID_CGA_HIMONO_LINE - bm.WidthBytes;
+        x = CGA_HIMONO_LINE - bm.WidthBytes;
         break;
     default:
         x = sld->Horizontal;
@@ -158,10 +162,10 @@ SldExecuteRectangle(SLD_ENTRY *sld)
     switch (sld->Horizontal)
     {
     case SLD_ALIGN_CENTER:
-        x = (VID_CGA_HIMONO_WIDTH - sld->Shape.Dimensions.Width) / 2;
+        x = (CGA_HIMONO_WIDTH - sld->Shape.Dimensions.Width) / 2;
         break;
     case SLD_ALIGN_RIGHT:
-        x = VID_CGA_HIMONO_HEIGHT - sld->Shape.Dimensions.Height;
+        x = CGA_HIMONO_HEIGHT - sld->Shape.Dimensions.Height;
         break;
     default:
         x = sld->Horizontal;

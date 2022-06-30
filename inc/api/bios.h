@@ -35,6 +35,8 @@ bios_get_keystroke(void)
     return ax;
 }
 
+#define BIOS_VIDEO_MODE_CGAHIMONO 6
+
 static inline void
 bios_set_video_mode(uint8_t mode)
 {

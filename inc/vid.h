@@ -5,16 +5,14 @@
 
 #include <gfx.h>
 
-#define VID_MODE_CGA_HIMONO 6 // 640x200x1
-
-#define VID_CGA_HIMONO_WIDTH  640
-#define VID_CGA_HIMONO_HEIGHT 200
-#define VID_CGA_HIMONO_LINE   (VID_CGA_HIMONO_WIDTH / 8)
-
 // Set video mode
 // Returns previous video mode
 extern uint16_t
 VidSetMode(uint16_t mode);
+
+// Get width and height of the screen area in pixels
+extern void
+VidGetScreenDimensions(GFX_DIMENSIONS *dim);
 
 // Get pixel aspect ratio
 // Returns pixel aspect ratio (PAR = 64 / value), default value on error

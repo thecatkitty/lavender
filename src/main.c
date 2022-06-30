@@ -1,3 +1,4 @@
+#include <api/bios.h>
 #include <pal.h>
 #include <sld.h>
 #include <vid.h>
@@ -26,7 +27,7 @@ main(int argc, char *argv[])
     }
 
     // Set video mode
-    uint16_t oldMode = VidSetMode(VID_MODE_CGA_HIMONO);
+    uint16_t oldMode = VidSetMode(BIOS_VIDEO_MODE_CGAHIMONO);
     VidLoadFont();
 
     // Start the slideshow
