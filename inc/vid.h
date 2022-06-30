@@ -11,16 +11,6 @@
 #define VID_CGA_HIMONO_HEIGHT 200
 #define VID_CGA_HIMONO_LINE   (VID_CGA_HIMONO_WIDTH / 8)
 
-#pragma pack(push, 1)
-typedef struct
-{
-    uint16_t CodePoint;
-    char *   Overlay;
-    char *   Transformation;
-    char     Base;
-} VID_CHARACTER_DESCRIPTOR;
-#pragma pack(pop)
-
 // Set video mode
 // Returns previous video mode
 extern uint16_t
@@ -62,20 +52,5 @@ VidConvertToLocal(uint16_t wc);
 #define ERR_VID_UNSUPPORTED ERR_CODE(ERR_FACILITY_VID, 0)
 #define ERR_VID_FAILED      ERR_CODE(ERR_FACILITY_VID, 1)
 #define ERR_VID_FORMAT      ERR_CODE(ERR_FACILITY_VID, 2)
-
-#define VID_GXF_CMD_GROW   0
-#define VID_GXF_CMD_SELECT 1
-#define VID_GXF_CMD_MOVE   2
-#define VID_GXF_CMD_CLEAR  3
-
-#ifdef __ASSEMBLER__
-
-#define GXF_GROW(n)   ((VID_GXF_CMD_GROW << 4) | (n & 0xF))
-#define GXF_SELECT(n) ((VID_GXF_CMD_SELECT << 4) | (n & 0xF))
-#define GXF_MOVE(n)   ((VID_GXF_CMD_MOVE << 4) | (n & 0xF))
-#define GXF_CLEAR(n)  ((VID_GXF_CMD_CLEAR << 4) | (n & 0xF))
-#define GXF_END       GXF_GROW(0)
-
-#endif // __ASSEMBLER__
 
 #endif // _VID_H_
