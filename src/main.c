@@ -1,4 +1,3 @@
-#include <api/bios.h>
 #include <pal.h>
 #include <sld.h>
 #include <vid.h>
@@ -26,16 +25,14 @@ main(int argc, char *argv[])
         goto cleanup;
     }
 
-    // Set video mode
-    uint16_t oldMode = VidSetMode(BIOS_VIDEO_MODE_CGAHIMONO);
-    VidLoadFont();
+    // Initialize video
+    VidInitialize();
 
     // Start the slideshow
     status = SldRunScript(data, pal_get_asset_size(slides));
 
     // Clean up
-    VidUnloadFont();
-    VidSetMode(oldMode);
+    VidCleanup();
 
 cleanup:
     pal_cleanup(status);

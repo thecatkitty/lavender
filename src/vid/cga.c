@@ -45,6 +45,7 @@ static const char BRUSH_BLACK[] = {0x00};
 static const char BRUSH_WHITE[] = {0xFF};
 static const char BRUSH_GRAY50[] = {0x55, 0xAA};
 
+static uint16_t  s_PreviousMode;
 static dospc_isr s_PreviousFontPtr;
 
 static void
@@ -63,17 +64,22 @@ static const char *
 CgaGetBrush(GFX_COLOR color, int *height);
 
 static void
+FontLoad(void);
+
+static void
 FontExecuteGlyphTransformation(const char *gxf, char *glyph);
 
 static int
 _read_edid(edid_block *edid);
 
-uint16_t
-VidSetMode(uint16_t mode)
+bool
+VidInitialize(void)
 {
-    uint16_t previous = bios_get_video_mode() & 0xFF;
-    bios_set_video_mode((uint8_t)mode);
-    return previous;
+    FontLoad();
+
+    s_PreviousMode = bios_get_video_mode() & 0xFF;
+    bios_set_video_mode(BIOS_VIDEO_MODE_CGAHIMONO);
+    return true;
 }
 
 void
@@ -227,7 +233,7 @@ VidDrawText(const char *str, uint16_t x, uint16_t y)
 }
 
 void
-VidLoadFont(void)
+FontLoad(void)
 {
     _disable();
     s_PreviousFontPtr = _dos_getvect(INT_CGA_EXTENDED_FONT_PTR);
@@ -282,9 +288,10 @@ VidLoadFont(void)
 }
 
 void
-VidUnloadFont(void)
+VidCleanup(void)
 {
     _dos_setvect(INT_CGA_EXTENDED_FONT_PTR, (dospc_isr)s_PreviousFontPtr);
+    bios_set_video_mode((uint8_t)s_PreviousMode);
 }
 
 char
