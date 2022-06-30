@@ -12,9 +12,7 @@
 #include <snd.h>
 #include <vid.h>
 
-#define CGA_HIMONO_WIDTH  640
-#define CGA_HIMONO_HEIGHT 200
-#define CGA_HIMONO_LINE   (CGA_HIMONO_WIDTH / 8)
+#define LINE_WIDTH 80
 
 extern const char StrSldEnterSerial[];
 extern const char StrCrgEncryptedLine1[];
@@ -28,6 +26,8 @@ typedef struct
     uint32_t    Crc;
     uint32_t   *LongPart;
 } SLD_KEY_VALIDATION;
+
+static GFX_DIMENSIONS s_Screen;
 
 static uint16_t s_Accumulator = 0;
 
@@ -61,6 +61,11 @@ SldIsVolumeSerialNumberValid(const char *sn);
 int
 SldExecuteEntry(SLD_ENTRY *sld)
 {
+    if (0 == s_Screen.Width)
+    {
+        VidGetScreenDimensions(&s_Screen);
+    }
+
     pal_sleep(sld->Delay);
 
     switch (sld->Type)
@@ -100,10 +105,10 @@ SldExecuteText(SLD_ENTRY *sld)
     switch (sld->Horizontal)
     {
     case SLD_ALIGN_CENTER:
-        x = (CGA_HIMONO_LINE - sld->Length) / 2;
+        x = (LINE_WIDTH - sld->Length) / 2;
         break;
     case SLD_ALIGN_RIGHT:
-        x = CGA_HIMONO_LINE - sld->Length;
+        x = LINE_WIDTH - sld->Length;
         break;
     default:
         x = sld->Horizontal;
@@ -140,10 +145,10 @@ SldExecuteBitmap(SLD_ENTRY *sld)
     switch (sld->Horizontal)
     {
     case SLD_ALIGN_CENTER:
-        x = (CGA_HIMONO_LINE - bm.WidthBytes) / 2;
+        x = (LINE_WIDTH - bm.WidthBytes) / 2;
         break;
     case SLD_ALIGN_RIGHT:
-        x = CGA_HIMONO_LINE - bm.WidthBytes;
+        x = LINE_WIDTH - bm.WidthBytes;
         break;
     default:
         x = sld->Horizontal;
@@ -162,10 +167,10 @@ SldExecuteRectangle(SLD_ENTRY *sld)
     switch (sld->Horizontal)
     {
     case SLD_ALIGN_CENTER:
-        x = (CGA_HIMONO_WIDTH - sld->Shape.Dimensions.Width) / 2;
+        x = (s_Screen.Width - sld->Shape.Dimensions.Width) / 2;
         break;
     case SLD_ALIGN_RIGHT:
-        x = CGA_HIMONO_HEIGHT - sld->Shape.Dimensions.Height;
+        x = s_Screen.Height - sld->Shape.Dimensions.Height;
         break;
     default:
         x = sld->Horizontal;
