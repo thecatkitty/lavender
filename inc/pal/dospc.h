@@ -10,4 +10,10 @@ typedef void interrupt far (*ISR)(void);
 extern bool
 dospc_is_dosbox(void);
 
+extern void
+dospc_beep(uint16_t divisor);
+
+extern void
+dospc_silence(void);
+
 #endif // _PAL_DOSPC_H_
