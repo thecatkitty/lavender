@@ -1,8 +1,7 @@
+#include <dos.h>
 #include <libi86/string.h>
 
 #include <api/bios.h>
-#include <api/dos.h>
-#include <dev/cga.h>
 #include <pal/dospc.h>
 #include <vid.h>
 
@@ -10,9 +9,22 @@
 
 #define VID_PAR(dx, dy, sx, sy)                                                \
     (uint8_t)(64U * (unsigned)dy * (unsigned)sx / (unsigned)dx / (unsigned)sy)
-#define VID_CGA_HIMONO_XY(x, y) ((x) / 8 + (y / 2) * VID_CGA_HIMONO_LINE)
 
-#define CGA_PLANE(y) (((y) % 2) ? CGA_PLANE1 : CGA_PLANE0)
+#define CGA_HIMONO_WIDTH     640
+#define CGA_HIMONO_HEIGHT    200
+#define CGA_HIMONO_LINE      (CGA_HIMONO_WIDTH / 8)
+#define CGA_HIMONO_MEM       0xB800 // Video memory base
+#define CGA_HIMONO_PLANE     0x2000 // Odd plane offset
+#define CGA_CHARACTER_HEIGHT 8      // Text mode character height
+
+// IVT pointer to font data over code point 127
+#define INT_CGA_EXTENDED_FONT_PTR 31
+
+// 0FFA6Eh - ROM font base
+#define CGA_BASIC_FONT_SEGMENT 0xFFA0
+#define CGA_BASIC_FONT_OFFSET  0x6E
+
+#define VID_CGA_HIMONO_XY(x, y) ((x) / 8 + (y / 2) * CGA_HIMONO_LINE)
 #define CGA_FOR_LINES(start, end, body)                                        \
     {                                                                          \
         far char *plane = CGA_PLANE(start);                                    \
@@ -29,6 +41,8 @@ extern const vid_glyph __vid_font_8x8[];
 
 static far void *const CGA_PLANE0 = MK_FP(CGA_HIMONO_MEM, 0);
 static far void *const CGA_PLANE1 = MK_FP(CGA_HIMONO_MEM, CGA_HIMONO_PLANE);
+
+#define CGA_PLANE(y) (((y) % 2) ? CGA_PLANE1 : CGA_PLANE0)
 
 static const char BRUSH_BLACK[] = {0x00};
 static const char BRUSH_WHITE[] = {0xFF};
@@ -65,14 +79,21 @@ VidSetMode(uint16_t mode)
     return previous;
 }
 
+void
+VidGetScreenDimensions(GFX_DIMENSIONS *dim)
+{
+    dim->Width = CGA_HIMONO_WIDTH;
+    dim->Height = CGA_HIMONO_HEIGHT;
+}
+
 uint16_t
 VidGetPixelAspectRatio(void)
 {
     const uint8_t ratios[4] = {
-        VID_PAR(16, 10, VID_CGA_HIMONO_WIDTH, VID_CGA_HIMONO_HEIGHT),
-        VID_PAR(4, 3, VID_CGA_HIMONO_WIDTH, VID_CGA_HIMONO_HEIGHT),
-        VID_PAR(5, 4, VID_CGA_HIMONO_WIDTH, VID_CGA_HIMONO_HEIGHT),
-        VID_PAR(16, 9, VID_CGA_HIMONO_WIDTH, VID_CGA_HIMONO_HEIGHT)};
+        VID_PAR(16, 10, CGA_HIMONO_WIDTH, CGA_HIMONO_HEIGHT),
+        VID_PAR(4, 3, CGA_HIMONO_WIDTH, CGA_HIMONO_HEIGHT),
+        VID_PAR(5, 4, CGA_HIMONO_WIDTH, CGA_HIMONO_HEIGHT),
+        VID_PAR(16, 9, CGA_HIMONO_WIDTH, CGA_HIMONO_HEIGHT)};
 
     edid_block edid;
     if (0 > VesaReadEdid(&edid))
@@ -94,17 +115,17 @@ VidDrawBitmap(GFX_BITMAP *bm, uint16_t x, uint16_t y)
     far void *bits = bm->Bits;
     far void *plane0 = CGA_PLANE0;
     far void *plane1 = CGA_PLANE1;
-    plane0 += x + y * (VID_CGA_HIMONO_LINE / 2);
-    plane1 += x + y * (VID_CGA_HIMONO_LINE / 2);
+    plane0 += x + y * (CGA_HIMONO_LINE / 2);
+    plane1 += x + y * (CGA_HIMONO_LINE / 2);
 
     for (uint16_t line = 0; line < bm->Height; line += 2)
     {
         _fmemcpy(plane0, bits, bm->WidthBytes);
-        plane0 += VID_CGA_HIMONO_LINE;
+        plane0 += CGA_HIMONO_LINE;
         bits += bm->WidthBytes;
 
         _fmemcpy(plane1, bits, bm->WidthBytes);
-        plane1 += VID_CGA_HIMONO_LINE;
+        plane1 += CGA_HIMONO_LINE;
         bits += bm->WidthBytes;
     }
 }
@@ -161,7 +182,7 @@ VidDrawRectangle(GFX_DIMENSIONS *rect, uint16_t x, uint16_t y, GFX_COLOR color)
 
     for (uint16_t byte = left / 8 + (0 != (left % 8)); byte < right / 8; byte++)
     {
-        plane[top / 2 * VID_CGA_HIMONO_LINE + byte] = pattern;
+        plane[top / 2 * CGA_HIMONO_LINE + byte] = pattern;
     }
 
     // Bottom line
@@ -172,7 +193,7 @@ VidDrawRectangle(GFX_DIMENSIONS *rect, uint16_t x, uint16_t y, GFX_COLOR color)
 
     for (uint16_t byte = left / 8 + (0 != (left % 8)); byte < right / 8; byte++)
     {
-        plane[bottom / 2 * VID_CGA_HIMONO_LINE + byte] = pattern;
+        plane[bottom / 2 * CGA_HIMONO_LINE + byte] = pattern;
     }
 
     // Vertical lines
@@ -336,7 +357,7 @@ void
 CgaDrawLine(
     far char *plane, uint16_t y, uint16_t left, uint16_t right, char pattern)
 {
-    uint16_t offset = y / 2 * VID_CGA_HIMONO_LINE;
+    uint16_t offset = y / 2 * CGA_HIMONO_LINE;
     for (uint16_t byte = left / 8 + (0 != (left % 8)); byte < right / 8; byte++)
     {
         plane[offset + byte] = pattern;
