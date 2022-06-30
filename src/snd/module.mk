@@ -1,2 +1,1 @@
-ASSOURCES := $(ASSOURCES) $(DIR)/messages.S
-CCSOURCES := $(CCSOURCES) $(DIR)/spk.c
+CCSOURCES := $(CCSOURCES) $(DIR)/snd.c $(DIR)/pcspk.c

@@ -25,6 +25,7 @@ include $(SRC)/$(DIR)/module.mk
 DIR	    := sld
 include $(SRC)/$(DIR)/module.mk
 
+ASSOURCES += messages.S
 CCSOURCES += main.c rstd.c
 
 DIR	    := tools
