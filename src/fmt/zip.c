@@ -2,7 +2,7 @@
 #include <errno.h>
 #include <string.h>
 
-#include <cvt.h>
+#include <fmt/utf8.h>
 #include <fmt/zip.h>
 
 static int
@@ -122,7 +122,7 @@ _match_file_name(const char *name, uint16_t length, zip_cdir_file_header *cfh)
 
     // Case-insensitive comparison
     if ((length == cfh->name_length) &&
-        (0 == cvt_utf8_strncasecmp(name, cfh->name, cfh->name_length)))
+        (0 == utf8_strncasecmp(name, cfh->name, cfh->name_length)))
     {
         return 0;
     }
@@ -145,7 +145,7 @@ _match_file_name(const char *name, uint16_t length, zip_cdir_file_header *cfh)
         uint16_t uni_name_length =
             uni_name->total_size - sizeof(zip_extra_unicode_path_field);
         if (0 ==
-            cvt_utf8_strncasecmp(name, uni_name->unicode_name, uni_name_length))
+            utf8_strncasecmp(name, uni_name->unicode_name, uni_name_length))
         {
             return 0;
         }

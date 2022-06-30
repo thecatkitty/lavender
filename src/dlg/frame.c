@@ -2,8 +2,8 @@
 #include <string.h>
 
 #include <api/bios.h>
-#include <cvt.h>
 #include <dlg.h>
+#include <fmt/utf8.h>
 #include <gfx.h>
 #include <pal.h>
 #include <vid.h>
@@ -51,7 +51,7 @@ DlgDrawFrame(DLG_FRAME *frame, const char *title)
     VidDrawLine(&titleLine, left, top + 9, GFX_COLOR_BLACK);
 
     char *titleConv = alloca(strlen(title) + 1);
-    cvt_utf8_encode(title, titleConv, VidConvertToLocal);
+    utf8_encode(title, titleConv, VidConvertToLocal);
 
     int            titleLength = strlen(titleConv);
     GFX_DIMENSIONS stripe = {(window.Width - ((titleLength + 2) * 8)) / 2 - 1,

@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 #include <api/dos.h>
-#include <cvt.h>
+#include <fmt/utf8.h>
 #include <sld.h>
 #include <vid.h>
 
@@ -208,7 +208,7 @@ int
 SldConvertText(const char *str, SLD_ENTRY *inOut)
 {
     inOut->Length =
-        cvt_utf8_encode(inOut->Content, inOut->Content, VidConvertToLocal);
+        utf8_encode(inOut->Content, inOut->Content, VidConvertToLocal);
     if (0 > inOut->Length)
     {
         ERR(KER_INVALID_SEQUENCE);
