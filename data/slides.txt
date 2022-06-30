@@ -2,7 +2,7 @@
 0       r   0   <640 200 B
 0       T   18  ^Lavender
 500     B   22  ^celolg<>.pbm
-500     T   19  ^Version 0.2
+500     T   19  ^Version 0.3
 500     T   23  ^Copyright (c) Mateusz Karcz, 2021-2022. Shared under the MIT License.
 0       K
 0       =   3   ExtendedFont
