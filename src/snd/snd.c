@@ -1,6 +1,5 @@
 #include <fmt/spk.h>
 #include <pal.h>
-#include <pal/dospc.h>
 #include <snd.h>
 
 static volatile unsigned _ticks = 0;
@@ -23,18 +22,18 @@ _callback(void *context)
     if (SPK_NOTE_DURATION_STOP == _sequence->duration)
     {
         pal_unregister_timer_callback(_timer);
-        dospc_silence();
+        snd_silence();
         return;
     }
 
     _ticks = _sequence->duration - 1;
     if (0 == _sequence->divisor)
     {
-        dospc_silence();
+        snd_silence();
     }
     else
     {
-        dospc_beep(_sequence->divisor);
+        snd_beep(_sequence->divisor);
     }
 
     _sequence++;
