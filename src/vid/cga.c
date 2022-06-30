@@ -6,6 +6,8 @@
 #include <pal/dospc.h>
 #include <vid.h>
 
+#include "glyph.h"
+
 #define VID_PAR(dx, dy, sx, sy)                                                \
     (uint8_t)(64U * (unsigned)dy * (unsigned)sx / (unsigned)dx / (unsigned)sy)
 #define VID_CGA_HIMONO_XY(x, y) ((x) / 8 + (y / 2) * VID_CGA_HIMONO_LINE)
@@ -22,8 +24,8 @@
             body;                                                              \
     }
 
-extern char                     __VidExtendedFont[];
-extern VID_CHARACTER_DESCRIPTOR __VidFontData[];
+extern char            __vid_xfont[];
+extern const vid_glyph __vid_font_8x8[];
 
 static far void *const CGA_PLANE0 = MK_FP(CGA_HIMONO_MEM, 0);
 static far void *const CGA_PLANE1 = MK_FP(CGA_HIMONO_MEM, CGA_HIMONO_PLANE);
@@ -229,40 +231,40 @@ VidLoadFont(void)
 {
     _disable();
     s_PreviousFontPtr = _dos_getvect(INT_CGA_EXTENDED_FONT_PTR);
-    _dos_setvect(INT_CGA_EXTENDED_FONT_PTR, (ISR)__VidExtendedFont);
+    _dos_setvect(INT_CGA_EXTENDED_FONT_PTR, (ISR)__vid_xfont);
     _enable();
 
     far const char *bfont =
         MK_FP(CGA_BASIC_FONT_SEGMENT, CGA_BASIC_FONT_OFFSET);
-    char                     *xfont = __VidExtendedFont;
-    VID_CHARACTER_DESCRIPTOR *fdata = __VidFontData;
-    bool                      isDosBox = dospc_is_dosbox();
+    char            *xfont = __vid_xfont;
+    const vid_glyph *fdata = __vid_font_8x8;
+    bool             isDosBox = dospc_is_dosbox();
 
     if (isDosBox)
     {
         xfont++; // DOSBox ROM font is moved one line to the bottom
     }
 
-    while (0xFFFF != fdata->CodePoint)
+    while (0xFFFF != fdata->codepoint)
     {
-        if (NULL == fdata->Overlay)
+        if (NULL == fdata->overlay)
         {
             fdata++;
             continue;
         }
 
-        if (0 != fdata->Base)
+        if (0 != fdata->base)
         {
-            _fmemcpy(xfont, bfont + 8 * fdata->Base, 8);
+            _fmemcpy(xfont, bfont + 8 * fdata->base, 8);
         }
 
-        if (NULL != fdata->Transformation)
+        if (NULL != fdata->transformation)
         {
-            FontExecuteGlyphTransformation(fdata->Transformation, xfont);
+            FontExecuteGlyphTransformation(fdata->transformation, xfont);
         }
 
-        unsigned ovheight = fdata->Overlay[0] & 0xF;
-        unsigned ovtop = (unsigned)fdata->Overlay[0] >> 4;
+        unsigned ovheight = fdata->overlay[0] & 0xF;
+        unsigned ovtop = (unsigned)fdata->overlay[0] >> 4;
 
         if (isDosBox && (8 <= (ovtop + ovheight)))
         {
@@ -271,7 +273,7 @@ VidLoadFont(void)
 
         for (unsigned i = 0; i < ovheight; i++)
         {
-            xfont[ovtop + i] |= fdata->Overlay[1 + i];
+            xfont[ovtop + i] |= fdata->overlay[1 + i];
         }
 
         fdata++;
@@ -293,26 +295,26 @@ VidConvertToLocal(uint16_t wc)
         return wc;
     }
 
-    uint8_t                   local = 0x80;
-    VID_CHARACTER_DESCRIPTOR *fdata = __VidFontData;
+    uint8_t          local = 0x80;
+    const vid_glyph *fdata = __vid_font_8x8;
 
-    while (wc > fdata->CodePoint)
+    while (wc > fdata->codepoint)
     {
-        if (NULL != fdata->Overlay)
+        if (NULL != fdata->overlay)
         {
             local++;
         }
         fdata++;
     }
 
-    if (wc != fdata->CodePoint)
+    if (wc != fdata->codepoint)
     {
         return '?';
     }
 
-    if (NULL == fdata->Overlay)
+    if (NULL == fdata->overlay)
     {
-        return fdata->Base;
+        return fdata->base;
     }
 
     return local;
@@ -370,21 +372,21 @@ FontExecuteGlyphTransformation(const char *gxf, char *glyph)
 
         switch (command)
         {
-        case VID_GXF_CMD_GROW:
+        case GXF_CMD_GROW:
             selLength += param;
             break;
 
-        case VID_GXF_CMD_SELECT:
+        case GXF_CMD_SELECT:
             selStart = glyph + param;
             selLength = 1;
             break;
 
-        case VID_GXF_CMD_MOVE:
+        case GXF_CMD_MOVE:
             memmove(selStart + param, selStart, selLength);
             memset(selStart, 0, param);
             break;
 
-        case VID_GXF_CMD_CLEAR:
+        case GXF_CMD_CLEAR:
             glyph[param] = 0;
             break;
 
