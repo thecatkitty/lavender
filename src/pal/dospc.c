@@ -13,6 +13,7 @@
 #include <fmt/exe.h>
 #include <fmt/fat.h>
 #include <fmt/zip.h>
+#include <gfx.h>
 #include <pal.h>
 #include <pal/dospc.h>
 
@@ -293,11 +294,18 @@ pal_initialize(void)
     _pit_init_channel(0, PIT_MODE_RATE_GEN, PIT_FREQ_DIVISOR);
 
     memset(_assets, 0, sizeof(_assets));
+
+    if (!gfx_initialize())
+    {
+        pal_cleanup(EXIT_ERRNO);
+    }
 }
 
 void
 pal_cleanup(int status)
 {
+    gfx_cleanup();
+
     _dos_setvect(INT_PIT, _bios_isr);
     _pit_init_channel(0, PIT_MODE_RATE_GEN, 0);
 

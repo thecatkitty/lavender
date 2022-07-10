@@ -1,4 +1,3 @@
-#include <gfx.h>
 #include <pal.h>
 #include <sld.h>
 
@@ -25,14 +24,8 @@ main(int argc, char *argv[])
         goto cleanup;
     }
 
-    // Initialize video
-    gfx_initialize();
-
     // Start the slideshow
     status = SldRunScript(data, pal_get_asset_size(slides));
-
-    // Clean up
-    gfx_cleanup();
 
 cleanup:
     pal_cleanup(status);
