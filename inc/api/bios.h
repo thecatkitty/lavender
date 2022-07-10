@@ -35,15 +35,6 @@ bios_get_keystroke(void)
     return ax;
 }
 
-#define BIOS_VIDEO_MODE_CGAHIMONO 6
-
-static inline void
-bios_set_video_mode(uint8_t mode)
-{
-    uint16_t ax;
-    asm volatile("int $0x10" : "=a"(ax) : "0"(mode) : "cc", "bx", "cx", "dx");
-}
-
 static inline void
 bios_set_cursor_position(uint8_t page, uint16_t position)
 {
@@ -63,17 +54,6 @@ bios_write_character(uint8_t  page,
                  :
                  : "a"((uint16_t)(0x09 << 8) | character),
                    "b"((uint16_t)(page << 8) | attribute), "c"(count));
-}
-
-static inline uint16_t
-bios_get_video_mode()
-{
-    uint16_t ax;
-    asm volatile("int $0x10"
-                 : "=a"(ax)
-                 : "Rah"((uint8_t)0x0F)
-                 : "cc", "bx", "cx", "dx");
-    return ax;
 }
 
 static inline short
