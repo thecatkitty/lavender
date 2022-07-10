@@ -8,21 +8,7 @@
 #define PBM_RAW_MAGIC 0x3450
 
 static int
-PbmLoadBitmap(const char *data, GFX_BITMAP *bm);
-
-static int
 PbmLoadU(const char *data, uint16_t *out);
-
-int
-GfxLoadBitmap(const void *data, GFX_BITMAP *bm)
-{
-    if (PBM_RAW_MAGIC == *(uint16_t *)data)
-    {
-        return PbmLoadBitmap((const char *)data, bm);
-    }
-
-    ERR(GFX_FORMAT);
-}
 
 int
 PbmLoadBitmap(const char *data, GFX_BITMAP *bm)

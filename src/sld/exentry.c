@@ -135,7 +135,7 @@ SldExecuteBitmap(SLD_ENTRY *sld)
     }
 
     GFX_BITMAP bm;
-    status = GfxLoadBitmap(data, &bm);
+    status = PbmLoadBitmap(data, &bm);
     if (0 > status)
     {
         return status;
