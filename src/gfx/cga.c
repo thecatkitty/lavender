@@ -1,5 +1,6 @@
 #include <dos.h>
 #include <errno.h>
+#include <graph.h>
 #include <libi86/string.h>
 
 #include <api/bios.h>
@@ -90,6 +91,14 @@ _execute_glyph_trasformation(const char *gxf, char *glyph)
 bool
 gfx_initialize(void)
 {
+    // Set video mode
+    _prev_mode = _getvideomode();
+    if (!_setvideomode(_HRESBW))
+    {
+        errno = ENODEV;
+        return false;
+    }
+
     // Save and replace extended font pointer
     _disable();
     _prev_fontptr = _dos_getvect(INT_CGA_EXTENDED_FONT_PTR);
@@ -143,9 +152,6 @@ gfx_initialize(void)
         xfont += 8;
     }
 
-    // Set video mode
-    _prev_mode = bios_get_video_mode() & 0xFF;
-    bios_set_video_mode(BIOS_VIDEO_MODE_CGAHIMONO);
     return true;
 }
 
@@ -355,7 +361,7 @@ void
 gfx_cleanup(void)
 {
     _dos_setvect(INT_CGA_EXTENDED_FONT_PTR, (dospc_isr)_prev_fontptr);
-    bios_set_video_mode((uint8_t)_prev_mode);
+    _setvideomode(_prev_mode);
 }
 
 char
