@@ -11,6 +11,6 @@ extern bool
 pbm_is_format(hasset asset);
 
 extern bool
-pbm_load_bitmap(GFX_BITMAP *bm, hasset asset);
+pbm_load_bitmap(gfx_bitmap *bm, hasset asset);
 
 #endif

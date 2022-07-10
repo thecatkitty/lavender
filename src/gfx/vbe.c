@@ -1,5 +1,5 @@
 #include <api/bios.h>
-#include <vid.h>
+#include <gfx.h>
 
 #define _par(dx, dy, sx, sy)                                                   \
     (uint8_t)(64U * (unsigned)dy * (unsigned)sx / (unsigned)dx / (unsigned)sy)
@@ -35,15 +35,15 @@ _read_edid(edid_block *edid)
 }
 
 uint16_t
-VidGetPixelAspectRatio(void)
+gfx_get_pixel_aspect(void)
 {
-    GFX_DIMENSIONS screen;
-    VidGetScreenDimensions(&screen);
+    gfx_dimensions screen;
+    gfx_get_screen_dimensions(&screen);
 
-    uint8_t ratios[4] = {_par(16, 10, screen.Width, screen.Height),
-                         _par(4, 3, screen.Width, screen.Height),
-                         _par(5, 4, screen.Width, screen.Height),
-                         _par(16, 9, screen.Width, screen.Height)};
+    uint8_t ratios[4] = {_par(16, 10, screen.width, screen.height),
+                         _par(4, 3, screen.width, screen.height),
+                         _par(5, 4, screen.width, screen.height),
+                         _par(16, 9, screen.width, screen.height)};
 
     edid_block edid;
     if (0 > _read_edid(&edid))

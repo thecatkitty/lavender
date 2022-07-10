@@ -6,20 +6,19 @@
 #include <fmt/utf8.h>
 #include <gfx.h>
 #include <pal.h>
-#include <vid.h>
 
-GFX_DIMENSIONS screen = {640, 200};
+gfx_dimensions screen = {640, 200};
 
 int
 DlgDrawBackground(void)
 {
-    VidFillRectangle(&screen, 0, 0, GFX_COLOR_GRAY50);
+    gfx_fill_rectangle(&screen, 0, 0, GFX_COLOR_GRAY);
 
-    GFX_DIMENSIONS bar = {screen.Width, 9};
-    VidFillRectangle(&bar, 0, 0, GFX_COLOR_WHITE);
+    gfx_dimensions bar = {screen.width, 9};
+    gfx_fill_rectangle(&bar, 0, 0, GFX_COLOR_WHITE);
 
-    GFX_DIMENSIONS hline = {screen.Width - 1, 1};
-    VidDrawLine(&hline, 0, bar.Height, GFX_COLOR_BLACK);
+    gfx_dimensions hline = {screen.width - 1, 1};
+    gfx_draw_line(&hline, 0, bar.height, GFX_COLOR_BLACK);
 
     const char *brand = pal_get_version_string();
     for (int i = 0; brand[i]; i++)
@@ -28,9 +27,9 @@ DlgDrawBackground(void)
         bios_write_character(0, brand[i], 0x80, 1);
     }
 
-    VidFillRectangle(&bar, 0, screen.Height - bar.Height, GFX_COLOR_BLACK);
-    VidDrawText("(C) 2021-2022", 1, 24);
-    VidDrawText("https://github.com/thecatkitty/lavender/", 39, 24);
+    gfx_fill_rectangle(&bar, 0, screen.height - bar.height, GFX_COLOR_BLACK);
+    gfx_draw_text("(C) 2021-2022", 1, 24);
+    gfx_draw_text("https://github.com/thecatkitty/lavender/", 39, 24);
 
     return 0;
 }
@@ -38,32 +37,32 @@ DlgDrawBackground(void)
 int
 DlgDrawFrame(DLG_FRAME *frame, const char *title)
 {
-    GFX_DIMENSIONS window = {8 * (frame->Columns + 3), 8 * (frame->Lines + 3)};
+    gfx_dimensions window = {8 * (frame->Columns + 3), 8 * (frame->Lines + 3)};
 
-    int left = (screen.Width - window.Width) / 2;
-    int top = (screen.Height - window.Height) / 16 * 8;
-    VidFillRectangle(&window, left, top, GFX_COLOR_WHITE);
-    VidDrawRectangle(&window, left, top, GFX_COLOR_BLACK);
-    window.Width += 2;
-    VidDrawRectangle(&window, left - 1, top, GFX_COLOR_BLACK);
+    int left = (screen.width - window.width) / 2;
+    int top = (screen.height - window.height) / 16 * 8;
+    gfx_fill_rectangle(&window, left, top, GFX_COLOR_WHITE);
+    gfx_draw_rectangle(&window, left, top, GFX_COLOR_BLACK);
+    window.width += 2;
+    gfx_draw_rectangle(&window, left - 1, top, GFX_COLOR_BLACK);
 
-    GFX_DIMENSIONS titleLine = {window.Width - 1, 1};
-    VidDrawLine(&titleLine, left, top + 9, GFX_COLOR_BLACK);
+    gfx_dimensions titleLine = {window.width - 1, 1};
+    gfx_draw_line(&titleLine, left, top + 9, GFX_COLOR_BLACK);
 
     char *titleConv = alloca(strlen(title) + 1);
-    utf8_encode(title, titleConv, VidConvertToLocal);
+    utf8_encode(title, titleConv, gfx_wctob);
 
     int            titleLength = strlen(titleConv);
-    GFX_DIMENSIONS stripe = {(window.Width - ((titleLength + 2) * 8)) / 2 - 1,
+    gfx_dimensions stripe = {(window.width - ((titleLength + 2) * 8)) / 2 - 1,
                              1};
     for (int i = 0; i < 4; i++)
     {
         int y = top + 1 + i * 2;
-        VidDrawLine(&stripe, left + 1, y, GFX_COLOR_BLACK);
-        VidDrawLine(&stripe, left + window.Width - stripe.Width - 4, y,
-                    GFX_COLOR_BLACK);
+        gfx_draw_line(&stripe, left + 1, y, GFX_COLOR_BLACK);
+        gfx_draw_line(&stripe, left + window.width - stripe.width - 4, y,
+                      GFX_COLOR_BLACK);
     }
 
-    VidDrawText(titleConv, (80 - titleLength) / 2, top / 8);
+    gfx_draw_text(titleConv, (80 - titleLength) / 2, top / 8);
     return 0;
 }

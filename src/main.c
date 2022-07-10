@@ -1,6 +1,6 @@
+#include <gfx.h>
 #include <pal.h>
 #include <sld.h>
-#include <vid.h>
 
 int
 main(int argc, char *argv[])
@@ -26,13 +26,13 @@ main(int argc, char *argv[])
     }
 
     // Initialize video
-    VidInitialize();
+    gfx_initialize();
 
     // Start the slideshow
     status = SldRunScript(data, pal_get_asset_size(slides));
 
     // Clean up
-    VidCleanup();
+    gfx_cleanup();
 
 cleanup:
     pal_cleanup(status);
