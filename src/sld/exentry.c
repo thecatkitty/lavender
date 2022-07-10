@@ -6,7 +6,7 @@
 #include <api/bios.h>
 #include <crg.h>
 #include <dlg.h>
-#include <gfx.h>
+#include <fmt/pbm.h>
 #include <pal.h>
 #include <sld.h>
 #include <snd.h>
@@ -128,17 +128,10 @@ SldExecuteBitmap(SLD_ENTRY *sld)
         ERR(KER_NOT_FOUND);
     }
 
-    char *data = pal_get_asset_data(bitmap);
-    if (NULL == data)
+    GFX_BITMAP bm;
+    if (!pbm_load_bitmap(&bm, bitmap))
     {
         ERR(KER_NOT_FOUND);
-    }
-
-    GFX_BITMAP bm;
-    status = PbmLoadBitmap(data, &bm);
-    if (0 > status)
-    {
-        return status;
     }
 
     uint16_t x, y = sld->Vertical;
