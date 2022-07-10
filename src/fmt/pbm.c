@@ -50,7 +50,7 @@ pbm_is_format(hasset asset)
 }
 
 bool
-pbm_load_bitmap(GFX_BITMAP *bm, hasset asset)
+pbm_load_bitmap(gfx_bitmap *bm, hasset asset)
 {
     int count;
 
@@ -58,21 +58,21 @@ pbm_load_bitmap(GFX_BITMAP *bm, hasset asset)
     char *data = pal_get_asset_data(asset);
     data += sizeof(uint16_t);
 
-    count = _load_number(data, &bm->Width);
+    count = _load_number(data, &bm->width);
     if (0 > count)
         return false;
 
-    bm->WidthBytes = bm->Width / 8 + ((bm->Width % 8) ? 1 : 0);
+    bm->opl = bm->width / 8 + ((bm->width % 8) ? 1 : 0);
     data += count;
 
-    count = _load_number(data, &bm->Height);
+    count = _load_number(data, &bm->height);
     if (0 > count)
         return false;
     data += count;
 
-    bm->Bits = (char *)data + 1;
-    bm->Planes = 1;
-    bm->BitsPerPixel = 1;
+    bm->bits = (char *)data + 1;
+    bm->planes = 1;
+    bm->bpp = 1;
 
     return true;
 }

@@ -7,10 +7,10 @@
 #include <crg.h>
 #include <dlg.h>
 #include <fmt/pbm.h>
+#include <gfx.h>
 #include <pal.h>
 #include <sld.h>
 #include <snd.h>
-#include <vid.h>
 
 #define LINE_WIDTH 80
 
@@ -27,7 +27,7 @@ typedef struct
     uint32_t   *LongPart;
 } SLD_KEY_VALIDATION;
 
-static GFX_DIMENSIONS s_Screen;
+static gfx_dimensions s_Screen;
 
 static uint16_t s_Accumulator = 0;
 
@@ -61,9 +61,9 @@ SldIsVolumeSerialNumberValid(const char *sn);
 int
 SldExecuteEntry(SLD_ENTRY *sld)
 {
-    if (0 == s_Screen.Width)
+    if (0 == s_Screen.width)
     {
-        VidGetScreenDimensions(&s_Screen);
+        gfx_get_screen_dimensions(&s_Screen);
     }
 
     pal_sleep(sld->Delay);
@@ -114,7 +114,7 @@ SldExecuteText(SLD_ENTRY *sld)
         x = sld->Horizontal;
     }
 
-    return VidDrawText(sld->Content, x, y);
+    return gfx_draw_text(sld->Content, x, y) ? 0 : ERR_KER_UNSUPPORTED;
 }
 
 int
@@ -128,7 +128,7 @@ SldExecuteBitmap(SLD_ENTRY *sld)
         ERR(KER_NOT_FOUND);
     }
 
-    GFX_BITMAP bm;
+    gfx_bitmap bm;
     if (!pbm_load_bitmap(&bm, bitmap))
     {
         ERR(KER_NOT_FOUND);
@@ -138,19 +138,19 @@ SldExecuteBitmap(SLD_ENTRY *sld)
     switch (sld->Horizontal)
     {
     case SLD_ALIGN_CENTER:
-        x = (LINE_WIDTH - bm.WidthBytes) / 2;
+        x = (LINE_WIDTH - bm.opl) / 2;
         break;
     case SLD_ALIGN_RIGHT:
-        x = LINE_WIDTH - bm.WidthBytes;
+        x = LINE_WIDTH - bm.opl;
         break;
     default:
         x = sld->Horizontal;
     }
 
-    status = VidDrawBitmap(&bm, x, y);
+    status = gfx_draw_bitmap(&bm, x, y);
 
     pal_close_asset(bitmap);
-    return status;
+    return status ? 0 : ERR_KER_UNSUPPORTED;
 }
 
 int
@@ -160,18 +160,21 @@ SldExecuteRectangle(SLD_ENTRY *sld)
     switch (sld->Horizontal)
     {
     case SLD_ALIGN_CENTER:
-        x = (s_Screen.Width - sld->Shape.Dimensions.Width) / 2;
+        x = (s_Screen.width - sld->Shape.Dimensions.width) / 2;
         break;
     case SLD_ALIGN_RIGHT:
-        x = s_Screen.Height - sld->Shape.Dimensions.Height;
+        x = s_Screen.height - sld->Shape.Dimensions.height;
         break;
     default:
         x = sld->Horizontal;
     }
 
-    int (*draw)(GFX_DIMENSIONS *, uint16_t, uint16_t, GFX_COLOR);
-    draw = (SLD_TYPE_RECT == sld->Type) ? VidDrawRectangle : VidFillRectangle;
-    return draw(&sld->Shape.Dimensions, x, y, sld->Shape.Color);
+    bool (*draw)(gfx_dimensions *, uint16_t, uint16_t, gfx_color);
+    draw =
+        (SLD_TYPE_RECT == sld->Type) ? gfx_draw_rectangle : gfx_fill_rectangle;
+    return draw(&sld->Shape.Dimensions, x, y, sld->Shape.Color)
+               ? 0
+               : ERR_KER_UNSUPPORTED;
 }
 
 int
@@ -304,7 +307,7 @@ SldFindBestBitmap(char *pattern)
         return pal_open_asset(pattern, O_RDONLY);
     }
 
-    int par = (int)VidGetPixelAspectRatio();
+    int par = (int)gfx_get_pixel_aspect();
     int offset = 0;
 
     while ((0 <= (par + offset)) || (255 >= (par + offset)))

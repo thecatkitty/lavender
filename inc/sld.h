@@ -58,8 +58,8 @@ typedef struct
         uint8_t Content[SLD_ENTRY_MAX_LENGTH + 1];
         struct
         {
-            GFX_DIMENSIONS Dimensions;
-            GFX_COLOR      Color;
+            gfx_dimensions Dimensions;
+            gfx_color      Color;
         } Shape;
         struct
         {

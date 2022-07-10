@@ -3,8 +3,8 @@
 
 #include <api/dos.h>
 #include <fmt/utf8.h>
+#include <gfx.h>
 #include <sld.h>
-#include <vid.h>
 
 static int
 SldLoadPosition(const char *str, SLD_ENTRY *out);
@@ -207,8 +207,7 @@ SldLoadContent(const char *str, SLD_ENTRY *out)
 int
 SldConvertText(const char *str, SLD_ENTRY *inOut)
 {
-    inOut->Length =
-        utf8_encode(inOut->Content, inOut->Content, VidConvertToLocal);
+    inOut->Length = utf8_encode(inOut->Content, inOut->Content, gfx_wctob);
     if (0 > inOut->Length)
     {
         ERR(KER_INVALID_SEQUENCE);
@@ -248,13 +247,13 @@ SldLoadShape(const char *str, SLD_ENTRY *out)
         out->Shape.Color = GFX_COLOR_BLACK;
         break;
     case 'G':
-        out->Shape.Color = GFX_COLOR_GRAY50;
+        out->Shape.Color = GFX_COLOR_GRAY;
         break;
     default:
         out->Shape.Color = GFX_COLOR_WHITE;
     }
-    out->Shape.Dimensions.Width = width;
-    out->Shape.Dimensions.Height = height;
+    out->Shape.Dimensions.width = width;
+    out->Shape.Dimensions.height = height;
     cur++;
 
     return cur - str;

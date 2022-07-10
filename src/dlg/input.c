@@ -2,7 +2,6 @@
 #include <dlg.h>
 #include <gfx.h>
 #include <pal.h>
-#include <vid.h>
 
 int
 DlgInputText(DLG_FRAME *frame,
@@ -15,11 +14,11 @@ DlgInputText(DLG_FRAME *frame,
     int fieldLeft = (80 - fieldWidth) / 2;
     int fieldTop = (22 - frame->Lines) / 2 + 2 + line;
 
-    GFX_DIMENSIONS box = {fieldWidth * 8 + 2, 10};
+    gfx_dimensions box = {fieldWidth * 8 + 2, 10};
     int            boxTop = fieldTop * 8 - 1;
     int            boxLeft = fieldLeft * 8 - 1;
 
-    VidDrawRectangle(&box, boxLeft, boxTop, GFX_COLOR_BLACK);
+    gfx_draw_rectangle(&box, boxLeft, boxTop, GFX_COLOR_BLACK);
     buffer[0] = 0;
 
     int cursor = 0;
@@ -28,13 +27,13 @@ DlgInputText(DLG_FRAME *frame,
 
         if (validate)
         {
-            VidDrawRectangle(&box, boxLeft, boxTop,
-                             validate(buffer) ? GFX_COLOR_BLACK
-                                              : GFX_COLOR_GRAY50);
+            gfx_draw_rectangle(&box, boxLeft, boxTop,
+                               validate(buffer) ? GFX_COLOR_BLACK
+                                                : GFX_COLOR_GRAY);
         }
 
-        VidFillRectangle(&box, boxLeft, boxTop, GFX_COLOR_WHITE);
-        VidDrawText(buffer, fieldLeft, fieldTop);
+        gfx_fill_rectangle(&box, boxLeft, boxTop, GFX_COLOR_WHITE);
+        gfx_draw_text(buffer, fieldLeft, fieldTop);
 
         uint16_t key = bios_get_keystroke();
         uint8_t  scanCode = key >> 8, character = key & 0xFF;
@@ -55,11 +54,11 @@ DlgInputText(DLG_FRAME *frame,
                 return cursor;
             }
 
-            VidDrawRectangle(&box, boxLeft, boxTop, GFX_COLOR_BLACK);
+            gfx_draw_rectangle(&box, boxLeft, boxTop, GFX_COLOR_BLACK);
             pal_sleep(63);
-            VidDrawRectangle(&box, boxLeft, boxTop, GFX_COLOR_GRAY50);
+            gfx_draw_rectangle(&box, boxLeft, boxTop, GFX_COLOR_GRAY);
             pal_sleep(63);
-            VidDrawRectangle(&box, boxLeft, boxTop, GFX_COLOR_BLACK);
+            gfx_draw_rectangle(&box, boxLeft, boxTop, GFX_COLOR_BLACK);
             pal_sleep(63);
             continue;
         }

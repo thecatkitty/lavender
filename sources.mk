@@ -7,7 +7,7 @@ include $(SRC)/$(DIR)/module.mk
 DIR	    := crg
 include $(SRC)/$(DIR)/module.mk
 
-DIR	    := vid
+DIR	    := gfx
 include $(SRC)/$(DIR)/module.mk
 
 DIR	    := snd
