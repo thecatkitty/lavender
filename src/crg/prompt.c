@@ -8,8 +8,7 @@
 #include <dlg.h>
 
 extern const char StrCrgEnterPassword[];
-extern const char StrCrgEncryptedLine1[];
-extern const char StrCrgEncryptedLine2[];
+extern const char StrCrgEncrypted[];
 extern const char StrCrgKeyInvalid[];
 
 static bool
@@ -28,17 +27,9 @@ CrgPromptKey(uint8_t          *key,
              CRG_KEY_VALIDATOR validate,
              void             *context)
 {
-    DlgDrawBackground();
-
-    char     *buffer = (char *)alloca(keyLength * 3 + 1);
-    DLG_FRAME frame = {36, 5};
-
+    char *buffer = (char *)alloca(keyLength * 3 + 1);
     while (true)
     {
-        DlgDrawFrame(&frame, StrCrgEnterPassword);
-        DlgDrawText(&frame, StrCrgEncryptedLine1, 0);
-        DlgDrawText(&frame, StrCrgEncryptedLine2, 2);
-
         bool (*inputValidator)(const char *) = NULL;
         switch (base)
         {
@@ -50,8 +41,8 @@ CrgPromptKey(uint8_t          *key,
             break;
         }
 
-        int length =
-            DlgInputText(&frame, buffer, keyLength * 2, inputValidator, 4);
+        int length = dlg_prompt(StrCrgEnterPassword, StrCrgEncrypted, buffer,
+                                keyLength * 2, inputValidator);
         if (0 == length)
         {
             return false;
@@ -77,9 +68,7 @@ CrgPromptKey(uint8_t          *key,
             return true;
         }
 
-        DlgDrawFrame(&frame, StrCrgEnterPassword);
-        DlgDrawText(&frame, StrCrgKeyInvalid, 1);
-        bios_get_keystroke();
+        dlg_alert(StrCrgEnterPassword, StrCrgKeyInvalid);
     }
 }
 

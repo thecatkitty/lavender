@@ -10,17 +10,11 @@ IF_LANG(CSY,                    .asciz  "Vložte heslo")
 IF_LANG(ENU,                    .asciz  "Enter Password")
 IF_LANG(PLK,                    .asciz  "Wprowadź hasło")
 
-                                .global StrCrgEncryptedLine1
-StrCrgEncryptedLine1:
-IF_LANG(CSY,                    .asciz  "Tento obsah je zašifrován.")
-IF_LANG(ENU,                    .asciz  "This content is encrypted.")
-IF_LANG(PLK,                    .asciz  "Ta zawartość jest zaszyfrowana.")
-
-                                .global StrCrgEncryptedLine2
-StrCrgEncryptedLine2:
-IF_LANG(CSY,                    .asciz  "Zadejte přístupový klíč.")
-IF_LANG(ENU,                    .asciz  "Please enter the access key.")
-IF_LANG(PLK,                    .asciz  "Proszę podać klucz dostępu.")
+                                .global StrCrgEncrypted
+StrCrgEncrypted:
+IF_LANG(CSY,                    .asciz  "Tento obsah je zašifrován.\n\nZadejte přístupový klíč.")
+IF_LANG(ENU,                    .asciz  "This content is encrypted.\n\nPlease enter the access key.")
+IF_LANG(PLK,                    .asciz  "Ta zawartość jest zaszyfrowana.\n\nProszę podać klucz dostępu.")
 
                                 .global StrCrgKeyInvalid
 StrCrgKeyInvalid:

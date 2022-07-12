@@ -10,17 +10,11 @@ IF_LANG(CSY,                    .asciz  "Zadejte sériové číslo disku")
 IF_LANG(ENU,                    .asciz  "Enter Disk Serial Number")
 IF_LANG(PLK,                    .asciz  "Wprowadź numer seryjny dysku")
 
-                                .global StrSldSerialLine1
-StrSldSerialLine1:
-IF_LANG(CSY,                    .asciz  "Zadejte prosím sériové číslo")
-IF_LANG(ENU,                    .asciz  "Please type the serial number")
-IF_LANG(PLK,                    .asciz  "Proszę podać numer seryjny dołączony")
-
-                                .global StrSldSerialLine2
-StrSldSerialLine2:
-IF_LANG(CSY,                    .asciz  "připojené k disketě programu.")
-IF_LANG(ENU,                    .asciz  "attached to Your program diskette.")
-IF_LANG(PLK,                    .asciz  "do dyskietki z programem.")
+                                .global StrSldSerial
+StrSldSerial:
+IF_LANG(CSY,                    .asciz  "Zadejte prosím sériové číslo\npřipojené k disketě programu.")
+IF_LANG(ENU,                    .asciz  "Please type the serial number\nattached to Your program diskette.")
+IF_LANG(PLK,                    .asciz  "Proszę podać numer seryjny dołączony\ndo dyskietki z programem.")
 
 
 .section .errf
