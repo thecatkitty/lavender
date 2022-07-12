@@ -15,9 +15,7 @@
 #define LINE_WIDTH 80
 
 extern const char StrSldEnterSerial[];
-extern const char StrCrgEncryptedLine1[];
-extern const char StrSldSerialLine1[];
-extern const char StrSldSerialLine2[];
+extern const char StrSldSerial[];
 
 typedef struct
 {
@@ -354,22 +352,8 @@ SldIsXorKeyValid(const uint8_t *key, int keyLength, void *context)
 bool
 SldPromptVolumeSerialNumber(char *sn)
 {
-    DlgDrawBackground();
-
-    DLG_FRAME frame = {40, 6};
-
-    DlgDrawFrame(&frame, StrSldEnterSerial);
-    DlgDrawText(&frame, StrCrgEncryptedLine1, 0);
-    DlgDrawText(&frame, StrSldSerialLine1, 2);
-    DlgDrawText(&frame, StrSldSerialLine2, 3);
-
-    int length = DlgInputText(&frame, sn, 9, SldIsVolumeSerialNumberValid, 5);
-    if (0 == length)
-    {
-        return false;
-    }
-
-    return true;
+    return 0 != dlg_prompt(StrSldEnterSerial, StrSldSerial, sn, 9,
+                           SldIsVolumeSerialNumberValid);
 }
 
 bool

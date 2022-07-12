@@ -1,32 +1,31 @@
 #ifndef _DLG_H_
 #define _DLG_H_
 
-#ifndef __ASSEMBLER__
-
 #include <base.h>
 
-typedef struct
+enum dlg_result
 {
-    int Columns;
-    int Lines;
-} DLG_FRAME;
+    DLG_OK = 1,
+    DLG_CANCEL = 2,
+    DLG_ABORT = 3,
+    DLG_RETRY = 4,
+    DLG_IGNORE = 5,
+    DLG_YES = 6,
+    DLG_NO = 7,
+    DLG_TRY_AGAIN = 10,
+    DLG_CONTINUE = 11
+};
+
+typedef bool (*dlg_validator)(const char *);
 
 extern int
-DlgDrawBackground(void);
+dlg_alert(const char *title, const char *message);
 
 extern int
-DlgDrawFrame(DLG_FRAME *frame, const char *title);
-
-extern int
-DlgDrawText(DLG_FRAME *frame, const char *str, int line);
-
-extern int
-DlgInputText(DLG_FRAME *frame,
-             char *     buffer,
-             int        size,
-             bool (*validate)(const char *),
-             int line);
-
-#endif // __ASSEMBLER__
+dlg_prompt(const char   *title,
+           const char   *message,
+           char         *buffer,
+           int           size,
+           dlg_validator validator);
 
 #endif // _DLG_H_
