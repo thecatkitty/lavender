@@ -176,7 +176,7 @@ zip_calculate_crc(uint8_t *buffer, int length)
 }
 
 uint32_t
-zip_calculate_crc_indirect(uint8_t (*stream)(void *, int),
+zip_calculate_crc_indirect(uint8_t (*stream)(void *, size_t),
                            void *context,
                            int   length)
 {
