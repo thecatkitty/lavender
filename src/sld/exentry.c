@@ -21,7 +21,7 @@ typedef struct
 {
     crg_stream *CrgContext;
     uint32_t    Crc;
-    uint32_t   *LongPart;
+    uint32_t   *Local;
 } SLD_KEY_VALIDATION;
 
 static gfx_dimensions s_Screen;
@@ -236,17 +236,16 @@ SldExecuteScriptCall(SLD_ENTRY *sld)
         invalid = !CrgPromptKey(key, 6, 16, SldIsXorKeyValid, &context);
         break;
     case SLD_PARAMETER_XOR48_SPLIT: {
-        uint32_t longPart = strtoul(sld->ScriptCall.Data, NULL, 16);
-        context.LongPart = &longPart;
+        uint32_t local = strtoul(sld->ScriptCall.Data, NULL, 16);
+        context.Local = &local;
         if (!CrgPromptKey(key, 3, 10, SldIsXorKeyValid, &context))
         {
             invalid = true;
             break;
         }
 
-        *(uint64_t *)&key =
-            CrgDecodeSplitKey(longPart, *(const uint32_t *)&key);
-        context.LongPart = NULL;
+        *(uint64_t *)&key = crg_combine_key(local, *(const uint32_t *)&key);
+        context.Local = NULL;
         break;
     }
     case SLD_PARAMETER_XOR48_DISKID: {
@@ -265,16 +264,15 @@ SldExecuteScriptCall(SLD_ENTRY *sld)
             medium_id = (highPart << 16) | lowPart;
         }
 
-        context.LongPart = &medium_id;
+        context.Local = &medium_id;
         if (!CrgPromptKey(key, 3, 10, SldIsXorKeyValid, &context))
         {
             invalid = true;
             break;
         }
 
-        *(uint64_t *)&key =
-            CrgDecodeSplitKey(medium_id, *(const uint32_t *)&key);
-        context.LongPart = NULL;
+        *(uint64_t *)&key = crg_combine_key(medium_id, *(const uint32_t *)&key);
+        context.Local = NULL;
         break;
     }
     default:
@@ -338,14 +336,14 @@ SldIsXorKeyValid(const uint8_t *key, int keyLength, void *context)
 {
     SLD_KEY_VALIDATION *keyValidation = (SLD_KEY_VALIDATION *)context;
 
-    if (!keyValidation->LongPart)
+    if (!keyValidation->Local)
     {
         return crg_validate(keyValidation->CrgContext, keyValidation->Crc);
     }
 
     // 48-bit split key
     uint64_t fullKey =
-        CrgDecodeSplitKey(*keyValidation->LongPart, *(const uint32_t *)key);
+        crg_combine_key(*keyValidation->Local, *(const uint32_t *)key);
     keyValidation->CrgContext->key = (uint8_t *)&fullKey;
     return crg_validate(keyValidation->CrgContext, keyValidation->Crc);
 }

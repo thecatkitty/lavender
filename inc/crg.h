@@ -48,7 +48,7 @@ CrgPromptKey(uint8_t *         key,
              void *            context);
 
 extern uint64_t
-CrgDecodeSplitKey(uint32_t longPart, uint32_t shortPart);
+crg_combine_key(uint32_t local, uint32_t external);
 
 #endif // __ASSEMBLER__
 
