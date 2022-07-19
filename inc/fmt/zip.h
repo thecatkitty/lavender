@@ -167,7 +167,7 @@ zip_calculate_crc(uint8_t *buffer, int length);
 // Calculate ZIP-compatible CRC-32 checksum of a data stream
 // Returns checksum value
 extern uint32_t
-zip_calculate_crc_indirect(uint8_t (*stream)(void *, int),
+zip_calculate_crc_indirect(uint8_t (*stream)(void *, size_t),
                            void *context,
                            int   length);
 
