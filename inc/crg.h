@@ -19,10 +19,6 @@ typedef struct
     const void    *_impl;
 } crg_stream;
 
-typedef bool (*CRG_KEY_VALIDATOR)(const uint8_t *key,
-                                  int            keyLength,
-                                  void          *context);
-
 extern bool
 crg_prepare(crg_stream    *stream,
             crg_cipher     cipher,
@@ -39,13 +35,6 @@ crg_decrypt(crg_stream *stream, uint8_t *dst);
 
 extern bool
 crg_validate(crg_stream *stream, uint32_t crc);
-
-extern bool
-CrgPromptKey(uint8_t *         key,
-             int               keyLength,
-             int               base,
-             CRG_KEY_VALIDATOR validate,
-             void *            context);
 
 extern uint64_t
 crg_combine_key(uint32_t local, uint32_t external);

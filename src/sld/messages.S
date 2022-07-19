@@ -16,6 +16,24 @@ IF_LANG(CSY,                    .asciz  "Zadejte prosím sériové číslo\npři
 IF_LANG(ENU,                    .asciz  "Please type the serial number\nattached to Your program diskette.")
 IF_LANG(PLK,                    .asciz  "Proszę podać numer seryjny dołączony\ndo dyskietki z programem.")
 
+                                .global StrSldEnterPassword
+StrSldEnterPassword:
+IF_LANG(CSY,                    .asciz  "Vložte heslo")
+IF_LANG(ENU,                    .asciz  "Enter Password")
+IF_LANG(PLK,                    .asciz  "Wprowadź hasło")
+
+                                .global StrSldEncrypted
+StrSldEncrypted:
+IF_LANG(CSY,                    .asciz  "Tento obsah je zašifrován.\n\nZadejte přístupový klíč.")
+IF_LANG(ENU,                    .asciz  "This content is encrypted.\n\nPlease enter the access key.")
+IF_LANG(PLK,                    .asciz  "Ta zawartość jest zaszyfrowana.\n\nProszę podać klucz dostępu.")
+
+                                .global StrSldKeyInvalid
+StrSldKeyInvalid:
+IF_LANG(CSY,                    .asciz  "Zadaný klíč je neplatný!")
+IF_LANG(ENU,                    .asciz  "Provided key is invalid!")
+IF_LANG(PLK,                    .asciz  "Wprowadzony klucz jest niepoprawny!")
+
 
 .section .errf
 
