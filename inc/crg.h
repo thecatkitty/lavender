@@ -5,23 +5,40 @@
 
 #include <base.h>
 
+typedef enum
+{
+    CRG_XOR
+} crg_cipher;
+
+typedef struct
+{
+    const uint8_t *data;
+    size_t         data_length;
+    const uint8_t *key;
+    size_t         key_length;
+    const void    *_impl;
+} crg_stream;
+
 typedef bool (*CRG_KEY_VALIDATOR)(const uint8_t *key,
                                   int            keyLength,
-                                  void *         context);
+                                  void          *context);
 
 extern bool
-CrgIsXorKeyValid(const void *   data,
-                 int            dataLength,
-                 const uint8_t *key,
-                 int            keyLength,
-                 uint32_t       crc);
+crg_prepare(crg_stream    *stream,
+            crg_cipher     cipher,
+            const uint8_t *data,
+            size_t         data_length,
+            const uint8_t *key,
+            size_t         key_length);
 
-extern void
-CrgXor(const void *   src,
-       void *         dst,
-       int            dataLength,
-       const uint8_t *key,
-       int            keyLength);
+extern uint8_t
+crg_at(crg_stream *stream, size_t i);
+
+extern bool
+crg_decrypt(crg_stream *stream, uint8_t *dst);
+
+extern bool
+crg_validate(crg_stream *stream, uint32_t crc);
 
 extern bool
 CrgPromptKey(uint8_t *         key,

@@ -1,51 +1,31 @@
 #include <crg.h>
 #include <fmt/zip.h>
 
-typedef struct
-{
-    const uint8_t *Data;
-    const uint8_t *Key;
-    int            KeyLength;
-} XOR_STREAM;
+#include "crg_impl.h"
 
 static uint8_t
-XorGetByte(void *context, int i);
-
-bool
-CrgIsXorKeyValid(const void *   data,
-                 int            dataLength,
-                 const uint8_t *key,
-                 int            keyLength,
-                 uint32_t       crc)
+_xor_at(crg_stream *stream, size_t i)
 {
-    XOR_STREAM stream;
-    stream.Data = (const uint8_t *)data;
-    stream.Key = key;
-    stream.KeyLength = keyLength;
-
-    return crc == zip_calculate_crc_indirect(XorGetByte, &stream, dataLength);
+    return stream->data[i] ^ stream->key[i % stream->key_length];
 }
 
-void
-CrgXor(const void *   src,
-       void *         dst,
-       int            dataLength,
-       const uint8_t *key,
-       int            keyLength)
+static bool
+_xor_decrypt(crg_stream *stream, uint8_t *dst)
 {
-    const uint8_t *source = (const uint8_t *)src;
-    uint8_t *      destination = (uint8_t *)dst;
-
-    for (int i = 0; i < dataLength; i++)
+    for (int i = 0; i < stream->data_length; i++)
     {
-        destination[i] = source[i] ^ key[i % keyLength];
+        dst[i] = stream->data[i] ^ stream->key[i % stream->key_length];
     }
+
+    return true;
 }
 
-uint8_t
-XorGetByte(void *context, int i)
+static bool
+_xor_validate(crg_stream *stream, uint32_t crc)
 {
-    XOR_STREAM *stream = (XOR_STREAM *)context;
-
-    return stream->Data[i] ^ stream->Key[i % stream->KeyLength];
+    return crc ==
+           zip_calculate_crc_indirect((uint8_t(*)(void *, size_t))_xor_at,
+                                      stream, stream->data_length);
 }
+
+crg_stream_impl __crg_xor_impl = {_xor_at, _xor_decrypt, _xor_validate};

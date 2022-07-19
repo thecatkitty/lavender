@@ -19,8 +19,7 @@ extern const char StrSldSerial[];
 
 typedef struct
 {
-    const void *Data;
-    int         DataLength;
+    crg_stream *CrgContext;
     uint32_t    Crc;
     uint32_t   *LongPart;
 } SLD_KEY_VALIDATION;
@@ -220,9 +219,12 @@ SldExecuteScriptCall(SLD_ENTRY *sld)
         return SldRunScript(data, size);
     }
 
+    crg_stream         ctx;
     uint8_t            key[sizeof(uint64_t)];
-    SLD_KEY_VALIDATION context = {data, size, sld->ScriptCall.Crc32, NULL};
+    SLD_KEY_VALIDATION context = {&ctx, sld->ScriptCall.Crc32, NULL};
     bool               invalid = false;
+
+    crg_prepare(&ctx, CRG_XOR, data, size, key, 6);
 
     memset(key, 0, sizeof(key));
     switch (sld->ScriptCall.Parameter)
@@ -287,7 +289,7 @@ SldExecuteScriptCall(SLD_ENTRY *sld)
         return 0;
     }
 
-    CrgXor(data, data, size, (const uint8_t *)&key, 6);
+    crg_decrypt(&ctx, data);
     sld->ScriptCall.Method = SLD_METHOD_STORE;
     status = SldRunScript(data, size);
 
@@ -338,15 +340,14 @@ SldIsXorKeyValid(const uint8_t *key, int keyLength, void *context)
 
     if (!keyValidation->LongPart)
     {
-        return CrgIsXorKeyValid(keyValidation->Data, keyValidation->DataLength,
-                                key, keyLength, keyValidation->Crc);
+        return crg_validate(keyValidation->CrgContext, keyValidation->Crc);
     }
 
     // 48-bit split key
     uint64_t fullKey =
         CrgDecodeSplitKey(*keyValidation->LongPart, *(const uint32_t *)key);
-    return CrgIsXorKeyValid(keyValidation->Data, keyValidation->DataLength,
-                            (uint8_t *)&fullKey, 6, keyValidation->Crc);
+    keyValidation->CrgContext->key = (uint8_t *)&fullKey;
+    return crg_validate(keyValidation->CrgContext, keyValidation->Crc);
 }
 
 bool
