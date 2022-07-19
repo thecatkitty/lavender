@@ -5,7 +5,7 @@
 
 #define _rstrtoull(condition, digxform)                                        \
     {                                                                          \
-        long long num = 0, prev = 0;                                           \
+        uint64_t num = 0, prev = 0;                                            \
         while (condition(*str))                                                \
         {                                                                      \
             prev = num;                                                        \
@@ -33,11 +33,13 @@
         num += isdigit(c) ? (c - '0') : (tolower(c) - 'a' + 10);               \
     }
 
-long long
+uint64_t
 rstrtoull(const char *restrict str, int base)
 {
-    while (isspace(*str++))
-        ;
+    while (isspace(*str))
+    {
+        ++str;
+    }
 
     switch (base)
     {
