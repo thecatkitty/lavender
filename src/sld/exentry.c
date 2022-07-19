@@ -12,6 +12,8 @@
 #include <sld.h>
 #include <snd.h>
 
+#include "sld_impl.h"
+
 #define LINE_WIDTH 80
 
 extern const char StrSldEnterSerial[];
@@ -233,12 +235,13 @@ SldExecuteScriptCall(SLD_ENTRY *sld)
         *(uint64_t *)&key = rstrtoull(sld->ScriptCall.Data, 16);
         break;
     case SLD_PARAMETER_XOR48_PROMPT:
-        invalid = !CrgPromptKey(key, 6, 16, SldIsXorKeyValid, &context);
+        invalid =
+            !__sld_prompt_passcode(key, 6, 16, SldIsXorKeyValid, &context);
         break;
     case SLD_PARAMETER_XOR48_SPLIT: {
         uint32_t local = strtoul(sld->ScriptCall.Data, NULL, 16);
         context.Local = &local;
-        if (!CrgPromptKey(key, 3, 10, SldIsXorKeyValid, &context))
+        if (!__sld_prompt_passcode(key, 3, 10, SldIsXorKeyValid, &context))
         {
             invalid = true;
             break;
@@ -265,7 +268,7 @@ SldExecuteScriptCall(SLD_ENTRY *sld)
         }
 
         context.Local = &medium_id;
-        if (!CrgPromptKey(key, 3, 10, SldIsXorKeyValid, &context))
+        if (!__sld_prompt_passcode(key, 3, 10, SldIsXorKeyValid, &context))
         {
             invalid = true;
             break;
