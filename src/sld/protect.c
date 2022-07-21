@@ -8,9 +8,9 @@
 
 #include "sld_impl.h"
 
-extern const char StrSldEnterPassword[];
-extern const char StrSldEncrypted[];
-extern const char StrSldKeyInvalid[];
+extern const char IDS_ENTERPASS[];
+extern const char IDS_ENTERPASS_DESC[];
+extern const char IDS_INVALIDKEY[];
 
 #define _isctypestr(predicate)                                                 \
     {                                                                          \
@@ -64,7 +64,7 @@ __sld_prompt_passcode(uint8_t               *code,
             break;
         }
 
-        int length = dlg_prompt(StrSldEnterPassword, StrSldEncrypted, buffer,
+        int length = dlg_prompt(IDS_ENTERPASS, IDS_ENTERPASS_DESC, buffer,
                                 code_len * 2, precheck);
         if (0 == length)
         {
@@ -91,6 +91,6 @@ __sld_prompt_passcode(uint8_t               *code,
             return true;
         }
 
-        dlg_alert(StrSldEnterPassword, StrSldKeyInvalid);
+        dlg_alert(IDS_ENTERPASS, IDS_INVALIDKEY);
     }
 }

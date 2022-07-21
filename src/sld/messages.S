@@ -4,32 +4,32 @@
 
 .section .rodata
 
-                                .global StrSldEnterSerial
-StrSldEnterSerial:
+                                .global IDS_ENTERDSN
+IDS_ENTERDSN:
 IF_LANG(CSY,                    .asciz  "Zadejte sériové číslo disku")
 IF_LANG(ENU,                    .asciz  "Enter Disk Serial Number")
 IF_LANG(PLK,                    .asciz  "Wprowadź numer seryjny dysku")
 
-                                .global StrSldSerial
-StrSldSerial:
+                                .global IDS_ENTERDSN_DESC
+IDS_ENTERDSN_DESC:
 IF_LANG(CSY,                    .asciz  "Zadejte prosím sériové číslo\npřipojené k disketě programu.")
 IF_LANG(ENU,                    .asciz  "Please type the serial number\nattached to Your program diskette.")
 IF_LANG(PLK,                    .asciz  "Proszę podać numer seryjny dołączony\ndo dyskietki z programem.")
 
-                                .global StrSldEnterPassword
-StrSldEnterPassword:
+                                .global IDS_ENTERPASS
+IDS_ENTERPASS:
 IF_LANG(CSY,                    .asciz  "Vložte heslo")
 IF_LANG(ENU,                    .asciz  "Enter Password")
 IF_LANG(PLK,                    .asciz  "Wprowadź hasło")
 
-                                .global StrSldEncrypted
-StrSldEncrypted:
+                                .global IDS_ENTERPASS_DESC
+IDS_ENTERPASS_DESC:
 IF_LANG(CSY,                    .asciz  "Tento obsah je zašifrován.\n\nZadejte přístupový klíč.")
 IF_LANG(ENU,                    .asciz  "This content is encrypted.\n\nPlease enter the access key.")
 IF_LANG(PLK,                    .asciz  "Ta zawartość jest zaszyfrowana.\n\nProszę podać klucz dostępu.")
 
-                                .global StrSldKeyInvalid
-StrSldKeyInvalid:
+                                .global IDS_INVALIDKEY
+IDS_INVALIDKEY:
 IF_LANG(CSY,                    .asciz  "Zadaný klíč je neplatný!")
 IF_LANG(ENU,                    .asciz  "Provided key is invalid!")
 IF_LANG(PLK,                    .asciz  "Wprowadzony klucz jest niepoprawny!")
