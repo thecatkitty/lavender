@@ -7,142 +7,71 @@
 #include <sld.h>
 
 static int
-SldLoadPosition(const char *str, sld_entry *out);
-
-static int
-SldLoadContent(const char *str, sld_entry *out);
-
-static int
-SldConvertText(const char *, sld_entry *inOut);
-
-static int
-SldLoadConditional(const char *str, sld_entry *out);
-
-static int
-SldLoadShape(const char *str, sld_entry *out);
-
-static int
-SldLoadScriptCall(const char *str, sld_entry *out);
-
-static int
-SldLoadU(const char *str, uint16_t *out);
-
-#define PROCESS_LOAD_PIPELINE(stage, str, out)                                 \
-    {                                                                          \
-        int length;                                                            \
-        if (0 > (length = stage(str, out)))                                    \
-        {                                                                      \
-            return length;                                                     \
-        };                                                                     \
-        str += length;                                                         \
-    }
-
-int
-sld_load_entry(const char *line, sld_entry *out)
+_loadu(const char *str, uint16_t *out)
 {
-    const char *cur = line;
-    if ('\r' == *cur)
-    {
-        out->type = SLD_TYPE_BLANK;
-        return ('\n' == cur[1]) ? 2 : 1;
-    }
+    const char *cur = str;
+    *out = 0;
 
-    int      length;
-    uint16_t num;
-
-    if (SLD_TAG_PREFIX_LABEL == *cur)
-    {
-        out->type = SLD_TYPE_LABEL;
-        out->delay = 0;
-        cur++;
-        PROCESS_LOAD_PIPELINE(SldLoadContent, cur, out);
-        goto End;
-    }
-
-    // Load delay
-    length = SldLoadU(cur, &num);
-    if (0 > length)
-    {
-        ERR(SLD_INVALID_DELAY);
-    }
-    out->delay = num;
-    cur += length;
-
-    // Load type
-    uint8_t typeTag = *cur;
-    cur++;
-
-    // Process all parts
-    switch (typeTag)
-    {
-    case SLD_TAG_TYPE_TEXT:
-        out->type = SLD_TYPE_TEXT;
-        PROCESS_LOAD_PIPELINE(SldLoadPosition, cur, out);
-        PROCESS_LOAD_PIPELINE(SldLoadContent, cur, out);
-        PROCESS_LOAD_PIPELINE(SldConvertText, cur, out);
-        break;
-    case SLD_TAG_TYPE_BITMAP:
-        out->type = SLD_TYPE_BITMAP;
-        PROCESS_LOAD_PIPELINE(SldLoadPosition, cur, out);
-        PROCESS_LOAD_PIPELINE(SldLoadContent, cur, out);
-        break;
-    case SLD_TAG_TYPE_RECT:
-        out->type = SLD_TYPE_RECT;
-        PROCESS_LOAD_PIPELINE(SldLoadPosition, cur, out);
-        PROCESS_LOAD_PIPELINE(SldLoadShape, cur, out);
-        break;
-    case SLD_TAG_TYPE_RECTF:
-        out->type = SLD_TYPE_RECTF;
-        PROCESS_LOAD_PIPELINE(SldLoadPosition, cur, out);
-        PROCESS_LOAD_PIPELINE(SldLoadShape, cur, out);
-        break;
-    case SLD_TAG_TYPE_PLAY:
-        PROCESS_LOAD_PIPELINE(SldLoadContent, cur, out);
-        out->type = SLD_TYPE_PLAY;
-        break;
-    case SLD_TAG_TYPE_WAITKEY:
-        out->type = SLD_TYPE_WAITKEY;
-        break;
-    case SLD_TAG_TYPE_JUMP:
-        out->type = SLD_TYPE_JUMP;
-        PROCESS_LOAD_PIPELINE(SldLoadContent, cur, out);
-        break;
-    case SLD_TAG_TYPE_JUMPE:
-        out->type = SLD_TYPE_JUMPE;
-        PROCESS_LOAD_PIPELINE(SldLoadConditional, cur, out);
-        PROCESS_LOAD_PIPELINE(SldLoadContent, cur, out);
-        break;
-    case SLD_TAG_TYPE_CALL:
-        out->type = SLD_TYPE_CALL;
-        PROCESS_LOAD_PIPELINE(SldLoadScriptCall, cur, out);
-        break;
-    default:
-        ERR(SLD_UNKNOWN_TYPE);
-    }
-
-End:
-    // Ignore rest of the line
-    while (('\r' != *cur) && ('\n' != *cur))
+    while (isspace(*cur))
     {
         cur++;
     }
 
-    while (('\r' == *cur) || ('\n' == *cur))
+    while (isdigit(*cur))
+    {
+        *out *= 10;
+        *out += *cur - '0';
+        cur++;
+    }
+
+    if (!isspace(*cur))
+    {
+        return -1;
+    }
+
+    while (isspace(*cur))
     {
         cur++;
     }
 
-    return cur - line;
+    return cur - str;
 }
 
-int
-SldLoadPosition(const char *str, sld_entry *out)
+static int
+_load_content(const char *str, sld_entry *out)
+{
+    const char *cur = str;
+    char       *content = out->content;
+    int         length = 0;
+
+    while (isspace(*cur))
+    {
+        cur++;
+    }
+
+    while (('\r' != *cur) && ('\n' != *cur))
+    {
+        if (SLD_ENTRY_MAX_LENGTH < length)
+        {
+            ERR(SLD_CONTENT_TOO_LONG);
+        }
+        *(content++) = *(cur++);
+        length++;
+    }
+    *content = 0;
+
+    out->length = length;
+    return cur - str;
+}
+
+static int
+_load_position(const char *str, sld_entry *out)
 {
     const char *cur = str;
     int         length;
 
     // Load vertical position
-    length = SldLoadU(cur, &out->posy);
+    length = _loadu(cur, &out->posy);
     if (0 > length)
     {
         ERR(SLD_INVALID_VERTICAL);
@@ -150,7 +79,7 @@ SldLoadPosition(const char *str, sld_entry *out)
     cur += length;
 
     // Load horizontal position
-    length = SldLoadU(cur, &out->posx);
+    length = _loadu(cur, &out->posx);
     if (0 <= length)
     {
         cur += length;
@@ -177,69 +106,14 @@ SldLoadPosition(const char *str, sld_entry *out)
     return cur - str;
 }
 
-int
-SldLoadContent(const char *str, sld_entry *out)
-{
-    const char *cur = str;
-    char       *content = out->content;
-    int         length = 0;
-
-    while (isspace(*cur))
-    {
-        cur++;
-    }
-
-    while (('\r' != *cur) && ('\n' != *cur))
-    {
-        if (SLD_ENTRY_MAX_LENGTH < length)
-        {
-            ERR(SLD_CONTENT_TOO_LONG);
-        }
-        *(content++) = *(cur++);
-        length++;
-    }
-    *content = 0;
-
-    out->length = length;
-    return cur - str;
-}
-
-int
-SldConvertText(const char *str, sld_entry *inOut)
-{
-    inOut->length = utf8_encode(inOut->content, inOut->content, gfx_wctob);
-    if (0 > inOut->length)
-    {
-        ERR(KER_INVALID_SEQUENCE);
-    }
-
-    return 0;
-}
-
-int
-SldLoadConditional(const char *str, sld_entry *out)
-{
-    const char *cur = str;
-    int         length = 0;
-
-    length = SldLoadU(cur, &out->posy);
-    if (0 > length)
-    {
-        ERR(SLD_INVALID_COMPARISON);
-    }
-    cur += length;
-
-    return cur - str;
-}
-
-int
-SldLoadShape(const char *str, sld_entry *out)
+static int
+_load_shape(const char *str, sld_entry *out)
 {
     const char *cur = str;
     uint16_t    width, height;
 
-    cur += SldLoadU(cur, &width);
-    cur += SldLoadU(cur, &height);
+    cur += _loadu(cur, &width);
+    cur += _loadu(cur, &height);
 
     switch (*cur)
     {
@@ -259,8 +133,24 @@ SldLoadShape(const char *str, sld_entry *out)
     return cur - str;
 }
 
-int
-SldLoadScriptCall(const char *str, sld_entry *out)
+static int
+_load_conditional(const char *str, sld_entry *out)
+{
+    const char *cur = str;
+    int         length = 0;
+
+    length = _loadu(cur, &out->posy);
+    if (0 > length)
+    {
+        ERR(SLD_INVALID_COMPARISON);
+    }
+    cur += length;
+
+    return cur - str;
+}
+
+static int
+_load_script_call(const char *str, sld_entry *out)
 {
     const char *cur = str;
     uint16_t    method, parameter;
@@ -292,9 +182,9 @@ SldLoadScriptCall(const char *str, sld_entry *out)
     }
     else
     {
-        cur += SldLoadU(cur, &out->script_call.method);
+        cur += _loadu(cur, &out->script_call.method);
         out->script_call.crc32 = strtoul(cur, (char **)&cur, 16);
-        cur += SldLoadU(cur, &out->script_call.parameter);
+        cur += _loadu(cur, &out->script_call.parameter);
     }
 
     length = 0;
@@ -312,33 +202,122 @@ SldLoadScriptCall(const char *str, sld_entry *out)
     return cur - str;
 }
 
-int
-SldLoadU(const char *str, uint16_t *out)
+static int
+_convert_text(const char *str, sld_entry *inout)
 {
-    const char *cur = str;
-    *out = 0;
+    inout->length = utf8_encode(inout->content, inout->content, gfx_wctob);
+    if (0 > inout->length)
+    {
+        ERR(KER_INVALID_SEQUENCE);
+    }
 
-    while (isspace(*cur))
+    return 0;
+}
+
+#define _try_load(stage, str, out)                                             \
+    {                                                                          \
+        int length;                                                            \
+        if (0 > (length = stage(str, out)))                                    \
+        {                                                                      \
+            return length;                                                     \
+        };                                                                     \
+        str += length;                                                         \
+    }
+
+int
+sld_load_entry(const char *line, sld_entry *out)
+{
+    const char *cur = line;
+    if ('\r' == *cur)
+    {
+        out->type = SLD_TYPE_BLANK;
+        return ('\n' == cur[1]) ? 2 : 1;
+    }
+
+    int      length;
+    uint16_t num;
+
+    if (SLD_TAG_PREFIX_LABEL == *cur)
+    {
+        out->type = SLD_TYPE_LABEL;
+        out->delay = 0;
+        cur++;
+        _try_load(_load_content, cur, out);
+        goto end;
+    }
+
+    // Load delay
+    length = _loadu(cur, &num);
+    if (0 > length)
+    {
+        ERR(SLD_INVALID_DELAY);
+    }
+    out->delay = num;
+    cur += length;
+
+    // Load type
+    uint8_t type_tag = *cur;
+    cur++;
+
+    // Process all parts
+    switch (type_tag)
+    {
+    case SLD_TAG_TYPE_TEXT:
+        out->type = SLD_TYPE_TEXT;
+        _try_load(_load_position, cur, out);
+        _try_load(_load_content, cur, out);
+        _try_load(_convert_text, cur, out);
+        break;
+    case SLD_TAG_TYPE_BITMAP:
+        out->type = SLD_TYPE_BITMAP;
+        _try_load(_load_position, cur, out);
+        _try_load(_load_content, cur, out);
+        break;
+    case SLD_TAG_TYPE_RECT:
+        out->type = SLD_TYPE_RECT;
+        _try_load(_load_position, cur, out);
+        _try_load(_load_shape, cur, out);
+        break;
+    case SLD_TAG_TYPE_RECTF:
+        out->type = SLD_TYPE_RECTF;
+        _try_load(_load_position, cur, out);
+        _try_load(_load_shape, cur, out);
+        break;
+    case SLD_TAG_TYPE_PLAY:
+        _try_load(_load_content, cur, out);
+        out->type = SLD_TYPE_PLAY;
+        break;
+    case SLD_TAG_TYPE_WAITKEY:
+        out->type = SLD_TYPE_WAITKEY;
+        break;
+    case SLD_TAG_TYPE_JUMP:
+        out->type = SLD_TYPE_JUMP;
+        _try_load(_load_content, cur, out);
+        break;
+    case SLD_TAG_TYPE_JUMPE:
+        out->type = SLD_TYPE_JUMPE;
+        _try_load(_load_conditional, cur, out);
+        _try_load(_load_content, cur, out);
+        break;
+    case SLD_TAG_TYPE_CALL:
+        out->type = SLD_TYPE_CALL;
+        _try_load(_load_script_call, cur, out);
+        break;
+    default:
+        ERR(SLD_UNKNOWN_TYPE);
+    }
+
+end:
+    // Ignore rest of the line
+    while (('\r' != *cur) && ('\n' != *cur))
     {
         cur++;
     }
 
-    while (isdigit(*cur))
-    {
-        *out *= 10;
-        *out += *cur - '0';
-        cur++;
-    }
-
-    if (!isspace(*cur))
-    {
-        return -1;
-    }
-
-    while (isspace(*cur))
+    while (('\r' == *cur) || ('\n' == *cur))
     {
         cur++;
     }
 
-    return cur - str;
+    return cur - line;
 }
