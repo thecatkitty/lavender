@@ -16,8 +16,8 @@
 
 #define LINE_WIDTH 80
 
-extern const char StrSldEnterSerial[];
-extern const char StrSldSerial[];
+extern const char IDS_ENTERDSN[];
+extern const char IDS_ENTERDSN_DESC[];
 
 typedef struct
 {
@@ -115,7 +115,7 @@ _find_best_bitmap(char *pattern)
 static bool
 _prompt_volsn(char *volsn)
 {
-    return 0 != dlg_prompt(StrSldEnterSerial, StrSldSerial, volsn, 9,
+    return 0 != dlg_prompt(IDS_ENTERDSN, IDS_ENTERDSN_DESC, volsn, 9,
                            _validate_volsn);
 }
 
