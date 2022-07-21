@@ -5,8 +5,8 @@
 .section .rodata
 
 
-                                .global StrKerError
-StrKerError:
+                                .global IDS_ERROR
+IDS_ERROR:
 IF_LANG(CSY,                    .ascii  "CHYBA: $")
 IF_LANG(ENU,                    .ascii  "ERROR: $")
 IF_LANG(PLK,                    .ascii  "BLAD: $")
