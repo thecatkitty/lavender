@@ -1,4 +1,4 @@
-#include <pal/dospc.h>
+#include <platform/dospc.h>
 #include <snd.h>
 
 void

@@ -1,5 +1,5 @@
-#ifndef _PAL_DOSPC_H_
-#define _PAL_DOSPC_H_
+#ifndef _PLATFORM_DOSPC_H_
+#define _PLATFORM_DOSPC_H_
 
 #include <base.h>
 
@@ -16,4 +16,4 @@ dospc_beep(uint16_t divisor);
 extern void
 dospc_silence(void);
 
-#endif // _PAL_DOSPC_H_
+#endif // _PLATFORM_DOSPC_H_

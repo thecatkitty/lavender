@@ -15,7 +15,7 @@
 #include <fmt/zip.h>
 #include <gfx.h>
 #include <pal.h>
-#include <pal/dospc.h>
+#include <platform/dospc.h>
 
 #include "dospc.h"
 
