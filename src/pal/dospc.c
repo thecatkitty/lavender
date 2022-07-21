@@ -41,7 +41,7 @@ extern char _binary_obj_version_txt_start[];
 
 extern const char __serrf[];
 extern const char __serrm[];
-extern const char StrKerError[];
+extern const char IDS_ERROR[];
 
 static volatile uint32_t       _counter;
 static dospc_isr               _bios_isr;
@@ -145,7 +145,7 @@ _find_message(const char *messages, unsigned key)
 static void
 _die_errno(void)
 {
-    dos_puts(StrKerError);
+    dos_puts(IDS_ERROR);
 
     char code[10];
     itoa(errno, code, 10);
@@ -158,7 +158,7 @@ _die_status(int error)
 {
     unsigned facility = error >> 5;
 
-    dos_puts(StrKerError);
+    dos_puts(IDS_ERROR);
     dos_puts(_find_message(__serrf, facility));
     dos_puts(" - $");
     dos_puts(_find_message(__serrm, error));
