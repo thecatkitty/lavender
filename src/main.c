@@ -25,7 +25,7 @@ main(int argc, char *argv[])
     }
 
     // Start the slideshow
-    status = SldRunScript(data, pal_get_asset_size(slides));
+    status = sld_run_script(data, pal_get_asset_size(slides));
 
 cleanup:
     pal_cleanup(status);

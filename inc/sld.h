@@ -34,7 +34,7 @@ typedef enum
     SLD_TYPE_JUMP,
     SLD_TYPE_JUMPE,
     SLD_TYPE_CALL
-} SLD_TYPE;
+} sld_type;
 
 #define SLD_ALIGN_LEFT   0
 #define SLD_ALIGN_CENTER 0xFFF1
@@ -50,51 +50,51 @@ typedef enum
 
 typedef struct
 {
-    uint16_t Delay;
-    uint16_t Horizontal;
-    uint16_t Vertical;
-    uint8_t  Type;
+    uint16_t delay;
+    uint16_t posx;
+    uint16_t posy;
+    uint8_t  type;
     union {
-        uint8_t Content[SLD_ENTRY_MAX_LENGTH + 1];
+        uint8_t content[SLD_ENTRY_MAX_LENGTH + 1];
         struct
         {
-            gfx_dimensions Dimensions;
-            gfx_color      Color;
-        } Shape;
+            gfx_dimensions dimensions;
+            gfx_color      color;
+        } shape;
         struct
         {
-            char     FileName[64];
-            uint16_t Method;
-            uint32_t Crc32;
-            uint16_t Parameter;
-            char     Data[128];
-        } ScriptCall;
+            char     file_name[64];
+            uint16_t method;
+            uint32_t crc32;
+            uint16_t parameter;
+            char     data[128];
+        } script_call;
     };
-    uint8_t Length;
-} SLD_ENTRY;
+    uint8_t length;
+} sld_entry;
 
 // Execute a script
 // Returns negative on error
 extern int
-SldRunScript(void *script, int size);
+sld_run_script(void *script, int size);
 
 // Load the next line from the script
 // Returns total line length in bytes, negative on error
 extern int
-SldLoadEntry(const char *line, SLD_ENTRY *out);
+sld_load_entry(const char *line, sld_entry *out);
 
 // Execute a line loaded from the script
 // Returns negative on error
 extern int
-SldExecuteEntry(SLD_ENTRY *sld);
+sld_execute_entry(sld_entry *sld);
 
 // Find the first line after the given label
 // Returns negative on error
 extern int
-SldFindLabel(const char * start,
-             const char * end,
-             const char * label,
-             const char **line);
+sld_find_label(const char  *start,
+               const char  *end,
+               const char  *label,
+               const char **line);
 
 #endif // __ASSEMBLER__
 

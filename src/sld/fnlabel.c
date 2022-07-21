@@ -3,18 +3,18 @@
 #include <sld.h>
 
 int
-SldFindLabel(const char * start,
-             const char * end,
-             const char * label,
-             const char **line)
+sld_find_label(const char  *start,
+               const char  *end,
+               const char  *label,
+               const char **line)
 {
-    SLD_ENTRY entry;
+    sld_entry entry;
     int       length;
 
     *line = start;
     while (*line < end)
     {
-        length = SldLoadEntry(*line, &entry);
+        length = sld_load_entry(*line, &entry);
         if (0 > length)
         {
             return length;
@@ -22,10 +22,10 @@ SldFindLabel(const char * start,
 
         *line += length;
 
-        if (SLD_TYPE_LABEL != entry.Type)
+        if (SLD_TYPE_LABEL != entry.type)
             continue;
 
-        if (0 == strcmp(label, entry.Content))
+        if (0 == strcmp(label, entry.content))
         {
             return 0;
         }

@@ -7,22 +7,22 @@
 #include <sld.h>
 
 static int
-SldLoadPosition(const char *str, SLD_ENTRY *out);
+SldLoadPosition(const char *str, sld_entry *out);
 
 static int
-SldLoadContent(const char *str, SLD_ENTRY *out);
+SldLoadContent(const char *str, sld_entry *out);
 
 static int
-SldConvertText(const char *, SLD_ENTRY *inOut);
+SldConvertText(const char *, sld_entry *inOut);
 
 static int
-SldLoadConditional(const char *str, SLD_ENTRY *out);
+SldLoadConditional(const char *str, sld_entry *out);
 
 static int
-SldLoadShape(const char *str, SLD_ENTRY *out);
+SldLoadShape(const char *str, sld_entry *out);
 
 static int
-SldLoadScriptCall(const char *str, SLD_ENTRY *out);
+SldLoadScriptCall(const char *str, sld_entry *out);
 
 static int
 SldLoadU(const char *str, uint16_t *out);
@@ -37,13 +37,13 @@ SldLoadU(const char *str, uint16_t *out);
         str += length;                                                         \
     }
 
-extern int
-SldLoadEntry(const char *line, SLD_ENTRY *out)
+int
+sld_load_entry(const char *line, sld_entry *out)
 {
     const char *cur = line;
     if ('\r' == *cur)
     {
-        out->Type = SLD_TYPE_BLANK;
+        out->type = SLD_TYPE_BLANK;
         return ('\n' == cur[1]) ? 2 : 1;
     }
 
@@ -52,8 +52,8 @@ SldLoadEntry(const char *line, SLD_ENTRY *out)
 
     if (SLD_TAG_PREFIX_LABEL == *cur)
     {
-        out->Type = SLD_TYPE_LABEL;
-        out->Delay = 0;
+        out->type = SLD_TYPE_LABEL;
+        out->delay = 0;
         cur++;
         PROCESS_LOAD_PIPELINE(SldLoadContent, cur, out);
         goto End;
@@ -65,7 +65,7 @@ SldLoadEntry(const char *line, SLD_ENTRY *out)
     {
         ERR(SLD_INVALID_DELAY);
     }
-    out->Delay = num;
+    out->delay = num;
     cur += length;
 
     // Load type
@@ -76,44 +76,44 @@ SldLoadEntry(const char *line, SLD_ENTRY *out)
     switch (typeTag)
     {
     case SLD_TAG_TYPE_TEXT:
-        out->Type = SLD_TYPE_TEXT;
+        out->type = SLD_TYPE_TEXT;
         PROCESS_LOAD_PIPELINE(SldLoadPosition, cur, out);
         PROCESS_LOAD_PIPELINE(SldLoadContent, cur, out);
         PROCESS_LOAD_PIPELINE(SldConvertText, cur, out);
         break;
     case SLD_TAG_TYPE_BITMAP:
-        out->Type = SLD_TYPE_BITMAP;
+        out->type = SLD_TYPE_BITMAP;
         PROCESS_LOAD_PIPELINE(SldLoadPosition, cur, out);
         PROCESS_LOAD_PIPELINE(SldLoadContent, cur, out);
         break;
     case SLD_TAG_TYPE_RECT:
-        out->Type = SLD_TYPE_RECT;
+        out->type = SLD_TYPE_RECT;
         PROCESS_LOAD_PIPELINE(SldLoadPosition, cur, out);
         PROCESS_LOAD_PIPELINE(SldLoadShape, cur, out);
         break;
     case SLD_TAG_TYPE_RECTF:
-        out->Type = SLD_TYPE_RECTF;
+        out->type = SLD_TYPE_RECTF;
         PROCESS_LOAD_PIPELINE(SldLoadPosition, cur, out);
         PROCESS_LOAD_PIPELINE(SldLoadShape, cur, out);
         break;
     case SLD_TAG_TYPE_PLAY:
         PROCESS_LOAD_PIPELINE(SldLoadContent, cur, out);
-        out->Type = SLD_TYPE_PLAY;
+        out->type = SLD_TYPE_PLAY;
         break;
     case SLD_TAG_TYPE_WAITKEY:
-        out->Type = SLD_TYPE_WAITKEY;
+        out->type = SLD_TYPE_WAITKEY;
         break;
     case SLD_TAG_TYPE_JUMP:
-        out->Type = SLD_TYPE_JUMP;
+        out->type = SLD_TYPE_JUMP;
         PROCESS_LOAD_PIPELINE(SldLoadContent, cur, out);
         break;
     case SLD_TAG_TYPE_JUMPE:
-        out->Type = SLD_TYPE_JUMPE;
+        out->type = SLD_TYPE_JUMPE;
         PROCESS_LOAD_PIPELINE(SldLoadConditional, cur, out);
         PROCESS_LOAD_PIPELINE(SldLoadContent, cur, out);
         break;
     case SLD_TAG_TYPE_CALL:
-        out->Type = SLD_TYPE_CALL;
+        out->type = SLD_TYPE_CALL;
         PROCESS_LOAD_PIPELINE(SldLoadScriptCall, cur, out);
         break;
     default:
@@ -136,13 +136,13 @@ End:
 }
 
 int
-SldLoadPosition(const char *str, SLD_ENTRY *out)
+SldLoadPosition(const char *str, sld_entry *out)
 {
     const char *cur = str;
     int         length;
 
     // Load vertical position
-    length = SldLoadU(cur, &out->Vertical);
+    length = SldLoadU(cur, &out->posy);
     if (0 > length)
     {
         ERR(SLD_INVALID_VERTICAL);
@@ -150,7 +150,7 @@ SldLoadPosition(const char *str, SLD_ENTRY *out)
     cur += length;
 
     // Load horizontal position
-    length = SldLoadU(cur, &out->Horizontal);
+    length = SldLoadU(cur, &out->posx);
     if (0 <= length)
     {
         cur += length;
@@ -160,13 +160,13 @@ SldLoadPosition(const char *str, SLD_ENTRY *out)
         switch (*cur)
         {
         case SLD_TAG_ALIGN_LEFT:
-            out->Horizontal = SLD_ALIGN_LEFT;
+            out->posx = SLD_ALIGN_LEFT;
             break;
         case SLD_TAG_ALIGN_RIGHT:
-            out->Horizontal = SLD_ALIGN_RIGHT;
+            out->posx = SLD_ALIGN_RIGHT;
             break;
         case SLD_TAG_ALIGN_CENTER:
-            out->Horizontal = SLD_ALIGN_CENTER;
+            out->posx = SLD_ALIGN_CENTER;
             break;
         default:
             ERR(SLD_INVALID_HORIZONTAL);
@@ -178,10 +178,10 @@ SldLoadPosition(const char *str, SLD_ENTRY *out)
 }
 
 int
-SldLoadContent(const char *str, SLD_ENTRY *out)
+SldLoadContent(const char *str, sld_entry *out)
 {
     const char *cur = str;
-    char       *content = out->Content;
+    char       *content = out->content;
     int         length = 0;
 
     while (isspace(*cur))
@@ -200,15 +200,15 @@ SldLoadContent(const char *str, SLD_ENTRY *out)
     }
     *content = 0;
 
-    out->Length = length;
+    out->length = length;
     return cur - str;
 }
 
 int
-SldConvertText(const char *str, SLD_ENTRY *inOut)
+SldConvertText(const char *str, sld_entry *inOut)
 {
-    inOut->Length = utf8_encode(inOut->Content, inOut->Content, gfx_wctob);
-    if (0 > inOut->Length)
+    inOut->length = utf8_encode(inOut->content, inOut->content, gfx_wctob);
+    if (0 > inOut->length)
     {
         ERR(KER_INVALID_SEQUENCE);
     }
@@ -217,12 +217,12 @@ SldConvertText(const char *str, SLD_ENTRY *inOut)
 }
 
 int
-SldLoadConditional(const char *str, SLD_ENTRY *out)
+SldLoadConditional(const char *str, sld_entry *out)
 {
     const char *cur = str;
     int         length = 0;
 
-    length = SldLoadU(cur, &out->Vertical);
+    length = SldLoadU(cur, &out->posy);
     if (0 > length)
     {
         ERR(SLD_INVALID_COMPARISON);
@@ -233,7 +233,7 @@ SldLoadConditional(const char *str, SLD_ENTRY *out)
 }
 
 int
-SldLoadShape(const char *str, SLD_ENTRY *out)
+SldLoadShape(const char *str, sld_entry *out)
 {
     const char *cur = str;
     uint16_t    width, height;
@@ -244,23 +244,23 @@ SldLoadShape(const char *str, SLD_ENTRY *out)
     switch (*cur)
     {
     case 'B':
-        out->Shape.Color = GFX_COLOR_BLACK;
+        out->shape.color = GFX_COLOR_BLACK;
         break;
     case 'G':
-        out->Shape.Color = GFX_COLOR_GRAY;
+        out->shape.color = GFX_COLOR_GRAY;
         break;
     default:
-        out->Shape.Color = GFX_COLOR_WHITE;
+        out->shape.color = GFX_COLOR_WHITE;
     }
-    out->Shape.Dimensions.width = width;
-    out->Shape.Dimensions.height = height;
+    out->shape.dimensions.width = width;
+    out->shape.dimensions.height = height;
     cur++;
 
     return cur - str;
 }
 
 int
-SldLoadScriptCall(const char *str, SLD_ENTRY *out)
+SldLoadScriptCall(const char *str, sld_entry *out)
 {
     const char *cur = str;
     uint16_t    method, parameter;
@@ -274,40 +274,40 @@ SldLoadScriptCall(const char *str, SLD_ENTRY *out)
     length = 0;
     while (!isspace(*cur))
     {
-        if ((sizeof(out->ScriptCall.FileName) - 1) < length)
+        if ((sizeof(out->script_call.file_name) - 1) < length)
         {
             ERR(SLD_CONTENT_TOO_LONG);
         }
-        out->ScriptCall.FileName[length] = *(cur++);
+        out->script_call.file_name[length] = *(cur++);
         length++;
     }
-    out->ScriptCall.FileName[length] = 0;
-    out->Length = length;
+    out->script_call.file_name[length] = 0;
+    out->length = length;
 
     if (('\r' == *cur) || ('\n' == *cur))
     {
-        out->ScriptCall.Method = SLD_METHOD_STORE;
-        out->ScriptCall.Crc32 = 0;
-        out->ScriptCall.Parameter = 0;
+        out->script_call.method = SLD_METHOD_STORE;
+        out->script_call.crc32 = 0;
+        out->script_call.parameter = 0;
     }
     else
     {
-        cur += SldLoadU(cur, &out->ScriptCall.Method);
-        out->ScriptCall.Crc32 = strtoul(cur, (char **)&cur, 16);
-        cur += SldLoadU(cur, &out->ScriptCall.Parameter);
+        cur += SldLoadU(cur, &out->script_call.method);
+        out->script_call.crc32 = strtoul(cur, (char **)&cur, 16);
+        cur += SldLoadU(cur, &out->script_call.parameter);
     }
 
     length = 0;
     while (('\r' != *cur) && ('\n' != *cur))
     {
-        if ((sizeof(out->ScriptCall.Data) - 1) < length)
+        if ((sizeof(out->script_call.data) - 1) < length)
         {
             ERR(SLD_CONTENT_TOO_LONG);
         }
-        out->ScriptCall.Data[length] = *(cur++);
+        out->script_call.data[length] = *(cur++);
         length++;
     }
-    out->ScriptCall.Data[length] = 0;
+    out->script_call.data[length] = 0;
 
     return cur - str;
 }
