@@ -31,19 +31,19 @@ static gfx_dimensions s_Screen;
 static uint16_t s_Accumulator = 0;
 
 static int
-SldExecuteText(SLD_ENTRY *sld);
+SldExecuteText(sld_entry *sld);
 
 static int
-SldExecuteBitmap(SLD_ENTRY *sld);
+SldExecuteBitmap(sld_entry *sld);
 
 static int
-SldExecuteRectangle(SLD_ENTRY *sld);
+SldExecuteRectangle(sld_entry *sld);
 
 static int
-SldExecutePlay(SLD_ENTRY *sld);
+SldExecutePlay(sld_entry *sld);
 
 static int
-SldExecuteScriptCall(SLD_ENTRY *sld);
+SldExecuteScriptCall(sld_entry *sld);
 
 static hasset
 SldFindBestBitmap(char *pattern);
@@ -58,16 +58,16 @@ static bool
 SldIsVolumeSerialNumberValid(const char *sn);
 
 int
-SldExecuteEntry(SLD_ENTRY *sld)
+sld_execute_entry(sld_entry *sld)
 {
     if (0 == s_Screen.width)
     {
         gfx_get_screen_dimensions(&s_Screen);
     }
 
-    pal_sleep(sld->Delay);
+    pal_sleep(sld->delay);
 
-    switch (sld->Type)
+    switch (sld->type)
     {
     case SLD_TYPE_BLANK:
         return 0;
@@ -88,7 +88,7 @@ SldExecuteEntry(SLD_ENTRY *sld)
     case SLD_TYPE_JUMP:
         return INT_MAX;
     case SLD_TYPE_JUMPE:
-        return (s_Accumulator == sld->Vertical) ? INT_MAX : 0;
+        return (s_Accumulator == sld->posy) ? INT_MAX : 0;
     case SLD_TYPE_CALL:
         return SldExecuteScriptCall(sld);
     }
@@ -97,31 +97,31 @@ SldExecuteEntry(SLD_ENTRY *sld)
 }
 
 int
-SldExecuteText(SLD_ENTRY *sld)
+SldExecuteText(sld_entry *sld)
 {
-    uint16_t x, y = sld->Vertical;
+    uint16_t x, y = sld->posy;
 
-    switch (sld->Horizontal)
+    switch (sld->posx)
     {
     case SLD_ALIGN_CENTER:
-        x = (LINE_WIDTH - sld->Length) / 2;
+        x = (LINE_WIDTH - sld->length) / 2;
         break;
     case SLD_ALIGN_RIGHT:
-        x = LINE_WIDTH - sld->Length;
+        x = LINE_WIDTH - sld->length;
         break;
     default:
-        x = sld->Horizontal;
+        x = sld->posx;
     }
 
-    return gfx_draw_text(sld->Content, x, y) ? 0 : ERR_KER_UNSUPPORTED;
+    return gfx_draw_text(sld->content, x, y) ? 0 : ERR_KER_UNSUPPORTED;
 }
 
 int
-SldExecuteBitmap(SLD_ENTRY *sld)
+SldExecuteBitmap(sld_entry *sld)
 {
     int status;
 
-    hasset bitmap = SldFindBestBitmap(sld->Content);
+    hasset bitmap = SldFindBestBitmap(sld->content);
     if (NULL == bitmap)
     {
         ERR(KER_NOT_FOUND);
@@ -133,8 +133,8 @@ SldExecuteBitmap(SLD_ENTRY *sld)
         ERR(KER_NOT_FOUND);
     }
 
-    uint16_t x, y = sld->Vertical;
-    switch (sld->Horizontal)
+    uint16_t x, y = sld->posy;
+    switch (sld->posx)
     {
     case SLD_ALIGN_CENTER:
         x = (LINE_WIDTH - bm.opl) / 2;
@@ -143,7 +143,7 @@ SldExecuteBitmap(SLD_ENTRY *sld)
         x = LINE_WIDTH - bm.opl;
         break;
     default:
-        x = sld->Horizontal;
+        x = sld->posx;
     }
 
     status = gfx_draw_bitmap(&bm, x, y);
@@ -153,33 +153,33 @@ SldExecuteBitmap(SLD_ENTRY *sld)
 }
 
 int
-SldExecuteRectangle(SLD_ENTRY *sld)
+SldExecuteRectangle(sld_entry *sld)
 {
-    uint16_t x, y = sld->Vertical;
-    switch (sld->Horizontal)
+    uint16_t x, y = sld->posy;
+    switch (sld->posx)
     {
     case SLD_ALIGN_CENTER:
-        x = (s_Screen.width - sld->Shape.Dimensions.width) / 2;
+        x = (s_Screen.width - sld->shape.dimensions.width) / 2;
         break;
     case SLD_ALIGN_RIGHT:
-        x = s_Screen.height - sld->Shape.Dimensions.height;
+        x = s_Screen.height - sld->shape.dimensions.height;
         break;
     default:
-        x = sld->Horizontal;
+        x = sld->posx;
     }
 
     bool (*draw)(gfx_dimensions *, uint16_t, uint16_t, gfx_color);
     draw =
-        (SLD_TYPE_RECT == sld->Type) ? gfx_draw_rectangle : gfx_fill_rectangle;
-    return draw(&sld->Shape.Dimensions, x, y, sld->Shape.Color)
+        (SLD_TYPE_RECT == sld->type) ? gfx_draw_rectangle : gfx_fill_rectangle;
+    return draw(&sld->shape.dimensions, x, y, sld->shape.color)
                ? 0
                : ERR_KER_UNSUPPORTED;
 }
 
 int
-SldExecutePlay(SLD_ENTRY *sld)
+SldExecutePlay(sld_entry *sld)
 {
-    hasset music = pal_open_asset(sld->Content, O_RDONLY);
+    hasset music = pal_open_asset(sld->content, O_RDONLY);
     if (NULL == music)
     {
         ERR(KER_NOT_FOUND);
@@ -196,11 +196,11 @@ SldExecutePlay(SLD_ENTRY *sld)
 }
 
 int
-SldExecuteScriptCall(SLD_ENTRY *sld)
+SldExecuteScriptCall(sld_entry *sld)
 {
     int status;
 
-    hasset script = pal_open_asset(sld->ScriptCall.FileName, O_RDWR);
+    hasset script = pal_open_asset(sld->script_call.file_name, O_RDWR);
     if (NULL == script)
     {
         ERR(KER_NOT_FOUND);
@@ -216,30 +216,30 @@ SldExecuteScriptCall(SLD_ENTRY *sld)
     s_Accumulator = 0;
 
     // Run if stored as plain text
-    if (SLD_METHOD_STORE == sld->ScriptCall.Method)
+    if (SLD_METHOD_STORE == sld->script_call.method)
     {
-        return SldRunScript(data, size);
+        return sld_run_script(data, size);
     }
 
     crg_stream         ctx;
     uint8_t            key[sizeof(uint64_t)];
-    SLD_KEY_VALIDATION context = {&ctx, sld->ScriptCall.Crc32, NULL};
+    SLD_KEY_VALIDATION context = {&ctx, sld->script_call.crc32, NULL};
     bool               invalid = false;
 
     crg_prepare(&ctx, CRG_XOR, data, size, key, 6);
 
     memset(key, 0, sizeof(key));
-    switch (sld->ScriptCall.Parameter)
+    switch (sld->script_call.parameter)
     {
     case SLD_PARAMETER_XOR48_INLINE:
-        *(uint64_t *)&key = rstrtoull(sld->ScriptCall.Data, 16);
+        *(uint64_t *)&key = rstrtoull(sld->script_call.data, 16);
         break;
     case SLD_PARAMETER_XOR48_PROMPT:
         invalid =
             !__sld_prompt_passcode(key, 6, 16, SldIsXorKeyValid, &context);
         break;
     case SLD_PARAMETER_XOR48_SPLIT: {
-        uint32_t local = strtoul(sld->ScriptCall.Data, NULL, 16);
+        uint32_t local = strtoul(sld->script_call.data, NULL, 16);
         context.Local = &local;
         if (!__sld_prompt_passcode(key, 3, 10, SldIsXorKeyValid, &context))
         {
@@ -252,7 +252,7 @@ SldExecuteScriptCall(SLD_ENTRY *sld)
         break;
     }
     case SLD_PARAMETER_XOR48_DISKID: {
-        uint32_t medium_id = pal_get_medium_id(sld->ScriptCall.Data);
+        uint32_t medium_id = pal_get_medium_id(sld->script_call.data);
         if (0 == medium_id)
         {
             char sn[10];
@@ -291,8 +291,8 @@ SldExecuteScriptCall(SLD_ENTRY *sld)
     }
 
     crg_decrypt(&ctx, data);
-    sld->ScriptCall.Method = SLD_METHOD_STORE;
-    status = SldRunScript(data, size);
+    sld->script_call.method = SLD_METHOD_STORE;
+    status = sld_run_script(data, size);
 
     pal_close_asset(script);
     return status;
