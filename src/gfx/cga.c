@@ -5,7 +5,7 @@
 
 #include <api/bios.h>
 #include <gfx.h>
-#include <pal/dospc.h>
+#include <platform/dospc.h>
 
 #include "glyph.h"
 
