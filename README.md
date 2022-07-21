@@ -1,6 +1,6 @@
 # Lavender [![Build Status](https://dev.azure.com/celones/thecatkitty-gh-public/_apis/build/status/thecatkitty.lavender?branchName=main)](https://dev.azure.com/celones/thecatkitty-gh-public/_build/latest?definitionId=3&branchName=main)
 
-A simple configurable slideshow program for DOS 2.0+ written in C and some 8086 assembly. It shows slides consisting of text and graphics contained in the ZIP file appended to the executable.
+A simple configurable slideshow program for DOS 2.0+ written in C . It shows slides consisting of text and graphics contained in the ZIP file appended to the executable.
 
 This is still work in progress, but I'm doing my best to separate working version (`main` branch) from progressing code (PRs).
 
