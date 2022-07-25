@@ -76,42 +76,6 @@ _validate_xor_key(const uint8_t *key, int keyLength, void *context)
     return crg_validate(validation->ctx, validation->crc32);
 }
 
-static hasset
-_find_best_bitmap(char *pattern)
-{
-    const char *hex = "0123456789ABCDEF";
-    char       *placeholder = strstr(pattern, "<>");
-    if (NULL == placeholder)
-    {
-        return pal_open_asset(pattern, O_RDONLY);
-    }
-
-    int par = (int)gfx_get_pixel_aspect();
-    int offset = 0;
-
-    while ((0 <= (par + offset)) || (255 >= (par + offset)))
-    {
-        if ((0 <= (par + offset)) && (255 >= (par + offset)))
-        {
-            placeholder[0] = hex[(par + offset) / 16];
-            placeholder[1] = hex[(par + offset) % 16];
-            hasset asset = pal_open_asset(pattern, O_RDONLY);
-            if (NULL != asset)
-            {
-                return asset;
-            }
-        }
-
-        if (0 <= offset)
-        {
-            offset++;
-        }
-        offset = -offset;
-    }
-
-    return NULL;
-}
-
 static bool
 _prompt_volsn(char *volsn)
 {
@@ -137,42 +101,6 @@ _execute_text(sld_entry *sld)
     }
 
     return gfx_draw_text(sld->content, x, y) ? 0 : ERR_KER_UNSUPPORTED;
-}
-
-static int
-_execute_bitmap(sld_entry *sld)
-{
-    int status;
-
-    hasset bitmap = _find_best_bitmap(sld->content);
-    if (NULL == bitmap)
-    {
-        ERR(KER_NOT_FOUND);
-    }
-
-    gfx_bitmap bm;
-    if (!pbm_load_bitmap(&bm, bitmap))
-    {
-        ERR(KER_NOT_FOUND);
-    }
-
-    uint16_t x, y = sld->posy;
-    switch (sld->posx)
-    {
-    case SLD_ALIGN_CENTER:
-        x = (LINE_WIDTH - bm.opl) / 2;
-        break;
-    case SLD_ALIGN_RIGHT:
-        x = LINE_WIDTH - bm.opl;
-        break;
-    default:
-        x = sld->posx;
-    }
-
-    status = gfx_draw_bitmap(&bm, x, y);
-
-    pal_close_asset(bitmap);
-    return status ? 0 : ERR_KER_UNSUPPORTED;
 }
 
 static int
@@ -340,7 +268,7 @@ sld_execute_entry(sld_entry *sld)
     case SLD_TYPE_TEXT:
         return _execute_text(sld);
     case SLD_TYPE_BITMAP:
-        return _execute_bitmap(sld);
+        return __sld_execute_bitmap(sld);
     case SLD_TYPE_RECT:
     case SLD_TYPE_RECTF:
         return _execute_rectangle(sld);
