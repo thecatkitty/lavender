@@ -259,3 +259,56 @@ __sld_execute_script_call(sld_entry *sld)
     pal_close_asset(script);
     return status;
 }
+
+int
+__sld_load_script_call(const char *str, sld_entry *out)
+{
+    const char *cur = str;
+    uint16_t    method, parameter;
+    int         length;
+
+    while (isspace(*cur))
+    {
+        cur++;
+    }
+
+    length = 0;
+    while (!isspace(*cur))
+    {
+        if ((sizeof(out->script_call.file_name) - 1) < length)
+        {
+            ERR(SLD_CONTENT_TOO_LONG);
+        }
+        out->script_call.file_name[length] = *(cur++);
+        length++;
+    }
+    out->script_call.file_name[length] = 0;
+    out->length = length;
+
+    if (('\r' == *cur) || ('\n' == *cur))
+    {
+        out->script_call.method = SLD_METHOD_STORE;
+        out->script_call.crc32 = 0;
+        out->script_call.parameter = 0;
+    }
+    else
+    {
+        cur += __sld_loadu(cur, &out->script_call.method);
+        out->script_call.crc32 = strtoul(cur, (char **)&cur, 16);
+        cur += __sld_loadu(cur, &out->script_call.parameter);
+    }
+
+    length = 0;
+    while (('\r' != *cur) && ('\n' != *cur))
+    {
+        if ((sizeof(out->script_call.data) - 1) < length)
+        {
+            ERR(SLD_CONTENT_TOO_LONG);
+        }
+        out->script_call.data[length] = *(cur++);
+        length++;
+    }
+    out->script_call.data[length] = 0;
+
+    return cur - str;
+}
