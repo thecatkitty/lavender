@@ -6,6 +6,8 @@
 #include <gfx.h>
 #include <sld.h>
 
+#include "sld_impl.h"
+
 static int
 _loadu(const char *str, uint16_t *out)
 {
@@ -214,16 +216,6 @@ _convert_text(const char *str, sld_entry *inout)
     return 0;
 }
 
-#define _try_load(stage, str, out)                                             \
-    {                                                                          \
-        int length;                                                            \
-        if (0 > (length = stage(str, out)))                                    \
-        {                                                                      \
-            return length;                                                     \
-        };                                                                     \
-        str += length;                                                         \
-    }
-
 int
 sld_load_entry(const char *line, sld_entry *out)
 {
@@ -242,7 +234,7 @@ sld_load_entry(const char *line, sld_entry *out)
         out->type = SLD_TYPE_LABEL;
         out->delay = 0;
         cur++;
-        _try_load(_load_content, cur, out);
+        __sld_try_load(_load_content, cur, out);
         goto end;
     }
 
@@ -264,27 +256,27 @@ sld_load_entry(const char *line, sld_entry *out)
     {
     case SLD_TAG_TYPE_TEXT:
         out->type = SLD_TYPE_TEXT;
-        _try_load(_load_position, cur, out);
-        _try_load(_load_content, cur, out);
-        _try_load(_convert_text, cur, out);
+        __sld_try_load(_load_position, cur, out);
+        __sld_try_load(_load_content, cur, out);
+        __sld_try_load(_convert_text, cur, out);
         break;
     case SLD_TAG_TYPE_BITMAP:
         out->type = SLD_TYPE_BITMAP;
-        _try_load(_load_position, cur, out);
-        _try_load(_load_content, cur, out);
+        __sld_try_load(_load_position, cur, out);
+        __sld_try_load(_load_content, cur, out);
         break;
     case SLD_TAG_TYPE_RECT:
         out->type = SLD_TYPE_RECT;
-        _try_load(_load_position, cur, out);
-        _try_load(_load_shape, cur, out);
+        __sld_try_load(_load_position, cur, out);
+        __sld_try_load(_load_shape, cur, out);
         break;
     case SLD_TAG_TYPE_RECTF:
         out->type = SLD_TYPE_RECTF;
-        _try_load(_load_position, cur, out);
-        _try_load(_load_shape, cur, out);
+        __sld_try_load(_load_position, cur, out);
+        __sld_try_load(_load_shape, cur, out);
         break;
     case SLD_TAG_TYPE_PLAY:
-        _try_load(_load_content, cur, out);
+        __sld_try_load(_load_content, cur, out);
         out->type = SLD_TYPE_PLAY;
         break;
     case SLD_TAG_TYPE_WAITKEY:
@@ -292,16 +284,16 @@ sld_load_entry(const char *line, sld_entry *out)
         break;
     case SLD_TAG_TYPE_JUMP:
         out->type = SLD_TYPE_JUMP;
-        _try_load(_load_content, cur, out);
+        __sld_try_load(_load_content, cur, out);
         break;
     case SLD_TAG_TYPE_JUMPE:
         out->type = SLD_TYPE_JUMPE;
-        _try_load(_load_conditional, cur, out);
-        _try_load(_load_content, cur, out);
+        __sld_try_load(_load_conditional, cur, out);
+        __sld_try_load(_load_content, cur, out);
         break;
     case SLD_TAG_TYPE_CALL:
         out->type = SLD_TYPE_CALL;
-        _try_load(_load_script_call, cur, out);
+        __sld_try_load(_load_script_call, cur, out);
         break;
     default:
         ERR(SLD_UNKNOWN_TYPE);

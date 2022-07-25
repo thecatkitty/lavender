@@ -3,6 +3,16 @@
 
 #include <crg.h>
 
+#define __sld_try_load(stage, str, out)                                        \
+    {                                                                          \
+        int length;                                                            \
+        if (0 > (length = stage(str, out)))                                    \
+        {                                                                      \
+            return length;                                                     \
+        };                                                                     \
+        str += length;                                                         \
+    }
+
 typedef bool (*sld_passcode_validator)(const uint8_t *code,
                                        int            length,
                                        void          *context);
