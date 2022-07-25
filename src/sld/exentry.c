@@ -24,7 +24,7 @@ typedef struct
     uint32_t   *local;
 } _key_validation;
 
-static gfx_dimensions _screen;
+gfx_dimensions __sld_screen;
 
 static uint16_t _accumulator = 0;
 
@@ -79,30 +79,6 @@ _prompt_volsn(char *volsn)
 {
     return 0 != dlg_prompt(IDS_ENTERDSN, IDS_ENTERDSN_DESC, volsn, 9,
                            _validate_volsn);
-}
-
-static int
-_execute_rectangle(sld_entry *sld)
-{
-    uint16_t x, y = sld->posy;
-    switch (sld->posx)
-    {
-    case SLD_ALIGN_CENTER:
-        x = (_screen.width - sld->shape.dimensions.width) / 2;
-        break;
-    case SLD_ALIGN_RIGHT:
-        x = _screen.height - sld->shape.dimensions.height;
-        break;
-    default:
-        x = sld->posx;
-    }
-
-    bool (*draw)(gfx_dimensions *, uint16_t, uint16_t, gfx_color);
-    draw =
-        (SLD_TYPE_RECT == sld->type) ? gfx_draw_rectangle : gfx_fill_rectangle;
-    return draw(&sld->shape.dimensions, x, y, sld->shape.color)
-               ? 0
-               : ERR_KER_UNSUPPORTED;
 }
 
 static int
@@ -230,9 +206,9 @@ _execute_script_call(sld_entry *sld)
 int
 sld_execute_entry(sld_entry *sld)
 {
-    if (0 == _screen.width)
+    if (0 == __sld_screen.width)
     {
-        gfx_get_screen_dimensions(&_screen);
+        gfx_get_screen_dimensions(&__sld_screen);
     }
 
     pal_sleep(sld->delay);
@@ -249,7 +225,7 @@ sld_execute_entry(sld_entry *sld)
         return __sld_execute_bitmap(sld);
     case SLD_TYPE_RECT:
     case SLD_TYPE_RECTF:
-        return _execute_rectangle(sld);
+        return __sld_execute_rectangle(sld);
     case SLD_TYPE_PLAY:
         return _execute_play(sld);
     case SLD_TYPE_WAITKEY:

@@ -6,4 +6,5 @@ CCSOURCES := $(CCSOURCES) \
 	$(DIR)/fnlabel.c \
 	$(DIR)/bitmap.c \
 	$(DIR)/text.c \
+	$(DIR)/shape.c \
 	$(DIR)/protect.c

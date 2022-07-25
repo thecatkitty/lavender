@@ -27,6 +27,9 @@ extern int
 __sld_execute_text(sld_entry *sld);
 
 extern int
+__sld_execute_rectangle(sld_entry *sld);
+
+extern int
 __sld_convert_text(const char *str, sld_entry *inout);
 
 extern bool
@@ -35,5 +38,7 @@ __sld_prompt_passcode(uint8_t               *code,
                       int                    base,
                       sld_passcode_validator validator,
                       void                  *context);
+
+extern gfx_dimensions __sld_screen;
 
 #endif // _SLD_IMPL_H_
