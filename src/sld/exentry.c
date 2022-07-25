@@ -10,7 +10,6 @@
 #include <gfx.h>
 #include <pal.h>
 #include <sld.h>
-#include <snd.h>
 
 #include "sld_impl.h"
 
@@ -79,25 +78,6 @@ _prompt_volsn(char *volsn)
 {
     return 0 != dlg_prompt(IDS_ENTERDSN, IDS_ENTERDSN_DESC, volsn, 9,
                            _validate_volsn);
-}
-
-static int
-_execute_play(sld_entry *sld)
-{
-    hasset music = pal_open_asset(sld->content, O_RDONLY);
-    if (NULL == music)
-    {
-        ERR(KER_NOT_FOUND);
-    }
-
-    char *data = pal_get_asset_data(music);
-    if (NULL == data)
-    {
-        ERR(KER_NOT_FOUND);
-    }
-
-    snd_play(data, pal_get_asset_size(music));
-    return 0;
 }
 
 static int
@@ -227,7 +207,7 @@ sld_execute_entry(sld_entry *sld)
     case SLD_TYPE_RECTF:
         return __sld_execute_rectangle(sld);
     case SLD_TYPE_PLAY:
-        return _execute_play(sld);
+        return __sld_execute_play(sld);
     case SLD_TYPE_WAITKEY:
         _accumulator = bios_get_keystroke() >> 8;
         return 0;

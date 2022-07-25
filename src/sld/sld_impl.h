@@ -27,6 +27,9 @@ extern int
 __sld_execute_text(sld_entry *sld);
 
 extern int
+__sld_execute_play(sld_entry *sld);
+
+extern int
 __sld_execute_rectangle(sld_entry *sld);
 
 extern int
