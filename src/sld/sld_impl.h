@@ -33,15 +33,12 @@ extern int
 __sld_execute_rectangle(sld_entry *sld);
 
 extern int
+__sld_execute_script_call(sld_entry *sld);
+
+extern int
 __sld_convert_text(const char *str, sld_entry *inout);
 
-extern bool
-__sld_prompt_passcode(uint8_t               *code,
-                      int                    code_len,
-                      int                    base,
-                      sld_passcode_validator validator,
-                      void                  *context);
-
+extern uint16_t       __sld_accumulator;
 extern gfx_dimensions __sld_screen;
 
 #endif // _SLD_IMPL_H_
