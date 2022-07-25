@@ -7,8 +7,6 @@
 
 #include "sld_impl.h"
 
-#define LINE_WIDTH 80
-
 static hasset
 _find_best_bitmap(char *pattern)
 {

@@ -14,8 +14,6 @@
 
 #include "sld_impl.h"
 
-#define LINE_WIDTH 80
-
 extern const char IDS_ENTERDSN[];
 extern const char IDS_ENTERDSN_DESC[];
 
@@ -81,26 +79,6 @@ _prompt_volsn(char *volsn)
 {
     return 0 != dlg_prompt(IDS_ENTERDSN, IDS_ENTERDSN_DESC, volsn, 9,
                            _validate_volsn);
-}
-
-static int
-_execute_text(sld_entry *sld)
-{
-    uint16_t x, y = sld->posy;
-
-    switch (sld->posx)
-    {
-    case SLD_ALIGN_CENTER:
-        x = (LINE_WIDTH - sld->length) / 2;
-        break;
-    case SLD_ALIGN_RIGHT:
-        x = LINE_WIDTH - sld->length;
-        break;
-    default:
-        x = sld->posx;
-    }
-
-    return gfx_draw_text(sld->content, x, y) ? 0 : ERR_KER_UNSUPPORTED;
 }
 
 static int
@@ -266,7 +244,7 @@ sld_execute_entry(sld_entry *sld)
     case SLD_TYPE_LABEL:
         return 0;
     case SLD_TYPE_TEXT:
-        return _execute_text(sld);
+        return __sld_execute_text(sld);
     case SLD_TYPE_BITMAP:
         return __sld_execute_bitmap(sld);
     case SLD_TYPE_RECT:

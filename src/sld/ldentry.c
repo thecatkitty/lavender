@@ -2,7 +2,6 @@
 #include <stdlib.h>
 
 #include <api/dos.h>
-#include <fmt/utf8.h>
 #include <gfx.h>
 #include <sld.h>
 
@@ -204,18 +203,6 @@ _load_script_call(const char *str, sld_entry *out)
     return cur - str;
 }
 
-static int
-_convert_text(const char *str, sld_entry *inout)
-{
-    inout->length = utf8_encode(inout->content, inout->content, gfx_wctob);
-    if (0 > inout->length)
-    {
-        ERR(KER_INVALID_SEQUENCE);
-    }
-
-    return 0;
-}
-
 int
 sld_load_entry(const char *line, sld_entry *out)
 {
@@ -258,7 +245,7 @@ sld_load_entry(const char *line, sld_entry *out)
         out->type = SLD_TYPE_TEXT;
         __sld_try_load(_load_position, cur, out);
         __sld_try_load(_load_content, cur, out);
-        __sld_try_load(_convert_text, cur, out);
+        __sld_try_load(__sld_convert_text, cur, out);
         break;
     case SLD_TAG_TYPE_BITMAP:
         out->type = SLD_TYPE_BITMAP;

@@ -4,6 +4,8 @@
 #include <crg.h>
 #include <sld.h>
 
+#define LINE_WIDTH 80
+
 #define __sld_try_load(stage, str, out)                                        \
     {                                                                          \
         int length;                                                            \
@@ -20,6 +22,12 @@ typedef bool (*sld_passcode_validator)(const uint8_t *code,
 
 extern bool
 __sld_execute_bitmap(sld_entry *sld);
+
+extern int
+__sld_execute_text(sld_entry *sld);
+
+extern int
+__sld_convert_text(const char *str, sld_entry *inout);
 
 extern bool
 __sld_prompt_passcode(uint8_t               *code,
