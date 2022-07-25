@@ -5,7 +5,7 @@ CCSOURCES := $(CCSOURCES) \
 	$(DIR)/ldentry.c \
 	$(DIR)/fnlabel.c \
 	$(DIR)/bitmap.c \
+	$(DIR)/call.c \
 	$(DIR)/text.c \
 	$(DIR)/play.c \
-	$(DIR)/shape.c \
-	$(DIR)/protect.c
+	$(DIR)/shape.c
