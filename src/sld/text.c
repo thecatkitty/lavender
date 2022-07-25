@@ -3,6 +3,18 @@
 #include "sld_impl.h"
 
 int
+_convert_text(const char *str, sld_entry *inout)
+{
+    inout->length = utf8_encode(inout->content, inout->content, gfx_wctob);
+    if (0 > inout->length)
+    {
+        ERR(KER_INVALID_SEQUENCE);
+    }
+
+    return 0;
+}
+
+int
 __sld_execute_text(sld_entry *sld)
 {
     uint16_t x, y = sld->posy;
@@ -23,13 +35,13 @@ __sld_execute_text(sld_entry *sld)
 }
 
 int
-__sld_convert_text(const char *str, sld_entry *inout)
+__sld_load_text(const char *str, sld_entry *out)
 {
-    inout->length = utf8_encode(inout->content, inout->content, gfx_wctob);
-    if (0 > inout->length)
-    {
-        ERR(KER_INVALID_SEQUENCE);
-    }
+    const char *cur = str;
 
-    return 0;
+    __sld_try_load(__sld_load_position, cur, out);
+    __sld_try_load(__sld_load_content, cur, out);
+    __sld_try_load(_convert_text, cur, out);
+
+    return cur - str;
 }

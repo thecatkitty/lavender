@@ -77,3 +77,13 @@ __sld_execute_bitmap(sld_entry *sld)
     return status;
 }
 
+int
+__sld_load_bitmap(const char *str, sld_entry *out)
+{
+    const char *cur = str;
+
+    __sld_try_load(__sld_load_position, cur, out);
+    __sld_try_load(__sld_load_content, cur, out);
+
+    return cur - str;
+}
