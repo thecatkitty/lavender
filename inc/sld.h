@@ -83,19 +83,6 @@ sld_run_script(void *script, int size);
 extern int
 sld_load_entry(const char *line, sld_entry *out);
 
-// Execute a line loaded from the script
-// Returns negative on error
-extern int
-sld_execute_entry(sld_entry *sld);
-
-// Find the first line after the given label
-// Returns negative on error
-extern int
-sld_find_label(const char  *start,
-               const char  *end,
-               const char  *label,
-               const char **line);
-
 #endif // __ASSEMBLER__
 
 #include <err.h>
