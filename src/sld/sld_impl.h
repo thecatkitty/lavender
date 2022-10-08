@@ -8,7 +8,7 @@ typedef bool (*sld_passcode_validator)(const uint8_t *code,
                                        void          *context);
 extern bool
 __sld_prompt_passcode(uint8_t               *code,
-                      int                    length,
+                      int                    code_len,
                       int                    base,
                       sld_passcode_validator validator,
                       void                  *context);

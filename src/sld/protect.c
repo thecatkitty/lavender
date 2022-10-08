@@ -45,12 +45,12 @@ _isxdigitstr(const char *str)
 
 bool
 __sld_prompt_passcode(uint8_t               *code,
-                      int                    length,
+                      int                    code_len,
                       int                    base,
                       sld_passcode_validator validator,
                       void                  *context)
 {
-    char *buffer = (char *)alloca(length * 3 + 1);
+    char *buffer = (char *)alloca(code_len * 3 + 1);
     while (true)
     {
         bool (*precheck)(const char *) = NULL;
@@ -65,7 +65,7 @@ __sld_prompt_passcode(uint8_t               *code,
         }
 
         int length = dlg_prompt(StrSldEnterPassword, StrSldEncrypted, buffer,
-                                length * 2, precheck);
+                                code_len * 2, precheck);
         if (0 == length)
         {
             return false;
@@ -78,7 +78,7 @@ __sld_prompt_passcode(uint8_t               *code,
         else
         {
             uint64_t value = rstrtoull(buffer, base);
-            memcpy(code, &value, length);
+            memcpy(code, &value, code_len);
         }
 
         if (!validator)
@@ -86,7 +86,7 @@ __sld_prompt_passcode(uint8_t               *code,
             return true;
         }
 
-        if (validator(code, length, context))
+        if (validator(code, code_len, context))
         {
             return true;
         }
