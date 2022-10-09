@@ -178,32 +178,35 @@ __sld_execute_script_call(sld_entry *sld)
         return status;
     }
 
-    crg_stream      ctx;
-    uint8_t         key[sizeof(uint64_t)];
+    crg_stream ctx;
+    union {
+        uint64_t qw;
+        uint8_t  bs[sizeof(uint64_t)];
+    } key;
     _key_validation context = {&ctx, sld->script_call.crc32, NULL};
     bool            invalid = false;
 
-    crg_prepare(&ctx, CRG_XOR, script->data, script->size, key, 6);
+    crg_prepare(&ctx, CRG_XOR, script->data, script->size, key.bs, 6);
 
-    memset(key, 0, sizeof(key));
+    memset(key.bs, 0, sizeof(key));
     switch (sld->script_call.parameter)
     {
     case SLD_PARAMETER_XOR48_INLINE:
-        *(uint64_t *)&key = rstrtoull(sld->script_call.data, 16);
+        key.qw = rstrtoull(sld->script_call.data, 16);
         break;
     case SLD_PARAMETER_XOR48_PROMPT:
-        invalid = !_prompt_passcode(key, 6, 16, _validate_xor_key, &context);
+        invalid = !_prompt_passcode(key.bs, 6, 16, _validate_xor_key, &context);
         break;
     case SLD_PARAMETER_XOR48_SPLIT: {
         uint32_t local = strtoul(sld->script_call.data, NULL, 16);
         context.local = &local;
-        if (!_prompt_passcode(key, 3, 10, _validate_xor_key, &context))
+        if (!_prompt_passcode(key.bs, 3, 10, _validate_xor_key, &context))
         {
             invalid = true;
             break;
         }
 
-        *(uint64_t *)&key = crg_combine_key(local, *(const uint32_t *)&key);
+        key.qw = crg_combine_key(local, *(const uint32_t *)&key);
         context.local = NULL;
         break;
     }
@@ -224,13 +227,13 @@ __sld_execute_script_call(sld_entry *sld)
         }
 
         context.local = &medium_id;
-        if (!_prompt_passcode(key, 3, 10, _validate_xor_key, &context))
+        if (!_prompt_passcode(key.bs, 3, 10, _validate_xor_key, &context))
         {
             invalid = true;
             break;
         }
 
-        *(uint64_t *)&key = crg_combine_key(medium_id, *(const uint32_t *)&key);
+        key.qw = crg_combine_key(medium_id, *(const uint32_t *)&key);
         context.local = NULL;
         break;
     }
@@ -258,7 +261,6 @@ int
 __sld_load_script_call(const char *str, sld_entry *out)
 {
     const char *cur = str;
-    uint16_t    method, parameter;
     int         length;
 
     while (isspace(*cur))

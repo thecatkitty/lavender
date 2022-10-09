@@ -319,7 +319,6 @@ gfx_fill_rectangle(gfx_dimensions *rect,
 {
     uint16_t left = x;
     uint16_t right = x + rect->width;
-    uint16_t top = y;
     uint16_t bottom = y + rect->height;
 
     uint8_t lmask = (1 << (8 - (x % 8))) - 1;

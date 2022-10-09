@@ -68,7 +68,8 @@ _strndcpy(char *dst, const char *src, size_t count, char delimiter)
             return i + 1;
         }
 
-        dst[i] = src[i++];
+        dst[i] = src[i];
+        ++i;
     }
 
     dst[i] = 0;

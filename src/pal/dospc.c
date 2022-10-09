@@ -19,6 +19,8 @@
 
 #include "dospc.h"
 
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+
 typedef struct
 {
     pal_timer_callback callback;
@@ -359,7 +361,7 @@ pal_sleep(unsigned ms)
 hasset
 pal_open_asset(const char *name, int flags)
 {
-    int slot;
+    int slot = 0;
     while (NULL != _assets[slot].zip_header)
     {
         slot++;
@@ -540,10 +542,13 @@ _get_volume_info(uint8_t drive, _volume_info *out)
 uint32_t
 pal_get_medium_id(const char *tag)
 {
-    bios_equipment equipment;
-    *(short *)&equipment = bios_get_equipment_list();
+    union {
+        short          w;
+        bios_equipment s;
+    } equipment;
+    equipment.w = bios_get_equipment_list();
 
-    int drives = equipment.floppy_disk ? (equipment.floppy_drives + 1) : 0;
+    int drives = equipment.s.floppy_disk ? (equipment.s.floppy_drives + 1) : 0;
     if (2 < drives)
     {
         drives = 2;
@@ -612,6 +617,7 @@ pal_unregister_timer_callback(htimer timer)
     _disable();
     _timer_handlers[i].callback = NULL;
     _enable();
+    return true;
 }
 
 bool
