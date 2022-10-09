@@ -103,9 +103,10 @@ __sld_load_position(const char *str, sld_entry *out)
 }
 
 int
-sld_load_entry(const char *line, sld_entry *out)
+sld_load_entry(sld_context *ctx, sld_entry *out)
 {
-    const char *cur = line;
+    const char *start = ctx->data + ctx->offset;
+    const char *cur = start;
     if ('\r' == *cur)
     {
         out->type = SLD_TYPE_BLANK;
@@ -196,5 +197,5 @@ end:
         cur++;
     }
 
-    return cur - line;
+    return cur - start;
 }

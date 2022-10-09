@@ -104,12 +104,12 @@ sld_close_context(sld_context *ctx);
 // Execute a script
 // Returns negative on error
 extern int
-sld_run_script(void *script, int size);
+sld_run_script(sld_context *ctx);
 
 // Load the next line from the script
 // Returns total line length in bytes, negative on error
 extern int
-sld_load_entry(const char *line, sld_entry *out);
+sld_load_entry(sld_context *ctx, sld_entry *entry);
 
 #endif // __ASSEMBLER__
 
