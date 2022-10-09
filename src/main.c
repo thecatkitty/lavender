@@ -4,30 +4,16 @@
 int
 main(int argc, char *argv[])
 {
-    int status;
+    int status = 0;
 
     pal_initialize();
 
-    // Locate slideshow description
-    hasset slides = pal_open_asset("slides.txt", O_RDONLY);
-    if (NULL == slides)
+    sld_context *script = sld_create_context("slides.txt", NULL);
+    if (NULL != script)
     {
-        status = EXIT_ERRNO;
-        goto cleanup;
+        status = sld_run_script(script->data, script->size);
     }
 
-    // Get script
-    char *data = pal_get_asset_data(slides);
-    if (NULL == data)
-    {
-        status = EXIT_ERRNO;
-        goto cleanup;
-    }
-
-    // Start the slideshow
-    status = sld_run_script(data, pal_get_asset_size(slides));
-
-cleanup:
     pal_cleanup(status);
     return status;
 }
