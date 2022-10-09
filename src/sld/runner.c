@@ -52,24 +52,21 @@ _execute_entry(sld_entry *sld)
 // Find the first line after the given label
 // Returns negative on error
 static int
-_find_label(const char  *start,
-            const char  *end,
-            const char  *label,
-            const char **line)
+_goto_label(sld_context *ctx, const char *label)
 {
     sld_entry entry;
     int       length;
 
-    *line = start;
-    while (*line < end)
+    ctx->offset = 0;
+    while (ctx->offset < ctx->size)
     {
-        length = sld_load_entry(*line, &entry);
+        length = sld_load_entry(ctx, &entry);
         if (0 > length)
         {
             return length;
         }
 
-        *line += length;
+        ctx->offset += length;
 
         if (SLD_TYPE_LABEL != entry.type)
             continue;
@@ -84,35 +81,33 @@ _find_label(const char  *start,
 }
 
 int
-sld_run_script(void *script, int size)
+sld_run_script(sld_context *ctx)
 {
-    const char *line = (const char *)script;
-    int         length;
-    sld_entry   entry;
-    while (line < (const char *)script + size)
+    int length;
+
+    while (ctx->offset < ctx->size)
     {
-        if (0 > (length = sld_load_entry(line, &entry)))
+        if (0 > (length = sld_load_entry(ctx, &ctx->entry)))
         {
             return length;
         }
 
         int status;
-        if (0 > (status = _execute_entry(&entry)))
+        if (0 > (status = _execute_entry(&ctx->entry)))
         {
             return status;
         }
 
         if (INT_MAX == status)
         {
-            if (0 > (length = _find_label((const char *)script, script + size,
-                                          entry.content, &line)))
+            if (0 > (length = _goto_label(ctx, ctx->entry.content)))
             {
                 return length;
             }
             continue;
         }
 
-        line += length;
+        ctx->offset += length;
     }
 
     return 0;

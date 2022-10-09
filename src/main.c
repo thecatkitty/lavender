@@ -11,7 +11,7 @@ main(int argc, char *argv[])
     sld_context *script = sld_create_context("slides.txt", NULL);
     if (NULL != script)
     {
-        status = sld_run_script(script->data, script->size);
+        status = sld_run_script(script);
     }
 
     pal_cleanup(status);
