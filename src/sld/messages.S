@@ -1,4 +1,3 @@
-#include <sld.h>
 #include <nls.h>
 
 
@@ -34,50 +33,86 @@ IF_LANG(CSY,                    .asciz  "Zadaný klíč je neplatný!")
 IF_LANG(ENU,                    .asciz  "Provided key is invalid!")
 IF_LANG(PLK,                    .asciz  "Wprowadzony klucz jest niepoprawny!")
 
+                                .global IDS_LOADERROR
+IDS_LOADERROR:
+IF_LANG(CSY,                    .asciz  "Chyba nacitani scenare!")
+IF_LANG(ENU,                    .asciz  "Script loading error!")
+IF_LANG(PLK,                    .asciz  "Blad ladowania scenariusza!")
 
-.section .errf
+                                .global IDS_EXECERROR
+IDS_EXECERROR:
+IF_LANG(CSY,                    .asciz  "Chyba pri provadeni scenare!")
+IF_LANG(ENU,                    .asciz  "Script execution error!")
+IF_LANG(PLK,                    .asciz  "Blad wykonania scenariusza!")
 
+                                .global IDS_NOEXECCTX
+IDS_NOEXECCTX:
+IF_LANG(CSY,                    .asciz  "Nelze vytvorit kontext provadeni")
+IF_LANG(ENU,                    .asciz  "Cannot create execution context")
+IF_LANG(PLK,                    .asciz  "Nie mozna utworzyc kontekstu wykonania")
 
-.byte   ERR_FACILITY_SLD
-IF_LANG(CSY, .ascii  "Snimky$")
-IF_LANG(ENU, .ascii  "Slides$")
-IF_LANG(PLK, .ascii  "Slajdy$")
+                                .global IDS_INVALIDDELAY
+IDS_INVALIDDELAY:
+IF_LANG(CSY,                    .asciz  "Neplatne zpozdeni")
+IF_LANG(ENU,                    .asciz  "Invalid delay")
+IF_LANG(PLK,                    .asciz  "Niepoprawne opoznienie")
 
+                                .global IDS_UNKNOWNTYPE
+IDS_UNKNOWNTYPE:
+IF_LANG(CSY,                    .asciz  "Neznamy typ")
+IF_LANG(ENU,                    .asciz  "Unknown type")
+IF_LANG(PLK,                    .asciz  "Nieznany typ")
 
-.section .errm
+                                .global IDS_INVALIDVPOS
+IDS_INVALIDVPOS:
+IF_LANG(CSY,                    .asciz  "Neplatna vertikalni poloha")
+IF_LANG(ENU,                    .asciz  "Invalid vertical position")
+IF_LANG(PLK,                    .asciz  "Niepoprawne polozenie pionowe")
 
+                                .global IDS_INVALIDHPOS
+IDS_INVALIDHPOS:
+IF_LANG(CSY,                    .asciz  "Neplatna horizontalni poloha")
+IF_LANG(ENU,                    .asciz  "Invalid horizontal position")
+IF_LANG(PLK,                    .asciz  "Niepoprawne polozenie poziome")
 
-.byte   ERR_SLD_INVALID_DELAY
-IF_LANG(CSY, .ascii  "Neplatne zpozdeni$")
-IF_LANG(ENU, .ascii  "Invalid delay$")
-IF_LANG(PLK, .ascii  "Niepoprawne opoznienie$")
+                                .global IDS_LONGNAME
+IDS_LONGNAME:
+IF_LANG(CSY,                    .asciz  "Nazev souboru prilis dlouhy")
+IF_LANG(ENU,                    .asciz  "File name too long")
+IF_LANG(PLK,                    .asciz  "Nazwa pliku za dluga")
 
-.byte   ERR_SLD_UNKNOWN_TYPE
-IF_LANG(CSY, .ascii  "Neznamy typ$")
-IF_LANG(ENU, .ascii  "Unknown type$")
-IF_LANG(PLK, .ascii  "Nieznany typ$")
+                                .global IDS_LONGCONTENT
+IDS_LONGCONTENT:
+IF_LANG(CSY,                    .asciz  "Obsah prilis dlouhy")
+IF_LANG(ENU,                    .asciz  "Content too long")
+IF_LANG(PLK,                    .asciz  "Zawartosc za dluga")
 
-.byte   ERR_SLD_INVALID_VERTICAL
-IF_LANG(CSY, .ascii  "Neplatna vertikalni poloha$")
-IF_LANG(ENU, .ascii  "Invalid vertical position$")
-IF_LANG(PLK, .ascii  "Niepoprawne polozenie pionowe$")
+                                .global IDS_NOLABEL
+IDS_NOLABEL:
+IF_LANG(CSY,                    .asciz  "Stitek nenalezen")
+IF_LANG(ENU,                    .asciz  "Label not found")
+IF_LANG(PLK,                    .asciz  "Nie znaleziono etykiety")
 
-.byte   ERR_SLD_INVALID_HORIZONTAL
-IF_LANG(CSY, .ascii  "Neplatna horizontalni poloha$")
-IF_LANG(ENU, .ascii  "Invalid horizontal position$")
-IF_LANG(PLK, .ascii  "Niepoprawne polozenie poziome$")
+                                .global IDS_INVALIDCMPVAL
+IDS_INVALIDCMPVAL:
+IF_LANG(CSY,                    .asciz  "Neplatna hodnota v porovnani")
+IF_LANG(ENU,                    .asciz  "Invalid value in comparison")
+IF_LANG(PLK,                    .asciz  "Niepoprawna wartosc w porownaniu")
 
-.byte   ERR_SLD_CONTENT_TOO_LONG
-IF_LANG(CSY, .ascii  "Obsah prilis dlouhy$")
-IF_LANG(ENU, .ascii  "Content too long$")
-IF_LANG(PLK, .ascii  "Zawartosc za dluga$")
+                                .global IDS_NOASSET
+IDS_NOASSET:
+IF_LANG(CSY,                    .asciz  "Dilo nelze nacist")
+IF_LANG(ENU,                    .asciz  "Cannot load asset")
+IF_LANG(PLK,                    .asciz  "Nie mozna zaladowac zasobu")
 
-.byte   ERR_SLD_LABEL_NOT_FOUND
-IF_LANG(CSY, .ascii  "Stitek nenalezen$")
-IF_LANG(ENU, .ascii  "Label not found$")
-IF_LANG(PLK, .ascii  "Nie znaleziono etykiety$")
+                                .global IDS_BADENCODING
+IDS_BADENCODING:
+IF_LANG(CSY,                    .asciz  "Neplatne nebo nepodporovane kodovani")
+IF_LANG(ENU,                    .asciz  "Invalid or unsupported encoding")
+IF_LANG(PLK,                    .asciz  "Niepoprawne lub niewspierane kodowanie")
 
-.byte   ERR_SLD_INVALID_COMPARISON
-IF_LANG(CSY, .ascii  "Neplatna hodnota v porovnani$")
-IF_LANG(ENU, .ascii  "Invalid value in comparison$")
-IF_LANG(PLK, .ascii  "Niepoprawna wartosc w porownaniu$")
+                                .global IDS_UNSUPPORTED
+IDS_UNSUPPORTED:
+IF_LANG(CSY,                    .ascii  "Byla pozadovana nepodporovana funkce")
+IF_LANG(ENU,                    .ascii  "Unsupported feature requested")
+IF_LANG(PLK,                    .ascii  "Zazadano niewspieranej funkcjonalnosci")

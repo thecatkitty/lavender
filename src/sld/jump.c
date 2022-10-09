@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include "sld_impl.h"
 
 int
@@ -9,7 +11,8 @@ __sld_load_conditional(const char *str, sld_entry *out)
     length = __sld_loadu(cur, &out->posy);
     if (0 > length)
     {
-        ERR(SLD_INVALID_COMPARISON);
+        strncpy((char *)out, IDS_INVALIDCMPVAL, sizeof(sld_entry));
+        return SLD_ARGERR;
     }
     cur += length;
 

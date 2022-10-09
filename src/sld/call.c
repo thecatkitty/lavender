@@ -236,12 +236,13 @@ _acquire_xor_key(uint64_t   *key,
 int
 __sld_execute_script_call(sld_entry *sld)
 {
-    int status = 0;
+    int status = SLD_OK;
 
     sld_context *script = sld_create_context(sld->script_call.file_name, NULL);
     if (NULL == script)
     {
-        ERR(KER_NOT_FOUND);
+        strncpy((char *)sld, IDS_NOEXECCTX, sizeof(sld_entry));
+        return SLD_SYSERR;
     }
 
     __sld_accumulator = 0;
@@ -290,7 +291,8 @@ __sld_load_script_call(const char *str, sld_entry *out)
     {
         if ((sizeof(out->script_call.file_name) - 1) < length)
         {
-            ERR(SLD_CONTENT_TOO_LONG);
+            strncpy((char *)out, IDS_LONGNAME, sizeof(sld_entry));
+            return SLD_ARGERR;
         }
         out->script_call.file_name[length] = *(cur++);
         length++;
@@ -316,7 +318,8 @@ __sld_load_script_call(const char *str, sld_entry *out)
     {
         if ((sizeof(out->script_call.data) - 1) < length)
         {
-            ERR(SLD_CONTENT_TOO_LONG);
+            strncpy((char *)out, IDS_LONGCONTENT, sizeof(sld_entry));
+            return SLD_ARGERR;
         }
         out->script_call.data[length] = *(cur++);
         length++;

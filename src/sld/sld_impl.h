@@ -62,4 +62,19 @@ __sld_execute_script_call(sld_entry *sld);
 extern uint16_t       __sld_accumulator;
 extern gfx_dimensions __sld_screen;
 
+extern const char IDS_LOADERROR[];
+extern const char IDS_EXECERROR[];
+extern const char IDS_NOEXECCTX[];
+extern const char IDS_INVALIDDELAY[];
+extern const char IDS_UNKNOWNTYPE[];
+extern const char IDS_INVALIDVPOS[];
+extern const char IDS_INVALIDHPOS[];
+extern const char IDS_LONGNAME[];
+extern const char IDS_LONGCONTENT[];
+extern const char IDS_NOLABEL[];
+extern const char IDS_INVALIDCMPVAL[];
+extern const char IDS_NOASSET[];
+extern const char IDS_BADENCODING[];
+extern const char IDS_UNSUPPORTED[];
+
 #endif // _SLD_IMPL_H_
