@@ -46,7 +46,8 @@ _execute_entry(sld_entry *sld)
         return __sld_execute_script_call(sld);
     }
 
-    ERR(SLD_UNKNOWN_TYPE);
+    strncpy((char *)sld, IDS_UNKNOWNTYPE, sizeof(sld_entry));
+    return SLD_ARGERR;
 }
 
 // Find the first line after the given label
@@ -77,7 +78,12 @@ _goto_label(sld_context *ctx, const char *label)
         }
     }
 
-    ERR(SLD_LABEL_NOT_FOUND);
+    char msg[sizeof(sld_entry)];
+    strncpy(msg, IDS_NOLABEL, sizeof(sld_entry));
+    strcat(msg, ": ");
+    strncat(msg, label, sizeof(sld_entry) - strlen(msg));
+    strcpy(ctx->message, msg);
+    return SLD_ARGERR;
 }
 
 int
@@ -89,12 +95,22 @@ sld_run_script(sld_context *ctx)
     {
         if (0 > (length = sld_load_entry(ctx, &ctx->entry)))
         {
+            char msg[sizeof(sld_entry)];
+            strncpy(msg, IDS_LOADERROR, sizeof(sld_entry));
+            strcat(msg, "\n");
+            strncat(msg, ctx->message, sizeof(sld_entry) - strlen(ctx->message));
+            strcpy(ctx->message, msg);
             return length;
         }
 
         int status;
         if (0 > (status = _execute_entry(&ctx->entry)))
         {
+            char msg[sizeof(sld_entry)];
+            strncpy(msg, IDS_EXECERROR, sizeof(sld_entry));
+            strcat(msg, "\n");
+            strncat(msg, ctx->message, sizeof(sld_entry) - strlen(ctx->message));
+            strcpy(ctx->message, msg);
             return status;
         }
 

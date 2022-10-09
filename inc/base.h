@@ -13,8 +13,6 @@
 #define far
 #endif
 
-#define EXIT_ERRNO 512
-
 #define DEFINE_HANDLE(x)                                                       \
     typedef struct                                                             \
     {                                                                          \

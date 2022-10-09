@@ -9,7 +9,6 @@
 
 #include <api/bios.h>
 #include <api/dos.h>
-#include <err.h>
 #include <fmt/exe.h>
 #include <fmt/fat.h>
 #include <fmt/zip.h>
@@ -41,9 +40,8 @@ typedef struct
 extern char __edata[], __sbss[], __ebss[];
 extern char _binary_obj_version_txt_start[];
 
-extern const char __serrf[];
-extern const char __serrm[];
 extern const char IDS_ERROR[];
+extern const char IDS_NOARCHIVE[];
 
 static volatile uint32_t       _counter;
 static dospc_isr               _bios_isr;
@@ -123,49 +121,14 @@ _pit_isr(void)
     _enable();
 }
 
-// Find a message using its key byte
-//   WILL CRASH IF MESSAGE NOT FOUND!
-static const char *
-_find_message(const char *messages, unsigned key)
-{
-    while (true)
-    {
-        if (key == *messages)
-        {
-            return messages + 1;
-        }
-
-        while ('$' != *messages)
-        {
-            messages++;
-        }
-
-        messages++;
-    }
-}
-
 static void
 _die_errno(void)
 {
-    dos_puts(IDS_ERROR);
-
-    char code[10];
-    itoa(errno, code, 10);
-    code[strlen(code)] = '$';
-    dos_puts(code);
-}
-
-static void
-_die_status(int error)
-{
-    unsigned facility = error >> 5;
-
-    dos_puts(IDS_ERROR);
-    dos_puts(_find_message(__serrf, facility));
-    dos_puts(" - $");
-    dos_puts(_find_message(__serrm, error));
-
-    dos_exit(error);
+    char msg[80];
+    strncpy(msg, IDS_ERROR, sizeof(msg));
+    itoa(errno, msg + strlen(msg), 10);
+    msg[strlen(msg)] = '$';
+    dos_puts(msg);
 }
 
 static bool
@@ -259,7 +222,13 @@ pal_initialize(void)
 
     if (NULL == (_cdir = _locate_cdir(__edata, __sbss)))
     {
-        _die_status(ERR_KER_ARCHIVE_NOT_FOUND);
+        char msg[80];
+        strncpy(msg, IDS_ERROR, sizeof(msg));
+        strncat(msg, IDS_NOARCHIVE, sizeof(msg) - strlen(msg));
+        msg[strlen(msg)] = '$';
+        dos_puts(msg);
+
+        dos_exit(1);
     }
 
     if (!_is_compatible())
@@ -299,12 +268,14 @@ pal_initialize(void)
 
     if (!gfx_initialize())
     {
-        pal_cleanup(EXIT_ERRNO);
+        _die_errno();
+        _dos_setvect(INT_PIT, _bios_isr);
+        _pit_init_channel(0, PIT_MODE_RATE_GEN, 0);
     }
 }
 
 void
-pal_cleanup(int status)
+pal_cleanup(void)
 {
     gfx_cleanup();
 
@@ -312,16 +283,6 @@ pal_cleanup(int status)
     _pit_init_channel(0, PIT_MODE_RATE_GEN, 0);
 
     nosound();
-
-    if (0 > status)
-    {
-        _die_status(status);
-    }
-
-    if (EXIT_ERRNO == status)
-    {
-        _die_errno();
-    }
 
 #ifdef STACK_PROFILING
     uint64_t *untouched;

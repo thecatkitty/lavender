@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include "sld_impl.h"
 
 int
@@ -19,9 +21,13 @@ __sld_execute_rectangle(sld_entry *sld)
     bool (*draw)(gfx_dimensions *, uint16_t, uint16_t, gfx_color);
     draw =
         (SLD_TYPE_RECT == sld->type) ? gfx_draw_rectangle : gfx_fill_rectangle;
-    return draw(&sld->shape.dimensions, x, y, sld->shape.color)
-               ? 0
-               : ERR_KER_UNSUPPORTED;
+    if (!draw(&sld->shape.dimensions, x, y, sld->shape.color))
+    {
+        strncpy((char *)sld, IDS_UNSUPPORTED, sizeof(sld_entry));
+        return SLD_SYSERR;
+    }
+
+    return 0;
 }
 
 int

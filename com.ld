@@ -100,12 +100,6 @@ SECTIONS
 		. = .;
 		*(.data) *(.data.*)
 		*(.gcc_except_table)
-
-		__serrf = .;
-		*(.errf)
-		__serrm = .;
-		*(.errm)
-
 		__edata = .;
 	} > FILE
 

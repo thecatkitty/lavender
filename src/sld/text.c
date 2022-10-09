@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include <fmt/utf8.h>
 
 #include "sld_impl.h"
@@ -8,7 +10,8 @@ _convert_text(const char *str, sld_entry *inout)
     inout->length = utf8_encode(inout->content, inout->content, gfx_wctob);
     if (0 > inout->length)
     {
-        ERR(KER_INVALID_SEQUENCE);
+        strncpy((char *)inout, IDS_BADENCODING, sizeof(sld_entry));
+        return SLD_ARGERR;
     }
 
     return 0;
@@ -31,7 +34,13 @@ __sld_execute_text(sld_entry *sld)
         x = sld->posx;
     }
 
-    return gfx_draw_text(sld->content, x, y) ? 0 : ERR_KER_UNSUPPORTED;
+    if (!gfx_draw_text(sld->content, x, y))
+    {
+        strncpy((char *)sld, IDS_UNSUPPORTED, sizeof(sld_entry));
+        return SLD_SYSERR;
+    }
+
+    return 0;
 }
 
 int

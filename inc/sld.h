@@ -44,6 +44,13 @@ typedef enum
     SLD_STATE_ERROR
 } sld_state;
 
+enum sld_error
+{
+    SLD_OK = 0,
+    SLD_SYSERR = -1,
+    SLD_ARGERR = -2
+};
+
 #define SLD_ALIGN_LEFT   0
 #define SLD_ALIGN_CENTER 0xFFF1
 #define SLD_ALIGN_RIGHT  0xFFF2
@@ -112,15 +119,5 @@ extern int
 sld_load_entry(sld_context *ctx, sld_entry *entry);
 
 #endif // __ASSEMBLER__
-
-#include <err.h>
-
-#define ERR_SLD_INVALID_DELAY      ERR_CODE(ERR_FACILITY_SLD, 0)
-#define ERR_SLD_UNKNOWN_TYPE       ERR_CODE(ERR_FACILITY_SLD, 1)
-#define ERR_SLD_INVALID_VERTICAL   ERR_CODE(ERR_FACILITY_SLD, 2)
-#define ERR_SLD_INVALID_HORIZONTAL ERR_CODE(ERR_FACILITY_SLD, 3)
-#define ERR_SLD_CONTENT_TOO_LONG   ERR_CODE(ERR_FACILITY_SLD, 4)
-#define ERR_SLD_LABEL_NOT_FOUND    ERR_CODE(ERR_FACILITY_SLD, 5)
-#define ERR_SLD_INVALID_COMPARISON ERR_CODE(ERR_FACILITY_SLD, 6)
 
 #endif // _SLD_H_
