@@ -157,10 +157,86 @@ _prompt_volsn(char *volsn)
                            _validate_volsn);
 }
 
+static bool
+_acquire_xor_key(uint64_t   *key,
+                 crg_stream *crs,
+                 uint32_t    crc32,
+                 uint16_t    parameter,
+                 char       *data)
+{
+    _key_validation context = {crs, crc32, NULL};
+    bool            invalid = false;
+    uint8_t        *keybs = (uint8_t *)key;
+
+    *key = 0;
+
+    switch (parameter)
+    {
+    case SLD_PARAMETER_XOR48_INLINE:
+        *key = rstrtoull(data, 16);
+        break;
+    case SLD_PARAMETER_XOR48_PROMPT:
+        invalid = !_prompt_passcode(keybs, 6, 16, _validate_xor_key, &context);
+        break;
+    case SLD_PARAMETER_XOR48_SPLIT: {
+        uint32_t local = strtoul(data, NULL, 16);
+        context.local = &local;
+        if (!_prompt_passcode(keybs, 3, 10, _validate_xor_key, &context))
+        {
+            invalid = true;
+            break;
+        }
+
+        *key = crg_combine_key(local, *(const uint32_t *)key);
+        context.local = NULL;
+        break;
+    }
+    case SLD_PARAMETER_XOR48_DISKID: {
+        uint32_t medium_id = pal_get_medium_id(data);
+        if (0 == medium_id)
+        {
+            char volsn[10];
+            if (!_prompt_volsn(volsn))
+            {
+                invalid = true;
+                break;
+            }
+
+            uint32_t high = strtoul(volsn, NULL, 16);
+            uint32_t low = strtoul(volsn + 5, NULL, 16);
+            medium_id = (high << 16) | low;
+        }
+
+        context.local = &medium_id;
+        if (!_prompt_passcode(keybs, 3, 10, _validate_xor_key, &context))
+        {
+            invalid = true;
+            break;
+        }
+
+        *key = crg_combine_key(medium_id, *(const uint32_t *)key);
+        context.local = NULL;
+        break;
+    }
+    default:
+        invalid = true;
+        break;
+    }
+
+    // Check the key
+    if (invalid || !_validate_xor_key((const uint8_t *)&key, 6, &context))
+    {
+        __sld_accumulator = UINT16_MAX;
+        return false;
+    }
+
+    return true;
+}
+
 int
 __sld_execute_script_call(sld_entry *sld)
 {
-    int status;
+    int status = 0;
 
     sld_context *script = sld_create_context(sld->script_call.file_name, NULL);
     if (NULL == script)
@@ -178,80 +254,21 @@ __sld_execute_script_call(sld_entry *sld)
         return status;
     }
 
-    crg_stream ctx;
+    crg_stream crs;
     union {
         uint64_t qw;
         uint8_t  bs[sizeof(uint64_t)];
     } key;
-    _key_validation context = {&ctx, sld->script_call.crc32, NULL};
-    bool            invalid = false;
 
-    crg_prepare(&ctx, CRG_XOR, script->data, script->size, key.bs, 6);
+    crg_prepare(&crs, CRG_XOR, script->data, script->size, key.bs, 6);
 
-    memset(key.bs, 0, sizeof(key));
-    switch (sld->script_call.parameter)
+    if (_acquire_xor_key(&key.qw, &crs, sld->script_call.crc32,
+                         sld->script_call.parameter, sld->script_call.data))
     {
-    case SLD_PARAMETER_XOR48_INLINE:
-        key.qw = rstrtoull(sld->script_call.data, 16);
-        break;
-    case SLD_PARAMETER_XOR48_PROMPT:
-        invalid = !_prompt_passcode(key.bs, 6, 16, _validate_xor_key, &context);
-        break;
-    case SLD_PARAMETER_XOR48_SPLIT: {
-        uint32_t local = strtoul(sld->script_call.data, NULL, 16);
-        context.local = &local;
-        if (!_prompt_passcode(key.bs, 3, 10, _validate_xor_key, &context))
-        {
-            invalid = true;
-            break;
-        }
-
-        key.qw = crg_combine_key(local, *(const uint32_t *)&key);
-        context.local = NULL;
-        break;
+        crg_decrypt(&crs, script->data);
+        sld->script_call.method = SLD_METHOD_STORE;
+        status = sld_run_script(script->data, script->size);
     }
-    case SLD_PARAMETER_XOR48_DISKID: {
-        uint32_t medium_id = pal_get_medium_id(sld->script_call.data);
-        if (0 == medium_id)
-        {
-            char volsn[10];
-            if (!_prompt_volsn(volsn))
-            {
-                invalid = true;
-                break;
-            }
-
-            uint32_t high = strtoul(volsn, NULL, 16);
-            uint32_t low = strtoul(volsn + 5, NULL, 16);
-            medium_id = (high << 16) | low;
-        }
-
-        context.local = &medium_id;
-        if (!_prompt_passcode(key.bs, 3, 10, _validate_xor_key, &context))
-        {
-            invalid = true;
-            break;
-        }
-
-        key.qw = crg_combine_key(medium_id, *(const uint32_t *)&key);
-        context.local = NULL;
-        break;
-    }
-    default:
-        invalid = true;
-        break;
-    }
-
-    // Check the key
-    if (invalid || !_validate_xor_key((const uint8_t *)&key, 6, &context))
-    {
-        __sld_accumulator = UINT16_MAX;
-        return 0;
-    }
-
-    crg_decrypt(&ctx, script->data);
-    sld->script_call.method = SLD_METHOD_STORE;
-    status = sld_run_script(script->data, script->size);
 
     sld_close_context(script);
     return status;
