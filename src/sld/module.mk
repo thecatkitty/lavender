@@ -1,5 +1,6 @@
 ASSOURCES := $(ASSOURCES) $(DIR)/messages.S
 CCSOURCES := $(CCSOURCES) \
+	$(DIR)/context.c \
 	$(DIR)/loader.c \
 	$(DIR)/runner.c \
 	$(DIR)/bitmap.c \
