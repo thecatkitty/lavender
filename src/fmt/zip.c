@@ -66,10 +66,10 @@ zip_get_data(zip_local_file_header *lfh, bool ignore_crc)
         return NULL;
     }
 
-    uint8_t *buffer =
-        (uint8_t *)(lfh + 1) + lfh->name_length + lfh->extra_length;
+    char *buffer = (char *)(lfh + 1) + lfh->name_length + lfh->extra_length;
     if (!ignore_crc &&
-        (zip_calculate_crc(buffer, lfh->uncompressed_size) != lfh->crc32))
+        (zip_calculate_crc((uint8_t *)buffer, lfh->uncompressed_size) !=
+         lfh->crc32))
     {
         errno = EIO;
         return NULL;

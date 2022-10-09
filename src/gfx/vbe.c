@@ -46,7 +46,7 @@ gfx_get_pixel_aspect(void)
                          _par(16, 9, screen.width, screen.height)};
 
     edid_block edid;
-    if (0 > _read_edid(&edid))
+    if (!_read_edid(&edid))
     {
         return ratios[EDID_TIMING_ASPECT_4_3];
     }

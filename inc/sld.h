@@ -63,7 +63,7 @@ typedef struct
     uint16_t posy;
     uint8_t  type;
     union {
-        uint8_t content[SLD_ENTRY_MAX_LENGTH + 1];
+        char content[SLD_ENTRY_MAX_LENGTH + 1];
         struct
         {
             gfx_dimensions dimensions;
