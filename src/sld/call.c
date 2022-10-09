@@ -1,4 +1,3 @@
-
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
@@ -163,25 +162,20 @@ __sld_execute_script_call(sld_entry *sld)
 {
     int status;
 
-    hasset script = pal_open_asset(sld->script_call.file_name, O_RDWR);
+    sld_context *script = sld_create_context(sld->script_call.file_name, NULL);
     if (NULL == script)
     {
         ERR(KER_NOT_FOUND);
     }
 
-    char *data = pal_get_asset_data(script);
-    if (NULL == data)
-    {
-        ERR(KER_NOT_FOUND);
-    }
-
-    int size = pal_get_asset_size(script);
     __sld_accumulator = 0;
 
     // Run if stored as plain text
     if (SLD_METHOD_STORE == sld->script_call.method)
     {
-        return sld_run_script(data, size);
+        status = sld_run_script(script->data, script->size);
+        sld_close_context(script);
+        return status;
     }
 
     crg_stream      ctx;
@@ -189,7 +183,7 @@ __sld_execute_script_call(sld_entry *sld)
     _key_validation context = {&ctx, sld->script_call.crc32, NULL};
     bool            invalid = false;
 
-    crg_prepare(&ctx, CRG_XOR, data, size, key, 6);
+    crg_prepare(&ctx, CRG_XOR, script->data, script->size, key, 6);
 
     memset(key, 0, sizeof(key));
     switch (sld->script_call.parameter)
@@ -252,11 +246,11 @@ __sld_execute_script_call(sld_entry *sld)
         return 0;
     }
 
-    crg_decrypt(&ctx, data);
+    crg_decrypt(&ctx, script->data);
     sld->script_call.method = SLD_METHOD_STORE;
-    status = sld_run_script(data, size);
+    status = sld_run_script(script->data, script->size);
 
-    pal_close_asset(script);
+    sld_close_context(script);
     return status;
 }
 

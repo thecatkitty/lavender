@@ -4,6 +4,7 @@
 #ifndef __ASSEMBLER__
 
 #include <gfx.h>
+#include <pal.h>
 
 #define SLD_ENTRY_MAX_LENGTH 255
 
@@ -35,6 +36,13 @@ typedef enum
     SLD_TYPE_JUMPE,
     SLD_TYPE_CALL
 } sld_type;
+
+typedef enum
+{
+    SLD_STATE_RUN,
+    SLD_STATE_WAIT,
+    SLD_STATE_ERROR
+} sld_state;
 
 #define SLD_ALIGN_LEFT   0
 #define SLD_ALIGN_CENTER 0xFFF1
@@ -72,6 +80,26 @@ typedef struct
     };
     uint8_t length;
 } sld_entry;
+
+typedef struct _sld_context
+{
+    hasset    script;
+    void     *data;
+    int       size;
+    int       offset;
+    sld_state state;
+    union {
+        sld_entry entry;
+        char      message[sizeof(sld_entry)];
+    };
+    struct _sld_context *parent;
+} sld_context;
+
+extern sld_context *
+sld_create_context(const char *name, sld_context *parent);
+
+extern bool
+sld_close_context(sld_context *ctx);
 
 // Execute a script
 // Returns negative on error
