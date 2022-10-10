@@ -1,5 +1,3 @@
-#include <string.h>
-
 #include "sld_impl.h"
 
 int
@@ -23,7 +21,7 @@ __sld_execute_rectangle(sld_entry *sld)
         (SLD_TYPE_RECT == sld->type) ? gfx_draw_rectangle : gfx_fill_rectangle;
     if (!draw(&sld->shape.dimensions, x, y, sld->shape.color))
     {
-        strncpy((char *)sld, IDS_UNSUPPORTED, sizeof(sld_entry));
+        __sld_errmsgcpy(sld, IDS_UNSUPPORTED);
         return SLD_SYSERR;
     }
 

@@ -59,6 +59,12 @@ __sld_execute_rectangle(sld_entry *sld);
 extern int
 __sld_execute_script_call(sld_entry *sld);
 
+extern void
+__sld_errmsgcpy(void *sld, const char *msg);
+
+extern void
+__sld_errmsgcat(void *sld, const char *msg);
+
 extern uint16_t       __sld_accumulator;
 extern gfx_dimensions __sld_screen;
 

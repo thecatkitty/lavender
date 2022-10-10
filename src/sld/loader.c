@@ -1,5 +1,4 @@
 #include <ctype.h>
-#include <string.h>
 
 #include "sld_impl.h"
 
@@ -50,7 +49,7 @@ __sld_load_content(const char *str, sld_entry *out)
     {
         if (SLD_ENTRY_MAX_LENGTH < length)
         {
-            strncpy((char *)out, IDS_LONGCONTENT, sizeof(sld_entry));
+            __sld_errmsgcpy(out, IDS_LONGCONTENT);
             return SLD_ARGERR;
         }
         *(content++) = *(cur++);
@@ -72,7 +71,7 @@ __sld_load_position(const char *str, sld_entry *out)
     length = __sld_loadu(cur, &out->posy);
     if (0 > length)
     {
-        strncpy((char *)out, IDS_INVALIDVPOS, sizeof(sld_entry));
+        __sld_errmsgcpy(out, IDS_INVALIDVPOS);
         return SLD_ARGERR;
     }
     cur += length;
@@ -97,7 +96,7 @@ __sld_load_position(const char *str, sld_entry *out)
             out->posx = SLD_ALIGN_CENTER;
             break;
         default:
-            strncpy((char *)out, IDS_INVALIDHPOS, sizeof(sld_entry));
+            __sld_errmsgcpy(out, IDS_INVALIDHPOS);
             return SLD_ARGERR;
         }
         cur++;
@@ -133,7 +132,7 @@ sld_load_entry(sld_context *ctx, sld_entry *out)
     length = __sld_loadu(cur, &num);
     if (0 > length)
     {
-        strncpy((char *)out, IDS_INVALIDDELAY, sizeof(sld_entry));
+        __sld_errmsgcpy(out, IDS_INVALIDDELAY);
         return SLD_ARGERR;
     }
     out->delay = num;
@@ -182,7 +181,7 @@ sld_load_entry(sld_context *ctx, sld_entry *out)
         length = __sld_load_script_call(cur, out);
         break;
     default:
-        strncpy((char *)out, IDS_UNKNOWNTYPE, sizeof(sld_entry));
+        __sld_errmsgcpy(out, IDS_UNKNOWNTYPE);
         return SLD_ARGERR;
     }
 
