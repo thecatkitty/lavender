@@ -44,3 +44,15 @@ sld_close_context(sld_context *ctx)
     free(ctx);
     return status;
 }
+
+void
+__sld_errmsgcpy(void *sld, const char *msg)
+{
+    strncpy((char *)sld, msg, sizeof(sld_entry));
+}
+
+void
+__sld_errmsgcat(void *sld, const char *msg)
+{
+    strncat((char *)sld, msg, sizeof(sld_entry) - strlen((char *)sld));
+}

@@ -46,7 +46,7 @@ _execute_entry(sld_entry *sld)
         return __sld_execute_script_call(sld);
     }
 
-    strncpy((char *)sld, IDS_UNKNOWNTYPE, sizeof(sld_entry));
+    __sld_errmsgcpy(sld, IDS_UNKNOWNTYPE);
     return SLD_ARGERR;
 }
 
@@ -79,9 +79,9 @@ _goto_label(sld_context *ctx, const char *label)
     }
 
     char msg[sizeof(sld_entry)];
-    strncpy(msg, IDS_NOLABEL, sizeof(sld_entry));
-    strcat(msg, ": ");
-    strncat(msg, label, sizeof(sld_entry) - strlen(msg));
+    __sld_errmsgcpy(msg, IDS_NOLABEL);
+    __sld_errmsgcat(msg, ": ");
+    __sld_errmsgcat(msg, label);
     strcpy(ctx->message, msg);
     return SLD_ARGERR;
 }
@@ -96,9 +96,9 @@ sld_run_script(sld_context *ctx)
         if (0 > (length = sld_load_entry(ctx, &ctx->entry)))
         {
             char msg[sizeof(sld_entry)];
-            strncpy(msg, IDS_LOADERROR, sizeof(sld_entry));
-            strcat(msg, "\n");
-            strncat(msg, ctx->message, sizeof(sld_entry) - strlen(ctx->message));
+            __sld_errmsgcpy(msg, IDS_LOADERROR);
+            __sld_errmsgcat(msg, "\n");
+            __sld_errmsgcat(msg, ctx->message);
             strcpy(ctx->message, msg);
             return length;
         }
@@ -107,9 +107,9 @@ sld_run_script(sld_context *ctx)
         if (0 > (status = _execute_entry(&ctx->entry)))
         {
             char msg[sizeof(sld_entry)];
-            strncpy(msg, IDS_EXECERROR, sizeof(sld_entry));
-            strcat(msg, "\n");
-            strncat(msg, ctx->message, sizeof(sld_entry) - strlen(ctx->message));
+            __sld_errmsgcpy(msg, IDS_EXECERROR);
+            __sld_errmsgcat(msg, "\n");
+            __sld_errmsgcat(msg, ctx->message);
             strcpy(ctx->message, msg);
             return status;
         }

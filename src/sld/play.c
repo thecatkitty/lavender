@@ -1,5 +1,3 @@
-#include <string.h>
-
 #include <pal.h>
 #include <snd.h>
 
@@ -11,14 +9,14 @@ __sld_execute_play(sld_entry *sld)
     hasset music = pal_open_asset(sld->content, O_RDONLY);
     if (NULL == music)
     {
-        strncpy((char *)sld, IDS_NOASSET, sizeof(sld_entry));
+        __sld_errmsgcpy(sld, IDS_NOASSET);
         return SLD_SYSERR;
     }
 
     char *data = pal_get_asset_data(music);
     if (NULL == data)
     {
-        strncpy((char *)sld, IDS_NOASSET, sizeof(sld_entry));
+        __sld_errmsgcpy(sld, IDS_NOASSET);
         return SLD_SYSERR;
     }
 

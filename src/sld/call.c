@@ -241,7 +241,7 @@ __sld_execute_script_call(sld_entry *sld)
     sld_context *script = sld_create_context(sld->script_call.file_name, NULL);
     if (NULL == script)
     {
-        strncpy((char *)sld, IDS_NOEXECCTX, sizeof(sld_entry));
+        __sld_errmsgcpy(sld, IDS_NOEXECCTX);
         return SLD_SYSERR;
     }
 
@@ -291,7 +291,7 @@ __sld_load_script_call(const char *str, sld_entry *out)
     {
         if ((sizeof(out->script_call.file_name) - 1) < length)
         {
-            strncpy((char *)out, IDS_LONGNAME, sizeof(sld_entry));
+            __sld_errmsgcpy(out, IDS_LONGNAME);
             return SLD_ARGERR;
         }
         out->script_call.file_name[length] = *(cur++);
@@ -318,7 +318,7 @@ __sld_load_script_call(const char *str, sld_entry *out)
     {
         if ((sizeof(out->script_call.data) - 1) < length)
         {
-            strncpy((char *)out, IDS_LONGCONTENT, sizeof(sld_entry));
+            __sld_errmsgcpy(out, IDS_LONGCONTENT);
             return SLD_ARGERR;
         }
         out->script_call.data[length] = *(cur++);

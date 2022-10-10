@@ -1,5 +1,3 @@
-#include <string.h>
-
 #include <fmt/utf8.h>
 
 #include "sld_impl.h"
@@ -10,7 +8,7 @@ _convert_text(const char *str, sld_entry *inout)
     inout->length = utf8_encode(inout->content, inout->content, gfx_wctob);
     if (0 > inout->length)
     {
-        strncpy((char *)inout, IDS_BADENCODING, sizeof(sld_entry));
+        __sld_errmsgcpy(inout, IDS_BADENCODING);
         return SLD_ARGERR;
     }
 
@@ -36,7 +34,7 @@ __sld_execute_text(sld_entry *sld)
 
     if (!gfx_draw_text(sld->content, x, y))
     {
-        strncpy((char *)sld, IDS_UNSUPPORTED, sizeof(sld_entry));
+        __sld_errmsgcpy(sld, IDS_UNSUPPORTED);
         return SLD_SYSERR;
     }
 
