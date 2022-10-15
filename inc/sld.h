@@ -1,8 +1,6 @@
 #ifndef _SLD_H_
 #define _SLD_H_
 
-#ifndef __ASSEMBLER__
-
 #include <gfx.h>
 #include <pal.h>
 
@@ -117,7 +115,5 @@ sld_run_script(sld_context *ctx);
 // Returns total line length in bytes, negative on error
 extern int
 sld_load_entry(sld_context *ctx, sld_entry *entry);
-
-#endif // __ASSEMBLER__
 
 #endif // _SLD_H_

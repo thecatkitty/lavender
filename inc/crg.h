@@ -1,8 +1,6 @@
 #ifndef _CRG_H_
 #define _CRG_H_
 
-#ifndef __ASSEMBLER__
-
 #include <base.h>
 
 typedef enum
@@ -38,7 +36,5 @@ crg_validate(crg_stream *stream, uint32_t crc);
 
 extern uint64_t
 crg_combine_key(uint32_t local, uint32_t external);
-
-#endif // __ASSEMBLER__
 
 #endif // _CRG_H_
