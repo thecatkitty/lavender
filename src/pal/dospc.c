@@ -581,6 +581,17 @@ pal_unregister_timer_callback(htimer timer)
     return true;
 }
 
+uint16_t
+pal_get_keystroke(void)
+{
+    if (0 == bios_check_keystroke())
+    {
+        return 0;
+    }
+
+    return bios_get_keystroke() >> 8;
+}
+
 bool
 dospc_is_dosbox(void)
 {
