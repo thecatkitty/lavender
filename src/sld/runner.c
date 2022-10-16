@@ -1,6 +1,5 @@
 #include <string.h>
 
-#include <api/bios.h>
 #include <pal.h>
 
 #include "sld_impl.h"
@@ -36,7 +35,7 @@ _execute_entry(sld_entry *sld)
     case SLD_TYPE_PLAY:
         return __sld_execute_play(sld);
     case SLD_TYPE_WAITKEY:
-        __sld_accumulator = bios_get_keystroke() >> 8;
+        __sld_ctx->state = SLD_STATE_WAIT;
         return 0;
     case SLD_TYPE_JUMP:
         return INT_MAX;
@@ -95,6 +94,7 @@ sld_handle(void)
         return;
     }
 
+    // SLD_STATE_STOP
     if (SLD_STATE_STOP == ctx->state)
     {
         sld_context *old_ctx = sld_exit_context();
@@ -102,6 +102,21 @@ sld_handle(void)
         return;
     }
 
+    // SLD_STATE_WAIT
+    if (SLD_STATE_WAIT == ctx->state)
+    {
+        int keystroke = pal_get_keystroke();
+        if (0 == keystroke)
+        {
+            return;
+        }
+
+        __sld_accumulator = keystroke;
+        __sld_ctx->state = SLD_STATE_RUN;
+        return;
+    }
+
+    // SLD_STATE_RUN
     if (ctx->offset >= ctx->size)
     {
         ctx->state = SLD_STATE_STOP;
