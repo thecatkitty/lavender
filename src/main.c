@@ -38,6 +38,8 @@ main(int argc, char *argv[])
 
     if (0 > script->state)
     {
+        status = EXIT_FAILURE;
+        puts("\n=====");
         puts(script->message);
         if (SLD_SYSERR == script->state)
         {
@@ -48,6 +50,12 @@ main(int argc, char *argv[])
     sld_close_context(script);
 
 end:
+    if (EXIT_FAILURE == status)
+    {
+        while (!pal_get_keystroke())
+            ;
+    }
+
     pal_cleanup();
 
     return status;
