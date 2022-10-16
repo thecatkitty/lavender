@@ -423,11 +423,6 @@ _get_volume_info(uint8_t drive, _volume_info *out)
         return false;
     }
 
-    if (0xAA55U != sector.boot.Magic)
-    {
-        return false;
-    }
-
     int offset, size;
     switch ((uint8_t)sector.boot.Ia32Jump[0])
     {
