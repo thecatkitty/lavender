@@ -48,4 +48,7 @@ pal_register_timer_callback(pal_timer_callback callback, void *context);
 extern bool
 pal_unregister_timer_callback(htimer timer);
 
+extern uint16_t
+pal_get_keystroke(void);
+
 #endif // _PAL_H_
