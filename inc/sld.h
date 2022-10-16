@@ -101,10 +101,13 @@ sld_create_context(const char *name, sld_context *parent);
 extern bool
 sld_close_context(sld_context *ctx);
 
-// Execute a script
-// Returns negative on error
-extern int
-sld_run_script(sld_context *ctx);
+// Start script execution
+extern void
+sld_run(sld_context *ctx);
+
+// Handle a next step of the script execution
+extern void
+sld_handle(sld_context *ctx);
 
 // Load the next line from the script
 // Returns total line length in bytes, negative on error

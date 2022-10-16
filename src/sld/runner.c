@@ -86,45 +86,51 @@ _goto_label(sld_context *ctx, const char *label)
     return SLD_ARGERR;
 }
 
-int
-sld_run_script(sld_context *ctx)
+void
+sld_handle(sld_context *ctx)
 {
-    int length;
-
-    while (ctx->offset < ctx->size)
+    if (ctx->offset >= ctx->size)
     {
-        if (0 > (length = sld_load_entry(ctx, &ctx->entry)))
-        {
-            char msg[sizeof(sld_entry)];
-            __sld_errmsgcpy(msg, IDS_LOADERROR);
-            __sld_errmsgcat(msg, "\n");
-            __sld_errmsgcat(msg, ctx->message);
-            strcpy(ctx->message, msg);
-            return length;
-        }
-
-        int status;
-        if (0 > (status = _execute_entry(&ctx->entry)))
-        {
-            char msg[sizeof(sld_entry)];
-            __sld_errmsgcpy(msg, IDS_EXECERROR);
-            __sld_errmsgcat(msg, "\n");
-            __sld_errmsgcat(msg, ctx->message);
-            strcpy(ctx->message, msg);
-            return status;
-        }
-
-        if (INT_MAX == status)
-        {
-            if (0 > (length = _goto_label(ctx, ctx->entry.content)))
-            {
-                return length;
-            }
-            continue;
-        }
-
-        ctx->offset += length;
+        ctx->state = SLD_STATE_STOP;
+        return;
     }
 
-    return 0;
+    int length = sld_load_entry(ctx, &ctx->entry);
+    if (0 > length)
+    {
+        char msg[sizeof(sld_entry)];
+        __sld_errmsgcpy(msg, IDS_LOADERROR);
+        __sld_errmsgcat(msg, "\n");
+        __sld_errmsgcat(msg, ctx->message);
+        strcpy(ctx->message, msg);
+        ctx->state = length;
+        return;
+    }
+
+    int status = _execute_entry(&ctx->entry);
+    if (0 > status)
+    {
+        char msg[sizeof(sld_entry)];
+        __sld_errmsgcpy(msg, IDS_EXECERROR);
+        __sld_errmsgcat(msg, "\n");
+        __sld_errmsgcat(msg, ctx->message);
+        strcpy(ctx->message, msg);
+        ctx->state = status;
+        return;
+    }
+
+    // Special value for jumps
+    if (INT_MAX == status)
+    {
+        _goto_label(ctx, ctx->entry.content);
+        return;
+    }
+
+    ctx->offset += length;
+}
+
+void
+sld_run(sld_context *ctx)
+{
+    ctx->state = SLD_STATE_RUN;
 }

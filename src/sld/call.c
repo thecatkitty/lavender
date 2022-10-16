@@ -250,7 +250,13 @@ __sld_execute_script_call(sld_entry *sld)
     // Run if stored as plain text
     if (SLD_METHOD_STORE == sld->script_call.method)
     {
-        status = sld_run_script(script);
+        sld_run(script);
+        while ((SLD_STATE_STOP != script->state) && (0 <= script->state))
+        {
+            sld_handle(script);
+        }
+
+        status = script->state;
         sld_close_context(script);
         return status;
     }
@@ -268,7 +274,14 @@ __sld_execute_script_call(sld_entry *sld)
     {
         crg_decrypt(&crs, script->data);
         sld->script_call.method = SLD_METHOD_STORE;
-        status = sld_run_script(script);
+
+        sld_run(script);
+        while ((SLD_STATE_STOP != script->state) && (0 <= script->state))
+        {
+            sld_handle(script);
+        }
+
+        status = script->state;
     }
 
     sld_close_context(script);
