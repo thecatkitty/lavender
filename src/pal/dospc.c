@@ -354,6 +354,13 @@ pal_close_asset(hasset asset)
         return false;
     }
 
+    if (O_RDWR == (ptr->flags & O_ACCMODE))
+    {
+        ptr->zip_header->crc32 =
+            zip_calculate_crc((uint8_t *)zip_get_data(ptr->zip_header, true),
+                              ptr->zip_header->compressed_size);
+    }
+
     ptr->zip_header = NULL;
     return true;
 }
@@ -368,7 +375,7 @@ pal_get_asset_data(hasset asset)
         return NULL;
     }
 
-    return zip_get_data(ptr->zip_header, O_RDWR == (ptr->flags & O_ACCMODE));
+    return zip_get_data(ptr->zip_header, false);
 }
 
 int
