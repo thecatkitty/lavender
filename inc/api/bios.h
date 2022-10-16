@@ -35,6 +35,17 @@ bios_get_keystroke(void)
     return ax;
 }
 
+static inline uint16_t
+bios_check_keystroke(void)
+{
+    uint16_t ax;
+    asm volatile("int $0x16; jnz end; xor %%ax, %%ax\nend:"
+                 : "=a"(ax)
+                 : "Rah"((uint8_t)0x01)
+                 : "cc");
+    return ax;
+}
+
 static inline void
 bios_set_cursor_position(uint8_t page, uint16_t position)
 {
