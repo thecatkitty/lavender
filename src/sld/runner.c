@@ -87,8 +87,21 @@ _goto_label(sld_context *ctx, const char *label)
 }
 
 void
-sld_handle(sld_context *ctx)
+sld_handle(void)
 {
+    sld_context *ctx = __sld_ctx;
+    if (NULL == __sld_ctx)
+    {
+        return;
+    }
+
+    if (SLD_STATE_STOP == ctx->state)
+    {
+        sld_context *old_ctx = sld_exit_context();
+        sld_close_context(old_ctx);
+        return;
+    }
+
     if (ctx->offset >= ctx->size)
     {
         ctx->state = SLD_STATE_STOP;

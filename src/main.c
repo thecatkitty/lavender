@@ -30,9 +30,10 @@ main(int argc, char *argv[])
     }
 
     sld_run(script);
+    sld_enter_context(script);
     while ((SLD_STATE_STOP != script->state) && (0 <= script->state))
     {
-        sld_handle(script);
+        sld_handle();
     }
 
     if (0 > script->state)

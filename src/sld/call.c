@@ -251,13 +251,7 @@ __sld_execute_script_call(sld_entry *sld)
     if (SLD_METHOD_STORE == sld->script_call.method)
     {
         sld_run(script);
-        while ((SLD_STATE_STOP != script->state) && (0 <= script->state))
-        {
-            sld_handle(script);
-        }
-
-        status = script->state;
-        sld_close_context(script);
+        sld_enter_context(script);
         return status;
     }
 
@@ -276,15 +270,9 @@ __sld_execute_script_call(sld_entry *sld)
         sld->script_call.method = SLD_METHOD_STORE;
 
         sld_run(script);
-        while ((SLD_STATE_STOP != script->state) && (0 <= script->state))
-        {
-            sld_handle(script);
-        }
-
-        status = script->state;
+        sld_enter_context(script);
     }
 
-    sld_close_context(script);
     return status;
 }
 

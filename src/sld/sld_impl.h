@@ -66,6 +66,7 @@ extern void
 __sld_errmsgcat(void *sld, const char *msg);
 
 extern uint16_t       __sld_accumulator;
+extern sld_context   *__sld_ctx;
 extern gfx_dimensions __sld_screen;
 
 extern const char IDS_LOADERROR[];
