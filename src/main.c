@@ -17,27 +17,37 @@ puterrno(void)
 int
 main(int argc, char *argv[])
 {
-    int status = 0;
+    int status = EXIT_SUCCESS;
 
     pal_initialize();
 
     sld_context *script = sld_create_context("slides.txt", NULL);
-    if (NULL != script)
+    if (NULL == script)
     {
-        status = sld_run_script(script);
-        sld_close_context(script);
+        puterrno();
+        status = EXIT_FAILURE;
+        goto end;
     }
 
-    pal_cleanup();
+    sld_run(script);
+    while ((SLD_STATE_STOP != script->state) && (0 <= script->state))
+    {
+        sld_handle(script);
+    }
 
-    if (0 > status)
+    if (0 > script->state)
     {
         puts(script->message);
-        if (SLD_SYSERR == status)
+        if (SLD_SYSERR == script->state)
         {
             puterrno();
         }
     }
+
+    sld_close_context(script);
+
+end:
+    pal_cleanup();
 
     return status;
 }

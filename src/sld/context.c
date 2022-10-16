@@ -31,7 +31,7 @@ sld_create_context(const char *name, sld_context *parent)
 
     ctx->size = pal_get_asset_size(ctx->script);
     ctx->offset = 0;
-    ctx->state = SLD_STATE_RUN;
+    ctx->state = SLD_STATE_STOP;
     memset(ctx->message, 0, sizeof(ctx->message));
     ctx->parent = parent;
     return ctx;
