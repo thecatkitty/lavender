@@ -236,7 +236,7 @@ _acquire_xor_key(uint64_t   *key,
 int
 __sld_execute_script_call(sld_entry *sld)
 {
-    int status = SLD_OK;
+    int status = 0;
 
     sld_context *script = sld_create_context(sld->script_call.file_name, NULL);
     if (NULL == script)

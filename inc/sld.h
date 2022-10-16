@@ -39,15 +39,10 @@ typedef enum
 {
     SLD_STATE_RUN,
     SLD_STATE_WAIT,
-    SLD_STATE_ERROR
-} sld_state;
-
-enum sld_error
-{
-    SLD_OK = 0,
+    SLD_STATE_STOP,
     SLD_SYSERR = -1,
     SLD_ARGERR = -2
-};
+} sld_state;
 
 #define SLD_ALIGN_LEFT   0
 #define SLD_ALIGN_CENTER 0xFFF1
