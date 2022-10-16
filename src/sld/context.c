@@ -4,6 +4,8 @@
 
 #include "sld_impl.h"
 
+sld_context *__sld_ctx = NULL;
+
 sld_context *
 sld_create_context(const char *name, sld_context *parent)
 {
@@ -43,6 +45,21 @@ sld_close_context(sld_context *ctx)
     bool status = pal_close_asset(ctx->script);
     free(ctx);
     return status;
+}
+
+void
+sld_enter_context(sld_context *ctx)
+{
+    ctx->parent = __sld_ctx;
+    __sld_ctx = ctx;
+}
+
+sld_context *
+sld_exit_context(void)
+{
+    sld_context *ctx = __sld_ctx;
+    __sld_ctx = ctx->parent;
+    return ctx;
 }
 
 void
