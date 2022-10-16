@@ -4,6 +4,7 @@
 
 #include <crg.h>
 #include <dlg.h>
+#include <fmt/zip.h>
 #include <pal.h>
 
 #include "sld_impl.h"
@@ -248,7 +249,9 @@ __sld_execute_script_call(sld_entry *sld)
     __sld_accumulator = 0;
 
     // Run if stored as plain text
-    if (SLD_METHOD_STORE == sld->script_call.method)
+    if ((SLD_METHOD_STORE == sld->script_call.method) ||
+        (zip_calculate_crc(script->data, script->size) ==
+         sld->script_call.crc32))
     {
         sld_run(script);
         sld_enter_context(script);
@@ -267,8 +270,6 @@ __sld_execute_script_call(sld_entry *sld)
                          sld->script_call.parameter, sld->script_call.data))
     {
         crg_decrypt(&crs, script->data);
-        sld->script_call.method = SLD_METHOD_STORE;
-
         sld_run(script);
         sld_enter_context(script);
     }
