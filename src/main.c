@@ -6,6 +6,14 @@
 #include <pal.h>
 #include <sld.h>
 
+void
+puterrno(void)
+{
+    char msg[80] = "errno ";
+    itoa(errno, msg + strlen(msg), 10);
+    puts(msg);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -22,17 +30,13 @@ main(int argc, char *argv[])
 
     pal_cleanup();
 
-    if (SLD_ARGERR == status)
+    if (0 > status)
     {
         puts(script->message);
-    }
-    else if (SLD_SYSERR == status)
-    {
-        puts(script->message);
-
-        char msg[80] = "errno ";
-        itoa(errno, msg + strlen(msg), 10);
-        puts(msg);
+        if (SLD_SYSERR == status)
+        {
+            puterrno();
+        }
     }
 
     return status;
