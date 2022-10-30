@@ -9,12 +9,6 @@
 
 #include "sld_impl.h"
 
-extern const char IDS_ENTERPASS[];
-extern const char IDS_ENTERPASS_DESC[];
-extern const char IDS_INVALIDKEY[];
-extern const char IDS_ENTERDSN[];
-extern const char IDS_ENTERDSN_DESC[];
-
 typedef struct
 {
     crg_stream *ctx;
@@ -107,12 +101,10 @@ _prompt_passcode(uint8_t               *code,
                  void                  *context)
 {
     char msg_enterpass[40], msg_enterpass_desc[80], msg_invalidkey[40];
-    pal_load_string((unsigned int)IDS_ENTERPASS, msg_enterpass,
-                    sizeof(msg_enterpass));
-    pal_load_string((unsigned int)IDS_ENTERPASS_DESC, msg_enterpass_desc,
+    pal_load_string(IDS_ENTERPASS, msg_enterpass, sizeof(msg_enterpass));
+    pal_load_string(IDS_ENTERPASS_DESC, msg_enterpass_desc,
                     sizeof(msg_enterpass_desc));
-    pal_load_string((unsigned int)IDS_INVALIDKEY, msg_invalidkey,
-                    sizeof(msg_invalidkey));
+    pal_load_string(IDS_INVALIDKEY, msg_invalidkey, sizeof(msg_invalidkey));
 
     char *buffer = (char *)alloca(code_len * 3 + 1);
     while (true)
@@ -163,9 +155,8 @@ static bool
 _prompt_volsn(char *volsn)
 {
     char msg_enterdsn[40], msg_enterdsn_desc[80];
-    pal_load_string((unsigned int)IDS_ENTERDSN, msg_enterdsn,
-                    sizeof(msg_enterdsn));
-    pal_load_string((unsigned int)IDS_ENTERDSN_DESC, msg_enterdsn_desc,
+    pal_load_string(IDS_ENTERDSN, msg_enterdsn, sizeof(msg_enterdsn));
+    pal_load_string(IDS_ENTERDSN_DESC, msg_enterdsn_desc,
                     sizeof(msg_enterdsn_desc));
     return 0 != dlg_prompt(msg_enterdsn, msg_enterdsn_desc, volsn, 9,
                            _validate_volsn);

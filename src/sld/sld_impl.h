@@ -6,6 +6,8 @@
 #include <crg.h>
 #include <sld.h>
 
+#include "../resource.h"
+
 #define LINE_WIDTH 80
 
 #define __sld_try_load(stage, str, out)                                        \
@@ -62,9 +64,9 @@ extern int
 __sld_execute_script_call(sld_entry *sld);
 
 static inline void
-__sld_errmsgcpy(void *sld, const char *msg)
+__sld_errmsgcpy(void *sld, unsigned int msg)
 {
-    pal_load_string((unsigned int)msg, (char *)sld, sizeof(sld_entry));
+    pal_load_string(msg, (char *)sld, sizeof(sld_entry));
 }
 
 static inline void
@@ -76,20 +78,5 @@ __sld_errmsgcat(void *sld, const char *msg)
 extern uint16_t       __sld_accumulator;
 extern sld_context   *__sld_ctx;
 extern gfx_dimensions __sld_screen;
-
-extern const char IDS_LOADERROR[];
-extern const char IDS_EXECERROR[];
-extern const char IDS_NOEXECCTX[];
-extern const char IDS_INVALIDDELAY[];
-extern const char IDS_UNKNOWNTYPE[];
-extern const char IDS_INVALIDVPOS[];
-extern const char IDS_INVALIDHPOS[];
-extern const char IDS_LONGNAME[];
-extern const char IDS_LONGCONTENT[];
-extern const char IDS_NOLABEL[];
-extern const char IDS_INVALIDCMPVAL[];
-extern const char IDS_NOASSET[];
-extern const char IDS_BADENCODING[];
-extern const char IDS_UNSUPPORTED[];
 
 #endif // _SLD_IMPL_H_

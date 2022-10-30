@@ -1,0 +1,30 @@
+#include "resource.h"
+
+STRINGTABLE
+LANGUAGE LCID_CSY, 0x1
+{
+    IDS_ERROR, "CHYBA: "
+    IDS_NOARCHIVE, "Archiv nenalezen"
+
+    IDS_ENTERDSN, "Zadejte sériové číslo disku"
+    IDS_ENTERDSN_DESC, "Zadejte prosím sériové číslo\npřipojené k disketě programu."
+    IDS_ENTERPASS, "Vložte heslo"
+    IDS_ENTERPASS_DESC, "Tento obsah je zašifrován.\n\nZadejte přístupový klíč."
+    IDS_INVALIDKEY, "Zadaný klíč je neplatný!"
+
+    IDS_LOADERROR, "Chyba nacitani scenare!"
+    IDS_EXECERROR, "Chyba pri provadeni scenare!"
+    IDS_NOEXECCTX, "Nelze vytvorit kontext provadeni"
+
+    IDS_INVALIDDELAY, "Neplatne zpozdeni"
+    IDS_UNKNOWNTYPE, "Neznamy typ"
+    IDS_INVALIDVPOS, "Neplatna vertikalni poloha"
+    IDS_INVALIDHPOS, "Neplatna horizontalni poloha"
+    IDS_LONGNAME, "Nazev souboru prilis dlouhy"
+    IDS_LONGCONTENT, "Obsah prilis dlouhy"
+    IDS_NOLABEL, "Stitek nenalezen"
+    IDS_INVALIDCMPVAL, "Neplatna hodnota v porovnani"
+    IDS_NOASSET, "Dilo nelze nacist"
+    IDS_BADENCODING, "Neplatne nebo nepodporovane kodovani"
+    IDS_UNSUPPORTED, "Byla pozadovana nepodporovana funkce"
+}

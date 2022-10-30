@@ -11,11 +11,13 @@
 #include <api/dos.h>
 #include <fmt/exe.h>
 #include <fmt/fat.h>
+#include <fmt/utf8.h>
 #include <fmt/zip.h>
 #include <gfx.h>
 #include <pal.h>
 #include <platform/dospc.h>
 
+#include "../resource.h"
 #include "dospc.h"
 
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
@@ -39,9 +41,7 @@ typedef struct
 
 extern char __edata[], __sbss[], __ebss[];
 extern char _binary_obj_version_txt_start[];
-
-extern const char IDS_ERROR[];
-extern const char IDS_NOARCHIVE[];
+extern char __w32_rsrc_start[];
 
 static volatile uint32_t       _counter;
 static dospc_isr               _bios_isr;
@@ -125,7 +125,7 @@ static void
 _die_errno(void)
 {
     char msg[80];
-    pal_load_string((unsigned int)IDS_ERROR, msg, sizeof(msg));
+    pal_load_string(IDS_ERROR, msg, sizeof(msg));
     itoa(errno, msg + strlen(msg), 10);
     msg[strlen(msg)] = '$';
     dos_puts(msg);
@@ -223,8 +223,8 @@ pal_initialize(void)
     if (NULL == (_cdir = _locate_cdir(__edata, __sbss)))
     {
         char msg[80];
-        pal_load_string((unsigned int)IDS_ERROR, msg, sizeof(msg));
-        pal_load_string((unsigned int)IDS_NOARCHIVE, msg + strlen(msg),
+        pal_load_string(IDS_ERROR, msg, sizeof(msg));
+        pal_load_string(IDS_NOARCHIVE, msg + strlen(msg),
                         sizeof(msg) - strlen(msg));
         msg[strlen(msg)] = '$';
         dos_puts(msg);
@@ -598,8 +598,79 @@ pal_get_keystroke(void)
 int
 pal_load_string(unsigned id, char *buffer, int max_length)
 {
-    strncpy(buffer, (const char *)id, max_length);
-    return strlen(buffer);
+    exe_pe_resource_directory       *dir;
+    exe_pe_resource_directory_entry *ent;
+    exe_pe_resource_data_entry      *data;
+
+    // Type: RT_STRING
+    dir = (exe_pe_resource_directory *)__w32_rsrc_start;
+    ent = (exe_pe_resource_directory_entry *)(dir + 1);
+    ent += dir->NumberOfNamedEntries;
+    for (int i = 0;
+         (dir->NumberOfIdEntries > i) && (EXE_PE_RT_STRING != ent->Id);
+         ++i, ++ent)
+        ;
+
+    if (EXE_PE_RT_STRING != ent->Id)
+    {
+        const char msg[] = "!!! RT_STRING missing !!!";
+        strncpy(buffer, msg, max_length);
+        return sizeof(msg) - 1;
+    }
+
+    // Item: string ID / 16 + 1
+    dir = (exe_pe_resource_directory *)(__w32_rsrc_start +
+                                        ent->dir.OffsetToDirectory);
+    ent = (exe_pe_resource_directory_entry *)(dir + 1);
+    ent += dir->NumberOfNamedEntries;
+    for (int i = 0;
+         (dir->NumberOfIdEntries > i) && (((id >> 4) + 1) != ent->Id);
+         ++i, ++ent)
+        ;
+
+    if (((id >> 4) + 1) != ent->Id)
+    {
+        const char msg[] = "!!! string missing !!!";
+        strncpy(buffer, msg, max_length);
+        return sizeof(msg) - 1;
+    }
+
+    // Language: first available
+    dir = (exe_pe_resource_directory *)(__w32_rsrc_start +
+                                        ent->dir.OffsetToDirectory);
+    ent = (exe_pe_resource_directory_entry *)(dir + 1);
+    data = (exe_pe_resource_data_entry *)(__w32_rsrc_start + ent->OffsetToData);
+
+    // One table = 16 strings
+    uint16_t *wstr = (uint16_t *)((WORD)data->OffsetToData);
+    for (int i = 0; (id & 0xF) > i; ++i)
+    {
+        wstr += *wstr + 1;
+    }
+
+    // First WORD is string length
+    uint16_t *end = wstr + *wstr + 1;
+    wstr++;
+
+    // Convert WSTR to UTF-8
+    char *buffptr = buffer;
+    while ((wstr < end) && (buffer + max_length > buffptr))
+    {
+        char mb[3];
+
+        int seqlen = utf8_get_sequence(*wstr, mb);
+        if (buffer + max_length < buffptr + seqlen)
+        {
+            break;
+        }
+
+        memcpy(buffptr, mb, seqlen);
+        wstr++;
+        buffptr += seqlen;
+    }
+
+    *buffptr = 0;
+    return buffptr - buffer;
 }
 
 bool
