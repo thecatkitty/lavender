@@ -14,14 +14,13 @@ This is still work in progress, but I'm doing my best to separate working versio
 * inclusion of other scripts from within a script
 * PC speaker music playback
 * reporting the unsupported environment (DOS 1.x, Windows Vista and newer)
+* multiple language support (Czech, English, Polish)
 
 ## Building
-Building requires Linux with *GNU Make*, *GNU Binutils*, [GCC for IA-16](https://github.com/tkchia/gcc-ia16/) with [libi86](https://github.com/tkchia/libi86/), and `zip`. If you have it, just run:
+Building requires Linux with *GNU Make*, *GNU Binutils*, *MinGW-w64* for i686, [GCC for IA-16](https://github.com/tkchia/gcc-ia16/) with [libi86](https://github.com/tkchia/libi86/), and `zip`. If you have it, just run:
 ```sh
 make
 ```
-
-Building additional tools requires GCC and MinGW-w64.
 
 If you want to change the output slideshow application file name (`sshow.com` is default) or the slideshow source directory, you can set `LAV_SSHOW` and `LAV_DATA` environmental variables respectively.
 

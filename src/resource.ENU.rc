@@ -1,0 +1,30 @@
+#include "resource.h"
+
+STRINGTABLE
+LANGUAGE LCID_ENU, 0x1
+{
+    IDS_ERROR, "ERROR: "
+    IDS_NOARCHIVE, "Archive not found"
+
+    IDS_ENTERDSN, "Enter Disk Serial Number"
+    IDS_ENTERDSN_DESC, "Please type the serial number\nattached to Your program diskette."
+    IDS_ENTERPASS, "Enter Password"
+    IDS_ENTERPASS_DESC, "This content is encrypted.\n\nPlease enter the access key."
+    IDS_INVALIDKEY, "Provided key is invalid!"
+
+    IDS_LOADERROR, "Script loading error!"
+    IDS_EXECERROR, "Script execution error!"
+    IDS_NOEXECCTX, "Cannot create execution context"
+
+    IDS_INVALIDDELAY, "Invalid delay"
+    IDS_UNKNOWNTYPE, "Unknown type"
+    IDS_INVALIDVPOS, "Invalid vertical position"
+    IDS_INVALIDHPOS, "Invalid horizontal position"
+    IDS_LONGNAME, "File name too long"
+    IDS_LONGCONTENT, "Content too long"
+    IDS_NOLABEL, "Label not found"
+    IDS_INVALIDCMPVAL, "Invalid value in comparison"
+    IDS_NOASSET, "Cannot load asset"
+    IDS_BADENCODING, "Invalid or unsupported encoding"
+    IDS_UNSUPPORTED, "Unsupported feature requested"
+}
