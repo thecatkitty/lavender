@@ -63,6 +63,28 @@ utf8_get_codepoint(const char *sequence, int *length)
 }
 
 int
+utf8_get_sequence(uint16_t wc, char *buff)
+{
+    if (0x0080 > wc)
+    {
+        buff[0] = (char)wc;
+        return 1;
+    }
+
+    if (0x0800 > wc)
+    {
+        buff[0] = 0xC0 | (wc >> 6);
+        buff[1] = 0x80 | (wc & 0x3F);
+        return 2;
+    }
+
+    buff[0] = 0xE0 | (wc >> 12);
+    buff[1] = 0x80 | ((wc >> 6) & 0x3F);
+    buff[2] = 0x80 | (wc & 0x3F);
+    return 3;
+}
+
+int
 utf8_encode(const char *src, char *dst, char (*encoder)(uint16_t))
 {
     int i;

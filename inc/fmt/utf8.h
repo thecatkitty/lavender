@@ -9,6 +9,11 @@
 extern uint16_t
 utf8_get_codepoint(const char *sequence, int *length);
 
+// Get UTF-8 sequence from code point
+// Returns the length of the sequence
+extern int
+utf8_get_sequence(uint16_t wc, char *buff);
+
 // Convert string from UTF-8 to another encoding
 // Returns the length of the converted string, negative on error
 extern int
