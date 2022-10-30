@@ -8,6 +8,9 @@ typedef uint16_t USHORT;
 typedef int32_t  LONG;
 typedef uint32_t ULONG;
 
+typedef uint16_t WORD;
+typedef uint32_t DWORD;
+
 #pragma pack(push, 1)
 typedef struct
 {                      // DOS .EXE header
@@ -83,6 +86,48 @@ typedef struct
     ULONG  NumberOfRvaAndSizes;
     //    IMAGE_DATA_DIRECTORY DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
 } exe_pe_optional_header;
+
+typedef struct
+{
+    DWORD Characteristics;
+    DWORD TimeDateStamp;
+    WORD  MajorVersion;
+    WORD  MinorVersion;
+    WORD  NumberOfNamedEntries;
+    WORD  NumberOfIdEntries;
+    //   IMAGE_RESOURCE_DIRECTORY_ENTRY DirectoryEntries[];
+} exe_pe_resource_directory;
+
+typedef struct
+{
+    union {
+        struct
+        {
+            DWORD NameOffset : 31;
+            DWORD NameIsString : 1;
+        } name;
+        DWORD Name;
+        WORD  Id;
+    };
+    union {
+        DWORD OffsetToData;
+        struct
+        {
+            DWORD OffsetToDirectory : 31;
+            DWORD DataIsDirectory : 1;
+        } dir;
+    };
+} exe_pe_resource_directory_entry;
+
+typedef struct
+{
+    DWORD OffsetToData;
+    DWORD Size;
+    DWORD CodePage;
+    DWORD Reserved;
+} exe_pe_resource_data_entry;
 #pragma pack(pop)
+
+#define EXE_PE_RT_STRING 6
 
 #endif // _FMT_EXE_H_
