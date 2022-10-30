@@ -64,7 +64,7 @@ __sld_execute_script_call(sld_entry *sld);
 static inline void
 __sld_errmsgcpy(void *sld, const char *msg)
 {
-    strncpy((char *)sld, msg, sizeof(sld_entry));
+    pal_load_string((unsigned int)msg, (char *)sld, sizeof(sld_entry));
 }
 
 static inline void

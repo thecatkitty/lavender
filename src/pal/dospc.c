@@ -125,7 +125,7 @@ static void
 _die_errno(void)
 {
     char msg[80];
-    strncpy(msg, IDS_ERROR, sizeof(msg));
+    pal_load_string((unsigned int)IDS_ERROR, msg, sizeof(msg));
     itoa(errno, msg + strlen(msg), 10);
     msg[strlen(msg)] = '$';
     dos_puts(msg);
@@ -223,8 +223,9 @@ pal_initialize(void)
     if (NULL == (_cdir = _locate_cdir(__edata, __sbss)))
     {
         char msg[80];
-        strncpy(msg, IDS_ERROR, sizeof(msg));
-        strncat(msg, IDS_NOARCHIVE, sizeof(msg) - strlen(msg));
+        pal_load_string((unsigned int)IDS_ERROR, msg, sizeof(msg));
+        pal_load_string((unsigned int)IDS_NOARCHIVE, msg + strlen(msg),
+                        sizeof(msg) - strlen(msg));
         msg[strlen(msg)] = '$';
         dos_puts(msg);
 
@@ -592,6 +593,13 @@ pal_get_keystroke(void)
     }
 
     return bios_get_keystroke() >> 8;
+}
+
+int
+pal_load_string(unsigned id, char *buffer, int max_length)
+{
+    strncpy(buffer, (const char *)id, max_length);
+    return strlen(buffer);
 }
 
 bool

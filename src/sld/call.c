@@ -106,6 +106,14 @@ _prompt_passcode(uint8_t               *code,
                  sld_passcode_validator validator,
                  void                  *context)
 {
+    char msg_enterpass[40], msg_enterpass_desc[80], msg_invalidkey[40];
+    pal_load_string((unsigned int)IDS_ENTERPASS, msg_enterpass,
+                    sizeof(msg_enterpass));
+    pal_load_string((unsigned int)IDS_ENTERPASS_DESC, msg_enterpass_desc,
+                    sizeof(msg_enterpass_desc));
+    pal_load_string((unsigned int)IDS_INVALIDKEY, msg_invalidkey,
+                    sizeof(msg_invalidkey));
+
     char *buffer = (char *)alloca(code_len * 3 + 1);
     while (true)
     {
@@ -120,7 +128,7 @@ _prompt_passcode(uint8_t               *code,
             break;
         }
 
-        int length = dlg_prompt(IDS_ENTERPASS, IDS_ENTERPASS_DESC, buffer,
+        int length = dlg_prompt(msg_enterpass, msg_enterpass_desc, buffer,
                                 code_len * 2, precheck);
         if (0 == length)
         {
@@ -147,14 +155,19 @@ _prompt_passcode(uint8_t               *code,
             return true;
         }
 
-        dlg_alert(IDS_ENTERPASS, IDS_INVALIDKEY);
+        dlg_alert(msg_enterpass, msg_invalidkey);
     }
 }
 
 static bool
 _prompt_volsn(char *volsn)
 {
-    return 0 != dlg_prompt(IDS_ENTERDSN, IDS_ENTERDSN_DESC, volsn, 9,
+    char msg_enterdsn[40], msg_enterdsn_desc[80];
+    pal_load_string((unsigned int)IDS_ENTERDSN, msg_enterdsn,
+                    sizeof(msg_enterdsn));
+    pal_load_string((unsigned int)IDS_ENTERDSN_DESC, msg_enterdsn_desc,
+                    sizeof(msg_enterdsn_desc));
+    return 0 != dlg_prompt(msg_enterdsn, msg_enterdsn_desc, volsn, 9,
                            _validate_volsn);
 }
 

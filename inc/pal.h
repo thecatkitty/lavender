@@ -51,4 +51,7 @@ pal_unregister_timer_callback(htimer timer);
 extern uint16_t
 pal_get_keystroke(void);
 
+extern int
+pal_load_string(unsigned id, char *buffer, int max_length);
+
 #endif // _PAL_H_
