@@ -1,6 +1,8 @@
 #ifndef _SLD_IMPL_H_
 #define _SLD_IMPL_H_
 
+#include <string.h>
+
 #include <crg.h>
 #include <sld.h>
 
@@ -59,11 +61,17 @@ __sld_execute_rectangle(sld_entry *sld);
 extern int
 __sld_execute_script_call(sld_entry *sld);
 
-extern void
-__sld_errmsgcpy(void *sld, const char *msg);
+static inline void
+__sld_errmsgcpy(void *sld, const char *msg)
+{
+    strncpy((char *)sld, msg, sizeof(sld_entry));
+}
 
-extern void
-__sld_errmsgcat(void *sld, const char *msg);
+static inline void
+__sld_errmsgcat(void *sld, const char *msg)
+{
+    strncat((char *)sld, msg, sizeof(sld_entry) - strlen((char *)sld));
+}
 
 extern uint16_t       __sld_accumulator;
 extern sld_context   *__sld_ctx;

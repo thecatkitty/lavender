@@ -1,6 +1,5 @@
 #include <errno.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "sld_impl.h"
 
@@ -60,16 +59,4 @@ sld_exit_context(void)
     sld_context *ctx = __sld_ctx;
     __sld_ctx = ctx->parent;
     return ctx;
-}
-
-void
-__sld_errmsgcpy(void *sld, const char *msg)
-{
-    strncpy((char *)sld, msg, sizeof(sld_entry));
-}
-
-void
-__sld_errmsgcat(void *sld, const char *msg)
-{
-    strncat((char *)sld, msg, sizeof(sld_entry) - strlen((char *)sld));
 }
