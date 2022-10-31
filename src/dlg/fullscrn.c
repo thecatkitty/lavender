@@ -60,12 +60,17 @@ static int
 _strndcpy(char *dst, const char *src, size_t count, char delimiter)
 {
     int i = 0;
-    while (src[i] && (count > i))
+    while (src[i])
     {
         if (delimiter == src[i])
         {
             dst[i] = 0;
             return i + 1;
+        }
+
+        if (count == i)
+        {
+            break;
         }
 
         dst[i] = src[i];
