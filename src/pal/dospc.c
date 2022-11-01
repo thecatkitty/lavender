@@ -32,6 +32,7 @@ typedef struct
 {
     off_t inzip;
     int   flags;
+    char *data;
 } _asset;
 
 #define DELAY_MS_MULTIPLIER 100ULL
@@ -269,6 +270,7 @@ pal_initialize(void)
     {
         _assets[i].inzip = -1;
         _assets[i].flags = 0;
+        _assets[i].data = NULL;
     }
 
     if (!gfx_initialize())
@@ -376,6 +378,7 @@ pal_close_asset(hasset asset)
     }
 
     ptr->inzip = -1;
+    ptr->data = NULL;
     return true;
 }
 
@@ -389,7 +392,12 @@ pal_get_asset_data(hasset asset)
         return NULL;
     }
 
-    return zip_get_data(ptr->inzip, O_RDWR == (ptr->flags & O_ACCMODE));
+    if (NULL == ptr->data)
+    {
+        ptr->data = zip_get_data(ptr->inzip, false);
+    }
+
+    return ptr->data;
 }
 
 int
