@@ -159,6 +159,10 @@ zip_search(zip_cdir_end_header *cdir, const char *name, uint16_t length);
 extern char *
 zip_get_data(zip_local_file_header *lfh, bool ignore_crc);
 
+// Get ZIP file size
+extern uint32_t
+zip_get_size(zip_local_file_header *lfh);
+
 // Calculate ZIP-compatible CRC-32 checksum of a buffer
 // Returns checksum value
 extern uint32_t

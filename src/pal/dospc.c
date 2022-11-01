@@ -359,7 +359,7 @@ pal_close_asset(hasset asset)
     {
         ptr->zip_header->crc32 =
             zip_calculate_crc((uint8_t *)zip_get_data(ptr->zip_header, true),
-                              ptr->zip_header->compressed_size);
+                              zip_get_size(ptr->zip_header));
     }
 
     ptr->zip_header = NULL;
@@ -389,7 +389,7 @@ pal_get_asset_size(hasset asset)
         return -1;
     }
 
-    return ptr->zip_header->compressed_size;
+    return zip_get_size(ptr->zip_header);
 }
 
 static void
