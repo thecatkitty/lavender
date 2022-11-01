@@ -52,7 +52,7 @@ zip_search(off_t ocdir, const char *name, uint16_t length)
 }
 
 char *
-zip_get_data(off_t olfh, bool ignore_crc)
+zip_get_data(off_t olfh)
 {
     const zip_local_file_header *lfh =
         (const zip_local_file_header *)(intptr_t)olfh;
@@ -71,9 +71,8 @@ zip_get_data(off_t olfh, bool ignore_crc)
     }
 
     char *buffer = (char *)(lfh + 1) + lfh->name_length + lfh->extra_length;
-    if (!ignore_crc &&
-        (zip_calculate_crc((uint8_t *)buffer, lfh->uncompressed_size) !=
-         lfh->crc32))
+    if (zip_calculate_crc((uint8_t *)buffer, lfh->uncompressed_size) !=
+        lfh->crc32)
     {
         errno = EIO;
         return NULL;

@@ -394,7 +394,7 @@ pal_get_asset_data(hasset asset)
 
     if (NULL == ptr->data)
     {
-        ptr->data = zip_get_data(ptr->inzip, false);
+        ptr->data = zip_get_data(ptr->inzip);
     }
 
     return ptr->data;
