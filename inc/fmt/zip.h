@@ -156,7 +156,7 @@ zip_search(off_t ocdir, const char *name, uint16_t length);
 // Locate ZIP file data
 // Returns NULL on error
 extern char *
-zip_get_data(off_t olfh, bool ignore_crc);
+zip_get_data(off_t olfh);
 
 // Get ZIP file size
 extern uint32_t
