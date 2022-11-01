@@ -78,6 +78,12 @@ zip_get_data(zip_local_file_header *lfh, bool ignore_crc)
     return buffer;
 }
 
+uint32_t
+zip_get_size(zip_local_file_header *lfh)
+{
+    return lfh->compressed_size;
+}
+
 // Check if ZIP Central Directory File Header matches provided name
 // Returns 0 on match, 1 on no match, negative on error
 int
