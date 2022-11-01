@@ -48,7 +48,6 @@ static volatile uint32_t       _counter;
 static dospc_isr               _bios_isr;
 static volatile _timer_handler _timer_handlers[MAX_TIMER_HANDLERS];
 
-static off_t  _cdir;
 static _asset _assets[MAX_OPEN_ASSETS];
 
 #ifdef STACK_PROFILING
@@ -57,7 +56,7 @@ static uint64_t      *_stack_end = (uint64_t *)0xFFE8;
 static const uint64_t STACK_FILL_PATTERN = 0x0123456789ABCDEFULL;
 #endif // STACK_PROFILING
 
-static off_t
+static zip_cdir_end_header *
 _locate_cdir(void *from, void *to)
 {
     const void *ptr = to - sizeof(zip_cdir_end_header);
@@ -67,13 +66,13 @@ _locate_cdir(void *from, void *to)
         if ((ZIP_PK_SIGN == cdir->pk_signature) &&
             (ZIP_CDIR_END_SIGN == cdir->header_signature))
         {
-            return (off_t)(intptr_t)cdir;
+            return cdir;
         }
 
         ptr--;
     }
 
-    return -1;
+    return NULL;
 }
 
 static void
@@ -221,7 +220,8 @@ pal_initialize(void)
         *ptr = STACK_FILL_PATTERN;
 #endif // STACK_PROFILING
 
-    if (-1 == (_cdir = _locate_cdir(__edata, __sbss)))
+    zip_cdir_end_header *cdir = _locate_cdir(__edata, __sbss);
+    if (NULL == cdir)
     {
         char msg[80];
         pal_load_string(IDS_ERROR, msg, sizeof(msg));
@@ -231,6 +231,26 @@ pal_initialize(void)
         dos_puts(msg);
 
         dos_exit(1);
+    }
+
+    if (!zip_open(cdir))
+    {
+        char msg[80];
+        pal_load_string(IDS_ERROR, msg, sizeof(msg));
+        pal_load_string(IDS_NOARCHIVE, msg + strlen(msg),
+                        sizeof(msg) - strlen(msg));
+        msg[strlen(msg)] = '$';
+        dos_puts(msg);
+
+        _die_errno();
+        dos_exit(1);
+    }
+
+    for (int i = 0; i < MAX_OPEN_ASSETS; ++i)
+    {
+        _assets[i].inzip = -1;
+        _assets[i].flags = 0;
+        _assets[i].data = NULL;
     }
 
     if (!_is_compatible())
@@ -265,13 +285,6 @@ pal_initialize(void)
 
     _counter = 0;
     _pit_init_channel(0, PIT_MODE_RATE_GEN, PIT_FREQ_DIVISOR);
-
-    for (int i = 0; i < MAX_OPEN_ASSETS; ++i)
-    {
-        _assets[i].inzip = -1;
-        _assets[i].flags = 0;
-        _assets[i].data = NULL;
-    }
 
     if (!gfx_initialize())
     {
@@ -337,7 +350,7 @@ pal_sleep(unsigned ms)
 hasset
 pal_open_asset(const char *name, int flags)
 {
-    off_t lfh = zip_search(_cdir, name, strlen(name));
+    off_t lfh = zip_search(name, strlen(name));
     if (-1 == lfh)
     {
         return NULL;
