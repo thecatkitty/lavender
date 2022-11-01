@@ -81,6 +81,12 @@ zip_get_data(off_t olfh)
     return buffer;
 }
 
+void
+zip_free_data(char *data)
+{
+    return;
+}
+
 uint32_t
 zip_get_size(off_t olfh)
 {

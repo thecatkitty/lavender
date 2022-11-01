@@ -284,6 +284,14 @@ pal_initialize(void)
 void
 pal_cleanup(void)
 {
+    for (int i = 0; i < MAX_OPEN_ASSETS; ++i)
+    {
+        if (NULL != _assets[i].data)
+        {
+            zip_free_data(_assets[i].data);
+        }
+    }
+
     gfx_cleanup();
 
     _dos_setvect(INT_PIT, _bios_isr);
@@ -378,7 +386,12 @@ pal_close_asset(hasset asset)
     }
 
     ptr->inzip = -1;
-    ptr->data = NULL;
+
+    if (NULL != ptr->data)
+    {
+        zip_free_data(ptr->data);
+        ptr->data = NULL;
+    }
     return true;
 }
 

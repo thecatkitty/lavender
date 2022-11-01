@@ -153,10 +153,14 @@ typedef struct
 extern off_t
 zip_search(off_t ocdir, const char *name, uint16_t length);
 
-// Locate ZIP file data
+// Retrieve ZIP file data
 // Returns NULL on error
 extern char *
 zip_get_data(off_t olfh);
+
+// Dispose ZIP file data
+extern void
+zip_free_data(char *data);
 
 // Get ZIP file size
 extern uint32_t
