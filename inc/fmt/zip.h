@@ -149,9 +149,17 @@ typedef struct
     char     unicode_name[];
 } zip_extra_unicode_path_field;
 
+typedef zip_cdir_end_header *zip_archive;
+
+// Set working archive
+// archive is either a pointer to file name, or to address of ZIP central
+// directory
+extern bool
+zip_open(zip_archive archive);
+
 // Locate ZIP local file header structure
 extern off_t
-zip_search(off_t ocdir, const char *name, uint16_t length);
+zip_search(const char *name, uint16_t length);
 
 // Retrieve ZIP file data
 // Returns NULL on error
