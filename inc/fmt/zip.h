@@ -150,18 +150,17 @@ typedef struct
 } zip_extra_unicode_path_field;
 
 // Locate ZIP local file header structure
-// Returns NULL on error
-extern zip_local_file_header *
-zip_search(zip_cdir_end_header *cdir, const char *name, uint16_t length);
+extern off_t
+zip_search(off_t ocdir, const char *name, uint16_t length);
 
 // Locate ZIP file data
 // Returns NULL on error
 extern char *
-zip_get_data(zip_local_file_header *lfh, bool ignore_crc);
+zip_get_data(off_t olfh, bool ignore_crc);
 
 // Get ZIP file size
 extern uint32_t
-zip_get_size(zip_local_file_header *lfh);
+zip_get_size(off_t olfh);
 
 // Calculate ZIP-compatible CRC-32 checksum of a buffer
 // Returns checksum value
