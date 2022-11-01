@@ -323,11 +323,26 @@ pal_sleep(unsigned ms)
 hasset
 pal_open_asset(const char *name, int flags)
 {
+    zip_local_file_header *lfh = zip_search(_cdir, name, strlen(name));
+    if (NULL == lfh)
+    {
+        return NULL;
+    }
+
     int slot = 0;
     while (NULL != _assets[slot].zip_header)
     {
-        slot++;
+        if (lfh == _assets[slot].zip_header)
+        {
+            if (O_RDWR == (flags & O_ACCMODE))
+            {
+                _assets[slot].flags = (flags & ~O_ACCMODE) | O_RDWR;
+            }
 
+            return (hasset)(_assets + slot);
+        }
+
+        slot++;
         if (MAX_OPEN_ASSETS == slot)
         {
             errno = ENOMEM;
@@ -335,12 +350,7 @@ pal_open_asset(const char *name, int flags)
         }
     }
 
-    if (NULL ==
-        (_assets[slot].zip_header = zip_search(_cdir, name, strlen(name))))
-    {
-        return NULL;
-    }
-
+    _assets[slot].zip_header = lfh;
     _assets[slot].flags = flags;
     return (hasset)(_assets + slot);
 }
@@ -357,9 +367,8 @@ pal_close_asset(hasset asset)
 
     if (O_RDWR == (ptr->flags & O_ACCMODE))
     {
-        ptr->zip_header->crc32 =
-            zip_calculate_crc((uint8_t *)zip_get_data(ptr->zip_header, true),
-                              zip_get_size(ptr->zip_header));
+        // Do not release modified assets
+        return true;
     }
 
     ptr->zip_header = NULL;
@@ -376,7 +385,7 @@ pal_get_asset_data(hasset asset)
         return NULL;
     }
 
-    return zip_get_data(ptr->zip_header, false);
+    return zip_get_data(ptr->zip_header, O_RDWR == (ptr->flags & O_ACCMODE));
 }
 
 int
