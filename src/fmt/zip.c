@@ -8,13 +8,15 @@
 static int
 _match_file_name(const char *name, uint16_t length, zip_cdir_file_header *cfh);
 
-zip_local_file_header *
-zip_search(zip_cdir_end_header *cdir, const char *name, uint16_t length)
+off_t
+zip_search(off_t ocdir, const char *name, uint16_t length)
 {
+    const zip_cdir_end_header *cdir =
+        (const zip_cdir_end_header *)(intptr_t)ocdir;
     if (cdir->cdir_size > UINT16_MAX)
     {
         errno = EFBIG;
-        return NULL;
+        return -1;
     }
 
     zip_cdir_file_header *cfh =
@@ -25,7 +27,7 @@ zip_search(zip_cdir_end_header *cdir, const char *name, uint16_t length)
         int status = _match_file_name(name, length, cfh);
         if (0 > status)
         {
-            return NULL;
+            return -1;
         }
 
         if (0 == status)
@@ -43,15 +45,17 @@ zip_search(zip_cdir_end_header *cdir, const char *name, uint16_t length)
         (ZIP_LOCAL_FILE_SIGN != lfh->header_signature))
     {
         errno = EFTYPE;
-        return NULL;
+        return -1;
     }
 
-    return lfh;
+    return (off_t)(intptr_t)lfh;
 }
 
 char *
-zip_get_data(zip_local_file_header *lfh, bool ignore_crc)
+zip_get_data(off_t olfh, bool ignore_crc)
 {
+    const zip_local_file_header *lfh =
+        (const zip_local_file_header *)(intptr_t)olfh;
     if ((ZIP_PK_SIGN != lfh->pk_signature) ||
         (ZIP_LOCAL_FILE_SIGN != lfh->header_signature))
     {
@@ -79,8 +83,10 @@ zip_get_data(zip_local_file_header *lfh, bool ignore_crc)
 }
 
 uint32_t
-zip_get_size(zip_local_file_header *lfh)
+zip_get_size(off_t olfh)
 {
+    const zip_local_file_header *lfh =
+        (const zip_local_file_header *)(intptr_t)olfh;
     return lfh->compressed_size;
 }
 

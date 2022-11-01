@@ -30,8 +30,8 @@ typedef struct
 
 typedef struct
 {
-    zip_local_file_header *zip_header;
-    int                    flags;
+    off_t inzip;
+    int   flags;
 } _asset;
 
 #define DELAY_MS_MULTIPLIER 100ULL
@@ -47,8 +47,8 @@ static volatile uint32_t       _counter;
 static dospc_isr               _bios_isr;
 static volatile _timer_handler _timer_handlers[MAX_TIMER_HANDLERS];
 
-static zip_cdir_end_header *_cdir;
-static _asset               _assets[MAX_OPEN_ASSETS];
+static off_t  _cdir;
+static _asset _assets[MAX_OPEN_ASSETS];
 
 #ifdef STACK_PROFILING
 static uint64_t      *_stack_start;
@@ -56,7 +56,7 @@ static uint64_t      *_stack_end = (uint64_t *)0xFFE8;
 static const uint64_t STACK_FILL_PATTERN = 0x0123456789ABCDEFULL;
 #endif // STACK_PROFILING
 
-static zip_cdir_end_header *
+static off_t
 _locate_cdir(void *from, void *to)
 {
     const void *ptr = to - sizeof(zip_cdir_end_header);
@@ -66,13 +66,13 @@ _locate_cdir(void *from, void *to)
         if ((ZIP_PK_SIGN == cdir->pk_signature) &&
             (ZIP_CDIR_END_SIGN == cdir->header_signature))
         {
-            return cdir;
+            return (off_t)(intptr_t)cdir;
         }
 
         ptr--;
     }
 
-    return NULL;
+    return -1;
 }
 
 static void
@@ -220,7 +220,7 @@ pal_initialize(void)
         *ptr = STACK_FILL_PATTERN;
 #endif // STACK_PROFILING
 
-    if (NULL == (_cdir = _locate_cdir(__edata, __sbss)))
+    if (-1 == (_cdir = _locate_cdir(__edata, __sbss)))
     {
         char msg[80];
         pal_load_string(IDS_ERROR, msg, sizeof(msg));
@@ -265,7 +265,11 @@ pal_initialize(void)
     _counter = 0;
     _pit_init_channel(0, PIT_MODE_RATE_GEN, PIT_FREQ_DIVISOR);
 
-    memset(_assets, 0, sizeof(_assets));
+    for (int i = 0; i < MAX_OPEN_ASSETS; ++i)
+    {
+        _assets[i].inzip = -1;
+        _assets[i].flags = 0;
+    }
 
     if (!gfx_initialize())
     {
@@ -323,16 +327,16 @@ pal_sleep(unsigned ms)
 hasset
 pal_open_asset(const char *name, int flags)
 {
-    zip_local_file_header *lfh = zip_search(_cdir, name, strlen(name));
-    if (NULL == lfh)
+    off_t lfh = zip_search(_cdir, name, strlen(name));
+    if (-1 == lfh)
     {
         return NULL;
     }
 
     int slot = 0;
-    while (NULL != _assets[slot].zip_header)
+    while (-1 != _assets[slot].inzip)
     {
-        if (lfh == _assets[slot].zip_header)
+        if (lfh == _assets[slot].inzip)
         {
             if (O_RDWR == (flags & O_ACCMODE))
             {
@@ -350,7 +354,7 @@ pal_open_asset(const char *name, int flags)
         }
     }
 
-    _assets[slot].zip_header = lfh;
+    _assets[slot].inzip = lfh;
     _assets[slot].flags = flags;
     return (hasset)(_assets + slot);
 }
@@ -359,7 +363,7 @@ bool
 pal_close_asset(hasset asset)
 {
     _asset *ptr = (_asset *)asset;
-    if (NULL == ptr->zip_header)
+    if (-1 == ptr->inzip)
     {
         errno = EBADF;
         return false;
@@ -371,7 +375,7 @@ pal_close_asset(hasset asset)
         return true;
     }
 
-    ptr->zip_header = NULL;
+    ptr->inzip = -1;
     return true;
 }
 
@@ -379,26 +383,26 @@ char *
 pal_get_asset_data(hasset asset)
 {
     _asset *ptr = (_asset *)asset;
-    if (NULL == ptr->zip_header)
+    if (-1 == ptr->inzip)
     {
         errno = EBADF;
         return NULL;
     }
 
-    return zip_get_data(ptr->zip_header, O_RDWR == (ptr->flags & O_ACCMODE));
+    return zip_get_data(ptr->inzip, O_RDWR == (ptr->flags & O_ACCMODE));
 }
 
 int
 pal_get_asset_size(hasset asset)
 {
     _asset *ptr = (_asset *)asset;
-    if (NULL == ptr->zip_header)
+    if (-1 == ptr->inzip)
     {
         errno = EBADF;
         return -1;
     }
 
-    return zip_get_size(ptr->zip_header);
+    return zip_get_size(ptr->inzip);
 }
 
 static void
