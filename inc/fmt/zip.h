@@ -149,7 +149,11 @@ typedef struct
     char     unicode_name[];
 } zip_extra_unicode_path_field;
 
+#ifdef ZIP_PIGGYBACK
 typedef zip_cdir_end_header *zip_archive;
+#else
+typedef const char *zip_archive;
+#endif
 
 // Set working archive
 // archive is either a pointer to file name, or to address of ZIP central

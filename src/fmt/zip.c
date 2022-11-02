@@ -1,17 +1,44 @@
 
+#include <alloca.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <fmt/utf8.h>
 #include <fmt/zip.h>
 
-#include <api/dos.h>
-
+#ifndef ZIP_PIGGYBACK
+static off_t _fbase = 0;
+static int   _fd = -1;
+static off_t _flen = 0;
+#endif
 static zip_cdir_file_header      *_cdir = NULL;
 const static zip_cdir_end_header *_cden = NULL;
 
 static int
 _match_file_name(const char *name, uint16_t length, zip_cdir_file_header *cfh);
+
+#ifndef ZIP_PIGGYBACK
+static bool
+_seek_read(void *ptr, off_t offset, size_t size)
+{
+    if (-1 == lseek(_fd, offset, SEEK_SET))
+    {
+        close(_fd);
+        return false;
+    }
+
+    if (size != read(_fd, ptr, size))
+    {
+        close(_fd);
+        return false;
+    }
+
+    return true;
+}
+#endif
 
 bool
 zip_open(zip_archive archive)
@@ -24,7 +51,36 @@ zip_open(zip_archive archive)
 
     zip_cdir_end_header *cdirend;
 
+#ifdef ZIP_PIGGYBACK
     cdirend = archive;
+#else
+    _fd = open(archive, O_RDONLY);
+    if (-1 == _fd)
+    {
+        return false;
+    }
+
+    _flen = lseek(_fd, 0, SEEK_END);
+    if (-1 == _flen)
+    {
+        close(_fd);
+        return false;
+    }
+
+    cdirend = alloca(sizeof(zip_cdir_end_header));
+    if (!_seek_read(cdirend, _flen - sizeof(zip_cdir_end_header),
+                    sizeof(zip_cdir_end_header)))
+    {
+        return false;
+    }
+#endif
+
+    if ((ZIP_PK_SIGN != cdirend->pk_signature) ||
+        (ZIP_CDIR_END_SIGN != cdirend->header_signature))
+    {
+        errno = EFTYPE;
+        return false;
+    }
 
     if (cdirend->cdir_size > UINT16_MAX)
     {
@@ -32,8 +88,30 @@ zip_open(zip_archive archive)
         return false;
     }
 
+#ifdef ZIP_PIGGYBACK
     _cdir = (zip_cdir_file_header *)((void *)cdirend - cdirend->cdir_size);
+#else
+    long cdir_size = cdirend->cdir_size + sizeof(zip_cdir_end_header);
+    _cdir = (zip_cdir_file_header *)malloc(cdir_size);
+    if (NULL == _cdir)
+    {
+        close(_fd);
+        return false;
+    }
+
+    if (!_seek_read(_cdir, _flen - cdir_size, cdir_size))
+    {
+        free(_cdir);
+        _cdir = NULL;
+        return false;
+    }
+#endif
+
     _cden = (const zip_cdir_end_header *)((void *)_cdir + cdirend->cdir_size);
+#ifndef ZIP_PIGGYBACK
+    _fbase = _flen - _cden->cdir_offset - _cden->cdir_size -
+             sizeof(zip_cdir_end_header);
+#endif
     return true;
 }
 
@@ -85,8 +163,16 @@ zip_get_data(off_t olfh)
 
     zip_local_file_header *lfh;
 
+#ifdef ZIP_PIGGYBACK
     void *base = (void *)_cdir - _cden->cdir_offset;
     lfh = (zip_local_file_header *)(base + olfh);
+#else
+    lfh = alloca(sizeof(zip_local_file_header));
+    if (!_seek_read(lfh, _fbase + olfh, sizeof(zip_local_file_header)))
+    {
+        return false;
+    }
+#endif
 
     if ((ZIP_PK_SIGN != lfh->pk_signature) ||
         (ZIP_LOCAL_FILE_SIGN != lfh->header_signature))
@@ -102,10 +188,33 @@ zip_get_data(off_t olfh)
         return NULL;
     }
 
-    char *buffer = (char *)(lfh + 1) + lfh->name_length + lfh->extra_length;
+    char *buffer;
+
+#ifdef ZIP_PIGGYBACK
+    buffer = (char *)(lfh + 1) + lfh->name_length + lfh->extra_length;
+#else
+    buffer = (char *)malloc(lfh->uncompressed_size);
+    if (NULL == buffer)
+    {
+        return NULL;
+    }
+
+    if (!_seek_read(buffer,
+                    _fbase + olfh + sizeof(zip_local_file_header) +
+                        lfh->name_length + lfh->extra_length,
+                    lfh->uncompressed_size))
+    {
+        free(buffer);
+        return NULL;
+    }
+#endif
+
     if (zip_calculate_crc((uint8_t *)buffer, lfh->uncompressed_size) !=
         lfh->crc32)
     {
+#ifndef ZIP_PIGGYBACK
+        free(buffer);
+#endif
         errno = EIO;
         return NULL;
     }
@@ -116,6 +225,9 @@ zip_get_data(off_t olfh)
 void
 zip_free_data(char *data)
 {
+#ifndef ZIP_PIGGYBACK
+    free(data);
+#endif
     return;
 }
 
@@ -124,8 +236,18 @@ zip_get_size(off_t olfh)
 {
     zip_local_file_header *lfh;
 
+#ifdef ZIP_PIGGYBACK
     void *base = (void *)_cdir - _cden->cdir_offset;
     lfh = (zip_local_file_header *)(base + olfh);
+#else
+    off_t base = _flen - _cden->cdir_offset - _cden->cdir_size -
+                 sizeof(zip_cdir_end_header);
+    lfh = alloca(sizeof(zip_local_file_header));
+    if (!_seek_read(lfh, base + olfh, sizeof(zip_local_file_header)))
+    {
+        return false;
+    }
+#endif
 
     return lfh->compressed_size;
 }

@@ -56,6 +56,7 @@ static uint64_t      *_stack_end = (uint64_t *)0xFFE8;
 static const uint64_t STACK_FILL_PATTERN = 0x0123456789ABCDEFULL;
 #endif // STACK_PROFILING
 
+#ifdef ZIP_PIGGYBACK
 static zip_cdir_end_header *
 _locate_cdir(void *from, void *to)
 {
@@ -74,6 +75,7 @@ _locate_cdir(void *from, void *to)
 
     return NULL;
 }
+#endif
 
 static void
 _pit_init_channel(unsigned channel, unsigned mode, unsigned divisor)
@@ -207,11 +209,18 @@ static bool
 _is_compatible(void)
 {
     // We're using DOS 2.0+ API here, and we can't run on Vista and above.
+#ifndef ZIP_PIGGYBACK
+    if (_is_dos(2))
+    {
+        return false;
+    }
+#endif
+
     return !_is_dos(1) && (!_is_winnt() || (0x0600 > _get_winnt_version()));
 }
 
 void
-pal_initialize(void)
+pal_initialize(int argc, char *argv[])
 {
 #ifdef STACK_PROFILING
     _stack_start = (uint64_t *)((unsigned)__ebss / 8 * 8) + 1;
@@ -219,6 +228,7 @@ pal_initialize(void)
         *ptr = STACK_FILL_PATTERN;
 #endif // STACK_PROFILING
 
+#ifdef ZIP_PIGGYBACK
     zip_cdir_end_header *cdir = _locate_cdir(__edata, __sbss);
     if (NULL == cdir)
     {
@@ -233,6 +243,9 @@ pal_initialize(void)
     }
 
     if (!zip_open(cdir))
+#else
+    if (!zip_open(argv[0]))
+#endif
     {
         char msg[80];
         pal_load_string(IDS_ERROR, msg, sizeof(msg));

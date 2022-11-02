@@ -19,7 +19,7 @@ main(int argc, char *argv[])
 {
     int status = EXIT_SUCCESS;
 
-    pal_initialize();
+    pal_initialize(argc, argv);
 
     sld_context *script = sld_create_context("slides.txt", NULL);
     if (NULL == script)
