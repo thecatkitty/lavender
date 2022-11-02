@@ -124,8 +124,7 @@ _pit_isr(void)
 static void
 _die_errno(void)
 {
-    char msg[80];
-    pal_load_string(IDS_ERROR, msg, sizeof(msg));
+    char msg[80] = "errno ";
     itoa(errno, msg + strlen(msg), 10);
     msg[strlen(msg)] = '$';
     dos_puts(msg);
@@ -242,6 +241,7 @@ pal_initialize(void)
         msg[strlen(msg)] = '$';
         dos_puts(msg);
 
+        dos_puts("\r\n$");
         _die_errno();
         dos_exit(1);
     }
