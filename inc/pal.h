@@ -16,7 +16,7 @@ DEFINE_HANDLE(htimer);
 typedef void (*pal_timer_callback)(void *context);
 
 extern void
-pal_initialize(void);
+pal_initialize(int argc, char *argv[]);
 
 extern void
 pal_cleanup(void);
