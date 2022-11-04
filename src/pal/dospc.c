@@ -209,13 +209,6 @@ static bool
 _is_compatible(void)
 {
     // We're using DOS 2.0+ API here, and we can't run on Vista and above.
-#ifndef ZIP_PIGGYBACK
-    if (_is_dos(2))
-    {
-        return false;
-    }
-#endif
-
     return !_is_dos(1) && (!_is_winnt() || (0x0600 > _get_winnt_version()));
 }
 
@@ -244,6 +237,12 @@ pal_initialize(int argc, char *argv[])
 
     if (!zip_open(cdir))
 #else
+    if (_is_dos(2))
+    {
+        dos_puts("Lavender needs at least DOS 3.0 in EXE mode.$");
+        dos_exit(1);
+    }
+
     if (!zip_open(argv[0]))
 #endif
     {
