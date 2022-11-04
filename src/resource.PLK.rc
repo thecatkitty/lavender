@@ -5,6 +5,7 @@ LANGUAGE LCID_PLK, 0x1
 {
     IDS_ERROR, "BLAD: "
     IDS_NOARCHIVE, "Nie znaleziono archiwum"
+    IDS_UNSUPPENV, "Lavender nie uruchomi sie w Twoim srodowisku."
 
     IDS_ENTERDSN, "Wprowadź numer seryjny dysku"
     IDS_ENTERDSN_DESC, "Proszę podać numer seryjny dołączony\ndo dyskietki z programem."

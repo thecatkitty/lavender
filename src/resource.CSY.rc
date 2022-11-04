@@ -5,6 +5,7 @@ LANGUAGE LCID_CSY, 0x1
 {
     IDS_ERROR, "CHYBA: "
     IDS_NOARCHIVE, "Archiv nenalezen"
+    IDS_UNSUPPENV, "Lavender nemuze bezet ve vasem prostredi."
 
     IDS_ENTERDSN, "Zadejte sériové číslo disku"
     IDS_ENTERDSN_DESC, "Zadejte prosím sériové číslo\npřipojené k disketě programu."
