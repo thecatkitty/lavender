@@ -17,18 +17,21 @@ ifndef LAV_TARGET
 LAV_TARGET = dospc-exe
 endif
 
+BINPREF = $(BIN)/$(LAV_TARGET)/$(LAV_LANG)
+OBJPREF = $(OBJ)/$(LAV_TARGET)
+
 CFLAGS  = -c -march=i8088 -Os -Wall -Werror -Iinc/
 
 ifeq ($(LAV_TARGET),dospc-exe)
 LD      = ia16-elf-gcc
 CFLAGS += -mcmodel=small
-LDFLAGS = -mcmodel=small -li86 -Wl,--nmagic -Wl,-Map=$(OBJ)/lavender.map
+LDFLAGS = -mcmodel=small -li86 -Wl,--nmagic -Wl,-Map=$(BINPREF)/lavender.map
 EXESUFF = .exe
 endif
 
 ifeq ($(LAV_TARGET),dospc-com)
 CFLAGS += -DZIP_PIGGYBACK
-LDFLAGS = -L/usr/lib/x86_64-linux-gnu/gcc/ia16-elf/6.3.0 -L/usr/ia16-elf/lib -T com.ld -li86 --nmagic -Map=$(OBJ)/lavender.map
+LDFLAGS = -L/usr/lib/x86_64-linux-gnu/gcc/ia16-elf/6.3.0 -L/usr/ia16-elf/lib -T com.ld -li86 --nmagic -Map=$(BINPREF)/lavender.map
 EXESUFF = .com
 endif
 
@@ -44,30 +47,30 @@ else
 SSHOW   = sshow$(EXESUFF)
 endif
 
-sshow: $(BIN)/$(SSHOW)
+sshow: $(BINPREF)/$(SSHOW)
 
 include sources.mk
 
-$(BIN)/$(SSHOW): $(BIN)/lavender$(EXESUFF) $(OBJ)/data.zip
+$(BINPREF)/$(SSHOW): $(BINPREF)/lavender$(EXESUFF) $(OBJ)/data.zip
 	cat $^ > $@
 	@if [ $$(stat -L -c %s $@) -gt 65280 ]; then echo >&2 "'$@' size exceeds 65,280 bytes"; false; fi
 
-$(BIN)/lavender$(EXESUFF): $(OBJ)/version.o $(CCSOURCES:%.c=$(OBJ)/%.c.o) $(OBJ)/resource.o
-	@mkdir -p $(BIN)
+$(BINPREF)/lavender$(EXESUFF): $(OBJ)/version.o $(CCSOURCES:%.c=$(OBJPREF)/%.c.o) $(OBJPREF)/resource.$(LAV_LANG).o
+	@mkdir -p $(BINPREF)
 	$(LD) -o $@ $^ $(LDFLAGS)
 
 $(OBJ)/data.zip: $(DATA)/*
 	zip -0 -r -j $@ $^
 
-$(OBJ)/%.c.o: $(SRC)/%.c
+$(OBJPREF)/%.c.o: $(SRC)/%.c
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -o $@ $<
 
-$(OBJ)/resource.o: $(OBJ)/resource.obj
+$(OBJPREF)/resource.$(LAV_LANG).o: $(OBJPREF)/resource.$(LAV_LANG).obj
 	@mkdir -p $(@D)
 	$(W32OBJCOPY) $< $@ -O elf32-i386 --rename-section .rsrc=.rodata.rsrc --add-symbol __w32_rsrc_start=.rodata.rsrc:0
 
-$(OBJ)/resource.obj: $(SRC)/resource.$(LAV_LANG).rc
+$(OBJPREF)/resource.$(LAV_LANG).obj: $(SRC)/resource.$(LAV_LANG).rc
 	$(W32WINDRES) -c 65001 $< $@ -Iinc/
 
 GIT_TAG     = $(shell git describe --abbrev=0)
@@ -89,5 +92,9 @@ $(OBJ)/version.txt: .FORCE
  .FORCE:
 
 clean:
+	rm -rf $(BINPREF)
+	rm -rf $(OBJPREF)
+
+clean-all:
 	rm -rf $(BIN)
 	rm -rf $(OBJ)

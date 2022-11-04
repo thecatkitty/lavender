@@ -9,6 +9,20 @@ pr:
 pool:
   vmImage: ubuntu-latest
 
+parameters:
+- name: targets
+  type: object
+  default:
+    - dospc-com
+    - dospc-exe
+
+- name: languages
+  type: object
+  default:
+    - CSY
+    - ENU
+    - PLK
+
 steps:
 - script: |
     sudo add-apt-repository ppa:tkchia/build-ia16
@@ -16,17 +30,10 @@ steps:
     sudo apt install gcc-ia16-elf g++-mingw-w64-i686 libi86-ia16-elf zip -y
   displayName: 'Install additional tools'
 
-- script: |
-    LAV_LANG=PLK make
-    mkdir bin/PLK
-    mv bin/*.exe bin/PLK/
-    rm obj/resource.*
-    LAV_LANG=CSY make
-    mkdir bin/CSY
-    mv bin/*.exe bin/CSY/
-    rm obj/resource.*
-    make
-  displayName: 'Build Lavender'
+- ${{ each target in parameters.targets }}:
+  - ${{ each language in parameters.languages }}:
+    - script: LAV_TARGET=${{ target }} LAV_LANG=${{ language }} make
+      displayName: 'Build for ${{ target }} (${{ language }})'
 
 - script: make tools
   displayName: 'Build tools'
