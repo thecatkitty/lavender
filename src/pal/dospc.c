@@ -132,6 +132,15 @@ _die_errno(void)
     dos_puts(msg);
 }
 
+static void
+_die_incompatible(void)
+{
+    char msg[80];
+    pal_load_string(IDS_UNSUPPENV, msg, sizeof(msg));
+    msg[strlen(msg)] = '$';
+    dos_puts(msg);
+}
+
 static bool
 _is_dos(uint8_t major)
 {
@@ -239,7 +248,8 @@ pal_initialize(int argc, char *argv[])
 #else
     if (_is_dos(2))
     {
-        dos_puts("Lavender needs at least DOS 3.0 in EXE mode.$");
+        dos_puts("EXE \x1A DOS 3+\r\n$");
+        _die_incompatible();
         dos_exit(1);
     }
 
@@ -270,7 +280,7 @@ pal_initialize(int argc, char *argv[])
         hasset support = pal_open_asset("support.txt", O_RDONLY);
         if (NULL == support)
         {
-            dos_puts("Lavender cannot run in your environment.$");
+            _die_incompatible();
             dos_exit(1);
         }
 

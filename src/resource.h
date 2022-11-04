@@ -2,6 +2,7 @@
 
 #define IDS_ERROR     0x00
 #define IDS_NOARCHIVE 0x01
+#define IDS_UNSUPPENV 0x0F
 
 #define IDS_ENTERDSN       0x10
 #define IDS_ENTERDSN_DESC  0x11

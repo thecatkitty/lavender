@@ -5,6 +5,7 @@ LANGUAGE LCID_ENU, 0x1
 {
     IDS_ERROR, "ERROR: "
     IDS_NOARCHIVE, "Archive not found"
+    IDS_UNSUPPENV, "Lavender cannot run in your environment."
 
     IDS_ENTERDSN, "Enter Disk Serial Number"
     IDS_ENTERDSN_DESC, "Please type the serial number\nattached to Your program diskette."
