@@ -19,11 +19,11 @@ steps:
 - script: |
     LAV_LANG=PLK make
     mkdir bin/PLK
-    mv bin/*.com bin/PLK/
+    mv bin/*.exe bin/PLK/
     rm obj/resource.*
     LAV_LANG=CSY make
     mkdir bin/CSY
-    mv bin/*.com bin/CSY/
+    mv bin/*.exe bin/CSY/
     rm obj/resource.*
     make
   displayName: 'Build Lavender'

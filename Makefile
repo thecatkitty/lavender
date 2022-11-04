@@ -5,16 +5,32 @@ OBJCOPY = ia16-elf-objcopy
 W32OBJCOPY = i686-w64-mingw32-objcopy
 W32WINDRES = i686-w64-mingw32-windres
 
+BIN     = bin
+OBJ     = obj
+SRC     = src
+
 ifndef LAV_LANG
 LAV_LANG = ENU
 endif
 
-CFLAGS  = -c -march=i8088 -Os -Wall -Werror -Iinc/ -DZIP_PIGGYBACK
-LDFLAGS = -L/usr/lib/x86_64-linux-gnu/gcc/ia16-elf/6.3.0 -L/usr/ia16-elf/lib -T com.ld -li86 --nmagic
+ifndef LAV_TARGET
+LAV_TARGET = dospc-exe
+endif
 
-BIN     = bin
-OBJ     = obj
-SRC     = src
+CFLAGS  = -c -march=i8088 -Os -Wall -Werror -Iinc/
+
+ifeq ($(LAV_TARGET),dospc-exe)
+LD      = ia16-elf-gcc
+CFLAGS += -mcmodel=small
+LDFLAGS = -mcmodel=small -li86 -Wl,--nmagic -Wl,-Map=$(OBJ)/lavender.map
+EXESUFF = .exe
+endif
+
+ifeq ($(LAV_TARGET),dospc-com)
+CFLAGS += -DZIP_PIGGYBACK
+LDFLAGS = -L/usr/lib/x86_64-linux-gnu/gcc/ia16-elf/6.3.0 -L/usr/ia16-elf/lib -T com.ld -li86 --nmagic -Map=$(OBJ)/lavender.map
+EXESUFF = .com
+endif
 
 ifdef LAV_DATA
 DATA    = $(LAV_DATA)
@@ -25,20 +41,20 @@ endif
 ifdef LAV_SSHOW
 SSHOW   = $(LAV_SSHOW)
 else
-SSHOW   = sshow.com
+SSHOW   = sshow$(EXESUFF)
 endif
 
 sshow: $(BIN)/$(SSHOW)
 
 include sources.mk
 
-$(BIN)/$(SSHOW): $(BIN)/lavender.com $(OBJ)/data.zip
+$(BIN)/$(SSHOW): $(BIN)/lavender$(EXESUFF) $(OBJ)/data.zip
 	cat $^ > $@
 	@if [ $$(stat -L -c %s $@) -gt 65280 ]; then echo >&2 "'$@' size exceeds 65,280 bytes"; false; fi
 
-$(BIN)/lavender.com: $(OBJ)/version.o $(CCSOURCES:%.c=$(OBJ)/%.c.o) $(OBJ)/resource.o
+$(BIN)/lavender$(EXESUFF): $(OBJ)/version.o $(CCSOURCES:%.c=$(OBJ)/%.c.o) $(OBJ)/resource.o
 	@mkdir -p $(BIN)
-	$(LD) -Map=$(OBJ)/lavender.map -o $@ $^ $(LDFLAGS)
+	$(LD) -o $@ $^ $(LDFLAGS)
 
 $(OBJ)/data.zip: $(DATA)/*
 	zip -0 -r -j $@ $^
