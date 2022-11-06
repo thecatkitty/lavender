@@ -45,6 +45,7 @@ extern char _binary_obj_version_txt_start[];
 extern char __w32_rsrc_start[];
 
 static volatile uint32_t       _counter;
+static volatile char           _aux_counter;
 static dospc_isr               _bios_isr;
 static volatile _timer_handler _timer_handlers[MAX_TIMER_HANDLERS];
 
@@ -97,8 +98,9 @@ _pit_isr(void)
 {
     _disable();
     _counter++;
+    _aux_counter++;
 
-    if (0 == (_counter % 10))
+    if (10 == _aux_counter)
     {
         for (int i = 0; i < MAX_TIMER_HANDLERS; i++)
         {
@@ -109,6 +111,8 @@ _pit_isr(void)
 
             _timer_handlers[i].callback(_timer_handlers[i].context);
         }
+
+        _aux_counter = 0;
     }
 
     if (0 == (_counter & 0x11111))
@@ -306,6 +310,7 @@ pal_initialize(int argc, char *argv[])
     _enable();
 
     _counter = 0;
+    _aux_counter = 0;
     _pit_init_channel(0, PIT_MODE_RATE_GEN, PIT_FREQ_DIVISOR);
 
     if (!gfx_initialize())
