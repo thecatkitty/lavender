@@ -24,12 +24,6 @@
 
 typedef struct
 {
-    pal_timer_callback callback;
-    void              *context;
-} _timer_handler;
-
-typedef struct
-{
     off_t inzip;
     int   flags;
     char *data;
@@ -37,17 +31,18 @@ typedef struct
 
 #define DELAY_MS_MULTIPLIER 100ULL
 
-#define MAX_OPEN_ASSETS    8
-#define MAX_TIMER_HANDLERS 2
+#define MAX_OPEN_ASSETS 8
 
 extern char __edata[], __sbss[], __ebss[];
 extern char _binary_obj_version_txt_start[];
 extern char __w32_rsrc_start[];
 
-static volatile uint32_t       _counter;
-static volatile char           _aux_counter;
-static dospc_isr               _bios_isr;
-static volatile _timer_handler _timer_handlers[MAX_TIMER_HANDLERS];
+static volatile uint32_t _counter;
+static volatile char     _aux_counter;
+static dospc_isr         _bios_isr;
+
+extern void
+__snd_timer_callback(void);
 
 static _asset _assets[MAX_OPEN_ASSETS];
 
@@ -102,16 +97,7 @@ _pit_isr(void)
 
     if (10 == _aux_counter)
     {
-        for (int i = 0; i < MAX_TIMER_HANDLERS; i++)
-        {
-            if (NULL == _timer_handlers[i].callback)
-            {
-                continue;
-            }
-
-            _timer_handlers[i].callback(_timer_handlers[i].context);
-        }
-
+        __snd_timer_callback();
         _aux_counter = 0;
     }
 
@@ -297,11 +283,6 @@ pal_initialize(int argc, char *argv[])
         dos_puts(data);
         bios_get_keystroke();
         dos_exit(1);
-    }
-
-    for (int i = 0; i < MAX_TIMER_HANDLERS; i++)
-    {
-        _timer_handlers[i].callback = NULL;
     }
 
     _disable();
@@ -612,50 +593,6 @@ const char *
 pal_get_version_string(void)
 {
     return _binary_obj_version_txt_start;
-}
-
-htimer
-pal_register_timer_callback(pal_timer_callback callback, void *context)
-{
-    int i;
-
-    _disable();
-    for (i = 0; i < MAX_TIMER_HANDLERS; i++)
-    {
-        if (NULL != _timer_handlers[i].callback)
-        {
-            continue;
-        }
-
-        _timer_handlers[i].callback = callback;
-        _timer_handlers[i].context = context;
-        break;
-    }
-    _enable();
-
-    if (MAX_TIMER_HANDLERS == i)
-    {
-        errno = ENOMEM;
-        i = -1;
-    }
-
-    return (htimer)i;
-}
-
-bool
-pal_unregister_timer_callback(htimer timer)
-{
-    int i = (int)timer;
-    if (MAX_TIMER_HANDLERS <= i)
-    {
-        errno = ENOENT;
-        return false;
-    }
-
-    _disable();
-    _timer_handlers[i].callback = NULL;
-    _enable();
-    return true;
 }
 
 uint16_t
