@@ -20,8 +20,6 @@
 #include "../resource.h"
 #include "dospc.h"
 
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-
 typedef struct
 {
     off_t inzip;
@@ -80,12 +78,10 @@ _pit_init_channel(unsigned channel, unsigned mode, unsigned divisor)
         return;
     mode &= PIT_MODE_MASK;
 
-    _disable();
     _outp(PIT_IO_COMMAND, (mode << PIT_MODE) | (channel << PIT_CHANNEL) |
                               (1 << PIT_BYTE_HI) | (1 << PIT_BYTE_LO));
     _outp(PIT_IO + channel, divisor & 0xFF);
     _outp(PIT_IO + channel, divisor >> 8);
-    _enable();
 }
 
 static void far interrupt
@@ -288,17 +284,20 @@ pal_initialize(int argc, char *argv[])
     _disable();
     _bios_isr = _dos_getvect(INT_PIT);
     _dos_setvect(INT_PIT, _pit_isr);
-    _enable();
 
     _counter = 0;
     _aux_counter = 0;
     _pit_init_channel(0, PIT_MODE_RATE_GEN, PIT_FREQ_DIVISOR);
+    _enable();
 
     if (!gfx_initialize())
     {
         _die_errno();
         _dos_setvect(INT_PIT, _bios_isr);
+
+        _disable();
         _pit_init_channel(0, PIT_MODE_RATE_GEN, 0);
+        _enable();
     }
 }
 
@@ -349,7 +348,7 @@ pal_sleep(unsigned ms)
         (10000000UL * DELAY_MS_MULTIPLIER) * PIT_FREQ_DIVISOR / PIT_INPUT_FREQ;
 
     uint32_t until = _counter + ticks;
-    while (_counter != until)
+    while (_counter < until)
     {
         asm("hlt");
     }
@@ -700,5 +699,5 @@ dospc_beep(uint16_t divisor)
 void
 dospc_silence(void)
 {
-    nosound();
+    _outp(0x61, _inp(0x61) & ~SPKR_ENABLE);
 }
