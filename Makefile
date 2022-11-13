@@ -1,3 +1,4 @@
+AS      = ia16-elf-gcc
 CC      = ia16-elf-gcc
 LD      = ia16-elf-ld
 OBJCOPY = ia16-elf-objcopy
@@ -20,6 +21,7 @@ endif
 BINPREF = $(BIN)/$(LAV_TARGET)/$(LAV_LANG)
 OBJPREF = $(OBJ)/$(LAV_TARGET)
 
+ASFLAGS = -S -march=i8088  -Iinc/
 CFLAGS  = -c -march=i8088 -Os -Wall -Werror -Iinc/
 
 ifeq ($(LAV_TARGET),dospc-exe)
@@ -55,12 +57,16 @@ $(BINPREF)/$(SSHOW): $(BINPREF)/lavender$(EXESUFF) $(OBJ)/data.zip
 	cat $^ > $@
 	@if [ $$(stat -L -c %s $@) -gt 65280 ]; then echo >&2 "'$@' size exceeds 65,280 bytes"; false; fi
 
-$(BINPREF)/lavender$(EXESUFF): $(OBJ)/version.o $(CCSOURCES:%.c=$(OBJPREF)/%.c.o) $(OBJPREF)/resource.$(LAV_LANG).o
+$(BINPREF)/lavender$(EXESUFF): $(OBJ)/version.o $(ASSOURCES:%.S=$(OBJPREF)/%.S.o) $(CCSOURCES:%.c=$(OBJPREF)/%.c.o) $(OBJPREF)/resource.$(LAV_LANG).o
 	@mkdir -p $(BINPREF)
 	$(LD) -o $@ $^ $(LDFLAGS)
 
 $(OBJ)/data.zip: $(DATA)/*
 	zip -0 -r -j $@ $^
+
+$(OBJPREF)/%.S.o: $(SRC)/%.S
+	@mkdir -p $(@D)
+	$(CC) -c $(CFLAGS) -o $@ $<
 
 $(OBJPREF)/%.c.o: $(SRC)/%.c
 	@mkdir -p $(@D)

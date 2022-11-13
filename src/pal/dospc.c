@@ -35,9 +35,12 @@ extern char __edata[], __sbss[], __ebss[];
 extern char _binary_obj_version_txt_start[];
 extern char __w32_rsrc_start[];
 
-static volatile uint32_t _counter;
-static volatile char     _aux_counter;
-static dospc_isr         _bios_isr;
+extern uint16_t   __dospc_ds;
+volatile uint32_t __dospc_counter;
+dospc_isr         __dospc_bios_isr;
+
+extern void
+__dospc_pit_isr(void);
 
 extern void
 __snd_timer_callback(void);
@@ -82,31 +85,6 @@ _pit_init_channel(unsigned channel, unsigned mode, unsigned divisor)
                               (1 << PIT_BYTE_HI) | (1 << PIT_BYTE_LO));
     _outp(PIT_IO + channel, divisor & 0xFF);
     _outp(PIT_IO + channel, divisor >> 8);
-}
-
-static void far interrupt
-_pit_isr(void)
-{
-    _disable();
-    _counter++;
-    _aux_counter++;
-
-    if (10 == _aux_counter)
-    {
-        __snd_timer_callback();
-        _aux_counter = 0;
-    }
-
-    if (0 == (_counter & 0x11111))
-    {
-        _bios_isr();
-    }
-    else
-    {
-        _outp(PIC1_IO_COMMAND, PIC_COMMAND_EOI);
-    }
-
-    _enable();
 }
 
 static void
@@ -282,18 +260,18 @@ pal_initialize(int argc, char *argv[])
     }
 
     _disable();
-    _bios_isr = _dos_getvect(INT_PIT);
-    _dos_setvect(INT_PIT, _pit_isr);
+    __dospc_bios_isr = _dos_getvect(INT_PIT);
+    _dos_setvect(INT_PIT, MK_FP(__libi86_get_cs(), __dospc_pit_isr));
 
-    _counter = 0;
-    _aux_counter = 0;
+    asm volatile("movw %%ds, %%cs:%0" : "=rm"(__dospc_ds));
+    __dospc_counter = 0;
     _pit_init_channel(0, PIT_MODE_RATE_GEN, PIT_FREQ_DIVISOR);
     _enable();
 
     if (!gfx_initialize())
     {
         _die_errno();
-        _dos_setvect(INT_PIT, _bios_isr);
+        _dos_setvect(INT_PIT, __dospc_bios_isr);
 
         _disable();
         _pit_init_channel(0, PIT_MODE_RATE_GEN, 0);
@@ -314,7 +292,7 @@ pal_cleanup(void)
 
     gfx_cleanup();
 
-    _dos_setvect(INT_PIT, _bios_isr);
+    _dos_setvect(INT_PIT, __dospc_bios_isr);
     _pit_init_channel(0, PIT_MODE_RATE_GEN, 0);
 
     nosound();
@@ -347,8 +325,8 @@ pal_sleep(unsigned ms)
     ticks /=
         (10000000UL * DELAY_MS_MULTIPLIER) * PIT_FREQ_DIVISOR / PIT_INPUT_FREQ;
 
-    uint32_t until = _counter + ticks;
-    while (_counter < until)
+    uint32_t until = __dospc_counter + ticks;
+    while (__dospc_counter < until)
     {
         asm("hlt");
     }
