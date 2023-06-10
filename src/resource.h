@@ -25,3 +25,4 @@
 #define IDS_NOASSET       0x38
 #define IDS_BADENCODING   0x39
 #define IDS_UNSUPPORTED   0x3A
+#define IDS_TOOMANYAREAS  0x3B

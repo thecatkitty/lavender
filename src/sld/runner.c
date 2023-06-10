@@ -35,8 +35,11 @@ _execute_entry(sld_entry *sld)
     case SLD_TYPE_PLAY:
         return __sld_execute_play(sld);
     case SLD_TYPE_WAITKEY:
+        pal_enable_mouse();
         __sld_ctx->state = SLD_STATE_WAIT;
         return 0;
+    case SLD_TYPE_ACTAREA:
+        return __sld_execute_active_area(sld);
     case SLD_TYPE_JUMP:
         return INT_MAX;
     case SLD_TYPE_JUMPE:
@@ -106,13 +109,27 @@ sld_handle(void)
     if (SLD_STATE_WAIT == ctx->state)
     {
         int keystroke = pal_get_keystroke();
-        if (0 == keystroke)
+        if (0 != keystroke)
+        {
+            __sld_accumulator = keystroke;
+            __sld_ctx->state = SLD_STATE_RUN;
+            pal_disable_mouse();
+            return;
+        }
+
+        uint16_t x, y;
+        if (0 == (PAL_MOUSE_LBUTTON & pal_get_mouse(&x, &y)))
         {
             return;
         }
 
-        __sld_accumulator = keystroke;
-        __sld_ctx->state = SLD_STATE_RUN;
+        uint16_t tag = __sld_retrieve_active_area_tag(x, y);
+        if (0 != tag)
+        {
+            __sld_accumulator = tag;
+            __sld_ctx->state = SLD_STATE_RUN;
+            pal_disable_mouse();
+        }
         return;
     }
 

@@ -7,4 +7,5 @@ CCSOURCES := $(CCSOURCES) \
 	$(DIR)/jump.c \
 	$(DIR)/text.c \
 	$(DIR)/play.c \
-	$(DIR)/shape.c
+	$(DIR)/shape.c \
+	$(DIR)/actarea.c
