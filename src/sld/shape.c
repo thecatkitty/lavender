@@ -10,7 +10,7 @@ __sld_execute_rectangle(sld_entry *sld)
         x = (__sld_screen.width - sld->shape.dimensions.width) / 2;
         break;
     case SLD_ALIGN_RIGHT:
-        x = __sld_screen.height - sld->shape.dimensions.height;
+        x = __sld_screen.width - sld->shape.dimensions.width;
         break;
     default:
         x = sld->posx;
