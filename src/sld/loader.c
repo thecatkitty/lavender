@@ -168,6 +168,10 @@ sld_load_entry(sld_context *ctx, sld_entry *out)
     case SLD_TAG_TYPE_WAITKEY:
         out->type = SLD_TYPE_WAITKEY;
         break;
+    case SLD_TAG_TYPE_ACTAREA:
+        out->type = SLD_TYPE_ACTAREA;
+        length = __sld_load_active_area(cur, out);
+        break;
     case SLD_TAG_TYPE_JUMP:
         out->type = SLD_TYPE_JUMP;
         length = __sld_load_content(cur, out);

@@ -28,4 +28,5 @@ LANGUAGE LCID_PLK, 0x1
     IDS_NOASSET, "Nie mozna zaladowac zasobu"
     IDS_BADENCODING, "Niepoprawne lub niewspierane kodowanie"
     IDS_UNSUPPORTED, "Zazadano niewspieranej funkcjonalnosci"
+    IDS_TOOMANYAREAS, "Zdefiniowano za duzo obszarow aktywnych"
 }

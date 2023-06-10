@@ -46,6 +46,9 @@ extern int
 __sld_load_shape(const char *str, sld_entry *out);
 
 extern int
+__sld_load_active_area(const char *str, sld_entry *out);
+
+extern int
 __sld_load_script_call(const char *str, sld_entry *out);
 
 extern bool
@@ -61,7 +64,13 @@ extern int
 __sld_execute_rectangle(sld_entry *sld);
 
 extern int
+__sld_execute_active_area(sld_entry *sld);
+
+extern int
 __sld_execute_script_call(sld_entry *sld);
+
+extern int
+__sld_retrieve_active_area_tag(uint16_t x, uint16_t y);
 
 static inline void
 __sld_errmsgcpy(void *sld, unsigned int msg)

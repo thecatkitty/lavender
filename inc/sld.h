@@ -13,6 +13,7 @@
 #define SLD_TAG_TYPE_RECTF   'r'
 #define SLD_TAG_TYPE_PLAY    'P'
 #define SLD_TAG_TYPE_WAITKEY 'K'
+#define SLD_TAG_TYPE_ACTAREA 'A'
 #define SLD_TAG_TYPE_JUMP    'J'
 #define SLD_TAG_TYPE_JUMPE   '='
 #define SLD_TAG_TYPE_CALL    '!'
@@ -30,6 +31,7 @@ typedef enum
     SLD_TYPE_RECTF,
     SLD_TYPE_PLAY,
     SLD_TYPE_WAITKEY,
+    SLD_TYPE_ACTAREA,
     SLD_TYPE_JUMP,
     SLD_TYPE_JUMPE,
     SLD_TYPE_CALL
@@ -77,6 +79,11 @@ typedef struct
             uint16_t parameter;
             char     data[128];
         } script_call;
+        struct
+        {
+            gfx_dimensions dimensions;
+            uint16_t       tag;
+        } active_area;
     };
     uint8_t length;
 } sld_entry;
