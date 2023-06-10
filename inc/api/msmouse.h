@@ -3,6 +3,9 @@
 
 #include <base.h>
 
+#define MSMOUSE_AREA_WIDTH  640
+#define MSMOUSE_AREA_HEIGHT 200
+
 static inline bool
 msmouse_init(void)
 {
