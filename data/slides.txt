@@ -3,7 +3,7 @@
 0       T   18  ^Lavender
 500     B   22  ^celolg<>.pbm
 500     T   19  ^Version 0.3
-500     T   23  ^Copyright (c) Mateusz Karcz, 2021-2022. Shared under the MIT License.
+500     T   23  ^Copyright (c) Mateusz Karcz, 2021-2023. Shared under the MIT License.
 0       K
 0       =   3   ExtendedFont
 0       =   4   Rectangles
@@ -13,11 +13,13 @@
 :ExtendedFont
 0       r   0   <640 200 B
 0       T   0   ^Extended Font
+0       A   0   ^13 1   2
 0       T   2   <ĄĆĘŁŃÓŚŹŻąćęłńóśźż
 0       T   3   >ÁÉÍÑÓÚÜÝáéíñóúüý
 0       T   4   ^ÁČĎÉĚÍŇÓŘŠŤÚŮÝŽáčďéěíňóřšťúůýž
 0       T   6   ^•‼←↑→↓↔↕↨∟⌂▬▲►▼◄○◘◙☺☻☼♀♂♠♣♥♦♪♫
 0       K
+0       A   0   0   0   0   0
 0       =   2   Start
 0       =   4   Rectangles
 0       =   5   Encryption

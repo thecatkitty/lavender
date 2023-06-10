@@ -1,6 +1,6 @@
 # Lavender [![Build Status](https://dev.azure.com/celones/thecatkitty-gh-public/_apis/build/status/thecatkitty.lavender?branchName=main)](https://dev.azure.com/celones/thecatkitty-gh-public/_build/latest?definitionId=3&branchName=main)
 
-A simple configurable slideshow program for DOS 2.0+ written in C . It shows slides consisting of text and graphics contained in the ZIP file appended to the executable.
+A simple configurable slideshow program for DOS 2.0+ written mainly in C. It shows slides consisting of text and graphics contained in the ZIP file appended to the executable.
 
 This is still work in progress, but I'm doing my best to separate working version (`main` branch) from progressing code (PRs).
 
@@ -10,7 +10,7 @@ This is still work in progress, but I'm doing my best to separate working versio
 * displaying text (with UTF-8 subset support)
 * displaying PBM bitmaps
 * drawing and filling rectangles
-* jumping between slides with key presses
+* jumping between slides with key presses and mouse clicks
 * inclusion of other scripts from within a script
 * PC speaker music playback
 * reporting the unsupported environment (DOS 1.x, Windows Vista and newer)
@@ -78,7 +78,20 @@ The slideshow file consists of entries specifying various actions. Each entry en
 
 Stores the scan code in the *Accumulator*.
 
-#### Unconditional jump
+### Define an active (clickable) area
+```
+<delay> A <line> <column> <width> <height> <tag>
+```
+
+When the area is clicked, `<tag>` is stored in the *Accumulator*.
+In order to remove an area, set its `<tag>` to zero.
+
+In order to remove all active areas:
+```
+<delay> A 0 0 0 0 0
+```
+
+### Unconditional jump
 ```
 <delay> J <label>
 ```
