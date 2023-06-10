@@ -9,6 +9,7 @@
 
 #include <api/bios.h>
 #include <api/dos.h>
+#include <api/msmouse.h>
 #include <fmt/exe.h>
 #include <fmt/fat.h>
 #include <fmt/utf8.h>
@@ -31,6 +32,9 @@ typedef struct
 
 #define MAX_OPEN_ASSETS 8
 
+#define TEXT_COLUMNS 80
+#define TEXT_LINES   25
+
 extern char __edata[], __sbss[], __ebss[];
 extern char _binary_obj_version_txt_start[];
 extern char __w32_rsrc_start[];
@@ -46,6 +50,7 @@ extern void
 __snd_timer_callback(void);
 
 static _asset _assets[MAX_OPEN_ASSETS];
+static bool   _has_mouse = false;
 
 #ifdef STACK_PROFILING
 static uint64_t      *_stack_start;
@@ -90,7 +95,7 @@ _pit_init_channel(unsigned channel, unsigned mode, unsigned divisor)
 static void
 _die_errno(void)
 {
-    char msg[80] = "errno ";
+    char msg[TEXT_COLUMNS] = "errno ";
     itoa(errno, msg + strlen(msg), 10);
     msg[strlen(msg)] = '$';
     dos_puts(msg);
@@ -99,7 +104,7 @@ _die_errno(void)
 static void
 _die_incompatible(void)
 {
-    char msg[80];
+    char msg[TEXT_COLUMNS];
     pal_load_string(IDS_UNSUPPENV, msg, sizeof(msg));
     msg[strlen(msg)] = '$';
     dos_puts(msg);
@@ -198,7 +203,7 @@ pal_initialize(int argc, char *argv[])
     zip_cdir_end_header *cdir = _locate_cdir(__edata, __sbss);
     if (NULL == cdir)
     {
-        char msg[80];
+        char msg[TEXT_COLUMNS];
         pal_load_string(IDS_ERROR, msg, sizeof(msg));
         pal_load_string(IDS_NOARCHIVE, msg + strlen(msg),
                         sizeof(msg) - strlen(msg));
@@ -220,7 +225,7 @@ pal_initialize(int argc, char *argv[])
     if (!zip_open(argv[0]))
 #endif
     {
-        char msg[80];
+        char msg[TEXT_COLUMNS];
         pal_load_string(IDS_ERROR, msg, sizeof(msg));
         pal_load_string(IDS_NOARCHIVE, msg + strlen(msg),
                         sizeof(msg) - strlen(msg));
@@ -277,6 +282,8 @@ pal_initialize(int argc, char *argv[])
         _pit_init_channel(0, PIT_MODE_RATE_GEN, 0);
         _enable();
     }
+
+    _has_mouse = msmouse_init();
 }
 
 void
@@ -581,6 +588,41 @@ pal_get_keystroke(void)
     }
 
     return bios_get_keystroke() >> 8;
+}
+
+void
+pal_enable_mouse(void)
+{
+    if (_has_mouse)
+    {
+        msmouse_show();
+    }
+}
+
+void
+pal_disable_mouse(void)
+{
+    if (_has_mouse)
+    {
+        msmouse_hide();
+    }
+}
+
+uint16_t
+pal_get_mouse(uint16_t *x, uint16_t *y)
+{
+    if (!_has_mouse)
+    {
+        return 0;
+    }
+
+    uint16_t lowx, lowy, status;
+
+    status = msmouse_get_status(&lowx, &lowy);
+    *x = lowx / (MSMOUSE_AREA_WIDTH / TEXT_COLUMNS);
+    *y = lowy / (MSMOUSE_AREA_HEIGHT / TEXT_LINES);
+
+    return status;
 }
 
 int

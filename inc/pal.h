@@ -5,12 +5,10 @@
 
 #include <base.h>
 
-#define DEFINE_HANDLE(x)                                                       \
-    typedef struct                                                             \
-    {                                                                          \
-    } * x
-
 DEFINE_HANDLE(hasset);
+
+#define PAL_MOUSE_LBUTTON 0x0001
+#define PAL_MOUSE_RBUTTON 0x0002
 
 extern void
 pal_initialize(int argc, char *argv[]);
@@ -41,6 +39,15 @@ pal_get_medium_id(const char *tag);
 
 extern uint16_t
 pal_get_keystroke(void);
+
+extern void
+pal_enable_mouse(void);
+
+extern void
+pal_disable_mouse(void);
+
+extern uint16_t
+pal_get_mouse(uint16_t *x, uint16_t *y);
 
 extern int
 pal_load_string(unsigned id, char *buffer, int max_length);
