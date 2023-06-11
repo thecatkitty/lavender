@@ -36,6 +36,14 @@ def secret(string: str) -> int:
 
     return int(string, 10)
 
+def xor48_key(string: str) -> int:
+    if len(string) != 12:
+        raise ValueError("Key is not 48-bit")
+    return int(string, 16)
+
+def rotl24(n: int, c: int) -> int:
+    return (n << c | n >> (24 - c)) & 0xFFFFFF
+
 def rotr24(n: int, c: int) -> int:
     return (n >> c | n << (24 - c)) & 0xFFFFFF
 
@@ -49,6 +57,9 @@ subparsers = parser.add_subparsers(dest="subparser_name", required=True)
 parser_decode = subparsers.add_parser("decode", help="decode disk ID + secret")
 parser_decode.add_argument("disk_id", type=disk_id)
 parser_decode.add_argument("secret", type=secret)
+
+parser_encode = subparsers.add_parser("encode", help="encode raw key")
+parser_encode.add_argument("key", type=xor48_key)
 
 args = parser.parse_args()
 
@@ -64,3 +75,22 @@ if args.subparser_name == "decode":
 
     key = ((high_part & KEY_HIGH_PART_MASK) << KEY_HIGH_PART) | ((low_part & KEY_LOW_PART_MASK) << KEY_LOW_PART)
     print(f"{key:012X}")
+
+if args.subparser_name == "encode":
+    low_part = (args.key >> KEY_LOW_PART) & KEY_LOW_PART_MASK
+    high_part = (args.key >> KEY_HIGH_PART) & KEY_HIGH_PART_MASK
+
+    for i in range(16):
+        low_rotation_index = i % len(KEY_ROTATION_OFFSETS)
+        high_rotation_index = i // len(KEY_ROTATION_OFFSETS)
+
+        rot_low_part = rotl24(low_part, KEY_ROTATION_OFFSETS[low_rotation_index])
+        rot_high_part = rotl24(high_part, KEY_ROTATION_OFFSETS[high_rotation_index])
+
+        disk_id_part = ((high_rotation_index & DISKID_HIGH_ROTATION_MASK) << DISKID_HIGH_ROTATION) | ((rot_high_part & DISKID_HIGH_PART_MASK) << DISKID_HIGH_PART) | ((rot_low_part & DISKID_LOW_PART_MASK) << DISKID_LOW_PART)
+        secret_part = ((low_rotation_index & SECRET_LOW_ROTATION_MASK) << SECRET_LOW_ROTATION) | (((rot_high_part >> SECRET_HIGH_PART_SHIFT) & SECRET_HIGH_PART_MASK) << SECRET_HIGH_PART)
+
+        if secret_part >= 1000000:
+            continue
+
+        print(f"{disk_id_part >> 16:04X}-{disk_id_part & 0xFFFF:04X}\t{secret_part:06d}")
