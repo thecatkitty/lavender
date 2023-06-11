@@ -35,8 +35,8 @@ steps:
     - script: LAV_TARGET=${{ target }} LAV_LANG=${{ language }} make
       displayName: 'Build for ${{ target }} (${{ language }})'
 
-- script: make tools
-  displayName: 'Build tools'
+- script: cp -r tools bin/
+  displayName: 'Publish tools'
 
 - task: PublishBuildArtifacts@1
   inputs:
