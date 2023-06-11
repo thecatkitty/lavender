@@ -1,7 +1,7 @@
 LX_CC = gcc
 W32_CC = i686-w64-mingw32-gcc-win32
 
-TOOLSOURCES = enckey.cpp
+TOOLSOURCES =
 
 tools: $(TOOLSOURCES:%.cpp=$(BIN)/$(DIR)/%.exe) $(TOOLSOURCES:%.cpp=$(BIN)/$(DIR)/%)
 
