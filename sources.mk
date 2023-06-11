@@ -20,6 +20,3 @@ DIR	    := sld
 include $(SRC)/$(DIR)/module.mk
 
 CCSOURCES += main.c rstd.c
-
-DIR	    := tools
-include $(SRC)/$(DIR)/module.mk
