@@ -2,7 +2,7 @@
 
 #define MAX_AREAS 16
 
-struct
+static struct
 {
     uint16_t left;
     uint16_t top;
