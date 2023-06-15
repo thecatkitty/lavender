@@ -7,7 +7,33 @@
 #include <gfx.h>
 #include <pal.h>
 
+enum
+{
+    STATE_NONE,
+    STATE_ALERT,
+    STATE_PROMPT
+};
+
+enum
+{
+    STATE_PROMPT_NONE = STATE_PROMPT | (0 << 8),
+    STATE_PROMPT_INVALID1 = STATE_PROMPT | (1 << 8),
+    STATE_PROMPT_INVALID2 = STATE_PROMPT | (2 << 8),
+    STATE_PROMPT_INVALID3 = STATE_PROMPT | (3 << 8)
+};
+
 static gfx_dimensions _screen = {0, 0};
+static int            _state = STATE_NONE;
+static uint32_t       _blink_start;
+static char          *_buffer;
+static int            _size;
+static dlg_validator  _validator;
+static int            _cursor;
+static int            _field_left;
+static int            _field_top;
+static gfx_dimensions _box;
+static int            _box_top;
+static int            _box_left;
 
 static void
 _draw_background(void)
@@ -22,7 +48,7 @@ _draw_background(void)
     gfx_draw_text(pal_get_version_string(), 1, 0);
 
     gfx_fill_rectangle(&bar, 0, _screen.height - bar.height, GFX_COLOR_BLACK);
-    gfx_draw_text("(C) 2021-2022", 1, 24);
+    gfx_draw_text("(C) 2021-2023", 1, 24);
     gfx_draw_text("https://github.com/thecatkitty/lavender/", 39, 24);
 }
 
@@ -170,6 +196,30 @@ _get_content_size(
     *lines = _get_content_height(message);
 }
 
+static int
+_handle_alert(void)
+{
+    uint16_t scancode = pal_get_keystroke();
+    if (0 == scancode)
+    {
+        return DLG_INCOMPLETE;
+    }
+
+    if (0x01 == scancode)
+    {
+        _state = STATE_NONE;
+        return DLG_CANCEL;
+    }
+
+    if (0x1C == scancode)
+    {
+        _state = STATE_NONE;
+        return DLG_OK;
+    }
+
+    return DLG_INCOMPLETE;
+}
+
 int
 dlg_alert(const char *title, const char *message)
 {
@@ -179,21 +229,121 @@ dlg_alert(const char *title, const char *message)
     _draw_frame(columns, lines, title, title_length);
     _draw_text(columns, lines, message);
 
-    while (true)
+    _state = STATE_ALERT;
+
+    int status = DLG_INCOMPLETE;
+    while (DLG_INCOMPLETE == status)
     {
-        uint16_t key = bios_get_keystroke();
-        uint8_t  scancode = key >> 8;
-
-        if (0x01 == scancode)
-        {
-            return DLG_CANCEL;
-        }
-
-        if (0x1C == scancode)
-        {
-            return DLG_OK;
-        }
+        status = _handle_alert();
     }
+
+    _state = STATE_NONE;
+    return status;
+}
+
+static void
+_draw_text_box(void)
+{
+    if (_validator && !_validator(_buffer))
+    {
+        gfx_draw_rectangle(&_box, _box_left, _box_top, GFX_COLOR_GRAY);
+    }
+    else
+    {
+        gfx_draw_rectangle(&_box, _box_left, _box_top, GFX_COLOR_BLACK);
+    }
+
+    gfx_fill_rectangle(&_box, _box_left, _box_top, GFX_COLOR_WHITE);
+    gfx_draw_text(_buffer, _field_left, _field_top);
+}
+
+static int
+_handle_prompt(void)
+{
+    if (STATE_PROMPT_INVALID1 == _state)
+    {
+        if (pal_get_counter() > _blink_start + pal_get_ticks(63))
+        {
+            gfx_draw_rectangle(&_box, _box_left, _box_top, GFX_COLOR_GRAY);
+            _state = STATE_PROMPT_INVALID2;
+        }
+
+        return DLG_INCOMPLETE;
+    }
+
+    if (STATE_PROMPT_INVALID2 == _state)
+    {
+        if (pal_get_counter() > _blink_start + pal_get_ticks(126))
+        {
+            gfx_draw_rectangle(&_box, _box_left, _box_top, GFX_COLOR_BLACK);
+            _state = STATE_PROMPT_INVALID3;
+        }
+
+        return DLG_INCOMPLETE;
+    }
+
+    if (STATE_PROMPT_INVALID3 == _state)
+    {
+        if (pal_get_counter() > _blink_start + pal_get_ticks(189))
+        {
+            gfx_draw_rectangle(&_box, _box_left, _box_top, GFX_COLOR_GRAY);
+            _draw_text_box();
+            _state = STATE_PROMPT;
+        }
+
+        return DLG_INCOMPLETE;
+    }
+
+    uint16_t key = bios_check_keystroke();
+    if (0 == key)
+    {
+        return DLG_INCOMPLETE;
+    }
+
+    bios_get_keystroke();
+    uint8_t scancode = key >> 8, character = key & 0xFF;
+    if (0x01 == scancode)
+    {
+        _state = STATE_NONE;
+        return 0;
+    }
+
+    if (0x1C == scancode)
+    {
+        if (_validator && _validator(_buffer))
+        {
+            _state = STATE_NONE;
+            return _cursor;
+        }
+
+        if (!_validator)
+        {
+            _state = STATE_NONE;
+            return _cursor;
+        }
+
+        gfx_draw_rectangle(&_box, _box_left, _box_top, GFX_COLOR_BLACK);
+        _blink_start = pal_get_counter();
+        _state = STATE_PROMPT_INVALID1;
+        return DLG_INCOMPLETE;
+    }
+
+    if ((0x0E == scancode) && (0 < _cursor))
+    {
+        _cursor--;
+        _buffer[_cursor] = 0;
+        _draw_text_box();
+    }
+
+    if ((0x20 <= character) && (0x80 > character) && (_cursor < _size))
+    {
+        _buffer[_cursor] = key & 0xFF;
+        _cursor++;
+        _buffer[_cursor] = 0;
+        _draw_text_box();
+    }
+
+    return DLG_INCOMPLETE;
 }
 
 int
@@ -208,72 +358,33 @@ dlg_prompt(const char   *title,
     lines += 2;
 
     int field_width = (columns > size) ? size : columns;
-    int field_left = (_screen.width / 8 - field_width) / 2;
-    int field_top = (_screen.height / 8 - 3 - lines) / 2 + 1 + lines;
+    _field_left = (_screen.width / 8 - field_width) / 2;
+    _field_top = (_screen.height / 8 - 3 - lines) / 2 + 1 + lines;
 
-    gfx_dimensions box = {field_width * 8 + 2, 10};
-    int            box_top = field_top * 8 - 1;
-    int            box_left = field_left * 8 - 1;
+    _box.width = field_width * 8 + 2;
+    _box.height = 10;
+    _box_top = _field_top * 8 - 1;
+    _box_left = _field_left * 8 - 1;
 
     _draw_background();
     _draw_frame(columns, lines, title, title_length);
     _draw_text(columns, lines, message);
 
-    gfx_draw_rectangle(&box, box_left, box_top, GFX_COLOR_BLACK);
-    buffer[0] = 0;
+    _state = STATE_PROMPT;
+    _buffer = buffer;
+    _size = size;
+    _validator = validator;
+    _cursor = 0;
 
-    int cursor = 0;
-    while (true)
+    _buffer[0] = 0;
+    _draw_text_box();
+
+    int status = DLG_INCOMPLETE;
+    while (DLG_INCOMPLETE == status)
     {
-        if (validator)
-        {
-            gfx_draw_rectangle(&box, box_left, box_top,
-                               validator(buffer) ? GFX_COLOR_BLACK
-                                                 : GFX_COLOR_GRAY);
-        }
-
-        gfx_fill_rectangle(&box, box_left, box_top, GFX_COLOR_WHITE);
-        gfx_draw_text(buffer, field_left, field_top);
-
-        uint16_t key = bios_get_keystroke();
-        uint8_t  scancode = key >> 8, character = key & 0xFF;
-        if (0x01 == scancode)
-        {
-            return 0;
-        }
-
-        if (0x1C == scancode)
-        {
-            if (validator && validator(buffer))
-            {
-                return cursor;
-            }
-
-            if (!validator)
-            {
-                return cursor;
-            }
-
-            gfx_draw_rectangle(&box, box_left, box_top, GFX_COLOR_BLACK);
-            pal_sleep(63);
-            gfx_draw_rectangle(&box, box_left, box_top, GFX_COLOR_GRAY);
-            pal_sleep(63);
-            gfx_draw_rectangle(&box, box_left, box_top, GFX_COLOR_BLACK);
-            pal_sleep(63);
-            continue;
-        }
-
-        if ((0x0E == scancode) && (0 < cursor))
-        {
-            cursor--;
-            buffer[cursor] = 0;
-        }
-
-        if ((0x20 <= character) && (0x80 > character) && (cursor < size))
-        {
-            buffer[cursor] = key & 0xFF;
-            cursor++;
-            buffer[cursor] = 0;
-        }
+        status = _handle_prompt();
     }
+
+    _state = STATE_NONE;
+    return status;
 }
