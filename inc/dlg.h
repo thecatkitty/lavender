@@ -13,7 +13,8 @@ enum dlg_result
     DLG_YES = 6,
     DLG_NO = 7,
     DLG_TRY_AGAIN = 10,
-    DLG_CONTINUE = 11
+    DLG_CONTINUE = 11,
+    DLG_INCOMPLETE = -1
 };
 
 typedef bool (*dlg_validator)(const char *);
