@@ -28,7 +28,7 @@ typedef struct
     char *data;
 } _asset;
 
-#define DELAY_MS_MULTIPLIER 100ULL
+#define DELAY_MS_MULTIPLIER 128ULL
 
 #define MAX_OPEN_ASSETS 8
 
@@ -325,15 +325,26 @@ pal_cleanup(void)
 #endif // STACK_PROFILING
 }
 
-void
-pal_sleep(unsigned ms)
+uint32_t
+pal_get_counter(void)
+{
+    return __dospc_counter;
+}
+
+uint32_t
+pal_get_ticks(unsigned ms)
 {
     uint32_t ticks = (uint32_t)ms * DELAY_MS_MULTIPLIER;
     ticks /=
         (10000000UL * DELAY_MS_MULTIPLIER) * PIT_FREQ_DIVISOR / PIT_INPUT_FREQ;
+    return ticks;
+}
 
-    uint32_t until = __dospc_counter + ticks;
-    while (__dospc_counter < until)
+void
+pal_sleep(unsigned ms)
+{
+    uint32_t until = pal_get_counter() + pal_get_ticks((uint32_t)ms);
+    while (pal_get_counter() < until)
     {
         asm("hlt");
     }

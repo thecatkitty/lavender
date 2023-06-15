@@ -16,6 +16,12 @@ pal_initialize(int argc, char *argv[]);
 extern void
 pal_cleanup(void);
 
+extern uint32_t
+pal_get_counter(void);
+
+extern uint32_t
+pal_get_ticks(unsigned ms);
+
 extern void
 pal_sleep(unsigned ms);
 
