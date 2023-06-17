@@ -220,9 +220,14 @@ _handle_alert(void)
     return DLG_INCOMPLETE;
 }
 
-int
+bool
 dlg_alert(const char *title, const char *message)
 {
+    if (STATE_NONE != _state)
+    {
+        return false;
+    }
+
     int title_length, columns, lines;
     _get_content_size(title, message, &title_length, &columns, &lines);
     _draw_background();
@@ -230,15 +235,7 @@ dlg_alert(const char *title, const char *message)
     _draw_text(columns, lines, message);
 
     _state = STATE_ALERT;
-
-    int status = DLG_INCOMPLETE;
-    while (DLG_INCOMPLETE == status)
-    {
-        status = _handle_alert();
-    }
-
-    _state = STATE_NONE;
-    return status;
+    return true;
 }
 
 static void
@@ -346,13 +343,18 @@ _handle_prompt(void)
     return DLG_INCOMPLETE;
 }
 
-int
+bool
 dlg_prompt(const char   *title,
            const char   *message,
            char         *buffer,
            int           size,
            dlg_validator validator)
 {
+    if (STATE_NONE != _state)
+    {
+        return false;
+    }
+
     int title_length, columns, lines;
     _get_content_size(title, message, &title_length, &columns, &lines);
     lines += 2;
@@ -379,12 +381,22 @@ dlg_prompt(const char   *title,
     _buffer[0] = 0;
     _draw_text_box();
 
-    int status = DLG_INCOMPLETE;
-    while (DLG_INCOMPLETE == status)
-    {
-        status = _handle_prompt();
-    }
+    _state = STATE_PROMPT;
+    return true;
+}
 
-    _state = STATE_NONE;
-    return status;
+int
+dlg_handle(void)
+{
+    switch (_state & 0xFF)
+    {
+    case STATE_ALERT:
+        return _handle_alert();
+
+    case STATE_PROMPT:
+        return _handle_prompt();
+
+    default:
+        return 0;
+    }
 }
