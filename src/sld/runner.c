@@ -112,7 +112,7 @@ sld_handle(void)
         if (0 != keystroke)
         {
             __sld_accumulator = keystroke;
-            __sld_ctx->state = SLD_STATE_RUN;
+            __sld_ctx->state = SLD_STATE_LOAD;
             pal_disable_mouse();
             return;
         }
@@ -127,31 +127,40 @@ sld_handle(void)
         if (0 != tag)
         {
             __sld_accumulator = tag;
-            __sld_ctx->state = SLD_STATE_RUN;
+            __sld_ctx->state = SLD_STATE_LOAD;
             pal_disable_mouse();
         }
         return;
     }
 
-    // SLD_STATE_RUN
-    if (ctx->offset >= ctx->size)
+    // SLD_STATE_LOAD
+    if (SLD_STATE_LOAD == ctx->state)
     {
-        ctx->state = SLD_STATE_STOP;
+        if (ctx->offset >= ctx->size)
+        {
+            ctx->state = SLD_STATE_STOP;
+            return;
+        }
+
+        int length = sld_load_entry(ctx, &ctx->entry);
+        if (0 > length)
+        {
+            char msg[sizeof(sld_entry)];
+            __sld_errmsgcpy(msg, IDS_LOADERROR);
+            __sld_errmsgcat(msg, "\n");
+            __sld_errmsgcat(msg, ctx->message);
+            strcpy(ctx->message, msg);
+            ctx->state = length;
+            ctx->state = SLD_STATE_STOP;
+            return;
+        }
+
+        ctx->offset += length;
+        ctx->state = SLD_STATE_EXECUTE;
         return;
     }
 
-    int length = sld_load_entry(ctx, &ctx->entry);
-    if (0 > length)
-    {
-        char msg[sizeof(sld_entry)];
-        __sld_errmsgcpy(msg, IDS_LOADERROR);
-        __sld_errmsgcat(msg, "\n");
-        __sld_errmsgcat(msg, ctx->message);
-        strcpy(ctx->message, msg);
-        ctx->state = length;
-        return;
-    }
-
+    // SLD_STATE_EXECUTE
     int status = _execute_entry(&ctx->entry);
     if (0 > status)
     {
@@ -161,7 +170,13 @@ sld_handle(void)
         __sld_errmsgcat(msg, ctx->message);
         strcpy(ctx->message, msg);
         ctx->state = status;
+        ctx->state = SLD_STATE_STOP;
         return;
+    }
+
+    if (SLD_STATE_EXECUTE == ctx->state)
+    {
+        ctx->state = SLD_STATE_LOAD;
     }
 
     // Special value for jumps
@@ -170,12 +185,10 @@ sld_handle(void)
         _goto_label(ctx, ctx->entry.content);
         return;
     }
-
-    ctx->offset += length;
 }
 
 void
 sld_run(sld_context *ctx)
 {
-    ctx->state = SLD_STATE_RUN;
+    ctx->state = SLD_STATE_LOAD;
 }

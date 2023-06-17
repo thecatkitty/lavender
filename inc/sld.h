@@ -39,7 +39,8 @@ typedef enum
 
 typedef enum
 {
-    SLD_STATE_RUN,
+    SLD_STATE_LOAD,
+    SLD_STATE_EXECUTE,
     SLD_STATE_WAIT,
     SLD_STATE_STOP,
     SLD_SYSERR = -1,
