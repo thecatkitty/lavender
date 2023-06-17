@@ -120,8 +120,14 @@ _prompt_passcode(uint8_t               *code,
             break;
         }
 
-        int length = dlg_prompt(msg_enterpass, msg_enterpass_desc, buffer,
-                                code_len * 2, precheck);
+        int length = DLG_INCOMPLETE;
+        dlg_prompt(msg_enterpass, msg_enterpass_desc, buffer, code_len * 2,
+                   precheck);
+        while (DLG_INCOMPLETE == length)
+        {
+            length = dlg_handle();
+        }
+
         if (0 == length)
         {
             return false;
@@ -147,7 +153,12 @@ _prompt_passcode(uint8_t               *code,
             return true;
         }
 
+        int response = DLG_INCOMPLETE;
         dlg_alert(msg_enterpass, msg_invalidkey);
+        while (DLG_INCOMPLETE == response)
+        {
+            response = dlg_handle();
+        }
     }
 }
 
@@ -158,8 +169,15 @@ _prompt_volsn(char *volsn)
     pal_load_string(IDS_ENTERDSN, msg_enterdsn, sizeof(msg_enterdsn));
     pal_load_string(IDS_ENTERDSN_DESC, msg_enterdsn_desc,
                     sizeof(msg_enterdsn_desc));
-    return 0 != dlg_prompt(msg_enterdsn, msg_enterdsn_desc, volsn, 9,
-                           _validate_volsn);
+
+    int length = DLG_INCOMPLETE;
+    dlg_prompt(msg_enterdsn, msg_enterdsn_desc, volsn, 9, _validate_volsn);
+    while (DLG_INCOMPLETE == length)
+    {
+        length = dlg_handle();
+    }
+
+    return 0 != length;
 }
 
 static bool

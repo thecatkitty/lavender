@@ -19,14 +19,17 @@ enum dlg_result
 
 typedef bool (*dlg_validator)(const char *);
 
-extern int
+extern bool
 dlg_alert(const char *title, const char *message);
 
-extern int
+extern bool
 dlg_prompt(const char   *title,
            const char   *message,
            char         *buffer,
            int           size,
            dlg_validator validator);
+
+extern int
+dlg_handle(void);
 
 #endif // _DLG_H_
