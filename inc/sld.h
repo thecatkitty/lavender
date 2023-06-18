@@ -1,7 +1,6 @@
 #ifndef _SLD_H_
 #define _SLD_H_
 
-#include <gfx.h>
 #include <pal.h>
 
 #define SLD_ENTRY_MAX_LENGTH 255
@@ -65,28 +64,8 @@ typedef struct
     uint16_t posx;
     uint16_t posy;
     uint8_t  type;
-    union {
-        char content[SLD_ENTRY_MAX_LENGTH + 1];
-        struct
-        {
-            gfx_dimensions dimensions;
-            gfx_color      color;
-        } shape;
-        struct
-        {
-            char     file_name[64];
-            uint16_t method;
-            uint32_t crc32;
-            uint16_t parameter;
-            char     data[128];
-        } script_call;
-        struct
-        {
-            gfx_dimensions dimensions;
-            uint16_t       tag;
-        } active_area;
-    };
-    uint8_t length;
+    char     content[SLD_ENTRY_MAX_LENGTH + 1];
+    uint8_t  length;
 } sld_entry;
 
 typedef struct _sld_context

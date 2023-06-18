@@ -11,6 +11,16 @@
 
 typedef struct
 {
+    char     file_name[64];
+    uint16_t method;
+    uint32_t crc32;
+    uint16_t parameter;
+    char     data[128];
+} script_call_content;
+#define CONTENT(sld) ((script_call_content *)(&sld->content))
+
+typedef struct
+{
     crg_stream *ctx;
     uint32_t    crc32;
     uint32_t   *local;
@@ -261,7 +271,7 @@ __sld_execute_script_call(sld_entry *sld)
 {
     int status = 0;
 
-    sld_context *script = sld_create_context(sld->script_call.file_name, NULL);
+    sld_context *script = sld_create_context(CONTENT(sld)->file_name, NULL);
     if (NULL == script)
     {
         __sld_errmsgcpy(sld, IDS_NOEXECCTX);
@@ -271,9 +281,8 @@ __sld_execute_script_call(sld_entry *sld)
     __sld_accumulator = 0;
 
     // Run if stored as plain text
-    if ((SLD_METHOD_STORE == sld->script_call.method) ||
-        (zip_calculate_crc(script->data, script->size) ==
-         sld->script_call.crc32))
+    if ((SLD_METHOD_STORE == CONTENT(sld)->method) ||
+        (zip_calculate_crc(script->data, script->size) == CONTENT(sld)->crc32))
     {
         sld_run(script);
         sld_enter_context(script);
@@ -288,8 +297,8 @@ __sld_execute_script_call(sld_entry *sld)
 
     crg_prepare(&crs, CRG_XOR, script->data, script->size, key.bs, 6);
 
-    if (_acquire_xor_key(&key.qw, &crs, sld->script_call.crc32,
-                         sld->script_call.parameter, sld->script_call.data))
+    if (_acquire_xor_key(&key.qw, &crs, CONTENT(sld)->crc32,
+                         CONTENT(sld)->parameter, CONTENT(sld)->data))
     {
         crg_decrypt(&crs, script->data);
         sld_run(script);
@@ -313,42 +322,42 @@ __sld_load_script_call(const char *str, sld_entry *out)
     length = 0;
     while (!isspace(*cur))
     {
-        if ((sizeof(out->script_call.file_name) - 1) < length)
+        if ((sizeof(CONTENT(out)->file_name) - 1) < length)
         {
             __sld_errmsgcpy(out, IDS_LONGNAME);
             return SLD_ARGERR;
         }
-        out->script_call.file_name[length] = *(cur++);
+        CONTENT(out)->file_name[length] = *(cur++);
         length++;
     }
-    out->script_call.file_name[length] = 0;
+    CONTENT(out)->file_name[length] = 0;
     out->length = length;
 
     if (('\r' == *cur) || ('\n' == *cur))
     {
-        out->script_call.method = SLD_METHOD_STORE;
-        out->script_call.crc32 = 0;
-        out->script_call.parameter = 0;
+        CONTENT(out)->method = SLD_METHOD_STORE;
+        CONTENT(out)->crc32 = 0;
+        CONTENT(out)->parameter = 0;
     }
     else
     {
-        cur += __sld_loadu(cur, &out->script_call.method);
-        out->script_call.crc32 = strtoul(cur, (char **)&cur, 16);
-        cur += __sld_loadu(cur, &out->script_call.parameter);
+        cur += __sld_loadu(cur, &CONTENT(out)->method);
+        CONTENT(out)->crc32 = strtoul(cur, (char **)&cur, 16);
+        cur += __sld_loadu(cur, &CONTENT(out)->parameter);
     }
 
     length = 0;
     while (('\r' != *cur) && ('\n' != *cur))
     {
-        if ((sizeof(out->script_call.data) - 1) < length)
+        if ((sizeof(CONTENT(out)->data) - 1) < length)
         {
             __sld_errmsgcpy(out, IDS_LONGCONTENT);
             return SLD_ARGERR;
         }
-        out->script_call.data[length] = *(cur++);
+        CONTENT(out)->data[length] = *(cur++);
         length++;
     }
-    out->script_call.data[length] = 0;
+    CONTENT(out)->data[length] = 0;
 
     return cur - str;
 }

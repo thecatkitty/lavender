@@ -1,5 +1,12 @@
 #include "sld_impl.h"
 
+typedef struct
+{
+    gfx_dimensions dimensions;
+    gfx_color      color;
+} shape_content;
+#define CONTENT(sld) ((shape_content *)(&sld->content))
+
 int
 __sld_execute_rectangle(sld_entry *sld)
 {
@@ -7,10 +14,10 @@ __sld_execute_rectangle(sld_entry *sld)
     switch (sld->posx)
     {
     case SLD_ALIGN_CENTER:
-        x = (__sld_screen.width - sld->shape.dimensions.width) / 2;
+        x = (__sld_screen.width - CONTENT(sld)->dimensions.width) / 2;
         break;
     case SLD_ALIGN_RIGHT:
-        x = __sld_screen.width - sld->shape.dimensions.width;
+        x = __sld_screen.width - CONTENT(sld)->dimensions.width;
         break;
     default:
         x = sld->posx;
@@ -19,7 +26,7 @@ __sld_execute_rectangle(sld_entry *sld)
     bool (*draw)(gfx_dimensions *, uint16_t, uint16_t, gfx_color);
     draw =
         (SLD_TYPE_RECT == sld->type) ? gfx_draw_rectangle : gfx_fill_rectangle;
-    if (!draw(&sld->shape.dimensions, x, y, sld->shape.color))
+    if (!draw(&CONTENT(sld)->dimensions, x, y, CONTENT(sld)->color))
     {
         __sld_errmsgcpy(sld, IDS_UNSUPPORTED);
         return SLD_SYSERR;
@@ -42,16 +49,16 @@ __sld_load_shape(const char *str, sld_entry *out)
     switch (*cur)
     {
     case 'B':
-        out->shape.color = GFX_COLOR_BLACK;
+        CONTENT(out)->color = GFX_COLOR_BLACK;
         break;
     case 'G':
-        out->shape.color = GFX_COLOR_GRAY;
+        CONTENT(out)->color = GFX_COLOR_GRAY;
         break;
     default:
-        out->shape.color = GFX_COLOR_WHITE;
+        CONTENT(out)->color = GFX_COLOR_WHITE;
     }
-    out->shape.dimensions.width = width;
-    out->shape.dimensions.height = height;
+    CONTENT(out)->dimensions.width = width;
+    CONTENT(out)->dimensions.height = height;
     cur++;
 
     return cur - str;
