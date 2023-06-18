@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include <crg.h>
+#include <gfx.h>
 #include <sld.h>
 
 #include "../resource.h"

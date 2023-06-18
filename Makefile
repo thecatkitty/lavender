@@ -22,7 +22,7 @@ BINPREF = $(BIN)/$(LAV_TARGET)/$(LAV_LANG)
 OBJPREF = $(OBJ)/$(LAV_TARGET)
 
 ASFLAGS = -S -march=i8088  -Iinc/
-CFLAGS  = -c -march=i8088 -Os -Wall -Werror -Iinc/
+CFLAGS  = -c -march=i8088 -Os -Wall -Werror -fno-strict-aliasing -Iinc/
 
 ifeq ($(LAV_TARGET),dospc-exe)
 LD      = ia16-elf-gcc
