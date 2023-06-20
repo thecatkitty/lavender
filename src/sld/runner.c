@@ -8,7 +8,7 @@ uint16_t       __sld_accumulator = 0;
 gfx_dimensions __sld_screen;
 
 // Execute a line loaded from the script
-// Returns negative on error
+// Returns CONTINUE on continuation request, negative on error
 static int
 _execute_entry(sld_entry *sld)
 {
@@ -45,7 +45,7 @@ _execute_entry(sld_entry *sld)
     case SLD_TYPE_JUMPE:
         return (__sld_accumulator == sld->posy) ? INT_MAX : 0;
     case SLD_TYPE_CALL:
-        return __sld_execute_script_call(sld);
+        return __sld_handle_script_call(sld);
     }
 
     __sld_errmsgcpy(sld, IDS_UNKNOWNTYPE);
@@ -162,6 +162,11 @@ sld_handle(void)
 
     // SLD_STATE_EXECUTE
     int status = _execute_entry(&ctx->entry);
+    if (CONTINUE == status)
+    {
+        return;
+    }
+
     if (0 > status)
     {
         char msg[sizeof(sld_entry)];

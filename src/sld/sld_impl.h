@@ -11,6 +11,8 @@
 
 #define LINE_WIDTH 80
 
+#define CONTINUE 1
+
 #define __sld_try_load(stage, str, out)                                        \
     {                                                                          \
         int length;                                                            \
@@ -68,7 +70,7 @@ extern int
 __sld_execute_active_area(sld_entry *sld);
 
 extern int
-__sld_execute_script_call(sld_entry *sld);
+__sld_handle_script_call(sld_entry *sld);
 
 extern int
 __sld_retrieve_active_area_tag(uint16_t x, uint16_t y);
