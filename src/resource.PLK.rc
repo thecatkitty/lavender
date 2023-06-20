@@ -29,4 +29,5 @@ LANGUAGE LCID_PLK, 0x1
     IDS_BADENCODING, "Niepoprawne lub niewspierane kodowanie"
     IDS_UNSUPPORTED, "Zazadano niewspieranej funkcjonalnosci"
     IDS_TOOMANYAREAS, "Zdefiniowano za duzo obszarow aktywnych"
+    IDS_UNKNOWNKEYSRC, "Nieznane zrodlo klucza"
 }
