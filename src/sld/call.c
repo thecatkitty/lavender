@@ -58,9 +58,9 @@ _isxdigitstr(const char *str)
 }
 
 static bool
-_validate_volsn(const char *volsn)
+_validate_dsn(const char *dsn)
 {
-    if (9 != strlen(volsn))
+    if (9 != strlen(dsn))
     {
         return false;
     }
@@ -69,14 +69,14 @@ _validate_volsn(const char *volsn)
     {
         if (4 == i)
         {
-            if ('-' != volsn[i])
+            if ('-' != dsn[i])
             {
                 return false;
             }
         }
         else
         {
-            if (!isxdigit(volsn[i]))
+            if (!isxdigit(dsn[i]))
             {
                 return false;
             }
@@ -173,7 +173,7 @@ _prompt_passcode(uint8_t               *code,
 }
 
 static bool
-_prompt_volsn(char *volsn)
+_prompt_dsn(char *dsn)
 {
     char msg_enterdsn[40], msg_enterdsn_desc[80];
     pal_load_string(IDS_ENTERDSN, msg_enterdsn, sizeof(msg_enterdsn));
@@ -181,7 +181,7 @@ _prompt_volsn(char *volsn)
                     sizeof(msg_enterdsn_desc));
 
     int length = DLG_INCOMPLETE;
-    dlg_prompt(msg_enterdsn, msg_enterdsn_desc, volsn, 9, _validate_volsn);
+    dlg_prompt(msg_enterdsn, msg_enterdsn_desc, dsn, 9, _validate_dsn);
     while (DLG_INCOMPLETE == length)
     {
         length = dlg_handle();
@@ -228,15 +228,15 @@ _acquire_xor_key(uint64_t   *key,
         uint32_t medium_id = pal_get_medium_id(data);
         if (0 == medium_id)
         {
-            char volsn[10];
-            if (!_prompt_volsn(volsn))
+            char dsn[10];
+            if (!_prompt_dsn(dsn))
             {
                 invalid = true;
                 break;
             }
 
-            uint32_t high = strtoul(volsn, NULL, 16);
-            uint32_t low = strtoul(volsn + 5, NULL, 16);
+            uint32_t high = strtoul(dsn, NULL, 16);
+            uint32_t low = strtoul(dsn + 5, NULL, 16);
             medium_id = (high << 16) | low;
         }
 
