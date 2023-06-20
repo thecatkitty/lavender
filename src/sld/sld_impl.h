@@ -52,7 +52,7 @@ __sld_load_active_area(const char *str, sld_entry *out);
 extern int
 __sld_load_script_call(const char *str, sld_entry *out);
 
-extern bool
+extern int
 __sld_execute_bitmap(sld_entry *sld);
 
 extern int

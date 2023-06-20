@@ -40,22 +40,23 @@ _find_best_bitmap(char *pattern)
         offset = -offset;
     }
 
+    errno = ENOENT;
     return NULL;
 }
 
-bool
+int
 __sld_execute_bitmap(sld_entry *sld)
 {
     hasset bitmap = _find_best_bitmap(sld->content);
     if (NULL == bitmap)
     {
-        return -1;
+        return SLD_SYSERR;
     }
 
     gfx_bitmap bm;
     if (!pbm_load_bitmap(&bm, bitmap))
     {
-        return -1;
+        return SLD_SYSERR;
     }
 
     uint16_t x, y = sld->posy;
@@ -71,10 +72,13 @@ __sld_execute_bitmap(sld_entry *sld)
         x = sld->posx;
     }
 
-    bool status = gfx_draw_bitmap(&bm, x, y);
+    if (!gfx_draw_bitmap(&bm, x, y))
+    {
+        return SLD_SYSERR;
+    }
 
     pal_close_asset(bitmap);
-    return status;
+    return 0;
 }
 
 int
