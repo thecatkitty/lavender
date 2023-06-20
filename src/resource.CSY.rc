@@ -29,4 +29,5 @@ LANGUAGE LCID_CSY, 0x1
     IDS_BADENCODING, "Neplatne nebo nepodporovane kodovani"
     IDS_UNSUPPORTED, "Byla pozadovana nepodporovana funkce"
     IDS_TOOMANYAREAS, "Prilis mnoho definovanych aktivnich oblasti"
+    IDS_UNKNOWNKEYSRC, "Neznamy zdroj klice"
 }

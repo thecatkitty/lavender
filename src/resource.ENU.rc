@@ -29,4 +29,5 @@ LANGUAGE LCID_ENU, 0x1
     IDS_BADENCODING, "Invalid or unsupported encoding"
     IDS_UNSUPPORTED, "Unsupported feature requested"
     IDS_TOOMANYAREAS, "Too many active areas defined"
+    IDS_UNKNOWNKEYSRC, "Unknown key source"
 }

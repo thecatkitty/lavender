@@ -297,6 +297,12 @@ __sld_execute_script_call(sld_entry *sld)
 
     crg_prepare(&crs, CRG_XOR, script->data, script->size, key.bs, 6);
 
+    if (SLD_PARAMETER_XOR48_DISKID < CONTENT(sld)->parameter)
+    {
+        __sld_errmsgcpy(sld, IDS_UNKNOWNKEYSRC);
+        return SLD_SYSERR;
+    }
+
     if (_acquire_xor_key(&key.qw, &crs, CONTENT(sld)->crc32,
                          CONTENT(sld)->parameter, CONTENT(sld)->data))
     {
