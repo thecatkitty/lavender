@@ -17,8 +17,6 @@ _execute_entry(sld_entry *sld)
         gfx_get_screen_dimensions(&__sld_screen);
     }
 
-    pal_sleep(sld->delay);
-
     switch (sld->type)
     {
     case SLD_TYPE_BLANK:
@@ -156,7 +154,27 @@ sld_handle(void)
         }
 
         ctx->offset += length;
-        ctx->state = SLD_STATE_EXECUTE;
+
+        if (0 != ctx->entry.delay)
+        {
+            ctx->next_step =
+                pal_get_counter() + pal_get_ticks(ctx->entry.delay);
+            ctx->state = SLD_STATE_DELAY;
+        }
+        else
+        {
+            ctx->state = SLD_STATE_EXECUTE;
+        }
+        return;
+    }
+
+    // SLD_STATE_DELAY
+    if (SLD_STATE_DELAY == ctx->state)
+    {
+        if (ctx->next_step < pal_get_counter())
+        {
+            ctx->state = SLD_STATE_EXECUTE;
+        }
         return;
     }
 

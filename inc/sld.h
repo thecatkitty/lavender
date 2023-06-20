@@ -40,6 +40,7 @@ typedef enum
 {
     SLD_STATE_LOAD,
     SLD_STATE_EXECUTE,
+    SLD_STATE_DELAY,
     SLD_STATE_WAIT,
     SLD_STATE_STOP,
     SLD_SYSERR = -1,
@@ -75,6 +76,7 @@ typedef struct _sld_context
     int       size;
     int       offset;
     sld_state state;
+    uint32_t  next_step;
     union {
         sld_entry entry;
         char      message[sizeof(sld_entry)];
