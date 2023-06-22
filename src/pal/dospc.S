@@ -15,22 +15,6 @@ __dospc_pit_isr:
     mov     ax, word ptr cs:[__dospc_ds]
     mov     ds, ax
 
-    /* Increment auxiliary (snd callback) counter */
-	mov     al, byte ptr cs:[_aux_counter]
-    inc     al
-    cmp     al, 10
-    jne     .save_aux
-
-    /* Call snd callback */
-    push    cx
-    push    dx
-    call    __snd_timer_callback
-    pop     dx
-    pop     cx
-    xor     al, al
-.save_aux:
-    mov     byte ptr cs:[_aux_counter], al
-
     /* Increment main counter */
     mov     ax, word ptr [__dospc_counter]
     mov     bx, word ptr [__dospc_counter+2]
@@ -59,7 +43,3 @@ __dospc_pit_isr:
 	.type	__dospc_ds, @object
 __dospc_ds:
     .fill   2
-
-	.type	_aux_counter, @object
-_aux_counter:
-    .fill   1
