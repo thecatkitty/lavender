@@ -15,4 +15,8 @@ snd_beep(uint16_t divisor);
 extern void
 snd_silence(void);
 
+// Handle sound related services
+extern void
+snd_handle(void);
+
 #endif // _SND_H_

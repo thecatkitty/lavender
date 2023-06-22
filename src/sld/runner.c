@@ -1,6 +1,7 @@
 #include <string.h>
 
 #include <pal.h>
+#include <snd.h>
 
 #include "sld_impl.h"
 
@@ -89,6 +90,8 @@ _goto_label(sld_context *ctx, const char *label)
 void
 sld_handle(void)
 {
+    snd_handle();
+
     sld_context *ctx = __sld_ctx;
     if (NULL == __sld_ctx)
     {
