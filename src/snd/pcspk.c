@@ -23,18 +23,6 @@ static const uint8_t KEY_MULTIPLIERS[] = {
 };
 
 void
-snd_beep(uint16_t divisor)
-{
-    dospc_beep(divisor);
-}
-
-void
-snd_silence(void)
-{
-    dospc_silence();
-}
-
-void
 snd_send(const char *msg, size_t length)
 {
     uint8_t status = msg[0];
