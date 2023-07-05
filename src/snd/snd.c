@@ -78,7 +78,8 @@ snd_handle(void)
 
     if (SPK_NOTE_DURATION_STOP == _sequence->duration)
     {
-        snd_silence();
+        char msg[] = {MIDI_MSG_NOTEOFF, _last_note};
+        snd_send(msg, sizeof(msg));
         return;
     }
 
