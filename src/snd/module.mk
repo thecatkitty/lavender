@@ -1,1 +1,4 @@
-CCSOURCES := $(CCSOURCES) $(DIR)/snd.c $(DIR)/pcspk.c
+CCSOURCES := $(CCSOURCES) \
+	$(DIR)/snd.c \
+	$(DIR)/dpcspk.c \
+	$(DIR)/fspk.c \
