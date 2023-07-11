@@ -4,6 +4,13 @@
 #include <base.h>
 #include <fmt/midi.h>
 
+typedef struct
+{
+    bool (*probe)(void *, uint16_t);
+    bool (*start)(void *, uint16_t);
+    bool (*step)(void);
+} snd_format_protocol;
+
 // Start playing music
 extern void
 snd_play(void *music, uint16_t length);
