@@ -28,8 +28,6 @@ typedef struct
     char *data;
 } _asset;
 
-#define DELAY_MS_MULTIPLIER 128ULL
-
 #define MAX_OPEN_ASSETS 8
 
 #define TEXT_COLUMNS 80
@@ -328,16 +326,24 @@ pal_cleanup(void)
 uint32_t
 pal_get_counter(void)
 {
-    return __dospc_counter;
+    uint16_t count = 0;
+
+    _disable();
+    outp(PIT_IO_COMMAND, 0x00);
+    count = inp(PIT_DATA(0));
+    count |= inp(PIT_DATA(0)) << 8;
+    _enable();
+
+    return (__dospc_counter << PIT_FREQ_POWER) |
+           (count & ((1 << PIT_FREQ_POWER) - 1));
 }
 
 uint32_t
 pal_get_ticks(unsigned ms)
 {
-    uint32_t ticks = (uint32_t)ms * DELAY_MS_MULTIPLIER;
-    ticks /=
-        (10000000UL * DELAY_MS_MULTIPLIER) * PIT_FREQ_DIVISOR / PIT_INPUT_FREQ;
-    return ticks;
+    uint64_t ticks = (uint64_t)ms * PIT_INPUT_FREQ;
+    ticks /= 10000000ULL;
+    return (UINT32_MAX < ticks) ? UINT32_MAX : ticks;
 }
 
 void

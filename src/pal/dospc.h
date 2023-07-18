@@ -13,6 +13,7 @@
 
 #define INT_PIT        0x08
 #define PIT_IO         0x40
+#define PIT_DATA(x)    (PIT_IO + (x))
 #define PIT_IO_COMMAND (PIT_IO + 3)
 
 // Programmable Interval Timer definitions
@@ -34,10 +35,11 @@
 
 #define PIT_BCD 0
 
-#define PIT_INPUT_FREQ      11931816667ULL
-#define PIT_FREQ_DIVISOR    2048ULL
+#define PIT_INPUT_FREQ   11931816667ULL
+#define PIT_FREQ_POWER   11
+#define PIT_FREQ_DIVISOR (1ULL << PIT_FREQ_POWER)
 
 // PC Speaker definitions
-#define SPKR_ENABLE         3
+#define SPKR_ENABLE 3
 
 #endif // _DOSPC_H_
