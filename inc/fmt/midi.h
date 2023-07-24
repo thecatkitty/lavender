@@ -47,6 +47,22 @@ static const iff_fourcc MIDI_FOURCC_MTRK = IFF_FOURCC("MTrk");
 #define MIDI_MSG_SENSING  0xFE
 #define MIDI_MSG_META     0xFF
 
+#define MIDI_META_SEQNUM     0x00
+#define MIDI_META_TEXT       0x01
+#define MIDI_META_COPYRIGHT  0x02
+#define MIDI_META_TRACK      0x03
+#define MIDI_META_INSTRUMENT 0x04
+#define MIDI_META_LYRIC      0x05
+#define MIDI_META_MARKER     0x06
+#define MIDI_META_CUEPOINT   0x07
+#define MIDI_META_CHANPREFIX 0x20
+#define MIDI_META_ENDTRACK   0x2F
+#define MIDI_META_TEMPO      0x51
+#define MIDI_META_SMPTEO     0x54
+#define MIDI_META_TIMESIGN   0x58
+#define MIDI_META_KEYSIGN    0x59
+#define MIDI_META_SPECIFIC   0x7F
+
 #define MIDI_MAX_KEY      0x7F
 #define MIDI_MAX_VELOCITY 0x7F
 
