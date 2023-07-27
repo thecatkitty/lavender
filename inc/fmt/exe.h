@@ -130,4 +130,10 @@ typedef struct
 
 #define EXE_PE_RT_STRING 6
 
+extern const char *
+exe_pe_get_resource(void *rsrc, WORD type, WORD id);
+
+extern int
+exe_pe_load_string(void *rsrc, unsigned id, char *buffer, int max_length);
+
 #endif // _FMT_EXE_H_

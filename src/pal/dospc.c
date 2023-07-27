@@ -645,79 +645,15 @@ pal_get_mouse(uint16_t *x, uint16_t *y)
 int
 pal_load_string(unsigned id, char *buffer, int max_length)
 {
-    exe_pe_resource_directory       *dir;
-    exe_pe_resource_directory_entry *ent;
-    exe_pe_resource_data_entry      *data;
-
-    // Type: RT_STRING
-    dir = (exe_pe_resource_directory *)__w32_rsrc_start;
-    ent = (exe_pe_resource_directory_entry *)(dir + 1);
-    ent += dir->NumberOfNamedEntries;
-    for (int i = 0;
-         (dir->NumberOfIdEntries > i) && (EXE_PE_RT_STRING != ent->Id);
-         ++i, ++ent)
-        ;
-
-    if (EXE_PE_RT_STRING != ent->Id)
-    {
-        const char msg[] = "!!! RT_STRING missing !!!";
-        strncpy(buffer, msg, max_length);
-        return sizeof(msg) - 1;
-    }
-
-    // Item: string ID / 16 + 1
-    dir = (exe_pe_resource_directory *)(__w32_rsrc_start +
-                                        ent->dir.OffsetToDirectory);
-    ent = (exe_pe_resource_directory_entry *)(dir + 1);
-    ent += dir->NumberOfNamedEntries;
-    for (int i = 0;
-         (dir->NumberOfIdEntries > i) && (((id >> 4) + 1) != ent->Id);
-         ++i, ++ent)
-        ;
-
-    if (((id >> 4) + 1) != ent->Id)
+    int length = exe_pe_load_string(__w32_rsrc_start, id, buffer, max_length);
+    if (0 > length)
     {
         const char msg[] = "!!! string missing !!!";
         strncpy(buffer, msg, max_length);
         return sizeof(msg) - 1;
     }
 
-    // Language: first available
-    dir = (exe_pe_resource_directory *)(__w32_rsrc_start +
-                                        ent->dir.OffsetToDirectory);
-    ent = (exe_pe_resource_directory_entry *)(dir + 1);
-    data = (exe_pe_resource_data_entry *)(__w32_rsrc_start + ent->OffsetToData);
-
-    // One table = 16 strings
-    uint16_t *wstr = (uint16_t *)((WORD)data->OffsetToData);
-    for (int i = 0; (id & 0xF) > i; ++i)
-    {
-        wstr += *wstr + 1;
-    }
-
-    // First WORD is string length
-    uint16_t *end = wstr + *wstr + 1;
-    wstr++;
-
-    // Convert WSTR to UTF-8
-    char *buffptr = buffer;
-    while ((wstr < end) && (buffer + max_length > buffptr))
-    {
-        char mb[3];
-
-        int seqlen = utf8_get_sequence(*wstr, mb);
-        if (buffer + max_length < buffptr + seqlen)
-        {
-            break;
-        }
-
-        memcpy(buffptr, mb, seqlen);
-        wstr++;
-        buffptr += seqlen;
-    }
-
-    *buffptr = 0;
-    return buffptr - buffer;
+    return length;
 }
 
 bool
