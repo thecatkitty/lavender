@@ -1,6 +1,6 @@
 AS      = gcc
 CC      = gcc
-LD      = ld
+LD      = gcc
 OBJCOPY = objcopy
 
 W32OBJCOPY = x86_64-w64-mingw32-objcopy
@@ -23,11 +23,14 @@ OBJPREF = $(OBJ)/$(LAV_TARGET)
 
 ASFLAGS = -S -Iinc/
 CFLAGS  = -c -Os -fno-strict-aliasing -Iinc/
+LDFLAGS = -lc -no-pie
 
 OBJFMT  = elf64-x86-64
 
 ifeq ($(findstring dospc,$(LAV_TARGET)),dospc)
 include Makefile.dospc
+else
+CFLAGS += -g -no-pie
 endif
 
 ifdef LAV_DATA
