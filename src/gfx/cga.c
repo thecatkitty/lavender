@@ -1,5 +1,4 @@
 #include <dos.h>
-#include <errno.h>
 #include <graph.h>
 #include <libi86/string.h>
 
