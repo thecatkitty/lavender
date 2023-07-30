@@ -1,5 +1,3 @@
-#include <errno.h>
-
 #include <pal.h>
 #include <snd.h>
 

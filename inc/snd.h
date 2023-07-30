@@ -1,7 +1,6 @@
 #ifndef _SND_H_
 #define _SND_H_
 
-#include <base.h>
 #include <fmt/midi.h>
 
 typedef struct
