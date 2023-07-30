@@ -3,8 +3,8 @@ CC      = gcc
 LD      = ld
 OBJCOPY = objcopy
 
-W32OBJCOPY = i686-w64-mingw32-objcopy
-W32WINDRES = i686-w64-mingw32-windres
+W32OBJCOPY = x86_64-w64-mingw32-objcopy
+W32WINDRES = x86_64-w64-mingw32-windres
 
 BIN     = bin
 OBJ     = obj
@@ -24,6 +24,7 @@ OBJPREF = $(OBJ)/$(LAV_TARGET)
 ASFLAGS = -S -Iinc/
 CFLAGS  = -c -Os -fno-strict-aliasing -Iinc/
 
+OBJFMT  = elf64-x86-64
 
 ifeq ($(findstring dospc,$(LAV_TARGET)),dospc)
 include Makefile.dospc
@@ -65,7 +66,7 @@ $(OBJPREF)/%.c.o: $(SRC)/%.c
 
 $(OBJPREF)/resource.$(LAV_LANG).o: $(OBJPREF)/resource.$(LAV_LANG).obj
 	@mkdir -p $(@D)
-	$(W32OBJCOPY) $< $@ -O elf32-i386 --rename-section .rsrc=.rodata.rsrc --add-symbol __w32_rsrc_start=.rodata.rsrc:0
+	$(W32OBJCOPY) $< $@ -O $(OBJFMT) --rename-section .rsrc=.rodata.rsrc --add-symbol __w32_rsrc_start=.rodata.rsrc:0
 
 $(OBJPREF)/resource.$(LAV_LANG).obj: $(SRC)/resource.$(LAV_LANG).rc
 	$(W32WINDRES) -c 65001 $< $@ -Iinc/
@@ -80,7 +81,7 @@ VERSION = $(GIT_TAG)-$(GIT_COMMITS)
 endif
 
 $(OBJ)/version.o: $(OBJ)/version.txt .FORCE
-	$(OBJCOPY) -I binary -O elf32-i386 -B i386 --rename-section .data=.rodata $< $@
+	$(OBJCOPY) -I binary -O $(OBJFMT) --rename-section .data=.rodata $< $@
 
 $(OBJ)/version.txt: .FORCE
 	@mkdir -p $(OBJ)

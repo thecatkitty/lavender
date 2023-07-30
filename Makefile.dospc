@@ -6,6 +6,8 @@ OBJCOPY = ia16-elf-objcopy
 ASFLAGS+= -march=i8088
 CFLAGS += -march=i8088
 
+OBJFMT  = elf32-i386
+
 ifeq ($(LAV_TARGET),dospc-exe)
 LD      = ia16-elf-gcc
 CFLAGS += -mcmodel=small -Wall -Werror
