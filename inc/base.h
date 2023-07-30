@@ -1,6 +1,7 @@
 #ifndef _BASE_H_
 #define _BASE_H_
 
+#include <errno.h>
 #include <limits.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -29,5 +30,9 @@ typedef union {
 
 extern uint64_t
 rstrtoull(const char *restrict str, int base);
+
+#ifndef EFTYPE
+#define EFTYPE 0x11e
+#endif
 
 #endif // _BASE_H_
