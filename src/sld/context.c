@@ -1,4 +1,3 @@
-#include <errno.h>
 #include <stdlib.h>
 
 #include "sld_impl.h"
