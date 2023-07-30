@@ -18,14 +18,14 @@
 typedef struct
 {
     // External data
-    char     file_name[64];
+    char     file_name[40];
     uint16_t method;
     uint32_t crc32;
     uint16_t parameter;
     char     data[96];
 
     // Execution state
-    int          state;
+    int16_t      state;
     sld_context *context;
     crg_stream   crs;
     uquad        key;
