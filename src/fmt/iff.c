@@ -1,4 +1,3 @@
-#include <errno.h>
 #include <stdlib.h>
 
 #include <fmt/iff.h>

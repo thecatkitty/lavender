@@ -1,6 +1,3 @@
-#include <errno.h>
-#include <stdint.h>
-
 #include <fmt/utf8.h>
 
 uint16_t

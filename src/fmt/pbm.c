@@ -1,8 +1,6 @@
 #include <ctype.h>
-#include <errno.h>
 #include <stdlib.h>
 
-#include <api/dos.h>
 #include <fmt/pbm.h>
 
 static int
