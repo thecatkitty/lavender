@@ -1,5 +1,4 @@
 #include <conio.h>
-#include <errno.h>
 #include <fcntl.h>
 #include <libi86/string.h>
 #include <stdio.h>
