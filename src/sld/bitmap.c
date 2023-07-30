@@ -1,6 +1,3 @@
-#include <errno.h>
-#include <string.h>
-
 #include <fmt/pbm.h>
 #include <pal.h>
 #include <sld.h>
