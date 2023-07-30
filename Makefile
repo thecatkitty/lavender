@@ -1,7 +1,7 @@
-AS      = ia16-elf-gcc
-CC      = ia16-elf-gcc
-LD      = ia16-elf-ld
-OBJCOPY = ia16-elf-objcopy
+AS      = gcc
+CC      = gcc
+LD      = ld
+OBJCOPY = objcopy
 
 W32OBJCOPY = i686-w64-mingw32-objcopy
 W32WINDRES = i686-w64-mingw32-windres
@@ -21,20 +21,12 @@ endif
 BINPREF = $(BIN)/$(LAV_TARGET)/$(LAV_LANG)
 OBJPREF = $(OBJ)/$(LAV_TARGET)
 
-ASFLAGS = -S -march=i8088  -Iinc/
-CFLAGS  = -c -march=i8088 -Os -Wall -Werror -fno-strict-aliasing -Iinc/
+ASFLAGS = -S -Iinc/
+CFLAGS  = -c -Os -fno-strict-aliasing -Iinc/
 
-ifeq ($(LAV_TARGET),dospc-exe)
-LD      = ia16-elf-gcc
-CFLAGS += -mcmodel=small
-LDFLAGS = -mcmodel=small -li86 -Wl,--nmagic -Wl,-Map=$(BINPREF)/lavender.map
-EXESUFF = .exe
-endif
 
-ifeq ($(LAV_TARGET),dospc-com)
-CFLAGS += -DZIP_PIGGYBACK
-LDFLAGS = -L/usr/lib/x86_64-linux-gnu/gcc/ia16-elf/6.3.0 -L/usr/ia16-elf/lib -T com.ld -li86 --nmagic -Map=$(BINPREF)/lavender.map
-EXESUFF = .com
+ifeq ($(findstring dospc,$(LAV_TARGET)),dospc)
+include Makefile.dospc
 endif
 
 ifdef LAV_DATA
@@ -55,7 +47,6 @@ include sources.mk
 
 $(BINPREF)/$(SSHOW): $(BINPREF)/lavender$(EXESUFF) $(OBJ)/data.zip
 	cat $^ > $@
-	@if [ $$(stat -L -c %s $@) -gt 65280 ]; then echo >&2 "'$@' size exceeds 65,280 bytes"; false; fi
 
 $(BINPREF)/lavender$(EXESUFF): $(OBJ)/version.o $(ASSOURCES:%.S=$(OBJPREF)/%.S.o) $(CCSOURCES:%.c=$(OBJPREF)/%.c.o) $(OBJPREF)/resource.$(LAV_LANG).o
 	@mkdir -p $(BINPREF)
