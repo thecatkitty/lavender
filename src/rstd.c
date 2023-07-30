@@ -1,5 +1,7 @@
 #include <ctype.h>
-#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include <base.h>
 
@@ -54,3 +56,24 @@ rstrtoull(const char *restrict str, int base)
         return ULLONG_MAX;
     }
 }
+
+#if !__MISC_VISIBLE
+char *
+itoa(int value, char *str, int base)
+{
+    if (10 == base)
+    {
+        sprintf(str, "%d", value);
+    }
+    else if (16 == base)
+    {
+        sprintf(str, "%x", value);
+    }
+    else
+    {
+        strcpy(str, "?base?");
+    }
+
+    return str;
+}
+#endif
