@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <api/bios.h>
 #include <dlg.h>
 #include <fmt/utf8.h>
 #include <gfx.h>
@@ -291,21 +290,19 @@ _handle_prompt(void)
         return DLG_INCOMPLETE;
     }
 
-    uint16_t key = bios_check_keystroke();
-    if (0 == key)
+    uint16_t scancode = pal_get_keystroke();
+    if (0 == scancode)
     {
         return DLG_INCOMPLETE;
     }
 
-    bios_get_keystroke();
-    uint8_t scancode = key >> 8, character = key & 0xFF;
-    if (0x01 == scancode)
+    if (VK_ESCAPE == scancode)
     {
         _state = STATE_NONE;
         return 0;
     }
 
-    if (0x1C == scancode)
+    if (VK_RETURN == scancode)
     {
         if (_validator && _validator(_buffer))
         {
@@ -325,16 +322,16 @@ _handle_prompt(void)
         return DLG_INCOMPLETE;
     }
 
-    if ((0x0E == scancode) && (0 < _cursor))
+    if ((VK_BACK == scancode) && (0 < _cursor))
     {
         _cursor--;
         _buffer[_cursor] = 0;
         _draw_text_box();
     }
 
-    if ((0x20 <= character) && (0x80 > character) && (_cursor < _size))
+    if ((0x20 <= scancode) && (0x80 > scancode) && (_cursor < _size))
     {
-        _buffer[_cursor] = key & 0xFF;
+        _buffer[_cursor] = scancode & 0xFF;
         _cursor++;
         _buffer[_cursor] = 0;
         _draw_text_box();
