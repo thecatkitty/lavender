@@ -31,6 +31,11 @@ typedef union {
 extern uint64_t
 rstrtoull(const char *restrict str, int base);
 
+#if !__MISC_VISIBLE
+extern char *
+itoa(int value, char *str, int base);
+#endif
+
 #ifndef EFTYPE
 #define EFTYPE 0x11e
 #endif
