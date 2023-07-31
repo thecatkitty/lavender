@@ -1,8 +1,9 @@
 #ifndef _FMT_ZIP_H_
 #define _FMT_ZIP_H_
 
-#include <stdbool.h>
-#include <stdint.h>
+#include <assert.h>
+
+#include <base.h>
 
 #define ZIP_PK_SIGN         0x4B50
 #define ZIP_LOCAL_FILE_SIGN 0x0403
@@ -80,6 +81,8 @@
 
 #define ZIP_EXTRA_INFOZIP_UNICODE_PATH 0x7075
 
+#pragma pack(push, 1)
+
 typedef struct
 {
     uint16_t pk_signature;
@@ -93,6 +96,8 @@ typedef struct
     uint16_t comment_length;
     char     comment[];
 } zip_cdir_end_header;
+static_assert(22 == sizeof(zip_cdir_end_header),
+              "Central directory end header size doesn't match specification");
 
 typedef struct
 {
@@ -116,6 +121,8 @@ typedef struct
     uint32_t lfh_offset;
     char     name[];
 } zip_cdir_file_header;
+static_assert(46 == sizeof(zip_cdir_file_header),
+              "Central directory file header size doesn't match specification");
 
 typedef struct
 {
@@ -133,12 +140,16 @@ typedef struct
     uint16_t extra_length;
     char     name[];
 } zip_local_file_header;
+static_assert(30 == sizeof(zip_local_file_header),
+              "Local file header size doesn't match specification");
 
 typedef struct
 {
     uint16_t signature;
     uint16_t total_size;
 } zip_extra_fields_header;
+static_assert(4 == sizeof(zip_extra_fields_header),
+              "Extra fields header size doesn't match specification");
 
 typedef struct
 {
@@ -148,6 +159,10 @@ typedef struct
     uint32_t name_crc32;
     char     unicode_name[];
 } zip_extra_unicode_path_field;
+static_assert(10 == sizeof(zip_extra_unicode_path_field),
+              "Extra Unicode path field size doesn't match specification");
+
+#pragma pack(pop)
 
 #ifdef ZIP_PIGGYBACK
 typedef zip_cdir_end_header *zip_archive;
