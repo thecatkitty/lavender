@@ -20,15 +20,7 @@
 
 #include "../resource.h"
 #include "dospc.h"
-
-typedef struct
-{
-    off_t inzip;
-    int   flags;
-    char *data;
-} _asset;
-
-#define MAX_OPEN_ASSETS 8
+#include "pal_impl.h"
 
 #define TEXT_COLUMNS 80
 #define TEXT_LINES   25
@@ -47,8 +39,7 @@ __dospc_pit_isr(void);
 extern void
 __snd_timer_callback(void);
 
-static _asset _assets[MAX_OPEN_ASSETS];
-static bool   _has_mouse = false;
+static bool _has_mouse = false;
 
 #ifdef STACK_PROFILING
 static uint64_t      *_stack_start;
@@ -237,9 +228,9 @@ pal_initialize(int argc, char *argv[])
 
     for (int i = 0; i < MAX_OPEN_ASSETS; ++i)
     {
-        _assets[i].inzip = -1;
-        _assets[i].flags = 0;
-        _assets[i].data = NULL;
+        __pal_assets[i].inzip = -1;
+        __pal_assets[i].flags = 0;
+        __pal_assets[i].data = NULL;
     }
 
     if (!_is_compatible())
@@ -289,9 +280,9 @@ pal_cleanup(void)
 {
     for (int i = 0; i < MAX_OPEN_ASSETS; ++i)
     {
-        if (NULL != _assets[i].data)
+        if (NULL != __pal_assets[i].data)
         {
-            zip_free_data(_assets[i].data);
+            zip_free_data(__pal_assets[i].data);
         }
     }
 
@@ -354,98 +345,6 @@ pal_sleep(unsigned ms)
     {
         asm("hlt");
     }
-}
-
-hasset
-pal_open_asset(const char *name, int flags)
-{
-    off_t lfh = zip_search(name, strlen(name));
-    if (-1 == lfh)
-    {
-        return NULL;
-    }
-
-    int slot = 0;
-    while (-1 != _assets[slot].inzip)
-    {
-        if (lfh == _assets[slot].inzip)
-        {
-            if (O_RDWR == (flags & O_ACCMODE))
-            {
-                _assets[slot].flags = (flags & ~O_ACCMODE) | O_RDWR;
-            }
-
-            return (hasset)(_assets + slot);
-        }
-
-        slot++;
-        if (MAX_OPEN_ASSETS == slot)
-        {
-            errno = ENOMEM;
-            return NULL;
-        }
-    }
-
-    _assets[slot].inzip = lfh;
-    _assets[slot].flags = flags;
-    return (hasset)(_assets + slot);
-}
-
-bool
-pal_close_asset(hasset asset)
-{
-    _asset *ptr = (_asset *)asset;
-    if (-1 == ptr->inzip)
-    {
-        errno = EBADF;
-        return false;
-    }
-
-    if (O_RDWR == (ptr->flags & O_ACCMODE))
-    {
-        // Do not release modified assets
-        return true;
-    }
-
-    ptr->inzip = -1;
-
-    if (NULL != ptr->data)
-    {
-        zip_free_data(ptr->data);
-        ptr->data = NULL;
-    }
-    return true;
-}
-
-char *
-pal_get_asset_data(hasset asset)
-{
-    _asset *ptr = (_asset *)asset;
-    if (-1 == ptr->inzip)
-    {
-        errno = EBADF;
-        return NULL;
-    }
-
-    if (NULL == ptr->data)
-    {
-        ptr->data = zip_get_data(ptr->inzip);
-    }
-
-    return ptr->data;
-}
-
-int
-pal_get_asset_size(hasset asset)
-{
-    _asset *ptr = (_asset *)asset;
-    if (-1 == ptr->inzip)
-    {
-        errno = EBADF;
-        return -1;
-    }
-
-    return zip_get_size(ptr->inzip);
 }
 
 static void
