@@ -3,6 +3,11 @@
 #include <fmt/exe.h>
 #include <fmt/utf8.h>
 
+// FIXME: W/A for https://sourceware.org/bugzilla/show_bug.cgi?id=30719
+#ifdef __x86_64__
+extern char __executable_start[];
+#endif
+
 const char *
 exe_pe_get_resource(void *rsrc, WORD type, WORD id)
 {
@@ -38,9 +43,19 @@ exe_pe_get_resource(void *rsrc, WORD type, WORD id)
     dir = (exe_pe_resource_directory *)(rsrc + ent->dir.OffsetToDirectory);
     ent = (exe_pe_resource_directory_entry *)(dir + 1);
 
-    exe_pe_resource_data_entry *data =
+    exe_pe_resource_data_entry *data_ent =
         (exe_pe_resource_data_entry *)(rsrc + ent->OffsetToData);
-    return (char *)(intptr_t)data->OffsetToData;
+    char *data = (char *)(intptr_t)data_ent->OffsetToData;
+
+// FIXME: W/A for https://sourceware.org/bugzilla/show_bug.cgi?id=30719
+#ifdef __x86_64__
+    if (data < (char *)rsrc)
+    {
+        data += (intptr_t)__executable_start;
+    }
+#endif
+
+    return data;
 }
 
 int

@@ -2,10 +2,12 @@ AS      = ia16-elf-gcc
 CC      = ia16-elf-gcc
 LD      = ia16-elf-ld
 OBJCOPY = ia16-elf-objcopy
+WINDRES = $(W32WINDRES)
 
 ASFLAGS+= -march=i8088
 CFLAGS += -march=i8088
 
+RESSUFF = .o
 OBJFMT  = elf32-i386
 
 ifeq ($(LAV_TARGET),dospc-exe)
