@@ -18,10 +18,19 @@ midi_read_event(const char *buffer, midi_event *event)
     }
 
     ptr += delta_len;
-    event->msg = ptr;
 
     uint8_t status = *ptr;
-    ptr++;
+    if (0x80 <= status)
+    {
+        event->status = status;
+        ptr++;
+    }
+    else
+    {
+        status = event->status;
+    }
+
+    event->msg = ptr;
 
     if (MIDI_MSG_SYSEX > status)
     {
@@ -88,7 +97,7 @@ midi_read_event(const char *buffer, midi_event *event)
         return 0;
     }
 
-    event->msg_length = ptr - buffer - delta_len;
+    event->msg_length = ptr - event->msg;
     return ptr - buffer;
 }
 

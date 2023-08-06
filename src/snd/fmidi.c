@@ -6,7 +6,7 @@
 static iff_context *_iff = 0;
 static uint16_t     _division = 960;
 static const char  *_track = 0;
-static midi_event   _event = {0, NULL, 0};
+static midi_event   _event = {0, 0, NULL, 0};
 
 static uint32_t _kilotick_rate;
 static uint32_t _next_event;
@@ -93,7 +93,7 @@ _fmidi_step(void)
 
     if (NULL != _event.msg)
     {
-        snd_send(_event.msg, _event.msg_length);
+        snd_send(&_event);
     }
 
     size_t length = midi_read_event(_track, &_event);
@@ -114,7 +114,7 @@ _fmidi_step(void)
             _kilotick_rate = pal_get_ticks(usec_per_quarter / _division);
         }
 
-        snd_send(_event.msg, _event.msg_length);
+        snd_send(&_event);
         length = midi_read_event(_track, &_event);
         _track += length;
     }

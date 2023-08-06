@@ -280,7 +280,8 @@ gfx_wctob(uint16_t wc)
 }
 
 void
-snd_send(const char *msg, size_t length)
+snd_send(midi_event *event)
 {
-    LOG("entry, length: %zd", length);
+    LOG("entry, delta: %d, status: %#02x, length: %zd", event->delta,
+        (unsigned)event->status, event->msg_length);
 }

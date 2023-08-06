@@ -13,6 +13,7 @@ typedef struct
 typedef struct
 {
     uint32_t    delta;
+    uint8_t     status;
     const char *msg;
     size_t      msg_length;
 } midi_event;
