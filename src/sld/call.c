@@ -291,10 +291,33 @@ _handle_passcode_type(sld_entry *sld)
     return CONTINUE;
 }
 
+static uint8_t
+_axtob(const char *str)
+{
+    if (!isxdigit(str[0]) || !isxdigit(str[1]))
+    {
+        return 0;
+    }
+
+    uint8_t ret =
+        isdigit(str[0]) ? (str[1] - '0') : (toupper(str[1]) - 'A' + 10);
+    ret |= (isdigit(str[0]) ? (str[0] - '0') : (toupper(str[0]) - 'A' + 10))
+           << 4;
+
+    return ret;
+}
+
 static int
 _handle_passcode_validate(sld_entry *sld)
 {
-    if (SLD_PARAMETER_XOR48_PROMPT != CONTENT(sld)->parameter)
+    if (SLD_PARAMETER_XOR48_PROMPT == CONTENT(sld)->parameter)
+    {
+        for (int i = 0; i < 6; i++)
+        {
+            CONTENT(sld)->key.b[i] = _axtob(CONTENT(sld)->buffer + i * 2);
+        }
+    }
+    else
     {
         // 48-bit split key
         CONTENT(sld)->key.qw =
