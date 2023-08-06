@@ -23,9 +23,10 @@ static const uint8_t KEY_MULTIPLIERS[] = {
 };
 
 void
-snd_send(const char *msg, size_t length)
+snd_send(midi_event *event)
 {
-    uint8_t status = msg[0];
+    uint8_t     status = event->status;
+    const char *msg = event->msg;
 
     uint8_t channel = status & 0xF;
     if (0xF0 != (status & 0xF0))
@@ -46,8 +47,8 @@ snd_send(const char *msg, size_t length)
     {
     case MIDI_MSG_NOTEOFF:
     case MIDI_MSG_NOTEON: {
-        uint8_t key = msg[1];
-        uint8_t velocity = msg[2];
+        uint8_t key = msg[0];
+        uint8_t velocity = msg[1];
 
         if ((MIDI_MAX_KEY < key) || (MIDI_MAX_VELOCITY < velocity))
         {

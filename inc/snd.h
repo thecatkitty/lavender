@@ -20,6 +20,6 @@ snd_handle(void);
 
 // Send MIDI message
 extern void
-snd_send(const char *msg, size_t length);
+snd_send(midi_event *event);
 
 #endif // _SND_H_
