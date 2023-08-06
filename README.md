@@ -1,4 +1,4 @@
-# Lavender [![Build Status](https://dev.azure.com/celones/thecatkitty-gh-public/_apis/build/status/thecatkitty.lavender?branchName=main)](https://dev.azure.com/celones/thecatkitty-gh-public/_build/latest?definitionId=3&branchName=main)
+# Lavender
 
 A simple configurable slideshow program for DOS 2.0+ written mainly in C. It shows slides consisting of text and graphics contained in the ZIP file appended to the executable.
 
@@ -12,12 +12,13 @@ This is still work in progress, but I'm doing my best to separate working versio
 * drawing and filling rectangles
 * jumping between slides with key presses and mouse clicks
 * inclusion of other scripts from within a script
-* PC speaker music playback
+* PC speaker music playback (including limited support for Standard MIDI Files)
 * reporting the unsupported environment (DOS 1.x, Windows Vista and newer)
 * multiple language support (Czech, English, Polish)
+* diagnostic Linux target
 
 ## Building
-Building requires Linux with *GNU Make*, *GNU Binutils*, *MinGW-w64* for i686, [GCC for IA-16](https://github.com/tkchia/gcc-ia16/) with [libi86](https://github.com/tkchia/libi86/), and `zip`. If you have it, just run:
+Building requires x86_64 Linux with *GNU Make*, *GNU Binutils*, *MinGW-w64* for i686 and x86_64, [GCC for IA-16](https://github.com/tkchia/gcc-ia16/) with [libi86](https://github.com/tkchia/libi86/), and `zip`. If you have it, just run:
 ```sh
 make
 ```
