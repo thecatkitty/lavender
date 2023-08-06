@@ -204,13 +204,13 @@ _handle_alert(void)
         return DLG_INCOMPLETE;
     }
 
-    if (0x01 == scancode)
+    if (VK_ESCAPE == scancode)
     {
         _state = STATE_NONE;
         return DLG_CANCEL;
     }
 
-    if (0x1C == scancode)
+    if (VK_RETURN == scancode)
     {
         _state = STATE_NONE;
         return DLG_OK;
@@ -329,7 +329,8 @@ _handle_prompt(void)
         _draw_text_box();
     }
 
-    if ((0x20 <= scancode) && (0x80 > scancode) && (_cursor < _size))
+    if (((' ' == scancode) || ((VK_DELETE < scancode) && (VK_F1 > scancode))) &&
+        (_cursor < _size))
     {
         _buffer[_cursor] = scancode & 0xFF;
         _cursor++;
