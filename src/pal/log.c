@@ -1,6 +1,4 @@
-#include <stdio.h>
-
-#include "pal_impl.h"
+#include <pal.h>
 
 void
 __pal_log_time(void)
