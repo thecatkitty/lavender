@@ -1,3 +1,4 @@
+#include <pal.h>
 #include <platform/dospc.h>
 #include <snd.h>
 
@@ -23,7 +24,12 @@ static const uint8_t KEY_MULTIPLIERS[] = {
 };
 
 void
-snd_send(midi_event *event)
+#ifdef __linux__
+sndd_send
+#else
+snd_send
+#endif
+    (midi_event *event)
 {
     uint8_t     status = event->status;
     const char *msg = event->msg;

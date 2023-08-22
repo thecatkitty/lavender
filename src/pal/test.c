@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 #include <fmt/exe.h>
+#include <fmt/wave.h>
 #include <fmt/zip.h>
 #include <gfx.h>
 #include <pal.h>
@@ -22,6 +23,9 @@ typedef struct
 
 extern char _binary_obj_version_txt_start[];
 
+static void
+_flush_wav(void);
+
 // FIXME: W/A for https://sourceware.org/bugzilla/show_bug.cgi?id=30719
 #ifndef __x86_64__
 extern
@@ -34,6 +38,21 @@ extern
 
 long           _start_msec;
 struct termios _old_termios;
+
+#define PCSPK_CYCLE 65536
+#define PCSPK_RATE  44100
+
+uint16_t _pcspk_div = 0;
+uint32_t _pcspk_counter = 0;
+bool     _pcspk_enabled = false;
+uint32_t _pcspk_last = 0;
+
+FILE           *_wav = NULL;
+iff_head        _wav_chkroot;
+iff_head        _wav_chkfmt;
+iff_head        _wav_chkdata;
+long            _wav_chkdata_pos;
+wave_pcm_format _wav_pcmfmt;
 
 void
 pal_initialize(int argc, char *argv[])
@@ -81,6 +100,12 @@ pal_cleanup(void)
     }
 
     tcsetattr(0, TCSANOW, &_old_termios);
+
+    if (_wav)
+    {
+        _flush_wav();
+        fclose(_wav);
+    }
 }
 
 uint32_t
@@ -279,6 +304,9 @@ gfx_wctob(uint16_t wc)
     return (0x80 > wc) ? wc : '?';
 }
 
+extern void
+sndd_send(midi_event *event);
+
 void
 snd_send(midi_event *event)
 {
@@ -473,4 +501,89 @@ snd_send(midi_event *event)
         break;
     }
     }
+
+    sndd_send(event);
+}
+
+void
+_flush_wav(void)
+{
+    if (!_wav)
+    {
+        _wav_chkroot.type.dw = IFF_FOURCC_RIFF.dw;
+
+        _wav_chkfmt.type.dw = WAVE_FOURCC_FMT.dw;
+        _wav_pcmfmt.wf.format = WAVE_FORMAT_PCM;
+        _wav_pcmfmt.wf.channels = 1;
+        _wav_pcmfmt.wf.sample_rate = PCSPK_RATE;
+        _wav_pcmfmt.wf.byte_rate = PCSPK_RATE;
+        _wav_pcmfmt.wf.block_align = _wav_pcmfmt.wf.byte_rate;
+        _wav_pcmfmt.bits_per_sample = 8;
+        _wav_chkfmt.length = sizeof(_wav_pcmfmt);
+
+        _wav_chkdata.type.dw = WAVE_FOURCC_DATA.dw;
+        _wav_chkdata.length = 0;
+
+        _wav_chkroot.length = sizeof(WAVE_FOURCC_WAVE) + sizeof(_wav_chkfmt) +
+                              _wav_chkfmt.length + sizeof(_wav_chkdata) +
+                              _wav_chkdata.length;
+
+        _wav = fopen("speaker.wav", "wb");
+        fwrite(&_wav_chkroot, sizeof(_wav_chkroot), 1, _wav);
+        fwrite(&WAVE_FOURCC_WAVE, sizeof(WAVE_FOURCC_WAVE), 1, _wav);
+
+        fwrite(&_wav_chkfmt, sizeof(_wav_chkfmt), 1, _wav);
+        fwrite(&_wav_pcmfmt, _wav_chkfmt.length, 1, _wav);
+
+        _wav_chkdata_pos = ftell(_wav);
+        fwrite(&_wav_chkdata, sizeof(_wav_chkdata), 1, _wav);
+        _wav = freopen(NULL, "rb+", _wav);
+    }
+
+    fseek(_wav, 0, SEEK_END);
+
+    uint32_t now = pal_get_counter();
+    uint32_t length = (now - _pcspk_last) * PCSPK_RATE / 1000;
+    uint32_t cycle = PCSPK_RATE * _pcspk_div / 1193182;
+    if (_pcspk_enabled)
+    {
+        for (int i = 0; i < length; i++, _pcspk_counter++)
+        {
+            fputc(128 + ((_pcspk_counter % cycle) < (cycle / 2) ? -96 : +96),
+                  _wav);
+        }
+    }
+    else
+    {
+        for (int i = 0; i < length; i++, _pcspk_counter++)
+        {
+            fputc(128, _wav);
+        }
+    }
+
+    _wav_chkroot.length += length;
+    fseek(_wav, 0, SEEK_SET);
+    fwrite(&_wav_chkroot, sizeof(_wav_chkroot), 1, _wav);
+
+    _wav_chkdata.length += length;
+    fseek(_wav, _wav_chkdata_pos, SEEK_SET);
+    fwrite(&_wav_chkdata, sizeof(_wav_chkdata), 1, _wav);
+
+    fseek(_wav, 0, SEEK_END);
+    _pcspk_last = now;
+}
+
+void
+dospc_beep(uint16_t divisor)
+{
+    _flush_wav();
+    _pcspk_div = divisor;
+    _pcspk_enabled = true;
+}
+
+void
+dospc_silence(void)
+{
+    _flush_wav();
+    _pcspk_enabled = false;
 }
