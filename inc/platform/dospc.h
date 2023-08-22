@@ -5,7 +5,9 @@
 
 #define interrupt __attribute__((interrupt))
 
+#ifndef __linux__
 typedef void interrupt far (*dospc_isr)(void);
+#endif
 
 extern bool
 dospc_is_dosbox(void);
