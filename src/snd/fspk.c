@@ -96,17 +96,19 @@ _fspk_step(void)
         return true;
     }
 
+    char msg[] = {_last_note, 64};
     if (SPK_NOTE_DURATION_STOP == _sequence->duration)
     {
-        midi_event event = {0, MIDI_MSG_NOTEOFF, (const char *)&_last_note, 1};
+        midi_event event = {0, MIDI_MSG_NOTEOFF, msg, sizeof(msg)};
         snd_send(&event);
+        _sequence = NULL;
         return true;
     }
 
     _ticks = _sequence->duration - 1;
     if (0 == _sequence->divisor)
     {
-        midi_event event = {0, MIDI_MSG_NOTEOFF, (const char *)&_last_note, 1};
+        midi_event event = {0, MIDI_MSG_NOTEOFF, msg, sizeof(msg)};
         snd_send(&event);
     }
     else
@@ -117,8 +119,9 @@ _fspk_step(void)
         // x = 12 * (lb(F / 440) - lb(d)) + 69
         uint32_t note = NOTE_CONST_U32F8 - 12 * _lb(_sequence->divisor);
         _last_note = ((note >> 8) & 0x7F) + ((note & 0x80) >> 7);
+        msg[0] = (char)_last_note;
 
-        midi_event event = {0, MIDI_MSG_NOTEON, (const char *)&_last_note, 1};
+        midi_event event = {0, MIDI_MSG_NOTEON, msg, sizeof(msg)};
         snd_send(&event);
     }
 
