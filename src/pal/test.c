@@ -7,6 +7,8 @@
 #include <time.h>
 #include <unistd.h>
 
+#include <SDL2/SDL.h>
+
 #include <fmt/exe.h>
 #include <fmt/wave.h>
 #include <fmt/zip.h>
@@ -35,6 +37,9 @@ extern
     __attribute__((section(".rsrc"))) = {}
 #endif
 ;
+
+static SDL_Window   *_window = NULL;
+static SDL_Renderer *_renderer;
 
 long           _start_msec;
 struct termios _old_termios;
@@ -76,6 +81,34 @@ pal_initialize(int argc, char *argv[])
         __pal_assets[i].data = NULL;
     }
 
+    if (0 > SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO))
+    {
+        LOG("cannot initialize SDL. %s", SDL_GetError());
+        abort();
+    }
+
+    _window = SDL_CreateWindow(pal_get_version_string(), SDL_WINDOWPOS_CENTERED,
+                               SDL_WINDOWPOS_CENTERED, 80 * 8, 25 * 16,
+                               SDL_WINDOW_SHOWN);
+    if (NULL == _window)
+    {
+        LOG("cannot create window. %s", SDL_GetError());
+        SDL_Quit();
+        abort();
+    }
+
+    _renderer = SDL_CreateRenderer(_window, -1, SDL_RENDERER_SOFTWARE);
+    if (NULL == _renderer)
+    {
+        LOG("cannot create renderer. %s", SDL_GetError());
+        SDL_DestroyWindow(_window);
+        SDL_Quit();
+        abort();
+    }
+
+    SDL_RenderClear(_renderer);
+    SDL_RenderPresent(_renderer);
+
     struct termios new_termios;
 
     tcgetattr(STDIN_FILENO, &_old_termios);
@@ -100,6 +133,8 @@ pal_cleanup(void)
     }
 
     tcsetattr(0, TCSANOW, &_old_termios);
+
+    SDL_Quit();
 
     if (_wav)
     {
@@ -212,6 +247,17 @@ pal_load_string(unsigned id, char *buffer, int max_length)
     return length;
 }
 
+static const SDL_Color COLORS[] = {[GFX_COLOR_BLACK] = {0, 0, 0},
+                                   [GFX_COLOR_WHITE] = {255, 255, 255},
+                                   [GFX_COLOR_GRAY] = {128, 128, 128}};
+
+static void
+_set_color(gfx_color color)
+{
+    const SDL_Color *rgb = COLORS + color;
+    SDL_SetRenderDrawColor(_renderer, rgb->r, rgb->g, rgb->b, 0);
+}
+
 bool
 gfx_initialize(void)
 {
@@ -241,7 +287,7 @@ gfx_get_pixel_aspect(void)
 {
     LOG("entry");
 
-    uint16_t ratio = 64 * (1);
+    uint16_t ratio = 64 * (2);
 
     LOG("exit, ratio: 1:%.2f", (float)ratio / 64.0f);
     return ratio;
@@ -263,6 +309,12 @@ gfx_draw_line(gfx_dimensions *dim, uint16_t x, uint16_t y, gfx_color color)
     LOG("entry, dim: %dx%d, x: %u, y: %u, color: %d", dim->width, dim->height,
         x, y, color);
 
+    _set_color(color);
+    SDL_RenderDrawLine(_renderer, x, y * 2, x + dim->width,
+                       (y + dim->height - 1) * 2);
+    SDL_RenderDrawLine(_renderer, x, y * 2 + 1, x + dim->width,
+                       (y + dim->height - 1) * 2 + 1);
+    SDL_RenderPresent(_renderer);
     return true;
 }
 
@@ -275,6 +327,11 @@ gfx_draw_rectangle(gfx_dimensions *rect,
     LOG("entry, dim: %dx%d, x: %u, y: %u, color: %d", rect->width, rect->height,
         x, y, color);
 
+    SDL_Rect sdl_rect = {x - 1, (y - 1) * 2, rect->width + 2,
+                         (rect->height + 2) * 2};
+    _set_color(color);
+    SDL_RenderDrawRect(_renderer, &sdl_rect);
+    SDL_RenderPresent(_renderer);
     return true;
 }
 
@@ -287,6 +344,10 @@ gfx_fill_rectangle(gfx_dimensions *rect,
     LOG("entry, dim: %dx%d, x: %u, y: %u, color: %d", rect->width, rect->height,
         x, y, color);
 
+    SDL_Rect sdl_rect = {x, y * 2, rect->width, rect->height * 2};
+    _set_color(color);
+    SDL_RenderFillRect(_renderer, &sdl_rect);
+    SDL_RenderPresent(_renderer);
     return true;
 }
 
