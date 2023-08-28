@@ -5,7 +5,7 @@
 
 static iff_context *_iff = 0;
 static uint16_t     _division = 960;
-static const char  *_track = 0;
+static const char  *_track = 0, *_track_end;
 static midi_event   _event = {0, 0, NULL, 0};
 
 static uint32_t _kilotick_rate;
@@ -71,6 +71,7 @@ _fmidi_start(void *music, uint16_t length)
     }
 
     _track = mtrk_chunk.data;
+    _track_end = _track + mtrk_chunk.length;
     _next_event = 0;
 
     return true;
@@ -83,6 +84,13 @@ _fmidi_step(void)
     {
         errno = EINVAL;
         return false;
+    }
+
+    if (_track_end <= _track)
+    {
+        _track = NULL;
+        iff_close(_iff);
+        return true;
     }
 
     uint32_t now = pal_get_counter();
@@ -99,8 +107,7 @@ _fmidi_step(void)
     size_t length = midi_read_event(_track, &_event);
     _track += length;
 
-    while ((0 != length) && (0 == _event.delta) &&
-           (_iff->data + _iff->length > _track))
+    while ((0 != length) && (0 == _event.delta) && (_track_end > _track))
     {
         if ((MIDI_MSG_META == (uint8_t)_event.msg[0]) &&
             (MIDI_META_TEMPO == (uint8_t)_event.msg[1]) &&
