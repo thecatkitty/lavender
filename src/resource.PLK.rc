@@ -30,4 +30,5 @@ LANGUAGE LCID_PLK, 0x1
     IDS_UNSUPPORTED, "Zazadano niewspieranej funkcjonalnosci"
     IDS_TOOMANYAREAS, "Zdefiniowano za duzo obszarow aktywnych"
     IDS_UNKNOWNKEYSRC, "Nieznane zrodlo klucza"
+    IDS_BADSOUND, "Niepoprawny lub niewspierany plik dzwiekowy"
 }
