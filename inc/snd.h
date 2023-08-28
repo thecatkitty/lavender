@@ -11,8 +11,8 @@ typedef struct
 } snd_format_protocol;
 
 // Start playing music
-extern void
-snd_play(void *music, uint16_t length);
+extern bool
+snd_play(const char *name);
 
 // Handle sound related services
 extern void
