@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 
 #include <fmt/exe.h>
 #include <fmt/wave.h>
@@ -40,6 +41,8 @@ extern
 
 static SDL_Window   *_window = NULL;
 static SDL_Renderer *_renderer;
+static TTF_Font     *_font;
+static int           _font_w, _font_h;
 
 long           _start_msec;
 struct termios _old_termios;
@@ -87,12 +90,33 @@ pal_initialize(int argc, char *argv[])
         abort();
     }
 
+    if (0 > TTF_Init())
+    {
+        LOG("cannot initialize SDL_ttf. %s", SDL_GetError());
+        SDL_Quit();
+        abort();
+    }
+
+    _font =
+        TTF_OpenFont("/usr/share/fonts/truetype/ubuntu/UbuntuMono-R.ttf", 12);
+    if (NULL == _font)
+    {
+        LOG("cannot open font. %s", SDL_GetError());
+        TTF_Quit();
+        SDL_Quit();
+        abort();
+    }
+
+    TTF_SizeText(_font, "M", &_font_w, &_font_h);
+
     _window = SDL_CreateWindow(pal_get_version_string(), SDL_WINDOWPOS_CENTERED,
-                               SDL_WINDOWPOS_CENTERED, 80 * 8, 25 * 16,
+                               SDL_WINDOWPOS_CENTERED, 80 * _font_w, 25 * 16,
                                SDL_WINDOW_SHOWN);
     if (NULL == _window)
     {
         LOG("cannot create window. %s", SDL_GetError());
+        TTF_CloseFont(_font);
+        TTF_Quit();
         SDL_Quit();
         abort();
     }
@@ -102,6 +126,8 @@ pal_initialize(int argc, char *argv[])
     {
         LOG("cannot create renderer. %s", SDL_GetError());
         SDL_DestroyWindow(_window);
+        TTF_CloseFont(_font);
+        TTF_Quit();
         SDL_Quit();
         abort();
     }
@@ -134,6 +160,8 @@ pal_cleanup(void)
 
     tcsetattr(0, TCSANOW, &_old_termios);
 
+    TTF_CloseFont(_font);
+    TTF_Quit();
     SDL_Quit();
 
     if (_wav)
@@ -276,7 +304,7 @@ gfx_get_screen_dimensions(gfx_dimensions *dim)
 {
     LOG("entry");
 
-    dim->width = 640;
+    dim->width = 80 * _font_w;
     dim->height = 200;
 
     LOG("exit, %dx%d", dim->width, dim->height);
@@ -351,11 +379,55 @@ gfx_fill_rectangle(gfx_dimensions *rect,
     return true;
 }
 
+static void
+_blend_subtractive(SDL_Surface *surface, SDL_Rect *rect)
+{
+    SDL_LockSurface(surface);
+    Uint8 *src = (Uint8 *)surface->pixels;
+
+    SDL_Surface *screen = SDL_GetWindowSurface(_window);
+    SDL_LockSurface(screen);
+    Uint8 *dst = (Uint8 *)screen->pixels;
+
+    int maxx = SDL_min(surface->w, screen->w - rect->x);
+    int maxy = SDL_min(surface->h, screen->h - rect->y);
+    for (int cy = 0; cy < maxy; cy++)
+    {
+        for (int cx = 0; cx < maxx; cx++)
+        {
+            Uint8 *srcpx = src + cy * surface->pitch + cx * 4;
+            Uint8 *dstpx =
+                dst + (rect->y + cy) * screen->pitch + (rect->x + cx) * 4;
+            srcpx[0] = SDL_max((int)srcpx[0] - dstpx[0], 0);
+            srcpx[1] = SDL_max((int)srcpx[1] - dstpx[1], 0);
+            srcpx[2] = SDL_max((int)srcpx[2] - dstpx[2], 0);
+        }
+    }
+
+    SDL_UnlockSurface(screen);
+    SDL_UnlockSurface(surface);
+}
+
 bool
 gfx_draw_text(const char *str, uint16_t x, uint16_t y)
 {
     LOG("entry, str: '%s', x: %u, y: %u", str, x, y);
 
+    if (0 == strlen(str))
+    {
+        return true;
+    }
+
+    SDL_Surface *surface =
+        TTF_RenderText_Blended(_font, str, COLORS[GFX_COLOR_WHITE]);
+    SDL_Rect rect = {x * _font_w, y * 16, surface->w, surface->h};
+
+    _blend_subtractive(surface, &rect);
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(_renderer, surface);
+    SDL_RenderCopy(_renderer, texture, NULL, &rect);
+    SDL_RenderPresent(_renderer);
+    SDL_DestroyTexture(texture);
+    SDL_FreeSurface(surface);
     return true;
 }
 
