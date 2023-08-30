@@ -36,6 +36,10 @@ gfx_cleanup(void);
 extern void
 gfx_get_screen_dimensions(gfx_dimensions *dim);
 
+// Get width and height of a glyph in pixels
+extern void
+gfx_get_glyph_dimensions(gfx_dimensions *dim);
+
 // Get pixel aspect ratio
 // Returns pixel aspect ratio (PAR = 64 / value), default value on error
 extern uint16_t

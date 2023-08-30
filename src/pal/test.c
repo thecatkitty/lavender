@@ -310,6 +310,13 @@ gfx_get_screen_dimensions(gfx_dimensions *dim)
     LOG("exit, %dx%d", dim->width, dim->height);
 }
 
+void
+gfx_get_glyph_dimensions(gfx_dimensions *dim)
+{
+    dim->width = _font_w;
+    dim->height = 8;
+}
+
 uint16_t
 gfx_get_pixel_aspect(void)
 {

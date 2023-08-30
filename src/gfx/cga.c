@@ -161,6 +161,13 @@ gfx_get_screen_dimensions(gfx_dimensions *dim)
     dim->height = CGA_HIMONO_HEIGHT;
 }
 
+void
+gfx_get_glyph_dimensions(gfx_dimensions *dim)
+{
+    dim->width = CGA_CHARACTER_HEIGHT;
+    dim->height = CGA_CHARACTER_HEIGHT;
+}
+
 bool
 gfx_draw_bitmap(gfx_bitmap *bm, uint16_t x, uint16_t y)
 {
