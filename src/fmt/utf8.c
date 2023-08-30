@@ -257,6 +257,25 @@ _fold_case(uint16_t cp, uint16_t *buff)
 }
 
 int
+utf8_strlen(const char *str)
+{
+    int i;
+    for (i = 0; *str; i++)
+    {
+        int length;
+        utf8_get_codepoint(str, &length);
+        if (0 == length)
+        {
+            return -1;
+        }
+
+        str += length;
+    }
+
+    return i;
+}
+
+int
 utf8_strncasecmp(const char *str1, const char *str2, unsigned length)
 {
     errno = 0;
