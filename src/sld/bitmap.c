@@ -56,14 +56,17 @@ __sld_execute_bitmap(sld_entry *sld)
         return SLD_SYSERR;
     }
 
+    gfx_dimensions screen;
+    gfx_get_screen_dimensions(&screen);
+
     uint16_t x, y = sld->posy;
     switch (sld->posx)
     {
     case SLD_ALIGN_CENTER:
-        x = (LINE_WIDTH - bm.opl) / 2;
+        x = (screen.width / 8 - bm.opl) / 2;
         break;
     case SLD_ALIGN_RIGHT:
-        x = LINE_WIDTH - bm.opl;
+        x = screen.width / 8 - bm.opl;
         break;
     default:
         x = sld->posx;
