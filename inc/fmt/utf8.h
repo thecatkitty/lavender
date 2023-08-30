@@ -1,6 +1,10 @@
 #ifndef _FMT_UTF8_H_
 #define _FMT_UTF8_H_
 
+#ifdef __linux__
+#define UTF8_NATIVE
+#endif
+
 #include <base.h>
 
 // Get code point from UTF-8 sequence

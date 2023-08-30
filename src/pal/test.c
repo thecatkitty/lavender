@@ -426,7 +426,7 @@ gfx_draw_text(const char *str, uint16_t x, uint16_t y)
     }
 
     SDL_Surface *surface =
-        TTF_RenderText_Blended(_font, str, COLORS[GFX_COLOR_WHITE]);
+        TTF_RenderUTF8_Blended(_font, str, COLORS[GFX_COLOR_WHITE]);
     SDL_Rect rect = {x * _font_w, y * 16, surface->w, surface->h};
 
     _blend_subtractive(surface, &rect);

@@ -78,8 +78,12 @@ _draw_frame(int columns, int lines, const char *title, int title_length)
                       GFX_COLOR_BLACK);
     }
 
+#ifdef UTF8_NATIVE
+    const char *title_l = title;
+#else
     char *title_l = alloca(strlen(title) + 1);
     utf8_encode(title, title_l, gfx_wctob);
+#endif
     gfx_draw_text(title_l, (_screen.width / _glyph.width - title_length) / 2,
                   top / _glyph.height);
 }
@@ -88,6 +92,9 @@ static int
 _strndcpy(char *dst, const char *src, size_t count, char delimiter)
 {
     int i = 0;
+#ifdef UTF8_NATIVE
+    int chars = 0;
+#endif
     while (src[i])
     {
         if (delimiter == src[i])
@@ -96,12 +103,23 @@ _strndcpy(char *dst, const char *src, size_t count, char delimiter)
             return i + 1;
         }
 
+#ifdef UTF8_NATIVE
+        if (count == chars)
+#else
         if (count == i)
+#endif
         {
             break;
         }
 
         dst[i] = src[i];
+#ifdef UTF8_NATIVE
+        if ((0x80 > (uint8_t)src[i]) || (0xBF < (uint8_t)src[i]))
+        {
+            ++chars;
+        }
+#endif
+
         ++i;
     }
 
@@ -112,11 +130,19 @@ _strndcpy(char *dst, const char *src, size_t count, char delimiter)
 static bool
 _draw_text(int columns, int lines, const char *text)
 {
+#ifdef UTF8_NATIVE
+    const char *text_l = text;
+#else
     char *text_l = alloca(strlen(text) + 1);
     utf8_encode(text, text_l, gfx_wctob);
+#endif
 
     const char *fragment = text_l;
-    char       *line_buff = alloca(columns + 1);
+#ifdef UTF8_NATIVE
+    char *line_buff = alloca(columns * 2 + 1);
+#else
+    char *line_buff = alloca(columns + 1);
+#endif
 
     int left = (_screen.width / _glyph.width - columns) / 2;
     int top = (_screen.height / _glyph.height - 3 - lines) / 2 + 2;
