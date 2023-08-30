@@ -340,6 +340,32 @@ gfx_draw_bitmap(gfx_bitmap *bm, uint16_t x, uint16_t y)
         " y: %u",
         bm->width, bm->height, bm->bpp, bm->planes, bm->opl, x, y);
 
+    if ((1 != bm->planes) || (1 != bm->bpp))
+    {
+        errno = EFTYPE;
+        return false;
+    }
+
+    x *= 8;
+
+    SDL_Surface *screen = SDL_GetWindowSurface(_window);
+    SDL_LockSurface(screen);
+    uint32_t *pixels = (uint32_t *)screen->pixels;
+    for (int cy = 0; cy < bm->height; cy++)
+    {
+        int base = (y + cy) * (screen->pitch / sizeof(uint32_t) * 2) + x;
+        for (int cx = 0; cx < bm->width; cx++)
+        {
+            uint8_t  byte = ((const uint8_t *)bm->bits)[cy * bm->opl + cx / 8];
+            uint32_t value = (byte & (0x80 >> (cx % 8))) ? 0xFFFFFF : 0;
+            pixels[base + cx] = value;
+            pixels[base + (screen->pitch / sizeof(uint32_t)) + cx] = value;
+        }
+    }
+    SDL_UnlockSurface(screen);
+
+    SDL_Rect rect = {x, y * 2, bm->width, bm->height * 2};
+    SDL_UpdateWindowSurfaceRects(_window, &rect, 1);
     return true;
 }
 
