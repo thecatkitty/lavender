@@ -2,7 +2,8 @@
 
 #include "sld_impl.h"
 
-int
+#ifndef UTF8_NATIVE
+static int
 _convert_text(const char *str, sld_entry *inout)
 {
     inout->length = utf8_encode(inout->content, inout->content, gfx_wctob);
@@ -14,6 +15,7 @@ _convert_text(const char *str, sld_entry *inout)
 
     return 0;
 }
+#endif
 
 int
 __sld_execute_text(sld_entry *sld)
@@ -48,7 +50,11 @@ __sld_load_text(const char *str, sld_entry *out)
 
     __sld_try_load(__sld_load_position, cur, out);
     __sld_try_load(__sld_load_content, cur, out);
+#ifdef UTF8_NATIVE
+    out->length = utf8_strlen(out->content);
+#else
     __sld_try_load(_convert_text, cur, out);
+#endif
 
     return cur - str;
 }
