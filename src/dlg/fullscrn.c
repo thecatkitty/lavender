@@ -22,6 +22,7 @@ enum
 };
 
 static gfx_dimensions _screen = {0, 0};
+static gfx_dimensions _glyph = {0, 0};
 static int            _state = STATE_NONE;
 static uint32_t       _blink_start;
 static char          *_buffer;
@@ -54,10 +55,11 @@ _draw_background(void)
 static void
 _draw_frame(int columns, int lines, const char *title, int title_length)
 {
-    gfx_dimensions window = {8 * (columns + 3), 8 * (lines + 3)};
+    gfx_dimensions window = {_glyph.width * (columns + 3),
+                             _glyph.height * (lines + 3)};
 
     int left = (_screen.width - window.width) / 2;
-    int top = (_screen.height - window.height) / 16 * 8;
+    int top = (_screen.height - window.height) / 16 * _glyph.height;
     gfx_fill_rectangle(&window, left, top, GFX_COLOR_WHITE);
     gfx_draw_rectangle(&window, left, top, GFX_COLOR_BLACK);
     window.width += 2;
@@ -66,8 +68,8 @@ _draw_frame(int columns, int lines, const char *title, int title_length)
     gfx_dimensions title_line = {window.width - 1, 1};
     gfx_draw_line(&title_line, left, top + 9, GFX_COLOR_BLACK);
 
-    gfx_dimensions stripe = {(window.width - ((title_length + 2) * 8)) / 2 - 1,
-                             1};
+    gfx_dimensions stripe = {
+        (window.width - ((title_length + 2) * _glyph.width)) / 2 - 1, 1};
     for (int i = 0; i < 4; i++)
     {
         int y = top + 1 + i * 2;
@@ -78,7 +80,8 @@ _draw_frame(int columns, int lines, const char *title, int title_length)
 
     char *title_l = alloca(strlen(title) + 1);
     utf8_encode(title, title_l, gfx_wctob);
-    gfx_draw_text(title_l, (_screen.width / 8 - title_length) / 2, top / 8);
+    gfx_draw_text(title_l, (_screen.width / _glyph.width - title_length) / 2,
+                  top / _glyph.height);
 }
 
 static int
@@ -115,8 +118,8 @@ _draw_text(int columns, int lines, const char *text)
     const char *fragment = text_l;
     char       *line_buff = alloca(columns + 1);
 
-    int left = (_screen.width / 8 - columns) / 2;
-    int top = (_screen.height / 8 - 3 - lines) / 2 + 2;
+    int left = (_screen.width / _glyph.width - columns) / 2;
+    int top = (_screen.height / _glyph.height - 3 - lines) / 2 + 2;
 
     int line = 0;
     while (*fragment && (lines > line))
@@ -188,6 +191,7 @@ _get_content_size(
     if (!_screen.width)
     {
         gfx_get_screen_dimensions(&_screen);
+        gfx_get_glyph_dimensions(&_glyph);
     }
 
     *head = _get_content_width(title, _screen.width / 10);
@@ -358,13 +362,13 @@ dlg_prompt(const char   *title,
     lines += 2;
 
     int field_width = (columns > size) ? size : columns;
-    _field_left = (_screen.width / 8 - field_width) / 2;
-    _field_top = (_screen.height / 8 - 3 - lines) / 2 + 1 + lines;
+    _field_left = (_screen.width / _glyph.width - field_width) / 2;
+    _field_top = (_screen.height / _glyph.height - 3 - lines) / 2 + 1 + lines;
 
-    _box.width = field_width * 8 + 2;
+    _box.width = field_width * _glyph.width + 2;
     _box.height = 10;
-    _box_top = _field_top * 8 - 1;
-    _box_left = _field_left * 8 - 1;
+    _box_top = _field_top * _glyph.height - 1;
+    _box_left = _field_left * _glyph.width - 1;
 
     _draw_background();
     _draw_frame(columns, lines, title, title_length);
