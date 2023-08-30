@@ -232,6 +232,11 @@ pal_get_keystroke(void)
         c = VK_BACK;
     }
 
+    if (islower(c))
+    {
+        c = toupper(c);
+    }
+
     LOG("keystroke: %#.2x", c);
     return c;
 }
