@@ -9,6 +9,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
+#include <fontconfig/fontconfig.h>
 
 #include <fmt/exe.h>
 #include <fmt/wave.h>
@@ -97,16 +98,36 @@ pal_initialize(int argc, char *argv[])
         abort();
     }
 
-    _font =
-        TTF_OpenFont("/usr/share/fonts/truetype/ubuntu/UbuntuMono-R.ttf", 12);
-    if (NULL == _font)
+    FcPattern *pattern = FcPatternCreate();
+    FcPatternAddString(pattern, FC_FAMILY, "monospace");
+    FcConfigSubstitute(NULL, pattern, FcMatchPattern);
+    FcDefaultSubstitute(pattern);
+
+    FcResult   fc_result = FcResultNoMatch;
+    FcPattern *fc_match = FcFontMatch(NULL, pattern, &fc_result);
+    FcPatternDestroy(pattern);
+
+    FcChar8 *fc_font;
+    if ((NULL == fc_match) ||
+        (FcResultMatch != FcPatternGetString(fc_match, FC_FILE, 0, &fc_font)))
     {
-        LOG("cannot open font. %s", SDL_GetError());
+        LOG("cannot match font");
         TTF_Quit();
         SDL_Quit();
         abort();
     }
 
+    _font = TTF_OpenFont(fc_font, 12);
+    if (NULL == _font)
+    {
+        LOG("cannot open font '%s'. %s", fc_font, SDL_GetError());
+        TTF_Quit();
+        SDL_Quit();
+        abort();
+    }
+
+    LOG("font: '%s'", fc_font);
+    FcPatternDestroy(fc_match);
     TTF_SizeText(_font, "M", &_font_w, &_font_h);
 
     _window = SDL_CreateWindow(pal_get_version_string(), SDL_WINDOWPOS_CENTERED,
