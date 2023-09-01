@@ -67,6 +67,9 @@ pal_initialize(int argc, char *argv[]);
 extern void
 pal_cleanup(void);
 
+extern void
+pal_handle(void);
+
 extern uint32_t
 pal_get_counter(void);
 

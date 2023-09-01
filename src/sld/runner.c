@@ -88,6 +88,7 @@ _goto_label(sld_context *ctx, const char *label)
 void
 sld_handle(void)
 {
+    pal_handle();
     snd_handle();
 
     sld_context *ctx = __sld_ctx;

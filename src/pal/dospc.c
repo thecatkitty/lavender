@@ -314,6 +314,11 @@ pal_cleanup(void)
 #endif // STACK_PROFILING
 }
 
+void
+pal_handle(void)
+{
+}
+
 uint32_t
 pal_get_counter(void)
 {
