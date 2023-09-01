@@ -1,9 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/select.h>
-#include <sys/time.h>
-#include <termios.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -44,9 +41,9 @@ static SDL_Window   *_window = NULL;
 static SDL_Renderer *_renderer;
 static TTF_Font     *_font;
 static int           _font_w, _font_h;
+static long          _start_msec;
 
-long           _start_msec;
-struct termios _old_termios;
+static SDL_Keycode _keycode;
 
 #define PCSPK_CYCLE 65536
 #define PCSPK_RATE  44100
@@ -155,15 +152,6 @@ pal_initialize(int argc, char *argv[])
 
     SDL_RenderClear(_renderer);
     SDL_RenderPresent(_renderer);
-
-    struct termios new_termios;
-
-    tcgetattr(STDIN_FILENO, &_old_termios);
-    memcpy(&new_termios, &_old_termios, sizeof(new_termios));
-
-    cfmakeraw(&new_termios);
-    new_termios.c_oflag |= ONLCR | OPOST;
-    tcsetattr(STDIN_FILENO, TCSANOW, &new_termios);
 }
 
 void
@@ -179,8 +167,6 @@ pal_cleanup(void)
         }
     }
 
-    tcsetattr(0, TCSANOW, &_old_termios);
-
     TTF_CloseFont(_font);
     TTF_Quit();
     SDL_Quit();
@@ -195,6 +181,27 @@ pal_cleanup(void)
 void
 pal_handle(void)
 {
+    SDL_PumpEvents();
+
+    SDL_Event e;
+    if (1 > SDL_PeepEvents(&e, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT))
+    {
+        return;
+    }
+
+    switch (e.type)
+    {
+    case SDL_KEYDOWN: {
+        LOG("key '%s' down", SDL_GetKeyName(e.key.keysym.sym));
+        _keycode = e.key.keysym.sym;
+        break;
+    }
+
+    case SDL_KEYUP:
+        LOG("key '%s' up", SDL_GetKeyName(e.key.keysym.sym));
+        _keycode = 0;
+        break;
+    }
 }
 
 uint32_t
@@ -237,25 +244,16 @@ pal_get_medium_id(const char *tag)
 uint16_t
 pal_get_keystroke(void)
 {
-    struct timeval tv = {0L, 0L};
-
-    fd_set fds;
-    FD_ZERO(&fds);
-    FD_SET(STDIN_FILENO, &fds);
-    if (0 == select(1, &fds, NULL, NULL, &tv))
+    if (!_keycode)
     {
         return 0;
     }
 
-    char c;
-    if (0 > read(STDIN_FILENO, &c, sizeof(c)))
+    int c = _keycode;
+    _keycode = 0;
+    if (255 < c)
     {
-        return 0;
-    }
-
-    if (0x7F == c)
-    {
-        c = VK_BACK;
+        c = 0;
     }
 
     if (islower(c))
