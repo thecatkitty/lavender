@@ -44,6 +44,8 @@ static int           _font_w, _font_h;
 static long          _start_msec;
 
 static SDL_Keycode _keycode;
+static bool        _mouse_enabled = false;
+static uint16_t    _mouse_x, _mouse_y, _mouse_buttons;
 
 #define PCSPK_CYCLE 65536
 #define PCSPK_RATE  44100
@@ -201,6 +203,54 @@ pal_handle(void)
         LOG("key '%s' up", SDL_GetKeyName(e.key.keysym.sym));
         _keycode = 0;
         break;
+
+    case SDL_MOUSEMOTION: {
+        if (!_mouse_enabled)
+        {
+            break;
+        }
+
+        LOG("mouse x: %d, y: %d", e.motion.x, e.motion.y);
+        _mouse_x = e.motion.x / _font_w;
+        _mouse_y = e.motion.y / 16;
+        break;
+    }
+
+    case SDL_MOUSEBUTTONDOWN: {
+        if (!_mouse_enabled)
+        {
+            break;
+        }
+
+        LOG("mouse button %u down", e.button.button);
+        if (SDL_BUTTON_LEFT == e.button.button)
+        {
+            _mouse_buttons |= PAL_MOUSE_LBUTTON;
+        }
+        else if (SDL_BUTTON_RIGHT == e.button.button)
+        {
+            _mouse_buttons |= PAL_MOUSE_RBUTTON;
+        }
+        break;
+    }
+
+    case SDL_MOUSEBUTTONUP: {
+        if (!_mouse_enabled)
+        {
+            break;
+        }
+
+        LOG("mouse button %u up", e.button.button);
+        if (SDL_BUTTON_LEFT == e.button.button)
+        {
+            _mouse_buttons &= ~PAL_MOUSE_LBUTTON;
+        }
+        else if (SDL_BUTTON_RIGHT == e.button.button)
+        {
+            _mouse_buttons &= ~PAL_MOUSE_RBUTTON;
+        }
+        break;
+    }
     }
 }
 
@@ -269,6 +319,8 @@ void
 pal_enable_mouse(void)
 {
     LOG("entry");
+
+    _mouse_enabled = true;
     return;
 }
 
@@ -276,13 +328,26 @@ void
 pal_disable_mouse(void)
 {
     LOG("entry");
+
+    _mouse_enabled = false;
     return;
 }
 
 uint16_t
 pal_get_mouse(uint16_t *x, uint16_t *y)
 {
-    return 0;
+    if (!_mouse_enabled)
+    {
+        return 0;
+    }
+
+    *x = _mouse_x;
+    *y = _mouse_y;
+    if (_mouse_buttons)
+    {
+        LOG("x: %u, y: %u, buttons: %#x", *x, *y, _mouse_buttons);
+    }
+    return _mouse_buttons;
 }
 
 int
