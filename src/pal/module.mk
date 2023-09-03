@@ -5,6 +5,6 @@ ASSOURCES := $(ASSOURCES) $(DIR)/dospc.S
 CCSOURCES := $(CCSOURCES) $(DIR)/dospc.c
 endif
 
-ifeq ($(LAV_TARGET),test)
-CCSOURCES := $(CCSOURCES) $(DIR)/log.c $(DIR)/test.c
+ifeq ($(LAV_TARGET),linux)
+CCSOURCES := $(CCSOURCES) $(DIR)/log.c $(DIR)/linux.c
 endif
