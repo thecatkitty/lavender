@@ -15,7 +15,7 @@ parameters:
   default:
     - dospc-com
     - dospc-exe
-    - test
+    - linux
 
 - name: languages
   type: object

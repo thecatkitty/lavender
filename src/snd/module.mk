@@ -4,7 +4,7 @@ CCSOURCES := $(CCSOURCES) \
 	$(DIR)/fspk.c \
 	$(DIR)/dpcspk.c
 
-ifeq ($(findstring test,$(LAV_TARGET)),test)
+ifeq ($(findstring linux,$(LAV_TARGET)),linux)
 CCSOURCES := $(CCSOURCES) \
 	$(DIR)/pcspkemu.c \
 	$(DIR)/dfluid.c
