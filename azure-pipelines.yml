@@ -28,7 +28,7 @@ steps:
 - script: |
     sudo add-apt-repository ppa:tkchia/build-ia16
     sudo apt update
-    sudo apt install gcc-ia16-elf gcc-mingw-w64-i686 gcc-mingw-w64-x86-64 libi86-ia16-elf libsdl2-dev libsdl2-ttf-dev libfontconfig-dev zip -y
+    sudo apt install gcc-ia16-elf gcc-mingw-w64-i686 gcc-mingw-w64-x86-64 libi86-ia16-elf libsdl2-dev libsdl2-ttf-dev libfontconfig-dev libfluidsynth-dev zip -y
   displayName: 'Install additional tools'
 
 - ${{ each target in parameters.targets }}:

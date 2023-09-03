@@ -6,6 +6,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
+#include <fluidsynth.h>
 #include <fontconfig/fontconfig.h>
 
 #include <fmt/exe.h>
@@ -46,6 +47,15 @@ static long          _start_msec;
 static SDL_Keycode _keycode;
 static bool        _mouse_enabled = false;
 static uint16_t    _mouse_x, _mouse_y, _mouse_buttons;
+
+static const char *SOUNDFONTS[] = {"/usr/share/sounds/sf2/default-GM.sf2",
+                                   "/usr/share/soundfonts/default-GM.sf2",
+                                   "/usr/share/sounds/sf2/default.sf2",
+                                   "/usr/share/soundfonts/default.sf2", NULL};
+
+static fluid_settings_t     *_fluid_settings;
+static fluid_synth_t        *_fluid_synth;
+static fluid_audio_driver_t *_fluid_audio;
 
 #define PCSPK_CYCLE 65536
 #define PCSPK_RATE  44100
@@ -146,6 +156,51 @@ pal_initialize(int argc, char *argv[])
         abort();
     }
 
+    _fluid_settings = new_fluid_settings();
+    if (NULL == _fluid_settings)
+    {
+        LOG("cannot create FluidSynth settings");
+        goto end;
+    }
+
+    fluid_settings_setstr(_fluid_settings, "audio.driver", "sdl2");
+
+    _fluid_synth = new_fluid_synth(_fluid_settings);
+    if (NULL == _fluid_synth)
+    {
+        LOG("cannot create the synthesizer");
+        goto end;
+    }
+
+    int sfont = FLUID_FAILED;
+    for (const char **path = SOUNDFONTS; *path; path++)
+    {
+        LOG("trying SoundFont '%s'", *path);
+        if (FLUID_FAILED !=
+            (sfont = fluid_synth_sfload(_fluid_synth, *path, 1)))
+        {
+            break;
+        }
+    }
+
+    if (FLUID_FAILED == sfont)
+    {
+        LOG("cannot load any SoundFont");
+        delete_fluid_synth(_fluid_synth);
+        _fluid_synth = NULL;
+        goto end;
+    }
+
+    _fluid_audio = new_fluid_audio_driver(_fluid_settings, _fluid_synth);
+    if (NULL == _fluid_audio)
+    {
+        LOG("cannot create the audio driver");
+        delete_fluid_synth(_fluid_synth);
+        _fluid_synth = NULL;
+        goto end;
+    }
+
+end:
     SDL_RenderClear(_renderer);
     SDL_RenderPresent(_renderer);
 }
@@ -161,6 +216,21 @@ pal_cleanup(void)
         {
             zip_free_data(__pal_assets[i].data);
         }
+    }
+
+    if (_fluid_audio)
+    {
+        delete_fluid_audio_driver(_fluid_audio);
+    }
+
+    if (_fluid_synth)
+    {
+        delete_fluid_synth(_fluid_synth);
+    }
+
+    if (_fluid_settings)
+    {
+        delete_fluid_settings(_fluid_settings);
     }
 
     if (_renderer)
@@ -600,6 +670,21 @@ snd_send(midi_event *event)
                 ? "Note Off"
                 : ((MIDI_MSG_NOTEON == status) ? "Note On" : "PolyPress."),
             key, velocity);
+        if (_fluid_synth)
+        {
+            if (MIDI_MSG_NOTEOFF == status)
+            {
+                fluid_synth_noteoff(_fluid_synth, channel, key);
+            }
+            else if (MIDI_MSG_NOTEON == status)
+            {
+                fluid_synth_noteon(_fluid_synth, channel, key, velocity);
+            }
+            else
+            {
+                fluid_synth_key_pressure(_fluid_synth, channel, key, velocity);
+            }
+        }
         break;
     }
 
@@ -644,6 +729,10 @@ snd_send(midi_event *event)
 
         LOG("%3d %-10.10s %3d %3d %s", channel, "ControlCh.", control, value,
             control_str);
+        if (_fluid_synth)
+        {
+            fluid_synth_cc(_fluid_synth, channel, control, value);
+        }
         break;
     }
 
@@ -651,6 +740,10 @@ snd_send(midi_event *event)
         int program = msg[0];
 
         LOG("%3d %-10.10s %3d", channel, "ProgramCh.", program);
+        if (_fluid_synth)
+        {
+            fluid_synth_program_change(_fluid_synth, channel, program);
+        }
         break;
     }
 
@@ -658,15 +751,23 @@ snd_send(midi_event *event)
         int value = msg[0];
 
         LOG("%3d %-10.10s %3d", channel, "ChanPress.", value);
+        if (_fluid_synth)
+        {
+            fluid_synth_channel_pressure(_fluid_synth, channel, value);
+        }
         break;
     }
 
     case MIDI_MSG_PITCHWHEEL: {
         int value_low = msg[0];
         int value_high = msg[1];
+        int pitch_bend = (int)((value_high << 7) | value_low);
 
-        LOG("%3d %-10.10s %+6d", channel, "PitchWheel",
-            0x2000 - (int)((value_high << 7) | value_low));
+        LOG("%3d %-10.10s %+6d", channel, "PitchWheel", 0x2000 - pitch_bend);
+        if (_fluid_synth)
+        {
+            fluid_synth_pitch_bend(_fluid_synth, channel, pitch_bend);
+        }
         break;
     }
 
@@ -694,6 +795,12 @@ snd_send(midi_event *event)
             {
                 LOG("    %s", hexdump);
             }
+        }
+
+        if (_fluid_synth)
+        {
+            fluid_synth_sysex(_fluid_synth, msg, event->msg_length, NULL, NULL,
+                              NULL, false);
         }
         break;
     }

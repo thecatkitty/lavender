@@ -25,7 +25,7 @@ OBJPREF = $(OBJ)/$(LAV_TARGET)
 
 ASFLAGS = -S -Iinc/
 CFLAGS  = -c -Os -fno-strict-aliasing -Iinc/
-LDFLAGS = -lc -lSDL2 -lSDL2_ttf -lfontconfig -no-pie
+LDFLAGS = -lc -lSDL2 -lSDL2_ttf -lfontconfig -lfluidsynth -no-pie
 
 RESSUFF = .obj
 OBJFMT  = elf64-x86-64

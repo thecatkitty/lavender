@@ -18,7 +18,7 @@ This is still work in progress, but I'm doing my best to separate working versio
 * diagnostic Linux target
 
 ## Building
-Building requires x86_64 Linux with *GNU Make*, *GNU Binutils*, *MinGW-w64* for i686 and x86_64 with SDL2 and SDL2_ttf, [GCC for IA-16](https://github.com/tkchia/gcc-ia16/) with [libi86](https://github.com/tkchia/libi86/), and `zip`. If you have it, just run:
+Building requires x86_64 Linux with *GNU Make*, *GNU Binutils*, *MinGW-w64* for i686 and x86_64 with SDL2, SDL2_ttf, and FluidSynth, [GCC for IA-16](https://github.com/tkchia/gcc-ia16/) with [libi86](https://github.com/tkchia/libi86/), and `zip`. If you have it, just run:
 ```sh
 make
 ```
