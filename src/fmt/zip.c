@@ -53,7 +53,11 @@ zip_open(zip_archive archive)
 #ifdef ZIP_PIGGYBACK
     cdirend = archive;
 #else
+#ifdef O_BINARY
+    _fd = open(archive, O_RDONLY | O_BINARY);
+#else
     _fd = open(archive, O_RDONLY);
+#endif
     if (-1 == _fd)
     {
         return false;
