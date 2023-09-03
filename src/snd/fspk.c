@@ -71,6 +71,10 @@ _fspk_start(void *music, uint16_t length)
     _tick_rate = pal_get_ticks(1000 / header->ticks_per_second);
     _sequence = (spk_note3 *)((uint8_t *)music + sizeof(spk_header));
     _ticks = 0;
+
+    char       program = 81; // Lead 1 (square wave)
+    midi_event event = {0, MIDI_MSG_PROGRAM, &program, sizeof(program)};
+    snd_send(&event);
     return true;
 }
 
@@ -113,15 +117,17 @@ _fspk_step(void)
     }
     else
     {
+        midi_event event = {0, MIDI_MSG_NOTEOFF, msg, sizeof(msg)};
+        snd_send(&event);
+
         // F / d = 440 * 2^((x - 69) / 12)
         // lb(F / (440 * d)) = (x - 69) / 12
         // lb(F / 440) - lb(d) = (x - 69) / 12
         // x = 12 * (lb(F / 440) - lb(d)) + 69
+        event.status = MIDI_MSG_NOTEON;
         uint32_t note = NOTE_CONST_U32F8 - 12 * _lb(_sequence->divisor);
         _last_note = ((note >> 8) & 0x7F) + ((note & 0x80) >> 7);
         msg[0] = (char)_last_note;
-
-        midi_event event = {0, MIDI_MSG_NOTEON, msg, sizeof(msg)};
         snd_send(&event);
     }
 
