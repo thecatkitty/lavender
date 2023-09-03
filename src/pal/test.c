@@ -112,7 +112,7 @@ pal_initialize(int argc, char *argv[])
     {
         LOG("cannot match font");
         TTF_Quit();
-        SDL_Quit();
+        pal_cleanup();
         abort();
     }
 
@@ -120,8 +120,7 @@ pal_initialize(int argc, char *argv[])
     if (NULL == _font)
     {
         LOG("cannot open font '%s'. %s", fc_font, SDL_GetError());
-        TTF_Quit();
-        SDL_Quit();
+        pal_cleanup();
         abort();
     }
 
@@ -135,9 +134,7 @@ pal_initialize(int argc, char *argv[])
     if (NULL == _window)
     {
         LOG("cannot create window. %s", SDL_GetError());
-        TTF_CloseFont(_font);
-        TTF_Quit();
-        SDL_Quit();
+        pal_cleanup();
         abort();
     }
 
@@ -145,10 +142,7 @@ pal_initialize(int argc, char *argv[])
     if (NULL == _renderer)
     {
         LOG("cannot create renderer. %s", SDL_GetError());
-        SDL_DestroyWindow(_window);
-        TTF_CloseFont(_font);
-        TTF_Quit();
-        SDL_Quit();
+        pal_cleanup();
         abort();
     }
 
@@ -169,8 +163,22 @@ pal_cleanup(void)
         }
     }
 
-    TTF_CloseFont(_font);
-    TTF_Quit();
+    if (_renderer)
+    {
+        SDL_DestroyRenderer(_renderer);
+    }
+
+    if (_window)
+    {
+        SDL_DestroyWindow(_window);
+    }
+
+    if (_font)
+    {
+        TTF_CloseFont(_font);
+        TTF_Quit();
+    }
+
     SDL_Quit();
 
     if (_wav)
