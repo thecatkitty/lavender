@@ -29,9 +29,12 @@ LDFLAGS = -lc -lSDL2 -lSDL2_ttf -lfontconfig -lfluidsynth -no-pie
 
 RESSUFF = .obj
 OBJFMT  = elf64-x86-64
+SRODATA = .rodata
 
 ifeq ($(findstring dospc,$(LAV_TARGET)),dospc)
 include Makefile.dospc
+else ifeq ($(LAV_TARGET),windows)
+include Makefile.windows
 else
 CFLAGS += -g -no-pie
 endif
@@ -55,7 +58,7 @@ include sources.mk
 $(BINPREF)/$(SSHOW): $(BINPREF)/lavender$(EXESUFF) $(OBJ)/data.zip
 	cat $^ > $@
 
-$(BINPREF)/lavender$(EXESUFF): $(OBJ)/version.o $(ASSOURCES:%.S=$(OBJPREF)/%.S.o) $(CCSOURCES:%.c=$(OBJPREF)/%.c.o) $(OBJPREF)/resource.$(LAV_LANG)$(RESSUFF)
+$(BINPREF)/lavender$(EXESUFF): $(OBJPREF)/version.o $(ASSOURCES:%.S=$(OBJPREF)/%.S.o) $(CCSOURCES:%.c=$(OBJPREF)/%.c.o) $(OBJPREF)/resource.$(LAV_LANG)$(RESSUFF)
 	@mkdir -p $(BINPREF)
 	$(LD) -o $@ $^ $(LDFLAGS)
 
@@ -86,8 +89,9 @@ else
 VERSION = $(GIT_TAG)-$(GIT_COMMITS)
 endif
 
-$(OBJ)/version.o: $(OBJ)/version.txt .FORCE
-	$(OBJCOPY) -I binary -O $(OBJFMT) --rename-section .data=.rodata $< $@
+$(OBJPREF)/version.o: $(OBJ)/version.txt .FORCE
+	@mkdir -p $(@D)
+	$(OBJCOPY) -I binary -O $(OBJFMT) --rename-section .data=$(SRODATA) $< $@
 
 $(OBJ)/version.txt: .FORCE
 	@mkdir -p $(OBJ)
