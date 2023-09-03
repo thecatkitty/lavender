@@ -10,6 +10,14 @@ typedef struct
     bool (*step)(void);
 } snd_format_protocol;
 
+// Initialize sound system
+extern bool
+snd_initialize(void);
+
+// Clean up sound system
+extern void
+snd_cleanup(void);
+
 // Start playing music
 extern bool
 snd_play(const char *name);
