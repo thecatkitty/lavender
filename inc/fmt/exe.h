@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+#ifndef VOID
 typedef uint8_t  UCHAR;
 typedef uint16_t USHORT;
 typedef int32_t  LONG;
@@ -10,6 +11,7 @@ typedef uint32_t ULONG;
 
 typedef uint16_t WORD;
 typedef uint32_t DWORD;
+#endif
 
 #pragma pack(push, 1)
 typedef struct
