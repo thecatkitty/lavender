@@ -8,10 +8,12 @@
 #include <stdint.h>
 #include <sys/types.h>
 
+#ifndef far
 #ifndef EDITING
 #define far __far
 #else
 #define far
+#endif
 #endif
 
 #define DEFINE_HANDLE(x)                                                       \

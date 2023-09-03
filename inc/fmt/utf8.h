@@ -1,7 +1,7 @@
 #ifndef _FMT_UTF8_H_
 #define _FMT_UTF8_H_
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__MINGW32__)
 #define UTF8_NATIVE
 #endif
 

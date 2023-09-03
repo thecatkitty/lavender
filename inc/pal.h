@@ -41,7 +41,7 @@ DEFINE_HANDLE(hasset);
 #define VK_F12    0x7B
 #endif
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__MINGW32__)
 
 #include <stdio.h>
 
