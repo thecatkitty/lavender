@@ -1,6 +1,8 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
+#ifndef __MINGW32__
 #include <fontconfig/fontconfig.h>
+#endif
 
 #include <gfx.h>
 #include <pal.h>
@@ -67,6 +69,9 @@ gfx_initialize(void)
         return false;
     }
 
+#ifdef __MINGW32__
+    const char *fc_font = "C:\\Windows\\Fonts\\lucon.ttf";
+#else
     FcPattern *pattern = FcPatternCreate();
     FcPatternAddString(pattern, FC_FAMILY, "monospace");
     FcConfigSubstitute(NULL, pattern, FcMatchPattern);
@@ -84,6 +89,7 @@ gfx_initialize(void)
         TTF_Quit();
         return false;
     }
+#endif
 
     _font = TTF_OpenFont(fc_font, 12);
     if (NULL == _font)
@@ -93,7 +99,9 @@ gfx_initialize(void)
     }
 
     LOG("font: '%s'", fc_font);
+#ifndef __MINGW32__
     FcPatternDestroy(fc_match);
+#endif
     TTF_SizeText(_font, "M", &_font_w, &_font_h);
 
     _window = SDL_CreateWindow(pal_get_version_string(), SDL_WINDOWPOS_CENTERED,

@@ -1,4 +1,5 @@
 .env
 .vscode
 bin
+ext
 obj

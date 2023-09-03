@@ -1,3 +1,5 @@
+#include <ctype.h>
+
 #include <SDL2/SDL.h>
 
 #include <gfx.h>

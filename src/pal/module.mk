@@ -10,6 +10,10 @@ CCSOURCES := $(CCSOURCES) \
 	$(DIR)/ziparch.c
 endif
 
+ifeq ($(LAV_TARGET),windows)
+CCSOURCES := $(CCSOURCES) $(DIR)/windows.c
+endif
+
 ifeq ($(LAV_TARGET),linux)
 CCSOURCES := $(CCSOURCES) $(DIR)/linux.c
 endif
