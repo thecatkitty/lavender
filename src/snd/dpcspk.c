@@ -23,6 +23,19 @@ static const uint8_t KEY_MULTIPLIERS[] = {
     227  // G#  .888
 };
 
+#ifndef __linux__
+bool
+snd_initialize(void)
+{
+    return true;
+}
+
+void
+snd_cleanup(void)
+{
+}
+#endif
+
 void
 #ifdef __linux__
 sndd_send
