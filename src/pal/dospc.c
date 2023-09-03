@@ -278,14 +278,7 @@ pal_initialize(int argc, char *argv[])
 void
 pal_cleanup(void)
 {
-    for (int i = 0; i < MAX_OPEN_ASSETS; ++i)
-    {
-        if (NULL != __pal_assets[i].data)
-        {
-            zip_free_data(__pal_assets[i].data);
-        }
-    }
-
+    ziparch_cleanup();
     gfx_cleanup();
 
     _dos_setvect(INT_PIT, __dospc_bios_isr);

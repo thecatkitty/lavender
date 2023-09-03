@@ -6,6 +6,43 @@
 
 pal_asset __pal_assets[MAX_OPEN_ASSETS];
 
+#ifndef ZIP_PIGGYBACK
+bool
+ziparch_initialize(const char *self)
+{
+    LOG("entry, self: '%s'", self);
+
+    for (int i = 0; i < MAX_OPEN_ASSETS; ++i)
+    {
+        __pal_assets[i].inzip = -1;
+        __pal_assets[i].flags = 0;
+        __pal_assets[i].data = NULL;
+    }
+
+    if (!zip_open(self))
+    {
+        LOG("cannot open the archive '%s'. %s", self, strerror(errno));
+        return false;
+    }
+
+    return true;
+}
+#endif
+
+void
+ziparch_cleanup(void)
+{
+    LOG("entry");
+
+    for (int i = 0; i < MAX_OPEN_ASSETS; ++i)
+    {
+        if (NULL != __pal_assets[i].data)
+        {
+            zip_free_data(__pal_assets[i].data);
+        }
+    }
+}
+
 hasset
 pal_open_asset(const char *name, int flags)
 {
