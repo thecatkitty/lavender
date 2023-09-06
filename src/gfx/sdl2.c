@@ -1,11 +1,9 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
-#ifndef __MINGW32__
-#include <fontconfig/fontconfig.h>
-#endif
 
 #include <gfx.h>
 #include <pal.h>
+#include <platform/sdl2arch.h>
 
 static SDL_Window   *_window = NULL;
 static SDL_Renderer *_renderer = NULL;
@@ -69,39 +67,21 @@ gfx_initialize(void)
         return false;
     }
 
-#ifdef __MINGW32__
-    const char *fc_font = "C:\\Windows\\Fonts\\lucon.ttf";
-#else
-    FcPattern *pattern = FcPatternCreate();
-    FcPatternAddString(pattern, FC_FAMILY, "monospace");
-    FcConfigSubstitute(NULL, pattern, FcMatchPattern);
-    FcDefaultSubstitute(pattern);
-
-    FcResult   fc_result = FcResultNoMatch;
-    FcPattern *fc_match = FcFontMatch(NULL, pattern, &fc_result);
-    FcPatternDestroy(pattern);
-
-    FcChar8 *fc_font;
-    if ((NULL == fc_match) ||
-        (FcResultMatch != FcPatternGetString(fc_match, FC_FILE, 0, &fc_font)))
+    const char *font_path = sdl2arch_get_font();
+    if (NULL == font_path)
     {
-        LOG("cannot match font");
-        TTF_Quit();
+        LOG("cannot determine font");
         return false;
     }
-#endif
 
-    _font = TTF_OpenFont(fc_font, 12);
+    _font = TTF_OpenFont(font_path, 12);
     if (NULL == _font)
     {
-        LOG("cannot open font '%s'. %s", fc_font, SDL_GetError());
+        LOG("cannot open font '%s'. %s", font_path, SDL_GetError());
         return false;
     }
 
-    LOG("font: '%s'", fc_font);
-#ifndef __MINGW32__
-    FcPatternDestroy(fc_match);
-#endif
+    LOG("font: '%s'", font_path);
     TTF_SizeText(_font, "M", &_font_w, &_font_h);
 
     _window = SDL_CreateWindow(pal_get_version_string(), SDL_WINDOWPOS_CENTERED,
