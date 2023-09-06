@@ -9,7 +9,7 @@ EXTSDL  = ext/SDL2-2.28.3/$(ARCHPFX)
 EXTTTF  = ext/SDL2_ttf-2.20.2/$(ARCHPFX)
 
 CFLAGS += -Iext/include/
-LDFLAGS = -s -L$(EXTSDL)/lib -lSDL2main $(EXTSDL)/lib/libSDL2.a $(EXTTTF)/lib/libSDL2_ttf.a -lgdi32 -limm32 -lole32 -loleaut32 -lrpcrt4 -lsetupapi -lusp10 -lversion -lwinmm
+LDFLAGS = -s -L$(EXTSDL)/lib -lSDL2main $(EXTSDL)/lib/libSDL2.a $(EXTTTF)/lib/libSDL2_ttf.a -lgdi32 -limm32 -lole32 -loleaut32 -lrpcrt4 -lsetupapi -lshell32 -lusp10 -lversion -lwinmm
 
 OBJFMT  = elf32-i386
 EXESUFF = .exe
