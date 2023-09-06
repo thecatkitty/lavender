@@ -1,6 +1,7 @@
 #include <malloc.h>
 
 #include <SDL2/SDL.h>
+#include <shlobj.h>
 #include <windows.h>
 
 #include <fmt/utf8.h>
@@ -12,6 +13,7 @@
 
 extern char binary_obj_version_txt_start[];
 
+static char         *_font = NULL;
 static LARGE_INTEGER _start_pc, _pc_freq;
 
 void
@@ -45,6 +47,11 @@ void
 pal_cleanup(void)
 {
     LOG("entry");
+
+    if (_font)
+    {
+        free(_font);
+    }
 
     sdl2arch_cleanup();
     ziparch_cleanup();
@@ -109,8 +116,102 @@ pal_load_string(unsigned id, char *buffer, int max_length)
     return length;
 }
 
+static int CALLBACK
+enum_font_fam_proc(const LOGFONTW    *logfont,
+                   const TEXTMETRICW *metric,
+                   DWORD              type,
+                   LPARAM             lparam)
+{
+    if ((TRUETYPE_FONTTYPE != type) ||
+        (FIXED_PITCH != (logfont->lfPitchAndFamily & 0x3)) ||
+        (FW_NORMAL != logfont->lfWeight))
+    {
+        return 1;
+    }
+
+    *(bool *)lparam = true;
+    return 1;
+}
+
 const char *
 sdl2arch_get_font(void)
 {
-    return "C:\\Windows\\Fonts\\lucon.ttf";
+    if (_font)
+    {
+        return _font;
+    }
+
+    HKEY hkfonts;
+    if (ERROR_SUCCESS !=
+        RegOpenKeyW(HKEY_LOCAL_MACHINE,
+                    L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts",
+                    &hkfonts))
+    {
+        LOG("cannot retrive fonts registry key");
+        return NULL;
+    }
+
+    HDC   hdc = GetDC(NULL);
+    bool  found = false;
+    DWORD index = 0;
+    WCHAR value[MAX_PATH];
+    DWORD value_len = MAX_PATH;
+    DWORD type;
+    BYTE  data[MAX_PATH * sizeof(WCHAR)];
+    DWORD data_size = sizeof(data);
+    while (ERROR_SUCCESS == RegEnumValueW(hkfonts, index, value, &value_len,
+                                          NULL, &type, data, &data_size))
+    {
+        index++;
+        value_len = MAX_PATH;
+        data_size = sizeof(data);
+
+        if (REG_SZ != type)
+        {
+            continue;
+        }
+
+        LPWSTR ttf_suffix = wcsstr(value, L" (TrueType)");
+        if (ttf_suffix)
+        {
+            *ttf_suffix = 0;
+        }
+
+        EnumFontFamiliesW(hdc, value, enum_font_fam_proc, (LPARAM)&found);
+        if (found)
+        {
+            LOG("font: '%ls', file: '%ls'", value, data);
+            break;
+        }
+    }
+
+    RegCloseKey(hkfonts);
+
+    if (!found)
+    {
+        LOG("cannot match font");
+        return NULL;
+    }
+
+    WCHAR path[MAX_PATH];
+    if (!SUCCEEDED(SHGetFolderPathW(NULL, CSIDL_FONTS, NULL, SHGFP_TYPE_CURRENT,
+                                    path)))
+    {
+        LOG("cannot retrieve font directory path");
+        return NULL;
+    }
+
+    wcsncat(path, L"\\", MAX_PATH);
+    wcsncat(path, (LPWSTR)data, MAX_PATH);
+
+    int length = WideCharToMultiByte(CP_UTF8, 0, path, -1, NULL, 0, NULL, NULL);
+    _font = (char *)malloc(length + 1);
+    if (NULL == _font)
+    {
+        LOG("cannot allocate buffer");
+        return NULL;
+    }
+
+    WideCharToMultiByte(CP_UTF8, 0, path, -1, _font, length, NULL, NULL);
+    return _font;
 }
