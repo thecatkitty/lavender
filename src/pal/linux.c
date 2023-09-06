@@ -1,11 +1,13 @@
 #include <time.h>
+#include <unistd.h>
 
 #include <SDL2/SDL.h>
+#include <fontconfig/fontconfig.h>
 
 #include <fmt/exe.h>
 #include <pal.h>
+#include <platform/sdl2arch.h>
 #include <snd.h>
-#include <unistd.h>
 
 #include "pal_impl.h"
 
@@ -21,7 +23,8 @@ extern
 #endif
 ;
 
-static long _start_msec;
+static char *_font = NULL;
+static long  _start_msec;
 
 void
 pal_initialize(int argc, char *argv[])
@@ -55,6 +58,11 @@ void
 pal_cleanup(void)
 {
     LOG("entry");
+
+    if (_font)
+    {
+        free(_font);
+    }
 
     sdl2arch_cleanup();
     ziparch_cleanup();
@@ -114,4 +122,43 @@ pal_load_string(unsigned id, char *buffer, int max_length)
 
     LOG("exit, '%s'", buffer);
     return length;
+}
+
+const char *
+sdl2arch_get_font(void)
+{
+    if (_font)
+    {
+        return _font;
+    }
+
+    FcPattern *pattern = FcPatternCreate();
+    FcPatternAddString(pattern, FC_FAMILY, "monospace");
+    FcConfigSubstitute(NULL, pattern, FcMatchPattern);
+    FcDefaultSubstitute(pattern);
+
+    FcResult   result = FcResultNoMatch;
+    FcPattern *match = FcFontMatch(NULL, pattern, &result);
+    FcPatternDestroy(pattern);
+
+    FcChar8 *font;
+    if ((NULL == match) ||
+        (FcResultMatch != FcPatternGetString(match, FC_FILE, 0, &font)))
+    {
+        LOG("cannot match font");
+        return NULL;
+    }
+
+    _font = malloc(strlen(font) + 1);
+    if (NULL == _font)
+    {
+        LOG("cannot allocate buffer");
+        FcPatternDestroy(match);
+        return NULL;
+    }
+
+    strcpy(_font, font);
+    FcPatternDestroy(match);
+    LOG("matched: '%s'", _font);
+    return _font;
 }

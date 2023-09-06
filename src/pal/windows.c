@@ -5,6 +5,7 @@
 
 #include <fmt/utf8.h>
 #include <pal.h>
+#include <platform/sdl2arch.h>
 #include <snd.h>
 
 #include "pal_impl.h"
@@ -106,4 +107,10 @@ pal_load_string(unsigned id, char *buffer, int max_length)
 
     LOG("exit, '%s'", buffer);
     return length;
+}
+
+const char *
+sdl2arch_get_font(void)
+{
+    return "C:\\Windows\\Fonts\\lucon.ttf";
 }

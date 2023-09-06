@@ -4,6 +4,7 @@
 
 #include <gfx.h>
 #include <pal.h>
+#include <platform/sdl2arch.h>
 #include <snd.h>
 
 static SDL_Keycode    _keycode;
