@@ -32,3 +32,14 @@ LANGUAGE LCID_CSY, 0x1
     IDS_UNKNOWNKEYSRC, "Neznamy zdroj klice"
     IDS_BADSOUND, "Neplatny nebo nepodporovany zvukovy soubor"
 }
+
+#ifdef __MINGW32__
+LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
+
+#define VER_FILEDESCRIPTION_STR     "Přehrávač prezentací Lavender"
+#define VER_LEGALCOPYRIGHT_STR      "(C) 2021-2023 Mateusz Karcz. Zpřístupněno pod Licencí MIT."
+#define VER_VERSION_UNICODE_LANG    "040504B0"
+#define VER_VERSION_TRANSLATION     LCID_CSY,0x04B0
+
+#include "version.rc"
+#endif
