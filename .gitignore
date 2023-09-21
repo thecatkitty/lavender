@@ -3,3 +3,4 @@
 bin
 ext
 obj
+src/version.h

@@ -77,17 +77,25 @@ $(OBJPREF)/resource.$(LAV_LANG).o: $(OBJPREF)/resource.$(LAV_LANG).obj
 	@mkdir -p $(@D)
 	$(W32OBJCOPY) $< $@ -O $(OBJFMT) --rename-section .rsrc=.rodata.rsrc --add-symbol __w32_rsrc_start=.rodata.rsrc:0
 
-$(OBJPREF)/resource.$(LAV_LANG).obj: $(SRC)/resource.$(LAV_LANG).rc
+$(OBJPREF)/resource.$(LAV_LANG).obj: $(SRC)/resource.$(LAV_LANG).rc $(SRC)/version.h
 	$(WINDRES) -c 65001 $< $@ -Iinc/
 
 GIT_TAG     = $(shell git describe --abbrev=0)
 GIT_COMMITS = $(shell git rev-list $(GIT_TAG)..HEAD --count)
 
+, = ,
 ifeq ($(GIT_COMMITS),0)
-VERSION = $(GIT_TAG)
+VER_FILEVERSION     = $(subst .,$(,),$(GIT_TAG)),0
+VER_FILEVERSION_STR = $(GIT_TAG)
 else
-VERSION = $(GIT_TAG)-$(GIT_COMMITS)
+VER_FILEVERSION = $(subst .,$(,),$(GIT_TAG)),$(GIT_COMMITS)
+VER_FILEVERSION_STR = $(GIT_TAG)-$(GIT_COMMITS)
 endif
+
+$(SRC)/version.h: $(OBJ)/version.txt
+	@mkdir -p $(@D)
+	/bin/echo -e "#define VER_FILEVERSION $(VER_FILEVERSION)" >$@
+	/bin/echo -e "#define VER_FILEVERSION_STR \"$(VER_FILEVERSION_STR)\"" >>$@
 
 $(OBJPREF)/version.o: $(OBJ)/version.txt .FORCE
 	@mkdir -p $(@D)
@@ -95,7 +103,7 @@ $(OBJPREF)/version.o: $(OBJ)/version.txt .FORCE
 
 $(OBJ)/version.txt: .FORCE
 	@mkdir -p $(OBJ)
-	/bin/echo -en "Lavender $(VERSION)\x00" >$@
+	/bin/echo -en "Lavender $(VER_FILEVERSION_STR)\x00" >$@
 
  .FORCE:
 

@@ -1,3 +1,7 @@
+#ifdef __MINGW32__
+#include <winnt.rh>
+#endif
+
 #include <nls.h>
 
 #define IDS_ERROR     0x00
