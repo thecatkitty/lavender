@@ -42,7 +42,7 @@ sdl2arch_cleanup(void)
     SDL_Quit();
 }
 
-void
+bool
 pal_handle(void)
 {
     SDL_PumpEvents();
@@ -50,11 +50,16 @@ pal_handle(void)
     SDL_Event e;
     if (1 > SDL_PeepEvents(&e, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT))
     {
-        return;
+        return true;
     }
 
     switch (e.type)
     {
+    case SDL_QUIT: {
+        LOG("quit");
+        return false;
+    }
+
     case SDL_KEYDOWN: {
         LOG("key '%s' down", SDL_GetKeyName(e.key.keysym.sym));
         _keycode = e.key.keysym.sym;
@@ -114,6 +119,8 @@ pal_handle(void)
         break;
     }
     }
+
+    return true;
 }
 
 uint16_t
