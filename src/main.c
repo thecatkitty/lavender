@@ -35,7 +35,7 @@ main(int argc, char *argv[])
         sld_handle();
     }
 
-    if (0 > script->state)
+    if ((0 > script->state) && (SLD_QUIT != script->state))
     {
         status = EXIT_FAILURE;
         puts("\n=====");

@@ -44,7 +44,8 @@ typedef enum
     SLD_STATE_WAIT,
     SLD_STATE_STOP,
     SLD_SYSERR = -1,
-    SLD_ARGERR = -2
+    SLD_ARGERR = -2,
+    SLD_QUIT = -3
 } sld_state;
 
 #define SLD_ALIGN_LEFT   0
