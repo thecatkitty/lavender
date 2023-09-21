@@ -5,7 +5,8 @@
 #include <pal.h>
 #include <platform/sdl2arch.h>
 
-static SDL_Window   *_window = NULL;
+SDL_Window *_window = NULL;
+
 static SDL_Renderer *_renderer = NULL;
 static TTF_Font     *_font = NULL;
 static int           _font_w, _font_h;
