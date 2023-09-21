@@ -67,7 +67,7 @@ pal_initialize(int argc, char *argv[]);
 extern void
 pal_cleanup(void);
 
-extern void
+extern bool
 pal_handle(void);
 
 extern uint32_t

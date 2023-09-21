@@ -307,9 +307,10 @@ pal_cleanup(void)
 #endif // STACK_PROFILING
 }
 
-void
+bool
 pal_handle(void)
 {
+    return true;
 }
 
 uint32_t
