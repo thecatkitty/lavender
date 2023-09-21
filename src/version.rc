@@ -16,3 +16,5 @@
 #define VER_PRODUCTNAME_STR         "Lavender"
 
 #include <common.ver>
+
+1 24 "lavender.exe.manifest"

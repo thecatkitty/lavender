@@ -1,6 +1,8 @@
 #include <malloc.h>
+#include <wchar.h>
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_syswm.h>
 #include <shlobj.h>
 #include <windows.h>
 
@@ -9,10 +11,14 @@
 #include <platform/sdl2arch.h>
 #include <snd.h>
 
+#include "../resource.h"
 #include "pal_impl.h"
 
 extern char binary_obj_version_txt_start[];
 
+extern SDL_Window *_window;
+
+static HWND          _wnd = NULL;
 static char         *_font = NULL;
 static LARGE_INTEGER _start_pc, _pc_freq;
 
@@ -27,15 +33,27 @@ pal_initialize(int argc, char *argv[])
     if (!ziparch_initialize(argv[0]))
     {
         LOG("ZIP architecture initialization failed");
-        abort();
+
+        WCHAR msg[MAX_PATH];
+        LoadStringW(NULL, IDS_NOARCHIVE, msg, MAX_PATH);
+        MessageBoxW(NULL, msg, L"Lavender", MB_ICONERROR);
+        exit(1);
     }
 
     if (!sdl2arch_initialize())
     {
         LOG("SDL2 architecture initialization failed");
-        pal_cleanup();
-        abort();
+
+        WCHAR msg[MAX_PATH];
+        LoadStringW(NULL, IDS_UNSUPPENV, msg, MAX_PATH);
+        MessageBoxW(NULL, msg, L"Lavender", MB_ICONERROR);
+        exit(1);
     }
+
+    SDL_SysWMinfo wminfo;
+    SDL_VERSION(&wminfo.version);
+    SDL_GetWindowWMInfo(_window, &wminfo);
+    _wnd = wminfo.info.win.window;
 
     if (!snd_initialize())
     {
@@ -219,5 +237,16 @@ sdl2arch_get_font(void)
 void
 pal_alert(const char *text, int error)
 {
-    LOG("entry, text: '%s', error: %d", text, error);
+    WCHAR msg[MAX_PATH];
+    if (error)
+    {
+        swprintf(msg, MAX_PATH, L"%s\nerror %d", text, error);
+    }
+    else
+    {
+        MultiByteToWideChar(CP_UTF8, 0, text, -1, msg, MAX_PATH);
+    }
+
+    MessageBoxW(_wnd, msg, L"Lavender",
+                error ? MB_ICONERROR : MB_ICONEXCLAMATION);
 }
