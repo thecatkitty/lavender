@@ -30,6 +30,7 @@ LDFLAGS = -lc -lSDL2 -lSDL2_ttf -lfontconfig -lfluidsynth -no-pie
 RESSUFF = .obj
 OBJFMT  = elf64-x86-64
 SRODATA = .rodata
+OBJREQS = $(OBJPREF)/version.o
 
 ifeq ($(findstring dospc,$(LAV_TARGET)),dospc)
 include Makefile.dospc
@@ -58,7 +59,7 @@ include sources.mk
 $(BINPREF)/$(SSHOW): $(BINPREF)/lavender$(EXESUFF) $(OBJ)/data.zip
 	cat $^ > $@
 
-$(BINPREF)/lavender$(EXESUFF): $(OBJPREF)/version.o $(ASSOURCES:%.S=$(OBJPREF)/%.S.o) $(CCSOURCES:%.c=$(OBJPREF)/%.c.o) $(OBJPREF)/resource.$(LAV_LANG)$(RESSUFF)
+$(BINPREF)/lavender$(EXESUFF): $(OBJREQS) $(ASSOURCES:%.S=$(OBJPREF)/%.S.o) $(CCSOURCES:%.c=$(OBJPREF)/%.c.o) $(OBJPREF)/resource.$(LAV_LANG)$(RESSUFF)
 	@mkdir -p $(BINPREF)
 	$(LD) -o $@ $^ $(LDFLAGS)
 

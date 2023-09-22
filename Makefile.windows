@@ -14,3 +14,4 @@ LDFLAGS = -mwindows -s -L$(EXTSDL)/lib -lSDL2main $(EXTSDL)/lib/libSDL2.a $(EXTT
 OBJFMT  = elf32-i386
 EXESUFF = .exe
 SRODATA = .rdata
+OBJREQS =
