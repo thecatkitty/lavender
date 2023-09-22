@@ -82,15 +82,6 @@ _pit_init_channel(unsigned channel, unsigned mode, unsigned divisor)
 }
 
 static void
-_die_errno(void)
-{
-    char msg[TEXT_COLUMNS] = "errno ";
-    itoa(errno, msg + strlen(msg), 10);
-    msg[strlen(msg)] = '$';
-    dos_puts(msg);
-}
-
-static void
 _die_incompatible(void)
 {
     char msg[TEXT_COLUMNS];
@@ -196,9 +187,7 @@ pal_initialize(int argc, char *argv[])
         pal_load_string(IDS_ERROR, msg, sizeof(msg));
         pal_load_string(IDS_NOARCHIVE, msg + strlen(msg),
                         sizeof(msg) - strlen(msg));
-        msg[strlen(msg)] = '$';
-        dos_puts(msg);
-
+        pal_alert(msg, 0);
         dos_exit(1);
     }
 
@@ -218,11 +207,7 @@ pal_initialize(int argc, char *argv[])
         pal_load_string(IDS_ERROR, msg, sizeof(msg));
         pal_load_string(IDS_NOARCHIVE, msg + strlen(msg),
                         sizeof(msg) - strlen(msg));
-        msg[strlen(msg)] = '$';
-        dos_puts(msg);
-
-        dos_puts("\r\n$");
-        _die_errno();
+        pal_alert(msg, errno);
         dos_exit(1);
     }
 
@@ -264,7 +249,7 @@ pal_initialize(int argc, char *argv[])
 
     if (!gfx_initialize())
     {
-        _die_errno();
+        pal_alert("", errno);
         _dos_setvect(INT_PIT, __dospc_bios_isr);
 
         _disable();
@@ -606,6 +591,21 @@ pal_load_string(unsigned id, char *buffer, int max_length)
     }
 
     return length;
+}
+
+void
+pal_alert(const char *text, int error)
+{
+    puts("\n=====");
+    puts(text);
+    if (0 != error)
+    {
+        char msg[80] = "errno ";
+        itoa(error, msg + strlen(msg), 10);
+        puts(msg);
+    }
+
+    bios_get_keystroke();
 }
 
 bool

@@ -215,3 +215,9 @@ sdl2arch_get_font(void)
     WideCharToMultiByte(CP_UTF8, 0, path, -1, _font, length, NULL, NULL);
     return _font;
 }
+
+void
+pal_alert(const char *text, int error)
+{
+    LOG("entry, text: '%s', error: %d", text, error);
+}
