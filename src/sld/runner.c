@@ -156,7 +156,6 @@ sld_handle(void)
             __sld_errmsgcat(msg, ctx->message);
             strcpy(ctx->message, msg);
             ctx->state = length;
-            ctx->state = SLD_STATE_STOP;
             return;
         }
 
@@ -200,7 +199,6 @@ sld_handle(void)
         __sld_errmsgcat(msg, ctx->message);
         strcpy(ctx->message, msg);
         ctx->state = status;
-        ctx->state = SLD_STATE_STOP;
         return;
     }
 
