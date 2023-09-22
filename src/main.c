@@ -5,13 +5,7 @@
 #include <pal.h>
 #include <sld.h>
 
-void
-puterrno(void)
-{
-    char msg[80] = "errno ";
-    itoa(errno, msg + strlen(msg), 10);
-    puts(msg);
-}
+#include "resource.h"
 
 int
 main(int argc, char *argv[])
@@ -23,7 +17,9 @@ main(int argc, char *argv[])
     sld_context *script = sld_create_context("slides.txt", NULL);
     if (NULL == script)
     {
-        puterrno();
+        char msg[80];
+        pal_load_string(IDS_NOEXECCTX, msg, sizeof(msg));
+        pal_alert(msg, errno);
         status = EXIT_FAILURE;
         goto end;
     }
@@ -37,24 +33,13 @@ main(int argc, char *argv[])
 
     if ((0 > script->state) && (SLD_QUIT != script->state))
     {
+        pal_alert(script->message, (SLD_SYSERR == script->state) ? errno : 0);
         status = EXIT_FAILURE;
-        puts("\n=====");
-        puts(script->message);
-        if (SLD_SYSERR == script->state)
-        {
-            puterrno();
-        }
     }
 
     sld_close_context(script);
 
 end:
-    if (EXIT_FAILURE == status)
-    {
-        while (!pal_get_keystroke())
-            ;
-    }
-
     pal_cleanup();
 
     return status;

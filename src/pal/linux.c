@@ -124,6 +124,17 @@ pal_load_string(unsigned id, char *buffer, int max_length)
     return length;
 }
 
+void
+pal_alert(const char *text, int error)
+{
+    puts("\n=====");
+    puts(text);
+    if (0 != error)
+    {
+        printf("errno %d, %s\n", error, strerror(error));
+    }
+}
+
 const char *
 sdl2arch_get_font(void)
 {
