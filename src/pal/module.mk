@@ -5,7 +5,6 @@ ASSOURCES := $(ASSOURCES) $(DIR)/dospc.S
 CCSOURCES := $(CCSOURCES) $(DIR)/dospc.c
 else
 CCSOURCES := $(CCSOURCES) \
-	$(DIR)/log.c \
 	$(DIR)/sdl2arch.c \
 	$(DIR)/ziparch.c
 endif
@@ -15,5 +14,7 @@ CCSOURCES := $(CCSOURCES) $(DIR)/windows.c
 endif
 
 ifeq ($(LAV_TARGET),linux)
-CCSOURCES := $(CCSOURCES) $(DIR)/linux.c
+CCSOURCES := $(CCSOURCES) \
+	$(DIR)/log.c \
+	$(DIR)/linux.c
 endif
