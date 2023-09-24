@@ -11,6 +11,7 @@ static SDL_Keycode    _keycode;
 static bool           _mouse_enabled = false;
 static uint16_t       _mouse_x, _mouse_y, _mouse_buttons;
 static gfx_dimensions _mouse_cell;
+static SDL_Renderer  *_renderer = NULL;
 
 bool
 sdl2arch_initialize(void)
@@ -42,9 +43,21 @@ sdl2arch_cleanup(void)
     SDL_Quit();
 }
 
+void
+sdl2arch_present(SDL_Renderer *renderer)
+{
+    _renderer = renderer;
+}
+
 bool
 pal_handle(void)
 {
+    if (_renderer)
+    {
+        SDL_RenderPresent(_renderer);
+        _renderer = NULL;
+    }
+
     SDL_PumpEvents();
 
     SDL_Event e;
