@@ -10,10 +10,14 @@ SDL_Window *_window = NULL;
 static SDL_Renderer *_renderer = NULL;
 static TTF_Font     *_font = NULL;
 static int           _font_w, _font_h;
+static bool          _rendering_text = false;
 
 static const SDL_Color COLORS[] = {[GFX_COLOR_BLACK] = {0, 0, 0},
                                    [GFX_COLOR_WHITE] = {255, 255, 255},
                                    [GFX_COLOR_GRAY] = {128, 128, 128}};
+
+extern void
+sdl2arch_present(SDL_Renderer *renderer);
 
 static void
 _set_color(gfx_color color)
@@ -102,7 +106,7 @@ gfx_initialize(void)
     }
 
     SDL_RenderClear(_renderer);
-    SDL_RenderPresent(_renderer);
+    sdl2arch_present(_renderer);
     return true;
 }
 
@@ -200,13 +204,14 @@ gfx_draw_line(gfx_dimensions *dim, uint16_t x, uint16_t y, gfx_color color)
 {
     LOG("entry, dim: %dx%d, x: %u, y: %u, color: %d", dim->width, dim->height,
         x, y, color);
+    _rendering_text = false;
 
     _set_color(color);
     SDL_RenderDrawLine(_renderer, x, y * 2, x + dim->width,
                        (y + dim->height - 1) * 2);
     SDL_RenderDrawLine(_renderer, x, y * 2 + 1, x + dim->width,
                        (y + dim->height - 1) * 2 + 1);
-    SDL_RenderPresent(_renderer);
+    sdl2arch_present(_renderer);
     return true;
 }
 
@@ -218,12 +223,13 @@ gfx_draw_rectangle(gfx_dimensions *rect,
 {
     LOG("entry, dim: %dx%d, x: %u, y: %u, color: %d", rect->width, rect->height,
         x, y, color);
+    _rendering_text = false;
 
     SDL_Rect sdl_rect = {x - 1, (y - 1) * 2, rect->width + 2,
                          (rect->height + 2) * 2};
     _set_color(color);
     SDL_RenderDrawRect(_renderer, &sdl_rect);
-    SDL_RenderPresent(_renderer);
+    sdl2arch_present(_renderer);
     return true;
 }
 
@@ -235,11 +241,12 @@ gfx_fill_rectangle(gfx_dimensions *rect,
 {
     LOG("entry, dim: %dx%d, x: %u, y: %u, color: %d", rect->width, rect->height,
         x, y, color);
+    _rendering_text = false;
 
     SDL_Rect sdl_rect = {x, y * 2, rect->width, rect->height * 2};
     _set_color(color);
     SDL_RenderFillRect(_renderer, &sdl_rect);
-    SDL_RenderPresent(_renderer);
+    sdl2arch_present(_renderer);
     return true;
 }
 
@@ -257,10 +264,15 @@ gfx_draw_text(const char *str, uint16_t x, uint16_t y)
         TTF_RenderUTF8_Blended(_font, str, COLORS[GFX_COLOR_WHITE]);
     SDL_Rect rect = {x * _font_w, y * 16, surface->w, surface->h};
 
+    if (!_rendering_text)
+    {
+        SDL_RenderPresent(_renderer);
+    }
+    _rendering_text = true;
     _blend_subtractive(surface, &rect);
     SDL_Texture *texture = SDL_CreateTextureFromSurface(_renderer, surface);
     SDL_RenderCopy(_renderer, texture, NULL, &rect);
-    SDL_RenderPresent(_renderer);
+    sdl2arch_present(_renderer);
     SDL_DestroyTexture(texture);
     SDL_FreeSurface(surface);
     return true;
