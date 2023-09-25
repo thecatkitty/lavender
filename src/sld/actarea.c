@@ -117,12 +117,12 @@ __sld_retrieve_active_area_tag(uint16_t x, uint16_t y)
             continue;
         }
 
-        if (x - _areas[i].left > _areas[i].width)
+        if (x - _areas[i].left >= _areas[i].width)
         {
             continue;
         }
 
-        if (y - _areas[i].top > _areas[i].height)
+        if (y - _areas[i].top >= _areas[i].height)
         {
             continue;
         }
