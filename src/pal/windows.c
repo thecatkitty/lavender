@@ -359,56 +359,98 @@ pal_alert(const char *text, int error)
                 error ? MB_ICONERROR : MB_ICONEXCLAMATION);
 }
 
-BOOL __stdcall _imp__AttachConsole(DWORD dwProcessId)
-{
-    return FALSE;
-}
-
-BOOL __stdcall _imp__GetModuleHandleExW(DWORD    dwFlags,
-                                        LPCWSTR  lpModuleName,
-                                        HMODULE *phModule)
-{
-    if (GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS & dwFlags)
-    {
-        *phModule = GetModuleHandleW(NULL);
-        return TRUE;
+#define WINAPISHIM(dll, name, type, args, body)                                \
+    type __stdcall _imp__##name args                                           \
+    {                                                                          \
+        static type(__stdcall *_pfn) args = NULL;                              \
+        if (NULL == _pfn)                                                      \
+        {                                                                      \
+            HMODULE hmo = LoadLibraryW(L##dll);                                \
+            if (hmo)                                                           \
+            {                                                                  \
+                _pfn = (type(__stdcall *) args)GetProcAddress(hmo, #name);     \
+            }                                                                  \
+        }                                                                      \
+                                                                               \
+        body;                                                                  \
     }
 
-    if (GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT & dwFlags)
-    {
-        *phModule = GetModuleHandleW(lpModuleName);
-        return TRUE;
+#define WINAPICALL(...)                                                        \
+    if (_pfn)                                                                  \
+    {                                                                          \
+        return _pfn(__VA_ARGS__);                                              \
     }
 
+WINAPISHIM("kernel32.dll", AttachConsole, BOOL, (DWORD dwProcessId), {
+    WINAPICALL(dwProcessId);
+
     return FALSE;
-}
+})
 
-UINT __stdcall _imp__GetRawInputData(HRAWINPUT hRawInput,
-                                     UINT      uiCommand,
-                                     LPVOID    pData,
-                                     PUINT     pcbSize,
-                                     UINT      cbSizeHeader)
-{
-    return -1;
-}
+WINAPISHIM("kernel32.dll",
+           GetModuleHandleExW,
+           BOOL,
+           (DWORD dwFlags, LPCWSTR lpModuleName, HMODULE *phModule),
+           {
+               WINAPICALL(dwFlags, lpModuleName, phModule);
 
-UINT __stdcall _imp__GetRawInputDeviceInfoA(HANDLE hDevice,
-                                            UINT   uiCommand,
-                                            LPVOID pData,
-                                            PUINT  pcbSize)
-{
-    return -1;
-}
+               if (GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS & dwFlags)
+               {
+                   *phModule = GetModuleHandleW(NULL);
+                   return TRUE;
+               }
 
-UINT __stdcall _imp__GetRawInputDeviceList(
-    PRAWINPUTDEVICELIST pRawInputDeviceList, PUINT puiNumDevices, UINT cbSize)
-{
-    return -1;
-}
+               if (GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT & dwFlags)
+               {
+                   *phModule = GetModuleHandleW(lpModuleName);
+                   return TRUE;
+               }
 
-BOOL __stdcall _imp__RegisterRawInputDevices(PCRAWINPUTDEVICE pRawInputDevices,
-                                             UINT             uiNumDevices,
-                                             UINT             cbSize)
-{
-    return FALSE;
-}
+               return FALSE;
+           })
+
+WINAPISHIM("user32.dll",
+           GetRawInputData,
+           UINT,
+           (HRAWINPUT hRawInput,
+            UINT      uiCommand,
+            LPVOID    pData,
+            PUINT     pcbSize,
+            UINT      cbSizeHeader),
+           {
+               WINAPICALL(hRawInput, uiCommand, pData, pcbSize, cbSizeHeader);
+
+               return -1;
+           })
+
+WINAPISHIM("user32.dll",
+           GetRawInputDeviceInfoA,
+           UINT,
+           (HANDLE hDevice, UINT uiCommand, LPVOID pData, PUINT pcbSize),
+           {
+               WINAPICALL(hDevice, uiCommand, pData, pcbSize);
+
+               return -1;
+           })
+
+WINAPISHIM("user32.dll",
+           GetRawInputDeviceList,
+           UINT,
+           (PRAWINPUTDEVICELIST pRawInputDeviceList,
+            PUINT               puiNumDevices,
+            UINT                cbSize),
+           {
+               WINAPICALL(pRawInputDeviceList, puiNumDevices, cbSize);
+
+               return -1;
+           })
+
+WINAPISHIM("user32.dll",
+           RegisterRawInputDevices,
+           BOOL,
+           (PCRAWINPUTDEVICE pRawInputDevices, UINT uiNumDevices, UINT cbSize),
+           {
+               WINAPICALL(pRawInputDevices, uiNumDevices, cbSize);
+
+               return FALSE;
+           })
