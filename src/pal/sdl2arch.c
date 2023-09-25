@@ -85,11 +85,6 @@ pal_handle(void)
         break;
 
     case SDL_MOUSEMOTION: {
-        if (!_mouse_enabled)
-        {
-            break;
-        }
-
         LOG("mouse x: %d, y: %d", e.motion.x, e.motion.y);
         _mouse_x = e.motion.x / _mouse_cell.width;
         _mouse_y = e.motion.y / 16;
@@ -115,11 +110,6 @@ pal_handle(void)
     }
 
     case SDL_MOUSEBUTTONUP: {
-        if (!_mouse_enabled)
-        {
-            break;
-        }
-
         LOG("mouse button %u up", e.button.button);
         if (SDL_BUTTON_LEFT == e.button.button)
         {
