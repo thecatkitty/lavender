@@ -87,7 +87,7 @@ gfx_initialize(void)
     }
 
     LOG("font: '%s'", font_path);
-    TTF_SizeText(_font, "M", &_font_w, &_font_h);
+    TTF_SizeText(_font, "W", &_font_w, &_font_h);
 
     _window = SDL_CreateWindow(pal_get_version_string(), SDL_WINDOWPOS_CENTERED,
                                SDL_WINDOWPOS_CENTERED, 80 * _font_w, 25 * 16,
