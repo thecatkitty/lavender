@@ -3,9 +3,9 @@
 STRINGTABLE
 LANGUAGE LCID_PLK, 0x1
 {
-    IDS_ERROR, "BLAD: "
+    IDS_ERROR, "BŁĄD: "
     IDS_NOARCHIVE, "Nie znaleziono archiwum"
-    IDS_UNSUPPENV, "Lavender nie uruchomi sie w Twoim srodowisku."
+    IDS_UNSUPPENV, "Lavender nie uruchomi się w Twoim środowisku."
 
     IDS_ENTERDSN, "Wprowadź numer seryjny dysku"
     IDS_ENTERDSN_DESC, "Proszę podać numer seryjny dołączony\ndo dyskietki z programem."
@@ -13,24 +13,24 @@ LANGUAGE LCID_PLK, 0x1
     IDS_ENTERPASS_DESC, "Ta zawartość jest zaszyfrowana.\n\nProszę podać klucz dostępu."
     IDS_INVALIDKEY, "Wprowadzony klucz jest niepoprawny!"
 
-    IDS_LOADERROR, "Blad ladowania scenariusza!"
-    IDS_EXECERROR, "Blad wykonania scenariusza!"
-    IDS_NOEXECCTX, "Nie mozna utworzyc kontekstu wykonania"
+    IDS_LOADERROR, "Błąd ładowania scenariusza!"
+    IDS_EXECERROR, "Błąd wykonania scenariusza!"
+    IDS_NOEXECCTX, "Nie można utworzyć kontekstu wykonania"
 
-    IDS_INVALIDDELAY, "Niepoprawne opoznienie"
+    IDS_INVALIDDELAY, "Niepoprawne opóźnienie"
     IDS_UNKNOWNTYPE, "Nieznany typ"
-    IDS_INVALIDVPOS, "Niepoprawne polozenie pionowe"
-    IDS_INVALIDHPOS, "Niepoprawne polozenie poziome"
-    IDS_LONGNAME, "Nazwa pliku za dluga"
-    IDS_LONGCONTENT, "Zawartosc za dluga"
+    IDS_INVALIDVPOS, "Niepoprawne położenie pionowe"
+    IDS_INVALIDHPOS, "Niepoprawne położenie poziome"
+    IDS_LONGNAME, "Nazwa pliku za długa"
+    IDS_LONGCONTENT, "Zawartość za długa"
     IDS_NOLABEL, "Nie znaleziono etykiety"
-    IDS_INVALIDCMPVAL, "Niepoprawna wartosc w porownaniu"
-    IDS_NOASSET, "Nie mozna zaladowac zasobu"
+    IDS_INVALIDCMPVAL, "Niepoprawna wartość w porównaniu"
+    IDS_NOASSET, "Nie można załadować zasobu"
     IDS_BADENCODING, "Niepoprawne lub niewspierane kodowanie"
-    IDS_UNSUPPORTED, "Zazadano niewspieranej funkcjonalnosci"
-    IDS_TOOMANYAREAS, "Zdefiniowano za duzo obszarow aktywnych"
-    IDS_UNKNOWNKEYSRC, "Nieznane zrodlo klucza"
-    IDS_BADSOUND, "Niepoprawny lub niewspierany plik dzwiekowy"
+    IDS_UNSUPPORTED, "Zażądano niewspieranej funkcjonalności"
+    IDS_TOOMANYAREAS, "Zdefiniowano za dużo obszarów aktywnych"
+    IDS_UNKNOWNKEYSRC, "Nieznane źródło klucza"
+    IDS_BADSOUND, "Niepoprawny lub niewspierany plik dźwiękowy"
 }
 
 #ifdef __MINGW32__
