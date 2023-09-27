@@ -596,8 +596,11 @@ pal_load_string(unsigned id, char *buffer, int max_length)
 void
 pal_alert(const char *text, int error)
 {
+    char *texta = (char *)alloca(strlen(text + 1));
+    utf8_encode(text, texta, gfx_wctoa);
+
     puts("\n=====");
-    puts(text);
+    puts(texta);
     if (0 != error)
     {
         char msg[80] = "errno ";
