@@ -370,6 +370,28 @@ gfx_cleanup(void)
 }
 
 char
+gfx_wctoa(uint16_t wc)
+{
+    if (0x80 > wc)
+    {
+        return wc;
+    }
+
+    const vid_glyph *fdata = __vid_font_8x8;
+    while (wc > fdata->codepoint)
+    {
+        fdata++;
+    }
+
+    if (wc != fdata->codepoint)
+    {
+        return '?';
+    }
+
+    return fdata->base;
+}
+
+char
 gfx_wctob(uint16_t wc)
 {
     if (0x80 > wc)
