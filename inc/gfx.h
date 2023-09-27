@@ -67,6 +67,9 @@ extern bool
 gfx_draw_text(const char *str, uint16_t x, uint16_t y);
 
 extern char
+gfx_wctoa(uint16_t wc);
+
+extern char
 gfx_wctob(uint16_t wc);
 
 #endif // _GFX_H_
