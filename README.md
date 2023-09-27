@@ -1,6 +1,6 @@
 # Lavender
 
-A simple configurable slideshow program for DOS 2.0+ written mainly in C. It shows slides consisting of text and graphics contained in the ZIP file appended to the executable.
+A simple configurable slideshow program for DOS 2.0+ and Windows 2000+ written mainly in C. It shows slides consisting of text and graphics contained in the ZIP file appended to the executable.
 
 This is still work in progress, but I'm doing my best to separate working version (`main` branch) from progressing code (PRs).
 
@@ -22,6 +22,8 @@ Building requires x86_64 Linux with *GNU Make*, *GNU Binutils*, *MinGW-w64* for 
 ```sh
 make
 ```
+
+You can select the target platform (`dospc-exe`, `dospc-com`, `linux`, `windows`) by setting the `LAV_TARGET` environment variable.
 
 If you want to change the output slideshow application file name (`sshow.com` is default) or the slideshow source directory, you can set `LAV_SSHOW` and `LAV_DATA` environmental variables respectively.
 
