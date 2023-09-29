@@ -3,6 +3,8 @@ name: Build
 on:
   pull_request:
     branches: [main]
+  push:
+    tags: [0.*]
 
 jobs:
   Build:
@@ -57,10 +59,39 @@ jobs:
           LAV_LANG=CSY make
           LAV_LANG=PLK make
 
+      - name: Prepare release info
+        if: startsWith(github.ref, 'refs/tags/')
+        run: git tag -l --format='%(contents:subject)' ${{ github.ref_name }} > bin/RELEASE.md
+  
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: lavender
           path: |
-            bin/*
+            bin
             tools
+
+  Release:
+
+    runs-on: ubuntu-latest
+    needs: Build
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: Fetch build output
+        uses: actions/download-artifact@v3
+        with:
+          name: lavender
+          
+      - name: Prepare archive
+        run: |
+          mv tools bin/
+          cd bin
+          zip -r ../lavender-${{ github.ref_name }}.zip tools dospc-com dospc-exe windows
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Version ${{ github.ref_name }}
+          body_path: bin/RELEASE.md
+          files: lavender-${{ github.ref_name }}.zip
