@@ -1,4 +1,4 @@
-# Lavender
+# Lavender ![Build status badge](https://github.com/thecatkitty/lavender/actions/workflows/build.yml/badge.svg?event=push)
 
 A simple configurable slideshow program for DOS 2.0+ and Windows 2000+ written mainly in C. It shows slides consisting of text and graphics contained in the ZIP file appended to the executable.
 
