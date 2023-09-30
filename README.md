@@ -4,6 +4,8 @@ A simple configurable slideshow program for DOS 2.0+ and Windows 2000+ written m
 
 This is still work in progress, but I'm doing my best to separate working version (`main` branch) from progressing code (PRs).
 
+![Lavender project logo](docs/lavender.png)
+
 ## Current features
 * CGA 640x200 monochrome video mode
 * display delays
