@@ -7,8 +7,9 @@ This is still work in progress, but I'm doing my best to separate working versio
 ![Lavender project logo](docs/lavender.png)
 
 ## Current features
-* CGA 640x200 monochrome video mode
-* display delays
+* DOS, Windows, and diagnostic Linux targets
+* CGA 640x200 monochrome video mode under DOS
+* display delays (animations)
 * displaying text (with UTF-8 subset support)
 * displaying PBM bitmaps
 * drawing and filling rectangles
@@ -17,7 +18,6 @@ This is still work in progress, but I'm doing my best to separate working versio
 * PC speaker music playback (including limited support for Standard MIDI Files)
 * reporting the unsupported environment (DOS 1.x, Windows Vista and newer)
 * multiple language support (Czech, English, Polish)
-* diagnostic Linux target
 
 ## Building
 Building requires x86_64 Linux with *GNU Make*, *GNU Binutils*, *MinGW-w64* for i686 and x86_64 with SDL2, SDL2_ttf, and FluidSynth, [GCC for IA-16](https://github.com/tkchia/gcc-ia16/) with [libi86](https://github.com/tkchia/libi86/), and `zip`. If you have it, just run:
