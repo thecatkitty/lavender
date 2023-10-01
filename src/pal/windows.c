@@ -23,6 +23,7 @@ static char   _ver_string[MAX_PATH] = {0};
 
 extern SDL_Window *_window;
 
+static HICON         _icon = NULL;
 static HWND          _wnd = NULL;
 static char         *_font = NULL;
 static LARGE_INTEGER _start_pc, _pc_freq;
@@ -59,6 +60,10 @@ pal_initialize(int argc, char *argv[])
     SDL_VERSION(&wminfo.version);
     SDL_GetWindowWMInfo(_window, &wminfo);
     _wnd = wminfo.info.win.window;
+
+    _icon = LoadIconW(GetModuleHandleW(NULL), MAKEINTRESOURCEW(1));
+    SendMessageW(_wnd, WM_SETICON, ICON_BIG, (LPARAM)_icon);
+    SendMessageW(_wnd, WM_SETICON, ICON_SMALL, (LPARAM)_icon);
 
     if (!snd_initialize())
     {
