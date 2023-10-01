@@ -33,7 +33,7 @@ LANGUAGE LCID_ENU, 0x1
     IDS_BADSOUND, "Invalid or unsupported sound file" 
 }
 
-#ifdef __MINGW32__
+#ifndef STRINGS_ONLY
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 #define VER_FILEDESCRIPTION_STR     "Lavender slideshow player"

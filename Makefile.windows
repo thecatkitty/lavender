@@ -13,6 +13,7 @@ SDLLIBS = -lSDL2main $(EXTSDL)/lib/libSDL2.a $(EXTTTF)/lib/libSDL2_ttf.a
 
 CFLAGS += -Iext/include/
 LDFLAGS = -mwindows -s -L$(EXTSDL)/lib -L$(EXTTTF)/lib $(SDLLIBS) $(WINLIBS)
+RCFLAGS = 
 
 OBJFMT  = elf32-i386
 EXESUFF = .exe

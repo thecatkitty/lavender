@@ -26,6 +26,7 @@ OBJPREF = $(OBJ)/$(LAV_TARGET)
 ASFLAGS = -S -Iinc/
 CFLAGS  = -c -Os -fno-strict-aliasing -Iinc/
 LDFLAGS = -lc -lSDL2 -lSDL2_ttf -lfontconfig -lfluidsynth -no-pie
+RCFLAGS = -DSTRINGS_ONLY
 
 RESSUFF = .obj
 OBJFMT  = elf64-x86-64
@@ -79,7 +80,7 @@ $(OBJPREF)/resource.$(LAV_LANG).o: $(OBJPREF)/resource.$(LAV_LANG).obj
 	$(W32OBJCOPY) $< $@ -O $(OBJFMT) --rename-section .rsrc=.rodata.rsrc --add-symbol __w32_rsrc_start=.rodata.rsrc:0
 
 $(OBJPREF)/resource.$(LAV_LANG).obj: $(SRC)/resource.$(LAV_LANG).rc $(SRC)/version.h
-	$(WINDRES) -c 65001 $< $@ -Iinc/
+	$(WINDRES) -c 65001 $(RCFLAGS) $< $@ -Iinc/
 
 GIT_TAG     = $(shell git describe --abbrev=0)
 GIT_COMMITS = $(shell git rev-list $(GIT_TAG)..HEAD --count)

@@ -33,7 +33,7 @@ LANGUAGE LCID_PLK, 0x1
     IDS_BADSOUND, "Niepoprawny lub niewspierany plik dźwiękowy"
 }
 
-#ifdef __MINGW32__
+#ifndef STRINGS_ONLY
 LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
 
 #define VER_FILEDESCRIPTION_STR     "Odtwarzacz pokazu slajdów Lavender"
