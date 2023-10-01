@@ -33,7 +33,7 @@ LANGUAGE LCID_CSY, 0x1
     IDS_BADSOUND, "Neplatný nebo nepodporovaný zvukový soubor"
 }
 
-#ifdef __MINGW32__
+#ifndef STRINGS_ONLY
 LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
 
 #define VER_FILEDESCRIPTION_STR     "Přehrávač prezentací Lavender"
