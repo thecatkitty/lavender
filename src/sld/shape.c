@@ -7,6 +7,19 @@ typedef struct
 } shape_content;
 #define CONTENT(sld) ((shape_content *)(&sld->content))
 
+static void
+_translate(uint16_t *x, uint16_t *y, gfx_dimensions *dims)
+{
+    int32_t w = dims->width;
+    int32_t h = dims->height;
+    int32_t xend = ((int32_t)*x + w) * __sld_screen.width / SLD_VIEWBOX_WIDTH;
+    int32_t yend = ((int32_t)*y + h) * __sld_screen.height / SLD_VIEWBOX_HEIGHT;
+    *x = (uint16_t)((int32_t)*x * __sld_screen.width / SLD_VIEWBOX_WIDTH);
+    *y = (uint16_t)((int32_t)*y * __sld_screen.height / SLD_VIEWBOX_HEIGHT);
+    dims->width = xend - *x;
+    dims->height = yend - *y;
+}
+
 int
 __sld_execute_rectangle(sld_entry *sld)
 {
@@ -14,14 +27,16 @@ __sld_execute_rectangle(sld_entry *sld)
     switch (sld->posx)
     {
     case SLD_ALIGN_CENTER:
-        x = (__sld_screen.width - CONTENT(sld)->dimensions.width) / 2;
+        x = (SLD_VIEWBOX_WIDTH - CONTENT(sld)->dimensions.width) / 2;
         break;
     case SLD_ALIGN_RIGHT:
-        x = __sld_screen.width - CONTENT(sld)->dimensions.width;
+        x = SLD_VIEWBOX_WIDTH - CONTENT(sld)->dimensions.width;
         break;
     default:
         x = sld->posx;
     }
+
+    _translate(&x, &y, &CONTENT(sld)->dimensions);
 
     bool (*draw)(gfx_dimensions *, uint16_t, uint16_t, gfx_color);
     draw =

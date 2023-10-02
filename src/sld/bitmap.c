@@ -59,18 +59,22 @@ __sld_execute_bitmap(sld_entry *sld)
     gfx_dimensions screen;
     gfx_get_screen_dimensions(&screen);
 
-    uint16_t x, y = sld->posy;
+    uint16_t x, y;
     switch (sld->posx)
     {
     case SLD_ALIGN_CENTER:
-        x = (screen.width / 8 - bm.opl) / 2;
+        x = (screen.width - bm.width) / 2;
         break;
     case SLD_ALIGN_RIGHT:
-        x = screen.width / 8 - bm.opl;
+        x = screen.width - bm.width;
         break;
     default:
-        x = sld->posx;
+        x = (uint16_t)((int32_t)sld->posx * __sld_screen.width /
+                       SLD_VIEWBOX_WIDTH);
     }
+
+    y = (uint16_t)((int32_t)sld->posy * __sld_screen.height /
+                   SLD_VIEWBOX_HEIGHT);
 
     if (!gfx_draw_bitmap(&bm, x, y))
     {
