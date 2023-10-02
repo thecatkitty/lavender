@@ -176,8 +176,6 @@ gfx_draw_bitmap(gfx_bitmap *bm, uint16_t x, uint16_t y)
         return false;
     }
 
-    x *= 8;
-
     SDL_Surface *screen = SDL_GetWindowSurface(_window);
     SDL_LockSurface(screen);
     uint32_t *pixels = (uint32_t *)screen->pixels;

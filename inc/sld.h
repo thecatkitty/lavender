@@ -3,6 +3,9 @@
 
 #include <pal.h>
 
+#define SLD_VIEWBOX_WIDTH  640
+#define SLD_VIEWBOX_HEIGHT 200
+
 #define SLD_ENTRY_MAX_LENGTH 255
 
 #define SLD_TAG_PREFIX_LABEL ':'

@@ -177,6 +177,8 @@ gfx_draw_bitmap(gfx_bitmap *bm, uint16_t x, uint16_t y)
         return false;
     }
 
+    x >>= 3;
+
     far void *bits = bm->bits;
     far void *plane0 = _plane0;
     far void *plane1 = _plane1;
