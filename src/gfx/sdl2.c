@@ -229,6 +229,9 @@ gfx_draw_rectangle(gfx_dimensions *rect,
                          (rect->height + 2) * 2};
     _set_color(color);
     SDL_RenderDrawRect(_renderer, &sdl_rect);
+    sdl_rect.y += 1;
+    sdl_rect.h -= 2;
+    SDL_RenderDrawRect(_renderer, &sdl_rect);
     sdl2arch_present(_renderer);
     return true;
 }
