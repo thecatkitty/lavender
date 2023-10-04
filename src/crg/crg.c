@@ -15,13 +15,39 @@ crg_prepare(crg_stream    *stream,
     stream->key = key;
     stream->key_length = key_length;
 
-    if (CRG_XOR == cipher)
+    switch (cipher)
     {
+    case CRG_XOR:
         stream->_impl = &__crg_xor_impl;
+        break;
+
+    default:
+        return false;
+    }
+
+    crg_stream_allocate allocate_impl =
+        ((crg_stream_impl *)stream->_impl)->allocate;
+    if (NULL == allocate_impl)
+    {
+        stream->_context = NULL;
         return true;
     }
 
-    return false;
+    return allocate_impl(stream);
+}
+
+bool
+crg_free(crg_stream *stream)
+{
+    crg_stream_free free_impl = ((crg_stream_impl *)stream->_impl)->free;
+    if (free_impl)
+    {
+        return free_impl(stream);
+    }
+
+    stream->_context = NULL;
+    stream->_impl = NULL;
+    return true;
 }
 
 uint8_t

@@ -28,4 +28,5 @@ _xor_validate(crg_stream *stream, uint32_t crc)
                                       stream, stream->data_length);
 }
 
-crg_stream_impl __crg_xor_impl = {_xor_at, _xor_decrypt, _xor_validate};
+crg_stream_impl __crg_xor_impl = {
+    .at = _xor_at, .decrypt = _xor_decrypt, .validate = _xor_validate};
