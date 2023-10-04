@@ -15,6 +15,7 @@ typedef struct
     const uint8_t *key;
     size_t         key_length;
     const void    *_impl;
+    void          *_context;
 } crg_stream;
 
 extern bool
@@ -24,6 +25,9 @@ crg_prepare(crg_stream    *stream,
             size_t         data_length,
             const uint8_t *key,
             size_t         key_length);
+
+extern bool
+crg_free(crg_stream *stream);
 
 extern uint8_t
 crg_at(crg_stream *stream, size_t i);

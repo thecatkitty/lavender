@@ -22,7 +22,7 @@ typedef struct
     uint16_t method;
     uint32_t crc32;
     uint16_t parameter;
-    char     data[96];
+    char     data[88];
 
     // Execution state
     int16_t      state;
@@ -373,6 +373,7 @@ static int
 _handle_decode(sld_entry *sld)
 {
     crg_decrypt(&CONTENT(sld)->crs, (uint8_t *)CONTENT(sld)->context->data);
+    crg_free(&CONTENT(sld)->crs);
 
     CONTENT(sld)->state = STATE_ENTER;
     return CONTINUE;
