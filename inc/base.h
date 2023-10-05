@@ -21,6 +21,7 @@
     {                                                                          \
     } *x
 
+#define lengthof(x)           (sizeof(x) / sizeof((x)[0]))
 #define sizeofm(type, member) sizeof(((type *)0)->member)
 
 typedef union {
