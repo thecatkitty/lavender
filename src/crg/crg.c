@@ -21,6 +21,10 @@ crg_prepare(crg_stream    *stream,
         stream->_impl = &__crg_xor_impl;
         break;
 
+    case CRG_DES:
+        stream->_impl = &__crg_des_impl;
+        break;
+
     default:
         return false;
     }

@@ -18,6 +18,7 @@ typedef struct
     crg_stream_validate validate;
 } crg_stream_impl;
 
+extern crg_stream_impl __crg_des_impl;
 extern crg_stream_impl __crg_xor_impl;
 
 #endif // _CRG_IMPL_H_
