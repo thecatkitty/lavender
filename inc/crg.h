@@ -5,7 +5,8 @@
 
 typedef enum
 {
-    CRG_XOR
+    CRG_XOR,
+    CRG_DES
 } crg_cipher;
 
 typedef struct
