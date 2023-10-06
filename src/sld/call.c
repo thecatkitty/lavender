@@ -300,7 +300,7 @@ _axtob(const char *str)
     }
 
     uint8_t ret =
-        isdigit(str[0]) ? (str[1] - '0') : (toupper(str[1]) - 'A' + 10);
+        isdigit(str[1]) ? (str[1] - '0') : (toupper(str[1]) - 'A' + 10);
     ret |= (isdigit(str[0]) ? (str[0] - '0') : (toupper(str[0]) - 'A' + 10))
            << 4;
 
