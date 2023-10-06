@@ -39,6 +39,10 @@ typedef struct
 static_assert(sizeof(script_call_content) <= sizeofm(sld_entry, content),
               "Script call context larger than available space");
 
+// Size of the plaintext stored at the end of the data buffer
+#define PT_SIZE(ctx)                                                           \
+    (*(uint32_t *)((ctx)->data + (ctx)->size - sizeof(uint32_t)))
+
 enum
 {
     STATE_PREPARE,
@@ -87,6 +91,22 @@ _isxdigitstr(const char *str)
     _isctypestr(isxdigit);
 }
 
+static uint8_t
+_axtob(const char *str)
+{
+    if (!isxdigit(str[0]) || !isxdigit(str[1]))
+    {
+        return 0;
+    }
+
+    uint8_t ret =
+        isdigit(str[1]) ? (str[1] - '0') : (toupper(str[1]) - 'A' + 10);
+    ret |= (isdigit(str[0]) ? (str[0] - '0') : (toupper(str[0]) - 'A' + 10))
+           << 4;
+
+    return ret;
+}
+
 static bool
 _validate_dsn(const char *dsn)
 {
@@ -130,19 +150,38 @@ _handle_prepare(sld_entry *sld)
     __sld_accumulator = 0;
 
     // Run if stored as plain text
-    if ((SLD_METHOD_STORE == CONTENT(sld)->method) ||
+    if (SLD_METHOD_STORE == CONTENT(sld)->method)
+    {
+        CONTENT(sld)->state = STATE_ENTER;
+        return CONTINUE;
+    }
+
+    if ((SLD_METHOD_XOR48 == CONTENT(sld)->method) &&
         (zip_calculate_crc(script->data, script->size) == CONTENT(sld)->crc32))
     {
         CONTENT(sld)->state = STATE_ENTER;
         return CONTINUE;
     }
 
+    if (SLD_METHOD_DES == CONTENT(sld)->method)
+    {
+        uint32_t pt_size = PT_SIZE(script);
+        if ((script->size > pt_size) &&
+            zip_calculate_crc(script->data, pt_size) == CONTENT(sld)->crc32)
+        {
+            script->size = pt_size;
+            CONTENT(sld)->state = STATE_ENTER;
+            return CONTINUE;
+        }
+    }
+
+    // Go to key acquisition if encrypted
     CONTENT(sld)->state = STATE_KEY_ACQUIRE;
     return CONTINUE;
 }
 
 static int
-_handle_key_acquire(sld_entry *sld)
+_handle_key_acquire_xor48(sld_entry *sld)
 {
     crg_prepare(&CONTENT(sld)->crs, CRG_XOR, CONTENT(sld)->context->data,
                 CONTENT(sld)->context->size, CONTENT(sld)->key.b, 6);
@@ -172,6 +211,44 @@ _handle_key_acquire(sld_entry *sld)
         CONTENT(sld)->local_part = strtoul(CONTENT(sld)->data, NULL, 16);
         CONTENT(sld)->state = STATE_PASSCODE_PROMPT;
         return CONTINUE;
+    }
+
+    __sld_errmsgcpy(sld, IDS_UNKNOWNKEYSRC);
+    return SLD_SYSERR;
+}
+
+static int
+_handle_key_acquire_des(sld_entry *sld)
+{
+    if (SLD_PARAMETER_DES_INLINE == CONTENT(sld)->parameter)
+    {
+        for (int i = 0; i < sizeof(uint64_t); i++)
+        {
+            CONTENT(sld)->key.b[i] = _axtob(CONTENT(sld)->data + (2 * i));
+        }
+
+        crg_prepare(&CONTENT(sld)->crs, CRG_DES, CONTENT(sld)->context->data,
+                    CONTENT(sld)->context->size, CONTENT(sld)->key.b,
+                    sizeof(uint64_t));
+        CONTENT(sld)->state = STATE_KEY_VALIDATE;
+        return CONTINUE;
+    }
+
+    __sld_errmsgcpy(sld, IDS_UNKNOWNKEYSRC);
+    return SLD_SYSERR;
+}
+
+static int
+_handle_key_acquire(sld_entry *sld)
+{
+    if (SLD_METHOD_XOR48 == CONTENT(sld)->method)
+    {
+        return _handle_key_acquire_xor48(sld);
+    }
+
+    if (SLD_METHOD_DES == CONTENT(sld)->method)
+    {
+        return _handle_key_acquire_des(sld);
     }
 
     __sld_errmsgcpy(sld, IDS_UNKNOWNKEYSRC);
@@ -291,24 +368,8 @@ _handle_passcode_type(sld_entry *sld)
     return CONTINUE;
 }
 
-static uint8_t
-_axtob(const char *str)
-{
-    if (!isxdigit(str[0]) || !isxdigit(str[1]))
-    {
-        return 0;
-    }
-
-    uint8_t ret =
-        isdigit(str[1]) ? (str[1] - '0') : (toupper(str[1]) - 'A' + 10);
-    ret |= (isdigit(str[0]) ? (str[0] - '0') : (toupper(str[0]) - 'A' + 10))
-           << 4;
-
-    return ret;
-}
-
-static int
-_handle_passcode_validate(sld_entry *sld)
+static void
+_handle_passcode_validate_xor48(sld_entry *sld)
 {
     if (SLD_PARAMETER_XOR48_PROMPT == CONTENT(sld)->parameter)
     {
@@ -325,6 +386,16 @@ _handle_passcode_validate(sld_entry *sld)
     }
 
     CONTENT(sld)->crs.key = CONTENT(sld)->key.b;
+}
+
+static int
+_handle_passcode_validate(sld_entry *sld)
+{
+    if (SLD_METHOD_XOR48 == CONTENT(sld)->method)
+    {
+        _handle_passcode_validate_xor48(sld);
+    }
+
     CONTENT(sld)->state =
         (crg_validate(&CONTENT(sld)->crs, CONTENT(sld)->crc32))
             ? STATE_KEY_VALIDATE
@@ -374,6 +445,11 @@ _handle_decode(sld_entry *sld)
 {
     crg_decrypt(&CONTENT(sld)->crs, (uint8_t *)CONTENT(sld)->context->data);
     crg_free(&CONTENT(sld)->crs);
+    if (SLD_METHOD_DES == CONTENT(sld)->method)
+    {
+        PT_SIZE(CONTENT(sld)->context) = CONTENT(sld)->crs.data_length;
+        CONTENT(sld)->context->size = CONTENT(sld)->crs.data_length;
+    }
 
     CONTENT(sld)->state = STATE_ENTER;
     return CONTINUE;
