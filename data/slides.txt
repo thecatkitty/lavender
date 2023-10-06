@@ -42,7 +42,7 @@
 0       J   Rectangles
 :Encryption
 0       r   0   <640 200 B
-0       !   presskey.txt    1   A53AB4CC    1   FFFFFFFFFFFF
+0       !   hellodes.enc    2   C1D0F85C    1   131A15CE89D5F2BC
 0       =   65535   Key not provided
 0       J   Start
 :Key not provided
