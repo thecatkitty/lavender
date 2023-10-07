@@ -9,6 +9,11 @@ typedef enum
     CRG_DES
 } crg_cipher;
 
+typedef enum
+{
+    CRG_KEYSM_LE32B6D, // 32 local bits, 6 external decimals
+} crg_keysm;
+
 typedef struct
 {
     const uint8_t *data;
@@ -40,6 +45,6 @@ extern bool
 crg_validate(crg_stream *stream, uint32_t crc);
 
 extern uint64_t
-crg_combine_key(uint32_t local, uint32_t external);
+crg_decode_key(const void *src, crg_keysm sm);
 
 #endif // _CRG_H_
