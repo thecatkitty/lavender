@@ -1,5 +1,5 @@
 CCSOURCES := $(CCSOURCES) \
 	$(DIR)/crg.c \
-	$(DIR)/splitkey.c \
+	$(DIR)/keyutils.c \
 	$(DIR)/des.c \
 	$(DIR)/xor.c

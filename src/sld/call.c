@@ -389,8 +389,9 @@ _handle_passcode_validate_xor48(sld_entry *sld)
     else
     {
         // 48-bit split key
-        CONTENT(sld)->key.qw =
-            crg_combine_key(CONTENT(sld)->local_part, CONTENT(sld)->passcode);
+        uint32_t key_src[2] = {CONTENT(sld)->local_part,
+                               CONTENT(sld)->passcode};
+        CONTENT(sld)->key.qw = crg_decode_key(key_src, CRG_KEYSM_LE32B6D);
     }
 
     CONTENT(sld)->crs.key = CONTENT(sld)->key.b;
