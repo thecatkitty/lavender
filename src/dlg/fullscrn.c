@@ -359,10 +359,11 @@ _handle_prompt(void)
         _draw_text_box();
     }
 
-    if (((' ' == scancode) || ((VK_DELETE < scancode) && (VK_F1 > scancode))) &&
+    if (((' ' == scancode) || (VK_OEM_MINUS == scancode) ||
+         ((VK_DELETE < scancode) && (VK_F1 > scancode))) &&
         (_cursor < _size))
     {
-        _buffer[_cursor] = scancode & 0xFF;
+        _buffer[_cursor] = (VK_OEM_MINUS == scancode) ? '-' : (scancode & 0xFF);
         _cursor++;
         _buffer[_cursor] = 0;
         _draw_text_box();
