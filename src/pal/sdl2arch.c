@@ -141,6 +141,11 @@ pal_get_keystroke(void)
         c = 0;
     }
 
+    if ('-' == c)
+    {
+        c = VK_OEM_MINUS;
+    }
+
     if (islower(c))
     {
         c = toupper(c);

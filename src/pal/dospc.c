@@ -490,6 +490,11 @@ pal_get_keystroke(void)
     uint16_t keystroke = bios_get_keystroke();
     if (keystroke & 0xFF)
     {
+        if ('-' == (keystroke & 0xFF))
+        {
+            return VK_OEM_MINUS;
+        }
+
         return toupper(keystroke & 0xFF);
     }
 
