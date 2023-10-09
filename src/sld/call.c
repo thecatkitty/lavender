@@ -93,6 +93,29 @@ _isxdigitstr(const char *str)
     _isctypestr(isxdigit);
 }
 
+static bool
+_ispkey(const char *str)
+{
+    size_t i;
+    for (i = 0; i < PKEY25XOR12_LENGTH + 4; i++)
+    {
+        if (5 == (i % 6))
+        {
+            if ('-' != str[i])
+            {
+                return false;
+            }
+        }
+        else if ((0 == str[i]) ||
+                 (NULL == strchr(PKEY25XOR12_ALPHABET, str[i])))
+        {
+            return false;
+        }
+    }
+
+    return PKEY25XOR12_LENGTH + 4 == i;
+}
+
 static uint8_t
 _axtob(const char *str)
 {
@@ -236,7 +259,8 @@ _handle_key_acquire_des(sld_entry *sld)
         return CONTINUE;
     }
 
-    if (SLD_PARAMETER_DES_PROMPT == CONTENT(sld)->parameter)
+    if ((SLD_PARAMETER_DES_PROMPT == CONTENT(sld)->parameter) ||
+        (SLD_PARAMETER_DES_PKEY == CONTENT(sld)->parameter))
     {
         CONTENT(sld)->crs.key_length = sizeof(uint64_t);
         CONTENT(sld)->state = STATE_PASSCODE_PROMPT;
@@ -333,16 +357,22 @@ _handle_passcode_prompt(sld_entry *sld)
     if (SLD_KEYSOURCE_PROMPT == CONTENT(sld)->parameter)
     {
         precheck = _isxdigitstr;
-        code_len = CONTENT(sld)->crs.key_length;
+        code_len = CONTENT(sld)->crs.key_length * 2;
     }
     else if (SLD_METHOD_XOR48 == CONTENT(sld)->method)
     {
         precheck = _isdigitstr;
-        code_len = XOR48_PASSCODE_SIZE;
+        code_len = XOR48_PASSCODE_SIZE * 2;
+    }
+    else if ((SLD_METHOD_DES == CONTENT(sld)->method) &&
+             (SLD_PARAMETER_DES_PKEY == CONTENT(sld)->parameter))
+    {
+        precheck = _ispkey;
+        code_len = PKEY25XOR12_LENGTH + 4;
     }
 
     dlg_prompt(msg_enterpass, msg_enterpass_desc, CONTENT(sld)->buffer,
-               code_len * 2, precheck);
+               code_len, precheck);
     CONTENT(sld)->state = STATE_PASSCODE_TYPE;
     return CONTINUE;
 }
@@ -371,7 +401,28 @@ _handle_passcode_type(sld_entry *sld)
         base = 16;
     }
 
-    CONTENT(sld)->passcode = rstrtoull(CONTENT(sld)->buffer, base);
+    if ((SLD_METHOD_DES == CONTENT(sld)->method) &&
+        (SLD_PARAMETER_DES_PKEY == CONTENT(sld)->parameter))
+    {
+        char        pkey[PKEY25XOR12_LENGTH];
+        const char *src = CONTENT(sld)->buffer;
+        char       *dst = pkey;
+        while (dst < pkey + PKEY25XOR12_LENGTH)
+        {
+            if ('-' != *src)
+            {
+                *dst = *src;
+                dst++;
+            }
+            src++;
+        }
+        CONTENT(sld)->key.qw =
+            __builtin_bswap64(crg_decode_key(pkey, CRG_KEYSM_PKEY25XOR12));
+    }
+    else
+    {
+        CONTENT(sld)->passcode = rstrtoull(CONTENT(sld)->buffer, base);
+    }
     CONTENT(sld)->state = STATE_PASSCODE_VALIDATE;
     return CONTINUE;
 }
@@ -400,9 +451,12 @@ _handle_passcode_validate_xor48(sld_entry *sld)
 static void
 _handle_passcode_validate_des(sld_entry *sld)
 {
-    for (int i = 0; i < sizeof(uint64_t); i++)
+    if (SLD_PARAMETER_DES_PKEY != CONTENT(sld)->parameter)
     {
-        CONTENT(sld)->key.b[i] = _axtob(CONTENT(sld)->buffer + (2 * i));
+        for (int i = 0; i < sizeof(uint64_t); i++)
+        {
+            CONTENT(sld)->key.b[i] = _axtob(CONTENT(sld)->buffer + (2 * i));
+        }
     }
 
     crg_prepare(&CONTENT(sld)->crs, CRG_DES, CONTENT(sld)->context->data,
