@@ -11,7 +11,8 @@ typedef enum
 
 typedef enum
 {
-    CRG_KEYSM_LE32B6D, // 32 local bits, 6 external decimals
+    CRG_KEYSM_LE32B6D,     // 32 local bits, 6 external decimals
+    CRG_KEYSM_PKEY25XOR12, // 25-character product key, XORed 12 characters
 } crg_keysm;
 
 typedef struct
@@ -23,6 +24,14 @@ typedef struct
     const void    *_impl;
     void          *_context;
 } crg_stream;
+
+// PKEY25XOR12 definitios
+#define PKEY25XOR12_BASE         24
+#define PKEY25XOR12_UDATA_LENGTH 13
+#define PKEY25XOR12_EKEY_LENGTH  12
+#define PKEY25XOR12_LENGTH       (PKEY25XOR12_UDATA_LENGTH + PKEY25XOR12_EKEY_LENGTH)
+
+static const char PKEY25XOR12_ALPHABET[] = "2346789BCDFGHJKMPQRTVWXY";
 
 extern bool
 crg_prepare(crg_stream    *stream,
