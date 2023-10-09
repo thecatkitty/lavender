@@ -1,7 +1,10 @@
+#include <string.h>
+
 #include <crg.h>
 
 #define UINTN_MAX(n) ((1UL << n) - 1)
 
+// LE32B6D definitions
 #define LE32B6D_KEYLO      0
 #define LE32B6D_KEYLO_MASK UINTN_MAX(24)
 #define LE32B6D_KEYHI      24
@@ -29,6 +32,24 @@ _rotr24(uint32_t n, unsigned c)
 }
 
 static uint64_t
+_aatoull(const char *str, size_t length, const char *alphabet, size_t base)
+{
+    uint64_t ret = 0;
+    for (const char *end = str + length; str < end; str++)
+    {
+        ret *= base;
+        const char *pos = strchr(alphabet, *str);
+        if (NULL == pos)
+        {
+            return 0;
+        }
+
+        ret += pos - alphabet;
+    }
+    return ret;
+}
+
+static uint64_t
 _decode_le32b6d(const void *src)
 {
     uint32_t local = ((const uint32_t *)src)[0];
@@ -51,6 +72,32 @@ _decode_le32b6d(const void *src)
            (((uint64_t)low & LE32B6D_KEYLO_MASK) << LE32B6D_KEYLO);
 }
 
+static uint64_t
+_decode_pkey25xor12(const void *src)
+{
+    const char *left_part = (const char *)src;
+    const char *right_part = (const char *)src + PKEY25XOR12_UDATA_LENGTH;
+
+    uint64_t udata =
+        _aatoull(left_part, PKEY25XOR12_UDATA_LENGTH, PKEY25XOR12_ALPHABET, 24);
+    uint64_t ekey =
+        _aatoull(right_part, PKEY25XOR12_EKEY_LENGTH, PKEY25XOR12_ALPHABET, 24);
+    uint64_t key_56 = ekey ^ udata;
+
+    uint8_t key[sizeof(uint64_t)];
+    for (size_t b = 0; b < lengthof(key); b++)
+    {
+        key[b] = ((uint8_t)key_56 & 0x7F) << 1;
+        if (!__builtin_parity(key[b]))
+        {
+            key[b] |= 1;
+        }
+        key_56 >>= 7;
+    }
+
+    return *(uint64_t *)key;
+}
+
 uint64_t
 crg_decode_key(const void *src, crg_keysm sm)
 {
@@ -59,6 +106,11 @@ crg_decode_key(const void *src, crg_keysm sm)
     if (sm == CRG_KEYSM_LE32B6D)
     {
         return _decode_le32b6d(src);
+    }
+
+    if (sm == CRG_KEYSM_PKEY25XOR12)
+    {
+        return _decode_pkey25xor12(src);
     }
 
     errno = EFTYPE;
