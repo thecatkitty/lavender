@@ -42,9 +42,22 @@ static far void *const _plane1 = MK_FP(CGA_HIMONO_MEM, CGA_HIMONO_PLANE);
 
 #define CGA_PLANE(y) (((y) % 2) ? _plane1 : _plane0)
 
-static const char _brush_black[] = {0x00};
-static const char _brush_white[] = {0xFF};
-static const char _brush_gray[] = {0x55, 0xAA};
+// Grayscale pattern brushes
+enum
+{
+    BRUSH_BLACK,
+    BRUSH_GRAY50,
+    BRUSH_WHITE,
+    BRUSH_MAX
+};
+
+#define BRUSH_HEIGHT 2
+
+static const char BRUSHES[BRUSH_MAX][BRUSH_HEIGHT] = {
+    [BRUSH_BLACK] = {0x00, 0x00},  // ........ ........
+    [BRUSH_GRAY50] = {0xAA, 0x55}, // #.#.#.#. .#.#.#.#
+    [BRUSH_WHITE] = {0xFF, 0xFF}   // ######## ########
+};
 
 static uint16_t  _prev_mode;
 static dospc_isr _prev_fontptr;
@@ -200,19 +213,16 @@ gfx_draw_bitmap(gfx_bitmap *bm, uint16_t x, uint16_t y)
 }
 
 static const char *
-_get_brush(gfx_color color, int *height)
+_get_brush(gfx_color color)
 {
     switch (color)
     {
     case GFX_COLOR_BLACK:
-        *height = sizeof(_brush_black);
-        return _brush_black;
+        return BRUSHES[BRUSH_BLACK];
     case GFX_COLOR_WHITE:
-        *height = sizeof(_brush_white);
-        return _brush_white;
+        return BRUSHES[BRUSH_WHITE];
     default:
-        *height = sizeof(_brush_gray);
-        return _brush_gray;
+        return BRUSHES[BRUSH_GRAY50];
     }
 }
 
@@ -255,9 +265,8 @@ gfx_draw_line(gfx_dimensions *dim, uint16_t x, uint16_t y, gfx_color color)
     uint8_t   lmask = (1 << (8 - (left % 8))) - 1;
     uint8_t   rmask = ~((1 << (7 - (right % 8))) - 1);
 
-    int         brush_height;
-    const char *brush = _get_brush(color, &brush_height);
-    char        pattern = brush[y % brush_height];
+    const char *brush = _get_brush(color);
+    char        pattern = brush[y % BRUSH_HEIGHT];
 
     _draw_block(plane, left, y, lmask, ~lmask, pattern);
     _draw_line(plane, y, left, right, pattern);
@@ -283,13 +292,12 @@ gfx_draw_rectangle(gfx_dimensions *rect,
     uint8_t   lborder = 1 << (7 - (left % 8));
     uint8_t   rborder = 1 << (7 - (right % 8));
 
-    int         brush_height;
-    const char *brush = _get_brush(color, &brush_height);
+    const char *brush = _get_brush(color);
     char        pattern;
 
     // Top line
     plane = CGA_PLANE(top);
-    pattern = brush[top % brush_height];
+    pattern = brush[top % BRUSH_HEIGHT];
     _draw_block(plane, left, top, lmask, ~lmask, pattern);
     _draw_block(plane, right, top, rmask, ~rmask, pattern);
 
@@ -300,7 +308,7 @@ gfx_draw_rectangle(gfx_dimensions *rect,
 
     // Bottom line
     plane = CGA_PLANE(bottom);
-    pattern = brush[bottom % brush_height];
+    pattern = brush[bottom % BRUSH_HEIGHT];
     _draw_block(plane, left, bottom, lmask, ~lmask, pattern);
     _draw_block(plane, right, bottom, rmask, ~rmask, pattern);
 
@@ -311,7 +319,7 @@ gfx_draw_rectangle(gfx_dimensions *rect,
 
     // Vertical lines
     _for_lines(y, bottom, {
-        pattern = brush[line % brush_height];
+        pattern = brush[line % BRUSH_HEIGHT];
         _draw_block(plane, left, line, lborder, ~lborder, pattern);
         _draw_block(plane, right, line, rborder, ~rborder, pattern);
     });
@@ -332,13 +340,12 @@ gfx_fill_rectangle(gfx_dimensions *rect,
     uint8_t lmask = (1 << (8 - (x % 8))) - 1;
     uint8_t rmask = ~((1 << (8 - (right % 8))) - 1);
 
-    int         brush_height;
-    const char *brush = _get_brush(color, &brush_height);
+    const char *brush = _get_brush(color);
     char        pattern;
 
     // Vertical stripes
     _for_lines(y, bottom, {
-        pattern = brush[line % brush_height];
+        pattern = brush[line % BRUSH_HEIGHT];
         _draw_block(plane, left, line, lmask, ~lmask, pattern);
         _draw_block(plane, right, line, rmask, ~rmask, pattern);
     });
@@ -346,7 +353,7 @@ gfx_fill_rectangle(gfx_dimensions *rect,
     // Internal fill
     _for_lines(
         y, bottom,
-        _draw_line(plane, line, left, right, brush[line % brush_height]));
+        _draw_line(plane, line, left, right, brush[line % BRUSH_HEIGHT]));
 
     return true;
 }
