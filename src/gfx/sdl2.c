@@ -12,9 +12,15 @@ static TTF_Font     *_font = NULL;
 static int           _font_w, _font_h;
 static bool          _rendering_text = false;
 
-static const SDL_Color COLORS[] = {[GFX_COLOR_BLACK] = {0, 0, 0},
-                                   [GFX_COLOR_WHITE] = {255, 255, 255},
-                                   [GFX_COLOR_GRAY] = {128, 128, 128}};
+static const SDL_Color COLORS[] = {
+    [GFX_COLOR_BLACK] = {0, 0, 0},      [GFX_COLOR_NAVY] = {0, 0, 128},
+    [GFX_COLOR_GREEN] = {0, 128, 0},    [GFX_COLOR_TEAL] = {0, 128, 128},
+    [GFX_COLOR_MAROON] = {128, 0, 0},   [GFX_COLOR_PURPLE] = {128, 0, 128},
+    [GFX_COLOR_OLIVE] = {128, 128, 0},  [GFX_COLOR_SILVER] = {192, 192, 192},
+    [GFX_COLOR_GRAY] = {128, 128, 128}, [GFX_COLOR_BLUE] = {0, 0, 255},
+    [GFX_COLOR_LIME] = {0, 255, 0},     [GFX_COLOR_CYAN] = {0, 255, 255},
+    [GFX_COLOR_RED] = {255, 0, 0},      [GFX_COLOR_FUCHSIA] = {255, 0, 255},
+    [GFX_COLOR_YELLOW] = {255, 255, 0}, [GFX_COLOR_WHITE] = {255, 255, 255}};
 
 extern void
 sdl2arch_present(SDL_Renderer *renderer);
