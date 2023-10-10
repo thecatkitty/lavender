@@ -66,11 +66,11 @@ __sld_load_shape(const char *str, sld_entry *out)
     case 'B':
         CONTENT(out)->color = GFX_COLOR_BLACK;
         break;
-    case 'G':
-        CONTENT(out)->color = GFX_COLOR_GRAY;
+    case 'W':
+        CONTENT(out)->color = GFX_COLOR_WHITE;
         break;
     default:
-        CONTENT(out)->color = GFX_COLOR_WHITE;
+        CONTENT(out)->color = GFX_COLOR_GRAY;
     }
     CONTENT(out)->dimensions.width = width;
     CONTENT(out)->dimensions.height = height;
