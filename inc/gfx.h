@@ -36,7 +36,8 @@ typedef enum
     GFX_COLOR_RED = 12,
     GFX_COLOR_FUCHSIA = 13,
     GFX_COLOR_YELLOW = 14,
-    GFX_COLOR_WHITE = 15
+    GFX_COLOR_WHITE = 15,
+    GFX_COLOR_UNKNOWN = -1
 } gfx_color;
 
 extern bool
@@ -84,5 +85,8 @@ gfx_wctoa(uint16_t wc);
 
 extern char
 gfx_wctob(uint16_t wc);
+
+extern gfx_color
+gfx_get_color(const char *str);
 
 #endif // _GFX_H_
