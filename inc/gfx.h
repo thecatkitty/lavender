@@ -21,9 +21,22 @@ typedef struct
 
 typedef enum
 {
-    GFX_COLOR_BLACK,
-    GFX_COLOR_WHITE,
-    GFX_COLOR_GRAY
+    GFX_COLOR_BLACK = 0,
+    GFX_COLOR_NAVY = 1,
+    GFX_COLOR_GREEN = 2,
+    GFX_COLOR_TEAL = 3,
+    GFX_COLOR_MAROON = 4,
+    GFX_COLOR_PURPLE = 5,
+    GFX_COLOR_OLIVE = 6,
+    GFX_COLOR_SILVER = 7,
+    GFX_COLOR_GRAY = 8,
+    GFX_COLOR_BLUE = 9,
+    GFX_COLOR_LIME = 10,
+    GFX_COLOR_CYAN = 11,
+    GFX_COLOR_RED = 12,
+    GFX_COLOR_FUCHSIA = 13,
+    GFX_COLOR_YELLOW = 14,
+    GFX_COLOR_WHITE = 15
 } gfx_color;
 
 extern bool
