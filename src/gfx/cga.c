@@ -46,7 +46,9 @@ static far void *const _plane1 = MK_FP(CGA_HIMONO_MEM, CGA_HIMONO_PLANE);
 enum
 {
     BRUSH_BLACK,
+    BRUSH_GRAY25,
     BRUSH_GRAY50,
+    BRUSH_GRAY75,
     BRUSH_WHITE,
     BRUSH_MAX
 };
@@ -55,7 +57,9 @@ enum
 
 static const char BRUSHES[BRUSH_MAX][BRUSH_HEIGHT] = {
     [BRUSH_BLACK] = {0x00, 0x00},  // ........ ........
+    [BRUSH_GRAY25] = {0x88, 0x22}, // #...#... ..#...#.
     [BRUSH_GRAY50] = {0xAA, 0x55}, // #.#.#.#. .#.#.#.#
+    [BRUSH_GRAY75] = {0x77, 0xDD}, // .###.### ##.###.#
     [BRUSH_WHITE] = {0xFF, 0xFF}   // ######## ########
 };
 
@@ -218,7 +222,24 @@ _get_brush(gfx_color color)
     switch (color)
     {
     case GFX_COLOR_BLACK:
+    case GFX_COLOR_NAVY:
+    case GFX_COLOR_GREEN:
+    case GFX_COLOR_MAROON:
         return BRUSHES[BRUSH_BLACK];
+    case GFX_COLOR_TEAL:
+    case GFX_COLOR_PURPLE:
+    case GFX_COLOR_OLIVE:
+    case GFX_COLOR_BLUE:
+    case GFX_COLOR_LIME:
+    case GFX_COLOR_RED:
+        return BRUSHES[BRUSH_GRAY25];
+    case GFX_COLOR_GRAY:
+    case GFX_COLOR_CYAN:
+    case GFX_COLOR_FUCHSIA:
+    case GFX_COLOR_YELLOW:
+        return BRUSHES[BRUSH_GRAY50];
+    case GFX_COLOR_SILVER:
+        return BRUSHES[BRUSH_GRAY75];
     case GFX_COLOR_WHITE:
         return BRUSHES[BRUSH_WHITE];
     default:
