@@ -207,12 +207,12 @@ _get_brush(gfx_color color, int *height)
     case GFX_COLOR_BLACK:
         *height = sizeof(_brush_black);
         return _brush_black;
-    case GFX_COLOR_GRAY:
-        *height = sizeof(_brush_gray);
-        return _brush_gray;
-    default:
+    case GFX_COLOR_WHITE:
         *height = sizeof(_brush_white);
         return _brush_white;
+    default:
+        *height = sizeof(_brush_gray);
+        return _brush_gray;
     }
 }
 
