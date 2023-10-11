@@ -5,8 +5,8 @@
 
 typedef struct
 {
-    uint16_t width;
-    uint16_t height;
+    int16_t  width;
+    int16_t  height;
     uint16_t opl;
     uint8_t  planes;
     uint8_t  bpp;

@@ -56,18 +56,21 @@ pbm_load_bitmap(gfx_bitmap *bm, hasset asset)
     char *data = pal_get_asset_data(asset);
     data += sizeof(uint16_t);
 
-    count = _load_number(data, &bm->width);
+    uint16_t width, height;
+    count = _load_number(data, &width);
     if (0 > count)
         return false;
 
-    bm->opl = bm->width / 8 + ((bm->width % 8) ? 1 : 0);
+    bm->opl = width / 8 + ((width % 8) ? 1 : 0);
     data += count;
 
-    count = _load_number(data, &bm->height);
+    count = _load_number(data, &height);
     if (0 > count)
         return false;
     data += count;
 
+    bm->width = width;
+    bm->height = height;
     bm->bits = (char *)data + 1;
     bm->planes = 1;
     bm->bpp = 1;
