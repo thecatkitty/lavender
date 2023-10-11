@@ -169,14 +169,67 @@ gfx_get_pixel_aspect(void)
     return ratio;
 }
 
+static void
+_draw_bitmap_1bpp(gfx_bitmap *bm,
+                  uint16_t    x,
+                  uint16_t    y,
+                  unsigned    screen_pitch,
+                  uint32_t   *pixels)
+{
+    for (int cy = 0; cy < bm->height; cy++)
+    {
+        int base = (y + cy) * (screen_pitch / sizeof(uint32_t) * 2) + x;
+        for (int cx = 0; cx < bm->width; cx++)
+        {
+            uint8_t  byte = ((const uint8_t *)bm->bits)[cy * bm->opl + cx / 8];
+            uint32_t value = (byte & (0x80 >> (cx % 8))) ? 0xFFFFFF : 0;
+            pixels[base + cx] = value;
+            pixels[base + (screen_pitch / sizeof(uint32_t)) + cx] = value;
+        }
+    }
+}
+
+static void
+_draw_bitmap_32bpp(gfx_bitmap *bm,
+                   uint16_t    x,
+                   uint16_t    y,
+                   unsigned    screen_pitch,
+                   uint32_t   *pixels)
+{
+    int maxy = (bm->height < 0) ? -bm->height : bm->height;
+    int pitch = ((bm->height < 0) ? -1 : 1) * (bm->opl / sizeof(uint32_t));
+    const uint32_t *bits = (const uint32_t *)bm->bits;
+    if (pitch < 0)
+    {
+        bits += pitch * (bm->height + 1);
+    }
+
+    for (int cy = 0; cy < maxy; cy++)
+    {
+        int base = (y + cy) * (screen_pitch / sizeof(uint32_t) * 2) + x;
+        for (int cx = 0; cx < bm->width; cx++)
+        {
+            uint32_t value = bits[cy * pitch + cx];
+            pixels[base + cx] = value;
+            pixels[base + (screen_pitch / sizeof(uint32_t)) + cx] = value;
+        }
+    }
+}
+
 bool
 gfx_draw_bitmap(gfx_bitmap *bm, uint16_t x, uint16_t y)
 {
-    LOG("entry, bm: %ux%u %ubpp (%u planes, %u octets per scanline), x: %u,"
+    LOG("entry, bm: %dx%d %ubpp (%u planes, %u octets per scanline), x: %u,"
         " y: %u",
         bm->width, bm->height, bm->bpp, bm->planes, bm->opl, x, y);
 
-    if ((1 != bm->planes) || (1 != bm->bpp))
+    if (1 != bm->planes)
+    {
+        errno = EFTYPE;
+        return false;
+    }
+
+    if ((1 != bm->bpp) && (32 != bm->bpp))
     {
         errno = EFTYPE;
         return false;
@@ -185,17 +238,16 @@ gfx_draw_bitmap(gfx_bitmap *bm, uint16_t x, uint16_t y)
     SDL_Surface *screen = SDL_GetWindowSurface(_window);
     SDL_LockSurface(screen);
     uint32_t *pixels = (uint32_t *)screen->pixels;
-    for (int cy = 0; cy < bm->height; cy++)
+
+    if (1 == bm->bpp)
     {
-        int base = (y + cy) * (screen->pitch / sizeof(uint32_t) * 2) + x;
-        for (int cx = 0; cx < bm->width; cx++)
-        {
-            uint8_t  byte = ((const uint8_t *)bm->bits)[cy * bm->opl + cx / 8];
-            uint32_t value = (byte & (0x80 >> (cx % 8))) ? 0xFFFFFF : 0;
-            pixels[base + cx] = value;
-            pixels[base + (screen->pitch / sizeof(uint32_t)) + cx] = value;
-        }
+        _draw_bitmap_1bpp(bm, x, y, screen->pitch, pixels);
     }
+    else
+    {
+        _draw_bitmap_32bpp(bm, x, y, screen->pitch, pixels);
+    }
+
     SDL_UnlockSurface(screen);
 
     SDL_Rect rect = {x, y * 2, bm->width, bm->height * 2};
