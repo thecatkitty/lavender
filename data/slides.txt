@@ -2,7 +2,14 @@
 :Start
 0       r   0   <640 200 B
 0       T   18  ^Lavender
+0       ?   gfx.colorful
+0       =   0   Colorless
+0       =   65535   VersionInfo
+500     B   22  ^lavender.bmp
+0       J   VersionInfo
+:Colorless
 500     B   22  ^lavndr<>.pbm
+:VersionInfo
 500     T   19  ^Version 0.4
 500     T   23  ^Copyright (c) Mateusz Karcz, 2021-2023. Shared under the MIT License.
 0       K
