@@ -364,6 +364,12 @@ pal_alert(const char *text, int error)
                 error ? MB_ICONERROR : MB_ICONEXCLAMATION);
 }
 
+HWND
+windows_get_hwnd(void)
+{
+    return _wnd;
+}
+
 #define WINAPISHIM(dll, name, type, args, body)                                \
     type __stdcall _imp__##name args                                           \
     {                                                                          \
