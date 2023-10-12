@@ -16,6 +16,10 @@ bmp_is_format(hasset asset)
 bool
 bmp_load_bitmap(gfx_bitmap *bm, hasset asset)
 {
+#ifndef GFX_COLORFUL
+    errno = EINVAL;
+    return false;
+#else
     LOG("entry, bm: %p, asset: %p", bm, asset);
     if (!bmp_is_format(asset))
     {
@@ -80,4 +84,5 @@ bmp_load_bitmap(gfx_bitmap *bm, hasset asset)
 
     bm->opl = (((bm->width * bm->bpp) + 31) & ~31) >> 3;
     return true;
+#endif
 }
