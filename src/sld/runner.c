@@ -37,6 +37,8 @@ _execute_entry(sld_entry *sld)
         return 0;
     case SLD_TYPE_ACTAREA:
         return __sld_execute_active_area(sld);
+    case SLD_TYPE_QUERY:
+        return __sld_execute_query(sld);
     case SLD_TYPE_JUMP:
         return INT_MAX;
     case SLD_TYPE_JUMPE:

@@ -70,6 +70,9 @@ extern int
 __sld_execute_active_area(sld_entry *sld);
 
 extern int
+__sld_execute_query(sld_entry *sld);
+
+extern int
 __sld_handle_script_call(sld_entry *sld);
 
 extern int

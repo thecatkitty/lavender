@@ -172,6 +172,10 @@ sld_load_entry(sld_context *ctx, sld_entry *out)
         out->type = SLD_TYPE_ACTAREA;
         length = __sld_load_active_area(cur, out);
         break;
+    case SLD_TAG_TYPE_QUERY:
+        out->type = SLD_TYPE_QUERY;
+        length = __sld_load_content(cur, out);
+        break;
     case SLD_TAG_TYPE_JUMP:
         out->type = SLD_TYPE_JUMP;
         length = __sld_load_content(cur, out);
