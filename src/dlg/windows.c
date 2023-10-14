@@ -8,18 +8,23 @@
 #include <platform/sdl2arch.h>
 #include <platform/windows.h>
 
-enum
-{
-    STATE_NONE,
-    STATE_ALERT,
-    STATE_PROMPT
-};
+#define ID_EDITBOX 150
+#define ID_TEXT    200
 
 static gfx_dimensions _screen = {0, 0};
-static int            _state = STATE_NONE;
 
 static HGLOBAL           _hgbl = NULL;
 static NONCLIENTMETRICSW _nclm = {0};
+
+static LPWSTR _title = NULL;
+static LPWSTR _message = NULL;
+
+static char         *_buffer = NULL;
+static int           _size;
+static dlg_validator _validator = NULL;
+
+static HANDLE _thread = NULL;
+static int    _value;
 
 static void
 _draw_background(void)
@@ -43,97 +48,40 @@ _draw_background(void)
     gfx_draw_text("https://github.com/thecatkitty/lavender/", 39, 24);
 }
 
-static struct
-{
-    LPWSTR title;
-    LPWSTR message;
-    HANDLE thread;
-    int    value;
-} _alert_data;
-
 static DWORD WINAPI
 _alert_routine(LPVOID lpparam)
 {
-    MessageBoxW(windows_get_hwnd(), _alert_data.message, _alert_data.title,
-                MB_OK);
-    _alert_data.value = DLG_OK;
+    MessageBoxW(windows_get_hwnd(), _message, _title, MB_OK);
+    _value = DLG_OK;
 
-    free(_alert_data.title);
-    free(_alert_data.message);
+    free(_title);
+    free(_message);
     return 0;
-}
-
-static int
-_handle_alert(void)
-{
-    if (DLG_INCOMPLETE != _alert_data.value)
-    {
-        WaitForSingleObject(_alert_data.thread, INFINITE);
-        CloseHandle(_alert_data.thread);
-        _alert_data.thread = NULL;
-        _state = STATE_NONE;
-    }
-
-    return _alert_data.value;
 }
 
 bool
 dlg_alert(const char *title, const char *message)
 {
-    if (STATE_NONE != _state)
+    if (_thread)
     {
         return false;
     }
 
     int title_length = MultiByteToWideChar(CP_UTF8, 0, title, -1, NULL, 0);
-    _alert_data.title = (LPWSTR)malloc(title_length * sizeof(WCHAR));
-    MultiByteToWideChar(CP_UTF8, 0, title, -1, _alert_data.title, title_length);
+    _title = (LPWSTR)malloc(title_length * sizeof(WCHAR));
+    MultiByteToWideChar(CP_UTF8, 0, title, -1, _title, title_length);
 
     int message_length = MultiByteToWideChar(CP_UTF8, 0, message, -1, NULL, 0);
-    _alert_data.message = (LPWSTR)malloc(message_length * sizeof(WCHAR));
-    MultiByteToWideChar(CP_UTF8, 0, message, -1, _alert_data.message,
-                        message_length);
+    _message = (LPWSTR)malloc(message_length * sizeof(WCHAR));
+    MultiByteToWideChar(CP_UTF8, 0, message, -1, _message, message_length);
 
-    _alert_data.thread = CreateThread(NULL, 0, _alert_routine, NULL, 0, NULL);
-    _alert_data.value = DLG_INCOMPLETE;
+    _thread = CreateThread(NULL, 0, _alert_routine, NULL, 0, NULL);
+    _value = DLG_INCOMPLETE;
 
     _draw_background();
 
-    _state = STATE_ALERT;
     return true;
 }
-
-static struct
-{
-    LPWSTR        title;
-    LPWSTR        message;
-    HANDLE        thread;
-    char         *buffer;
-    int           size;
-    dlg_validator validator;
-    int           value;
-} _prompt_data;
-
-static int
-_handle_prompt(void)
-{
-    if (DLG_INCOMPLETE != _prompt_data.value)
-    {
-        if (WAIT_TIMEOUT == WaitForSingleObject(_prompt_data.thread, 1))
-        {
-            return DLG_INCOMPLETE;
-        }
-
-        CloseHandle(_prompt_data.thread);
-        _prompt_data.thread = NULL;
-        _state = STATE_NONE;
-    }
-
-    return _prompt_data.value;
-}
-
-#define ID_EDITBOX 150
-#define ID_TEXT    200
 
 static BOOL CALLBACK
 _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
@@ -217,8 +165,7 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
         SetWindowPos(GetDlgItem(dlg, ID_EDITBOX), 0, padding_x, edit_top,
                      edit_width, edit_height,
                      SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOREDRAW);
-        SendMessageW(GetDlgItem(dlg, ID_EDITBOX), EM_LIMITTEXT,
-                     _prompt_data.size, 0);
+        SendMessageW(GetDlgItem(dlg, ID_EDITBOX), EM_LIMITTEXT, _size, 0);
 
         SetWindowPos(GetDlgItem(dlg, IDOK), 0, button_left, button_top,
                      button_width, button_height,
@@ -233,7 +180,7 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
     case WM_COMMAND:
         if ((EN_CHANGE == HIWORD(wparam)) && (ID_EDITBOX == LOWORD(wparam)))
         {
-            if (!_prompt_data.validator)
+            if (!_validator)
             {
                 return TRUE;
             }
@@ -248,7 +195,7 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
             LPSTR atext = (LPSTR)alloca(length);
             WideCharToMultiByte(CP_UTF8, 0, text, -1, atext, length, NULL,
                                 NULL);
-            EnableWindow(GetDlgItem(dlg, IDOK), _prompt_data.validator(atext));
+            EnableWindow(GetDlgItem(dlg, IDOK), _validator(atext));
             return TRUE;
         }
 
@@ -259,16 +206,16 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
             int    length = GetWindowTextLengthW(edit_box);
             LPWSTR text = (LPWSTR)alloca((length + 1) * sizeof(WCHAR));
             GetWindowTextW(edit_box, text, length + 1);
-            WideCharToMultiByte(CP_UTF8, 0, text, -1, _prompt_data.buffer,
-                                _prompt_data.size, NULL, NULL);
+            WideCharToMultiByte(CP_UTF8, 0, text, -1, _buffer, _size, NULL,
+                                NULL);
             EndDialog(dlg, wparam);
-            _prompt_data.value = length;
+            _value = length;
             return TRUE;
         }
 
         case IDCANCEL:
             EndDialog(dlg, wparam);
-            _prompt_data.value = 0;
+            _value = 0;
             // Fall through
 
         default:
@@ -298,8 +245,8 @@ _prompt_routine(LPVOID lpparam)
 
     // caption
     LPWSTR caption = (LPWSTR)(class + 1);
-    int    caption_length = wcslen(_prompt_data.title) + 1;
-    wcscpy(caption, _prompt_data.title);
+    int    caption_length = wcslen(_title) + 1;
+    wcscpy(caption, _title);
 
     // font size
     LPWORD font_size = (LPWORD)(caption + caption_length);
@@ -319,7 +266,7 @@ _prompt_routine(LPVOID lpparam)
     ok_button->cy = 14;
     ok_button->id = IDOK;
     ok_button->style = WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_DEFPUSHBUTTON |
-                       (_prompt_data.validator ? WS_DISABLED : 0);
+                       (_validator ? WS_DISABLED : 0);
 
     // button class
     class = (LPWORD)(ok_button + 1);
@@ -337,7 +284,7 @@ _prompt_routine(LPVOID lpparam)
     // Edit box
     LPDLGITEMTEMPLATE edit_box =
         (LPDLGITEMTEMPLATE)align(creation_data + 1, sizeof(DWORD));
-    edit_box->cx = (_prompt_data.size + 2) * 4;
+    edit_box->cx = (_size + 2) * 4;
     edit_box->cy = 14;
     edit_box->id = ID_EDITBOX;
     edit_box->style = WS_CHILD | WS_VISIBLE | WS_BORDER | WS_TABSTOP |
@@ -372,8 +319,8 @@ _prompt_routine(LPVOID lpparam)
 
     // caption
     caption = (LPWSTR)(class + 2);
-    caption_length = wcslen(_prompt_data.message) + 1;
-    wcscpy(caption, _prompt_data.message);
+    caption_length = wcslen(_message) + 1;
+    wcscpy(caption, _message);
 
     // no creation data
     creation_data = (LPWORD)(caption + caption_length);
@@ -384,8 +331,8 @@ _prompt_routine(LPVOID lpparam)
                             windows_get_hwnd(), (DLGPROC)_dialog_proc,
                             (LPARAM)caption);
 
-    free(_prompt_data.title);
-    free(_prompt_data.message);
+    free(_title);
+    free(_message);
     return 0;
 }
 
@@ -405,7 +352,7 @@ dlg_prompt(const char   *title,
            int           size,
            dlg_validator validator)
 {
-    if (STATE_NONE != _state)
+    if (_thread)
     {
         return false;
     }
@@ -433,40 +380,43 @@ dlg_prompt(const char   *title,
     }
 
     int title_length = MultiByteToWideChar(CP_UTF8, 0, title, -1, NULL, 0);
-    _prompt_data.title = (LPWSTR)malloc(title_length * sizeof(WCHAR));
-    MultiByteToWideChar(CP_UTF8, 0, title, -1, _prompt_data.title,
-                        title_length);
+    _title = (LPWSTR)malloc(title_length * sizeof(WCHAR));
+    MultiByteToWideChar(CP_UTF8, 0, title, -1, _title, title_length);
 
     int message_length = MultiByteToWideChar(CP_UTF8, 0, message, -1, NULL, 0);
-    _prompt_data.message = (LPWSTR)malloc(message_length * sizeof(WCHAR));
-    MultiByteToWideChar(CP_UTF8, 0, message, -1, _prompt_data.message,
-                        message_length);
+    _message = (LPWSTR)malloc(message_length * sizeof(WCHAR));
+    MultiByteToWideChar(CP_UTF8, 0, message, -1, _message, message_length);
 
-    _prompt_data.buffer = buffer;
-    _prompt_data.size = size;
-    _prompt_data.validator = validator;
+    _buffer = buffer;
+    _size = size;
+    _validator = validator;
 
-    _prompt_data.thread = CreateThread(NULL, 0, _prompt_routine, NULL, 0, NULL);
-    _prompt_data.value = DLG_INCOMPLETE;
+    _thread = CreateThread(NULL, 0, _prompt_routine, NULL, 0, NULL);
+    _value = DLG_INCOMPLETE;
 
     _draw_background();
 
-    _state = STATE_PROMPT;
     return true;
 }
 
 int
 dlg_handle(void)
 {
-    switch (_state & 0xFF)
+    if (NULL == _thread)
     {
-    case STATE_ALERT:
-        return _handle_alert();
-
-    case STATE_PROMPT:
-        return _handle_prompt();
-
-    default:
         return 0;
     }
+
+    if (DLG_INCOMPLETE != _value)
+    {
+        if (WAIT_TIMEOUT == WaitForSingleObject(_thread, 1))
+        {
+            return DLG_INCOMPLETE;
+        }
+
+        CloseHandle(_thread);
+        _thread = NULL;
+    }
+
+    return _value;
 }
