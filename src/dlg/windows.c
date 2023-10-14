@@ -16,6 +16,9 @@ static gfx_dimensions _screen = {0, 0};
 static HGLOBAL           _hgbl = NULL;
 static NONCLIENTMETRICSW _nclm = {0};
 
+static HFONT _font_banner = NULL;
+static HFONT _font_footer = NULL;
+
 static LPWSTR _title = NULL;
 static LPWSTR _message = NULL;
 
@@ -27,6 +30,13 @@ static HANDLE _thread = NULL;
 static int    _value;
 
 static void
+_free_fonts(void)
+{
+    DeleteObject(_font_banner);
+    DeleteObject(_font_footer);
+}
+
+static void
 _draw_background(void)
 {
     if (!_screen.width)
@@ -34,18 +44,66 @@ _draw_background(void)
         gfx_get_screen_dimensions(&_screen);
     }
 
-    gfx_fill_rectangle(&_screen, 0, 0, GFX_COLOR_GRAY);
+    RECT rect;
+    HWND wnd = windows_get_hwnd();
+    HDC  dc = GetDC(wnd);
+    GetClientRect(wnd, &rect);
 
-    gfx_dimensions bar = {_screen.width, 9};
-    gfx_fill_rectangle(&bar, 0, 0, GFX_COLOR_WHITE);
+    // Gradient background
+    GRADIENT_RECT mesh = {0, 1};
+    TRIVERTEX     vertex[2] = {
+        {rect.left - 1, rect.top - 1, 0xDC00, 0xAE00, 0xEE00, 0x0000},
+        {rect.right, rect.bottom, 0x0000, 0x0000, 0x0000, 0x0000},
+    };
+    GradientFill(dc, vertex, lengthof(vertex), &mesh, 1, GRADIENT_FILL_RECT_V);
 
-    gfx_dimensions hline = {_screen.width - 1, 1};
-    gfx_draw_line(&hline, 0, bar.height, GFX_COLOR_BLACK);
-    gfx_draw_text(pal_get_version_string(), 1, 0);
+    if (NULL == _font_banner)
+    {
+        _font_banner =
+            CreateFontW(32, 0, 0, 0, FW_BOLD, TRUE, FALSE, FALSE,
+                        DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
+                        CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, FF_ROMAN, NULL);
+        _font_footer =
+            CreateFontW(12, 0, 0, 0, FW_REGULAR, FALSE, FALSE, FALSE,
+                        DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
+                        CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, FF_SWISS, NULL);
+        atexit(_free_fonts);
+    }
 
-    gfx_fill_rectangle(&bar, 0, _screen.height - bar.height, GFX_COLOR_BLACK);
-    gfx_draw_text("(C) 2021-2023", 1, 24);
-    gfx_draw_text("https://github.com/thecatkitty/lavender/", 39, 24);
+    int prev_bkmode = SetBkMode(dc, TRANSPARENT);
+
+    // Banner with shadow
+    HFONT prev_font = SelectObject(dc, _font_banner);
+
+    int length =
+        MultiByteToWideChar(CP_UTF8, 0, pal_get_version_string(), -1, NULL, 0);
+    LPWSTR banner = (LPWSTR)alloca((length + 1) * sizeof(WCHAR));
+    MultiByteToWideChar(CP_UTF8, 0, pal_get_version_string(), -1, banner,
+                        length);
+
+    COLORREF prev_color = SetTextColor(dc, 0x000000);
+    rect.left += 7;
+    rect.top += 7;
+    DrawTextW(dc, banner, -1, &rect, 0);
+
+    SetTextColor(dc, 0xFFFFFF);
+    rect.left -= 2;
+    rect.top -= 2;
+    DrawTextW(dc, banner, -1, &rect, DT_SINGLELINE);
+
+    // Footer
+    rect.right -= 5;
+    rect.bottom -= 5;
+    SelectObject(dc, _font_footer);
+    DrawTextW(dc, L"© 2021-2023", -1, &rect, DT_SINGLELINE | DT_BOTTOM);
+    DrawTextW(dc, L"https://github.com/thecatkitty/lavender/", -1, &rect,
+              DT_SINGLELINE | DT_BOTTOM | DT_RIGHT);
+
+    // Restore state
+    SetTextColor(dc, prev_color);
+    SelectObject(dc, prev_font);
+    SetBkMode(dc, prev_bkmode);
+    ReleaseDC(wnd, dc);
 }
 
 static DWORD WINAPI
