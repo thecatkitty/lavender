@@ -21,6 +21,7 @@
     {                                                                          \
     } *x
 
+#define align(p, a)           (((intptr_t)(p) + (a)-1) / (a) * (a))
 #define lengthof(x)           (sizeof(x) / sizeof((x)[0]))
 #define sizeofm(type, member) sizeof(((type *)0)->member)
 
