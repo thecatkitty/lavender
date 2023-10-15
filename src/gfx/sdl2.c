@@ -334,3 +334,9 @@ gfx_draw_text(const char *str, uint16_t x, uint16_t y)
     SDL_FreeSurface(surface);
     return true;
 }
+
+void
+sdl2arch_set_window_title(const char *title)
+{
+    SDL_SetWindowTitle(_window, title);
+}

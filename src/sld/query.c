@@ -2,19 +2,53 @@
 
 #include "sld_impl.h"
 
+#ifdef GFX_COLORFUL
+#include <platform/sdl2arch.h>
+#endif
+
+static uint16_t
+_get(const char *name)
+{
+    if (0 == strcmp("gfx.colorful", name))
+    {
+#ifdef GFX_COLORFUL
+        return 1;
+#else
+        return 0;
+#endif
+    }
+
+    return UINT16_MAX;
+}
+
+static uint16_t
+_set(const char *name, const char *value)
+{
+    if (0 == strcmp("gfx.title", name))
+    {
+#ifdef GFX_COLORFUL
+        sdl2arch_set_window_title(value);
+        return 1;
+#else
+        return 0;
+#endif
+    }
+
+    return UINT16_MAX;
+}
+
 int
 __sld_execute_query(sld_entry *sld)
 {
-    if (0 == strcmp("gfx.colorful", sld->content))
+    char *value = strchr(sld->content, ':');
+    if (value)
     {
-#ifdef GFX_COLORFUL
-        __sld_accumulator = 1;
-#else
-        __sld_accumulator = 0;
-#endif
-        return 0;
+        *value++ = 0;
+        __sld_accumulator = _set(sld->content, value);
     }
-
-    __sld_accumulator = UINT16_MAX;
+    else
+    {
+        __sld_accumulator = _get(sld->content);
+    }
     return 0;
 }
