@@ -1,5 +1,6 @@
 0       P       sheba.mid
 :Start
+0       ?   gfx.title:Lavender Demo Slideshow
 0       r   0   <640 200 B
 0       T   18  ^Lavender
 0       ?   gfx.colorful
