@@ -16,6 +16,9 @@ static gfx_dimensions _screen = {0, 0};
 static HGLOBAL           _hgbl = NULL;
 static NONCLIENTMETRICSW _nclm = {0};
 
+static HHOOK   _hook = NULL;
+static WNDPROC _prev_wnd_proc = NULL;
+
 static HFONT _font_banner = NULL;
 static HFONT _font_footer = NULL;
 
@@ -106,10 +109,61 @@ _draw_background(void)
     ReleaseDC(wnd, dc);
 }
 
+static LRESULT CALLBACK
+_hook_wnd_proc(HWND wnd, UINT message, WPARAM wparam, LPARAM lparam)
+{
+    LRESULT rc = CallWindowProc(_prev_wnd_proc, wnd, message, wparam, lparam);
+
+    if (message == WM_INITDIALOG)
+    {
+        RECT parent_rect;
+        GetWindowRect(windows_get_hwnd(), &parent_rect);
+        LONG parent_width = parent_rect.right - parent_rect.left;
+        LONG parent_height = parent_rect.bottom - parent_rect.top;
+
+        RECT msgbox_rect;
+        GetWindowRect(wnd, &msgbox_rect);
+        LONG msgbox_width = msgbox_rect.right - msgbox_rect.left;
+        LONG msgbox_height = msgbox_rect.bottom - msgbox_rect.top;
+
+        MoveWindow(wnd, parent_rect.left + (parent_width - msgbox_width) / 2,
+                   parent_rect.top + (parent_height - msgbox_height) / 2,
+                   msgbox_width, msgbox_height, FALSE);
+        return rc;
+    }
+
+    if (message == WM_NCDESTROY)
+    {
+        UnhookWindowsHookEx(_hook);
+    }
+
+    return rc;
+}
+
+static LRESULT CALLBACK
+_hook_proc(int code, WPARAM wparam, LPARAM lparam)
+{
+    if (HC_ACTION == code)
+    {
+        LPCWPSTRUCT cwp = (LPCWPSTRUCT)lparam;
+        if (cwp->message == WM_INITDIALOG)
+        {
+            _prev_wnd_proc = (WNDPROC)SetWindowLong(cwp->hwnd, GWL_WNDPROC,
+                                                    (LONG)_hook_wnd_proc);
+        }
+    }
+
+    return CallNextHookEx(_hook, code, wparam, lparam);
+}
+
 static DWORD WINAPI
 _alert_routine(LPVOID lpparam)
 {
-    MessageBoxW(windows_get_hwnd(), _message, _title, MB_OK);
+    _hook = SetWindowsHookExW(WH_CALLWNDPROC, _hook_proc, NULL,
+                              GetCurrentThreadId());
+
+    MessageBoxW(windows_get_hwnd(), _message, _title,
+                MB_OK | MB_ICONEXCLAMATION);
     _value = DLG_OK;
 
     free(_title);
