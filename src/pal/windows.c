@@ -61,9 +61,37 @@ pal_initialize(int argc, char *argv[])
     SDL_GetWindowWMInfo(_window, &wminfo);
     _wnd = wminfo.info.win.window;
 
-    _icon = LoadIconW(GetModuleHandleW(NULL), MAKEINTRESOURCEW(1));
-    SendMessageW(_wnd, WM_SETICON, ICON_BIG, (LPARAM)_icon);
-    SendMessageW(_wnd, WM_SETICON, ICON_SMALL, (LPARAM)_icon);
+    hasset icon = pal_open_asset("windows.ico", O_RDONLY);
+    if (icon)
+    {
+        int   small_size = GetSystemMetrics(SM_CYSMICON);
+        int   large_size = GetSystemMetrics(SM_CYICON);
+        char *data = pal_get_asset_data(icon);
+        int   size = pal_get_asset_size(icon);
+
+        int small_offset =
+            LookupIconIdFromDirectoryEx(data, TRUE, small_size, small_size, 0);
+        int large_offset =
+            LookupIconIdFromDirectoryEx(data, TRUE, large_size, large_size, 0);
+        _icon = NULL;
+
+        SendMessageW(_wnd, WM_SETICON, ICON_BIG,
+                     (LPARAM)CreateIconFromResource(data + large_offset,
+                                                    size - large_offset, TRUE,
+                                                    0x00030000));
+        SendMessageW(_wnd, WM_SETICON, ICON_SMALL,
+                     (LPARAM)CreateIconFromResource(data + small_offset,
+                                                    size - small_offset, TRUE,
+                                                    0x00030000));
+
+        pal_close_asset(icon);
+    }
+    else
+    {
+        _icon = LoadIconW(GetModuleHandleW(NULL), MAKEINTRESOURCEW(1));
+        SendMessageW(_wnd, WM_SETICON, ICON_BIG, (LPARAM)_icon);
+        SendMessageW(_wnd, WM_SETICON, ICON_SMALL, (LPARAM)_icon);
+    }
 
     if (!snd_initialize())
     {
