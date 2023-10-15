@@ -249,9 +249,7 @@ gfx_draw_bitmap(gfx_bitmap *bm, uint16_t x, uint16_t y)
     }
 
     SDL_UnlockSurface(screen);
-
-    SDL_Rect rect = {x, y * 2, bm->width, bm->height * 2};
-    SDL_UpdateWindowSurfaceRects(_window, &rect, 1);
+    sdl2arch_present(_renderer);
     return true;
 }
 
