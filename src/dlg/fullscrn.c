@@ -40,7 +40,7 @@ _draw_background(void)
 {
     gfx_fill_rectangle(&_screen, 0, 0, GFX_COLOR_GRAY);
 
-    gfx_dimensions bar = {_screen.width, 9};
+    gfx_dimensions bar = {_screen.width, _glyph.height + 1};
     gfx_fill_rectangle(&bar, 0, 0, GFX_COLOR_WHITE);
 
     gfx_dimensions hline = {_screen.width - 1, 1};
@@ -59,20 +59,21 @@ _draw_frame(int columns, int lines, const char *title, int title_length)
                              _glyph.height * (lines + 3)};
 
     int left = (_screen.width - window.width) / 2;
-    int top = (_screen.height - window.height) / 16 * _glyph.height;
+    int top =
+        (_screen.height - window.height) / 2 / _glyph.height * _glyph.height;
     gfx_fill_rectangle(&window, left, top, GFX_COLOR_WHITE);
     gfx_draw_rectangle(&window, left, top, GFX_COLOR_BLACK);
     window.width += 2;
     gfx_draw_rectangle(&window, left - 1, top, GFX_COLOR_BLACK);
 
     gfx_dimensions title_line = {window.width - 1, 1};
-    gfx_draw_line(&title_line, left, top + 9, GFX_COLOR_BLACK);
+    gfx_draw_line(&title_line, left, top + _glyph.height + 1, GFX_COLOR_BLACK);
 
     gfx_dimensions stripe = {
         (window.width - ((title_length + 2) * _glyph.width)) / 2 - 1, 1};
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < _glyph.height; i += 2)
     {
-        int y = top + 1 + i * 2;
+        int y = top + 1 + i;
         gfx_draw_line(&stripe, left + 1, y, GFX_COLOR_BLACK);
         gfx_draw_line(&stripe, left + window.width - stripe.width - 4, y,
                       GFX_COLOR_BLACK);
@@ -393,7 +394,7 @@ dlg_prompt(const char   *title,
     _field_top = (_screen.height / _glyph.height - 3 - lines) / 2 + 1 + lines;
 
     _box.width = field_width * _glyph.width + 2;
-    _box.height = 10;
+    _box.height = _glyph.height + 2;
     _box_top = _field_top * _glyph.height - 1;
     _box_left = _field_left * _glyph.width - 1;
 
