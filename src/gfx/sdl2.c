@@ -172,53 +172,6 @@ gfx_get_pixel_aspect(void)
     return ratio;
 }
 
-static void
-_draw_bitmap_1bpp(gfx_bitmap *bm,
-                  uint16_t    x,
-                  uint16_t    y,
-                  unsigned    screen_pitch,
-                  uint32_t   *pixels)
-{
-    for (int cy = 0; cy < bm->height; cy++)
-    {
-        int base = (y + cy) * (screen_pitch / sizeof(uint32_t) * 2) + x;
-        for (int cx = 0; cx < bm->width; cx++)
-        {
-            uint8_t  byte = ((const uint8_t *)bm->bits)[cy * bm->opl + cx / 8];
-            uint32_t value = (byte & (0x80 >> (cx % 8))) ? 0xFFFFFF : 0;
-            pixels[base + cx] = value;
-            pixels[base + (screen_pitch / sizeof(uint32_t)) + cx] = value;
-        }
-    }
-}
-
-static void
-_draw_bitmap_32bpp(gfx_bitmap *bm,
-                   uint16_t    x,
-                   uint16_t    y,
-                   unsigned    screen_pitch,
-                   uint32_t   *pixels)
-{
-    int maxy = (bm->height < 0) ? -bm->height : bm->height;
-    int pitch = ((bm->height < 0) ? -1 : 1) * (bm->opl / sizeof(uint32_t));
-    const uint32_t *bits = (const uint32_t *)bm->bits;
-    if (pitch < 0)
-    {
-        bits += pitch * (bm->height + 1);
-    }
-
-    for (int cy = 0; cy < maxy; cy++)
-    {
-        int base = (y + cy) * (screen_pitch / sizeof(uint32_t) * 2) + x;
-        for (int cx = 0; cx < bm->width; cx++)
-        {
-            uint32_t value = bits[cy * pitch + cx];
-            pixels[base + cx] = value;
-            pixels[base + (screen_pitch / sizeof(uint32_t)) + cx] = value;
-        }
-    }
-}
-
 bool
 gfx_draw_bitmap(gfx_bitmap *bm, uint16_t x, uint16_t y)
 {
@@ -239,19 +192,39 @@ gfx_draw_bitmap(gfx_bitmap *bm, uint16_t x, uint16_t y)
     }
 
     SDL_Surface *screen = SDL_GetWindowSurface(_window);
-    SDL_LockSurface(screen);
-    uint32_t *pixels = (uint32_t *)screen->pixels;
+
+    SDL_Rect src_rect = {0, 0, bm->width, abs(bm->height)};
+    SDL_Rect dst_rect = {x, y, bm->width, abs(bm->height)};
+    uint32_t format = SDL_PIXELFORMAT_XRGB8888;
 
     if (1 == bm->bpp)
     {
-        _draw_bitmap_1bpp(bm, x, y, screen->pitch, pixels);
+        char *bits = (char *)bm->bits;
+        char *end = bits + bm->opl * bm->height;
+        while (bits < end)
+        {
+            *bits = ~*bits;
+            bits++;
+        }
+
+        format = SDL_PIXELFORMAT_INDEX1MSB;
+    }
+
+    SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormatFrom(
+        bm->bits, bm->width, abs(bm->height), bm->bpp, bm->opl, format);
+    if (0 > bm->height)
+    {
+        SDL_Texture *texture = SDL_CreateTextureFromSurface(_renderer, surface);
+        SDL_RenderCopyEx(_renderer, texture, &src_rect, &dst_rect, 0, NULL,
+                         SDL_FLIP_VERTICAL);
+        SDL_DestroyTexture(texture);
     }
     else
     {
-        _draw_bitmap_32bpp(bm, x, y, screen->pitch, pixels);
+        SDL_BlitSurface(surface, &src_rect, screen, &dst_rect);
     }
+    SDL_FreeSurface(surface);
 
-    SDL_UnlockSurface(screen);
     sdl2arch_present(_renderer);
     return true;
 }
