@@ -10,6 +10,7 @@ SDL_Window *_window = NULL;
 static SDL_Renderer *_renderer = NULL;
 static TTF_Font     *_font = NULL;
 static int           _font_w, _font_h;
+static int           _screen_w, _screen_h;
 static bool          _rendering_text = false;
 
 static const SDL_Color COLORS[] = {
@@ -95,8 +96,10 @@ gfx_initialize(void)
     LOG("font: '%s'", font_path);
     TTF_SizeText(_font, "W", &_font_w, &_font_h);
 
+    _screen_w = 80 * _font_w;
+    _screen_h = 25 * 16;
     _window = SDL_CreateWindow(pal_get_version_string(), SDL_WINDOWPOS_CENTERED,
-                               SDL_WINDOWPOS_CENTERED, 80 * _font_w, 25 * 16,
+                               SDL_WINDOWPOS_CENTERED, _screen_w, _screen_h,
                                SDL_WINDOW_SHOWN);
     if (NULL == _window)
     {
@@ -145,8 +148,8 @@ gfx_get_screen_dimensions(gfx_dimensions *dim)
 {
     LOG("entry");
 
-    dim->width = 80 * _font_w;
-    dim->height = 200;
+    dim->width = _screen_w;
+    dim->height = _screen_h;
 
     LOG("exit, %dx%d", dim->width, dim->height);
 }
@@ -155,7 +158,7 @@ void
 gfx_get_glyph_dimensions(gfx_dimensions *dim)
 {
     dim->width = _font_w;
-    dim->height = 8;
+    dim->height = 16;
 }
 
 uint16_t
@@ -163,7 +166,7 @@ gfx_get_pixel_aspect(void)
 {
     LOG("entry");
 
-    uint16_t ratio = 64 * (2);
+    uint16_t ratio = 64 * (1);
 
     LOG("exit, ratio: 1:%.2f", (float)ratio / 64.0f);
     return ratio;
@@ -261,10 +264,7 @@ gfx_draw_line(gfx_dimensions *dim, uint16_t x, uint16_t y, gfx_color color)
     _rendering_text = false;
 
     _set_color(color);
-    SDL_RenderDrawLine(_renderer, x, y * 2, x + dim->width,
-                       (y + dim->height - 1) * 2);
-    SDL_RenderDrawLine(_renderer, x, y * 2 + 1, x + dim->width,
-                       (y + dim->height - 1) * 2 + 1);
+    SDL_RenderDrawLine(_renderer, x, y, x + dim->width, y + dim->height - 1);
     sdl2arch_present(_renderer);
     return true;
 }
@@ -279,12 +279,8 @@ gfx_draw_rectangle(gfx_dimensions *rect,
         x, y, color);
     _rendering_text = false;
 
-    SDL_Rect sdl_rect = {x - 1, (y - 1) * 2, rect->width + 2,
-                         (rect->height + 2) * 2};
+    SDL_Rect sdl_rect = {x - 1, y - 1, rect->width + 2, rect->height + 2};
     _set_color(color);
-    SDL_RenderDrawRect(_renderer, &sdl_rect);
-    sdl_rect.y += 1;
-    sdl_rect.h -= 2;
     SDL_RenderDrawRect(_renderer, &sdl_rect);
     sdl2arch_present(_renderer);
     return true;
@@ -300,7 +296,7 @@ gfx_fill_rectangle(gfx_dimensions *rect,
         x, y, color);
     _rendering_text = false;
 
-    SDL_Rect sdl_rect = {x, y * 2, rect->width, rect->height * 2};
+    SDL_Rect sdl_rect = {x, y, rect->width, rect->height};
     _set_color(color);
     SDL_RenderFillRect(_renderer, &sdl_rect);
     sdl2arch_present(_renderer);
