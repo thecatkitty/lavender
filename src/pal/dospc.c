@@ -171,6 +171,40 @@ _is_compatible(void)
     return !_is_dos(1) && (!_is_winnt() || (0x0600 > _get_winnt_version()));
 }
 
+static bool
+_snd_enum_callback(snd_device_protocol *device, void *data)
+{
+    fputs("  ", stdout);
+    fputs(device->name, stdout);
+    for (int i = strlen(device->name); i < 8; i++)
+    {
+        fputc(' ', stdout);
+    }
+    fputs(device->description, stdout);
+    fputc('\n', stdout);
+    fflush(stdout);
+    return true;
+}
+
+static void
+_show_help(const char *self)
+{
+    const char *name = strrchr(self, '\\');
+    if (NULL == name)
+    {
+        name = self;
+    }
+    else
+    {
+        name++;
+    }
+
+    fputs(name ? name : "LAVENDER", stdout);
+    puts(" [/? | /S<dev>]");
+    puts("\ndev:");
+    snd_enum_devices(_snd_enum_callback, NULL);
+}
+
 void
 pal_initialize(int argc, char *argv[])
 {
@@ -191,6 +225,12 @@ pal_initialize(int argc, char *argv[])
         if ('s' == tolower(argv[i][1]))
         {
             arg_snd = argv[i] + 2;
+        }
+
+        if ('?' == argv[i][1])
+        {
+            _show_help(argv[0]);
+            dos_exit(1);
         }
     }
 
