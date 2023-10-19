@@ -104,4 +104,4 @@ pcspk_write(const midi_event *event)
 }
 
 snd_device_protocol __snd_dpcspk = {pcspk_open, pcspk_close, pcspk_write,
-                                    "pcspk"};
+                                    "pcspk", "PC Speaker"};

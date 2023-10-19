@@ -10,6 +10,7 @@ typedef struct
     bool (*write)(const midi_event *);
 
     const char *name;
+    const char *description;
 } snd_device_protocol;
 
 typedef struct
