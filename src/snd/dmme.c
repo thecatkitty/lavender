@@ -5,8 +5,8 @@
 
 static HMIDIOUT _out = NULL;
 
-bool
-snd_initialize(void)
+static bool
+mme_open(void)
 {
     LOG("entry");
 
@@ -42,8 +42,8 @@ snd_initialize(void)
     return true;
 }
 
-void
-snd_cleanup(void)
+static void
+mme_close(void)
 {
     LOG("entry");
 
@@ -53,12 +53,12 @@ snd_cleanup(void)
     }
 }
 
-void
-snd_send(midi_event *event)
+static bool
+mme_write(const midi_event *event)
 {
     if (MIDI_MSG_SYSEX <= event->status)
     {
-        return;
+        return true;
     }
 
     if (0 == event->msg_length)
@@ -66,8 +66,10 @@ snd_send(midi_event *event)
         if (MMSYSERR_NOERROR != midiOutShortMsg(_out, event->status))
         {
             LOG("error sending message %02x", event->status);
+            return false;
         }
-        return;
+
+        return true;
     }
 
     if (1 == event->msg_length)
@@ -76,8 +78,10 @@ snd_send(midi_event *event)
         if (MMSYSERR_NOERROR != midiOutShortMsg(_out, *(DWORD *)msg))
         {
             LOG("error sending message %02x %02x", msg[0], msg[1]);
+            return false;
         }
-        return;
+
+        return true;
     }
 
     if (2 == event->msg_length)
@@ -87,10 +91,15 @@ snd_send(midi_event *event)
         if (MMSYSERR_NOERROR != midiOutShortMsg(_out, *(DWORD *)msg))
         {
             LOG("error sending message %02x %02x %02x", msg[0], msg[1], msg[2]);
+            return false;
         }
-        return;
+
+        return true;
     }
 
     LOG("cannot send %d-byte %02x message", event->msg_length + 1,
         event->status);
+    return true;
 }
+
+snd_device_protocol __snd_dmme = {mme_open, mme_close, mme_write};

@@ -1,18 +1,71 @@
 #include <pal.h>
 #include <snd.h>
 
+extern snd_device_protocol __snd_dfluid;
+extern snd_device_protocol __snd_dmme;
+extern snd_device_protocol __snd_dmpu401;
+extern snd_device_protocol __snd_dpcspk;
+
 extern snd_format_protocol __snd_fmidi;
 extern snd_format_protocol __snd_fspk;
+
+static snd_device_protocol *_devices[] = {
+#ifdef __MINGW32__
+    &__snd_dmme,
+#endif
+#ifdef __linux__
+    &__snd_dfluid,
+#endif
+#if !defined(__MINGW32__) && !defined(__linux__)
+    &__snd_dmpu401,
+    &__snd_dpcspk,
+#endif
+};
 
 static snd_format_protocol *_formats[] = {
     &__snd_fmidi, // Standard MIDI File, type 0
     &__snd_fspk   // length-divisor pairs for PC Speaker
 };
 
-#define MAX_FORMATS (sizeof(_formats) / sizeof(snd_format_protocol *))
-
+static snd_device_protocol _device = {NULL, NULL, NULL};
 static snd_format_protocol _format;
 static hasset              _music = NULL;
+
+bool
+snd_initialize(void)
+{
+    for (snd_device_protocol **device = _devices;
+         device < _devices + lengthof(_devices); device++)
+    {
+        if ((*device)->open())
+        {
+            _device = **device;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void
+snd_cleanup(void)
+{
+    if (_device.close)
+    {
+        _device.close();
+    }
+}
+
+bool
+snd_send(const midi_event *event)
+{
+    if (NULL == _device.write)
+    {
+        return false;
+    }
+
+    return _device.write(event);
+}
 
 void
 snd_handle(void)
@@ -53,7 +106,7 @@ snd_play(const char *name)
 
     int length = pal_get_asset_size(_music);
     for (snd_format_protocol **format = _formats;
-         format < _formats + MAX_FORMATS; format++)
+         format < _formats + lengthof(_formats); format++)
     {
         if ((*format)->probe(data, length))
         {

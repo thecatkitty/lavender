@@ -117,8 +117,8 @@ _init_uart(unsigned ms)
     return true;
 }
 
-bool
-snd_initialize(void)
+static bool
+mpu401_open(void)
 {
     if (!_reset(MPU401_TIMEOUT_CONTROL_MS))
     {
@@ -134,8 +134,8 @@ snd_initialize(void)
     return true;
 }
 
-void
-snd_cleanup(void)
+static void
+mpu401_close(void)
 {
     if (!_operational)
     {
@@ -163,12 +163,12 @@ snd_cleanup(void)
     _reset(MPU401_TIMEOUT_CONTROL_MS);
 }
 
-void
-snd_send(midi_event *event)
+static bool
+mpu401_write(const midi_event *event)
 {
     if (!_operational)
     {
-        return;
+        return false;
     }
 
     uint32_t ticks = pal_get_ticks(MPU401_TIMEOUT_DATA_MS);
@@ -176,7 +176,7 @@ snd_send(midi_event *event)
     if (!_wait_write(pal_get_counter() + ticks))
     {
         _operational = false;
-        return;
+        return false;
     }
 
     _write(event->status);
@@ -188,9 +188,12 @@ snd_send(midi_event *event)
         if (!_wait_write(pal_get_counter() + ticks))
         {
             _operational = false;
-            return;
+            return false;
         }
 
         _write(*begin++);
     }
+    return true;
 }
+
+snd_device_protocol __snd_dmpu401 = {mpu401_open, mpu401_close, mpu401_write};
