@@ -196,4 +196,5 @@ mpu401_write(const midi_event *event)
     return true;
 }
 
-snd_device_protocol __snd_dmpu401 = {mpu401_open, mpu401_close, mpu401_write};
+snd_device_protocol __snd_dmpu401 = {mpu401_open, mpu401_close, mpu401_write,
+                                     "mpu401"};

@@ -48,7 +48,7 @@ pal_initialize(int argc, char *argv[])
         abort();
     }
 
-    if (!snd_initialize())
+    if (!snd_initialize(NULL))
     {
         LOG("cannot initialize sound");
     }

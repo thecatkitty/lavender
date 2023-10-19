@@ -103,4 +103,5 @@ pcspk_write(const midi_event *event)
     return true;
 }
 
-snd_device_protocol __snd_dpcspk = {pcspk_open, pcspk_close, pcspk_write};
+snd_device_protocol __snd_dpcspk = {pcspk_open, pcspk_close, pcspk_write,
+                                    "pcspk"};
