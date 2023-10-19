@@ -17,6 +17,7 @@
 #include <gfx.h>
 #include <pal.h>
 #include <platform/dospc.h>
+#include <snd.h>
 
 #include "../resource.h"
 #include "dospc.h"
@@ -258,6 +259,8 @@ pal_initialize(int argc, char *argv[])
     }
 
     _has_mouse = msmouse_init();
+
+    snd_initialize();
 }
 
 void
@@ -265,6 +268,7 @@ pal_cleanup(void)
 {
     ziparch_cleanup();
     gfx_cleanup();
+    snd_cleanup();
 
     _dos_setvect(INT_PIT, __dospc_bios_isr);
     _pit_init_channel(0, PIT_MODE_RATE_GEN, 0);
