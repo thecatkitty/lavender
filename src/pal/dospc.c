@@ -180,6 +180,20 @@ pal_initialize(int argc, char *argv[])
         *ptr = STACK_FILL_PATTERN;
 #endif // STACK_PROFILING
 
+    const char *arg_snd = NULL;
+    for (int i = 1; i <= argc; i++)
+    {
+        if ('/' != argv[i][0])
+        {
+            continue;
+        }
+
+        if ('s' == tolower(argv[i][1]))
+        {
+            arg_snd = argv[i] + 2;
+        }
+    }
+
 #ifdef ZIP_PIGGYBACK
     zip_cdir_end_header *cdir = _locate_cdir(__edata, __sbss);
     if (NULL == cdir)
@@ -260,7 +274,7 @@ pal_initialize(int argc, char *argv[])
 
     _has_mouse = msmouse_init();
 
-    snd_initialize();
+    snd_initialize(arg_snd);
 }
 
 void

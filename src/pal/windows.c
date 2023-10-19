@@ -93,7 +93,7 @@ pal_initialize(int argc, char *argv[])
         SendMessageW(_wnd, WM_SETICON, ICON_SMALL, (LPARAM)_icon);
     }
 
-    if (!snd_initialize())
+    if (!snd_initialize(NULL))
     {
         LOG("cannot initialize sound");
     }

@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include <pal.h>
 #include <snd.h>
 
@@ -31,20 +33,48 @@ static snd_device_protocol _device = {NULL, NULL, NULL};
 static snd_format_protocol _format;
 static hasset              _music = NULL;
 
-bool
-snd_initialize(void)
+void
+snd_enum_devices(snd_enum_devices_callback callback, void *data)
 {
     for (snd_device_protocol **device = _devices;
          device < _devices + lengthof(_devices); device++)
     {
-        if ((*device)->open())
+        if (!callback(*device, data))
         {
-            _device = **device;
-            return true;
+            return;
         }
     }
+}
 
-    return false;
+static bool
+_try_open(snd_device_protocol *device, void *data)
+{
+    const char *arg = (const char *)data;
+
+    if (arg && (0 != strcasecmp(arg, device->name)))
+    {
+        return true;
+    }
+
+    if (device->open())
+    {
+        _device = *device;
+        return false;
+    }
+
+    if (arg)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+bool
+snd_initialize(const char *arg)
+{
+    snd_enum_devices(_try_open, (void *)arg);
+    return NULL != _device.open;
 }
 
 void

@@ -333,4 +333,5 @@ fluid_write(const midi_event *event)
     return true;
 }
 
-snd_device_protocol __snd_dfluid = {fluid_open, fluid_close, fluid_write};
+snd_device_protocol __snd_dfluid = {fluid_open, fluid_close, fluid_write,
+                                    "fluid"};
