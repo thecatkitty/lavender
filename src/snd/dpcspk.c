@@ -23,26 +23,19 @@ static const uint8_t KEY_MULTIPLIERS[] = {
     227  // G#  .888
 };
 
-#ifndef __linux__
-bool
-snd_initialize(void)
+static bool
+pcspk_open(void)
 {
     return true;
 }
 
-void
-snd_cleanup(void)
+static void
+pcspk_close(void)
 {
 }
-#endif
 
-void
-#ifdef __linux__
-sndd_send
-#else
-snd_send
-#endif
-    (midi_event *event)
+static bool
+pcspk_write(const midi_event *event)
 {
     uint8_t     status = event->status;
     const char *msg = event->msg;
@@ -59,7 +52,7 @@ snd_send
 
     if (0 != channel)
     {
-        return;
+        return true;
     }
 
     switch (status)
@@ -71,18 +64,18 @@ snd_send
 
         if ((MIDI_MAX_KEY < key) || (MIDI_MAX_VELOCITY < velocity))
         {
-            return;
+            return false;
         }
 
         if ((MIDI_MSG_NOTEOFF == status) || (0 == velocity))
         {
             dospc_silence();
-            return;
+            return true;
         }
 
         if (KEY_MIN > key)
         {
-            return;
+            return false;
         }
 
         uint32_t freq = FREQ_A4;
@@ -106,4 +99,8 @@ snd_send
         break;
     }
     }
+
+    return true;
 }
+
+snd_device_protocol __snd_dpcspk = {pcspk_open, pcspk_close, pcspk_write};

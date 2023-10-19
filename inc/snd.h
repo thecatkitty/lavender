@@ -5,6 +5,13 @@
 
 typedef struct
 {
+    bool (*open)(void);
+    void (*close)(void);
+    bool (*write)(const midi_event *);
+} snd_device_protocol;
+
+typedef struct
+{
     bool (*probe)(void *, uint16_t);
     bool (*start)(void *, uint16_t);
     bool (*step)(void);
@@ -27,7 +34,7 @@ extern void
 snd_handle(void);
 
 // Send MIDI message
-extern void
-snd_send(midi_event *event);
+extern bool
+snd_send(const midi_event *event);
 
 #endif // _SND_H_

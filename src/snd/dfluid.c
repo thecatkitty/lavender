@@ -13,14 +13,13 @@ static fluid_settings_t     *_settings;
 static fluid_synth_t        *_synth;
 static fluid_audio_driver_t *_audio;
 
+extern snd_device_protocol __snd_dpcspk;
+
 extern void
 pcspkemu_stop(void);
 
-extern void
-sndd_send(midi_event *event);
-
-bool
-snd_initialize(void)
+static bool
+fluid_open(void)
 {
     LOG("entry");
 
@@ -74,8 +73,8 @@ snd_initialize(void)
     }
 }
 
-void
-snd_cleanup(void)
+static void
+fluid_close(void)
 {
     LOG("entry");
 
@@ -98,8 +97,8 @@ snd_cleanup(void)
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
 }
 
-void
-snd_send(midi_event *event)
+static bool
+fluid_write(const midi_event *event)
 {
     uint8_t     status = event->status;
     const char *msg = event->msg;
@@ -330,5 +329,8 @@ snd_send(midi_event *event)
     }
     }
 
-    sndd_send(event);
+    __snd_dpcspk.write(event);
+    return true;
 }
+
+snd_device_protocol __snd_dfluid = {fluid_open, fluid_close, fluid_write};
