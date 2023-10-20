@@ -6,6 +6,7 @@ CCSOURCES := $(CCSOURCES) \
 ifeq ($(findstring dospc,$(LAV_TARGET)),dospc)
 CCSOURCES := $(CCSOURCES) \
 	$(DIR)/dmpu401.c \
+	$(DIR)/dopl2.c \
 	$(DIR)/dpcspk.c
 endif
 

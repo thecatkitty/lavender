@@ -6,6 +6,7 @@
 extern snd_device_protocol __snd_dfluid;
 extern snd_device_protocol __snd_dmme;
 extern snd_device_protocol __snd_dmpu401;
+extern snd_device_protocol __snd_dopl2;
 extern snd_device_protocol __snd_dpcspk;
 
 extern snd_format_protocol __snd_fmidi;
@@ -19,6 +20,7 @@ static snd_device_protocol *_devices[] = {
     &__snd_dfluid,
 #endif
 #if !defined(__MINGW32__) && !defined(__linux__)
+    &__snd_dopl2,
     &__snd_dmpu401,
     &__snd_dpcspk,
 #endif
