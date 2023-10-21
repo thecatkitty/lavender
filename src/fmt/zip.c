@@ -350,7 +350,7 @@ static const uint32_t _CRC_TABLE[] = {
     return ~crc;
 
 uint32_t
-zip_calculate_crc(uint8_t *buffer, int length)
+zip_calculate_crc(uint8_t *buffer, size_t length)
 {
     _calculate_crc(*buffer++);
 }
@@ -358,7 +358,7 @@ zip_calculate_crc(uint8_t *buffer, int length)
 uint32_t
 zip_calculate_crc_indirect(uint8_t (*stream)(void *, size_t),
                            void   *context,
-                           int     length)
+                           size_t  length)
 {
     _calculate_crc(stream(context, i));
 }
