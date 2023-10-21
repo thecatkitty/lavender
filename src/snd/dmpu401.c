@@ -130,6 +130,19 @@ mpu401_open(void)
         return false;
     }
 
+    char       program = 0;
+    midi_event event = {0, 0, &program, sizeof(program)};
+    for (int i = 0; i < 16; i++)
+    {
+        if (9 == i)
+        {
+            continue;
+        }
+
+        event.status = MIDI_MSG_PROGRAM | i;
+        snd_send(&event);
+    }
+
     _operational = true;
     return true;
 }
@@ -169,6 +182,11 @@ mpu401_write(const midi_event *event)
     if (!_operational)
     {
         return false;
+    }
+
+    if (MIDI_MSG_META == event->status)
+    {
+        return true;
     }
 
     uint32_t ticks = pal_get_ticks(MPU401_TIMEOUT_DATA_MS);
