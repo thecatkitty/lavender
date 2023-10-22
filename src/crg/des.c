@@ -227,6 +227,10 @@ des_validate(crg_stream *stream, uint32_t crc)
     uint8_t pt_bytes[sizeof(uint64_t)];
     _to_bytes(pt, pt_bytes);
     uint8_t padding = pt_bytes[7];
+    if (8 < padding)
+    {
+        return false;
+    }
 
     size_t length = stream->data_length - sizeof(uint64_t) - padding;
     return crc == zip_calculate_crc_indirect((uint8_t(*)(void *, size_t))des_at,

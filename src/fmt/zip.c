@@ -341,7 +341,7 @@ static const uint32_t _CRC_TABLE[] = {
 
 #define _calculate_crc(byte_source)                                            \
     uint32_t crc = 0xFFFFFFFF;                                                 \
-    for (int i = 0; i < length; i++)                                           \
+    for (size_t i = 0; i < length; i++)                                        \
     {                                                                          \
         uint8_t b = byte_source;                                               \
         crc = (crc >> 4) ^ _CRC_TABLE[(crc & 0xF) ^ (b & 0xF)];                \
