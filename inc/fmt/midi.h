@@ -67,6 +67,8 @@ static const iff_fourcc MIDI_FOURCC_MTRK = IFF_FOURCC("MTrk");
 #define MIDI_MAX_KEY      0x7F
 #define MIDI_MAX_VELOCITY 0x7F
 
+#define MIDI_DRUMS_CHANNEL 9
+
 extern size_t
 midi_read_event(const char *buffer, midi_event *event);
 

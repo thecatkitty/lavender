@@ -23,4 +23,5 @@ typedef struct
 } opl2_patch;
 #pragma pack(pop)
 
+extern const opl2_patch __snd_drums_opl2[5];
 extern const opl2_patch __snd_gm_opl2[128];
