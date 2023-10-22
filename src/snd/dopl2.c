@@ -66,14 +66,21 @@
 #define OPL2_REG_WAVE_SELECTx(x)     (0xE0 + x)
 
 #define VOICES 6
+#define DRUMS  5
 
 #define MODULATOR 0
 #define CARRIER   1
 
 // Offsets within AM_VIBx, KSL_TLx, ATTACK_DECAYx, SUSTAIN_RELEASEx,
 // and WAVE_SELECTx register blocks, for both operators of six supported voices
-static const uint8_t OPL2_VOICE_OFFSET[2][VOICES] = {
+// and drums
+static const int8_t OPL2_VOICE_OFFSET[2][VOICES] = {
     [MODULATOR] = {0, 1, 2, 8, 9, 10}, [CARRIER] = {3, 4, 5, 11, 12, 13}};
+static const int8_t OPL2_DRUM_OFFSET[2][DRUMS] = {
+    [MODULATOR] = {16, -1, 18, -1, 17}, [CARRIER] = {19, 20, -1, 21, -1}};
+
+static const uint8_t OPL2_DRUM_CHANNEL[DRUMS] = {6, 7, 8, 8, 7};
+static const uint8_t DRUM_NOTE[DRUMS] = {12, 24, 36, 36, 24};
 
 // MIDI note to FNUM mapping
 static const uint16_t OPL2_MIDI_FNUM[2 * 12] = {
@@ -82,7 +89,8 @@ static const uint16_t OPL2_MIDI_FNUM[2 * 12] = {
     // Every other octave
     690, 731, 774, 820, 869, 921, 975, 517, 547, 580, 615, 651};
 
-// Current voice mapping
+// Current voice and drum state
+static uint8_t _drums = 0;
 static uint8_t _voices[VOICES];
 
 static void
@@ -111,32 +119,46 @@ _reset(void)
 }
 
 static void
+_load_patch(const opl2_patch *patch,
+            int8_t            channel,
+            int8_t            mod_offset,
+            int8_t            car_offset)
+{
+    if (0 <= car_offset)
+    {
+        _write(OPL2_REG_KSL_TLx(car_offset), patch->car_level);
+        _write(OPL2_REG_WAVE_SELECTx(car_offset), patch->car_wave_select);
+        _write(OPL2_REG_SUSTAIN_RELEASEx(car_offset),
+               (patch->car_sustain << 4) | patch->car_release);
+        _write(OPL2_REG_ATTACK_DECAYx(car_offset),
+               (patch->car_attack << 4) | patch->car_decay);
+        _write(OPL2_REG_AM_VIBx(car_offset), patch->car_amvib_reg);
+    }
+
+    if (0 <= mod_offset)
+    {
+        _write(OPL2_REG_KSL_TLx(mod_offset), patch->mod_level);
+        _write(OPL2_REG_WAVE_SELECTx(mod_offset), patch->mod_wave_select);
+        _write(OPL2_REG_SUSTAIN_RELEASEx(mod_offset),
+               (patch->mod_sustain << 4) | patch->mod_release);
+        _write(OPL2_REG_ATTACK_DECAYx(mod_offset),
+               (patch->mod_attack << 4) | patch->mod_decay);
+        _write(OPL2_REG_AM_VIBx(mod_offset), patch->mod_amvib_reg);
+    }
+
+    if (0 <= channel)
+    {
+        _write(OPL2_REG_FEEDBACK_CONNx(channel), patch->feedback_conn_reg);
+    }
+}
+
+static void
 _set_instrument(uint8_t voice, uint8_t instrument)
 {
     _voices[voice] = instrument;
-
-    uint8_t mod_offset = OPL2_VOICE_OFFSET[MODULATOR][voice];
-    uint8_t car_offset = OPL2_VOICE_OFFSET[CARRIER][voice];
-
-    const opl2_patch *patch = __snd_gm_opl2 + instrument;
-    _write(OPL2_REG_KSL_TLx(car_offset),
-           patch->car_level | OPL2_TOTAL_LEVEL_MASK);
-    _write(OPL2_REG_WAVE_SELECTx(car_offset), patch->car_wave_select);
-    _write(OPL2_REG_SUSTAIN_RELEASEx(car_offset),
-           (patch->car_sustain << 4) | patch->car_release);
-    _write(OPL2_REG_ATTACK_DECAYx(car_offset),
-           (patch->car_attack << 4) | patch->car_decay);
-    _write(OPL2_REG_AM_VIBx(car_offset), patch->car_amvib_reg);
-
-    _write(OPL2_REG_KSL_TLx(mod_offset), patch->mod_level);
-    _write(OPL2_REG_WAVE_SELECTx(mod_offset), patch->mod_wave_select);
-    _write(OPL2_REG_SUSTAIN_RELEASEx(mod_offset),
-           (patch->mod_sustain << 4) | patch->mod_release);
-    _write(OPL2_REG_ATTACK_DECAYx(mod_offset),
-           (patch->mod_attack << 4) | patch->mod_decay);
-    _write(OPL2_REG_AM_VIBx(mod_offset), patch->mod_amvib_reg);
-
-    _write(OPL2_REG_FEEDBACK_CONNx(voice), patch->feedback_conn_reg);
+    _load_patch(__snd_gm_opl2 + instrument, voice,
+                OPL2_VOICE_OFFSET[MODULATOR][voice],
+                OPL2_VOICE_OFFSET[CARRIER][voice]);
 }
 
 static uint16_t
@@ -167,6 +189,40 @@ _get_level(uint8_t volume, uint8_t ksl_tl_reg)
 
     return (ksl_tl_reg & OPL2_KEY_SCALING_MASK) |
            ((OPL2_TOTAL_LEVEL_MASK - level) & OPL2_TOTAL_LEVEL_MASK);
+}
+
+static uint8_t
+_get_drum(uint8_t key)
+{
+    switch (key)
+    {
+    case 35:
+    case 36:
+        return OPL2_BASSDRUM;
+    case 38:
+    case 39:
+    case 40:
+        return OPL2_SNAREDRUM;
+    case 41:
+    case 43:
+    case 45:
+    case 47:
+    case 50:
+        return OPL2_TOMTOM;
+    case 42:
+    case 44:
+    case 46:
+        return OPL2_HIHAT;
+    case 49:
+    case 51:
+    case 52:
+    case 55:
+    case 57:
+    case 59:
+        return OPL2_CYMBAL;
+    }
+
+    return 0;
 }
 
 static bool
@@ -200,7 +256,17 @@ opl2_open(void)
     _write(OPL2_REG_TEST, OPL2_WAVE_SELECT);
     _write(OPL2_REG_TIMER_CONTROL, 0);
     _write(OPL2_REG_CSM_NOTESEL, OPL2_NOTE_SELECT);
-    _write(OPL2_REG_DEPTH_RHYTHM, 0);
+
+    for (uint8_t drum = 0; drum < DRUMS; drum++)
+    {
+        uint8_t  channel = OPL2_DRUM_CHANNEL[drum];
+        uint16_t block_fnum = _get_block_fnum(DRUM_NOTE[drum]);
+        _write(OPL2_REG_FNUMLOx(channel), block_fnum & 0xFF);
+        _write(OPL2_REG_KEYON_FNUMHIx(channel), block_fnum >> 8);
+        _load_patch(__snd_drums_opl2 + drum, channel,
+                    OPL2_DRUM_OFFSET[MODULATOR][drum],
+                    OPL2_DRUM_OFFSET[CARRIER][drum]);
+    }
 
     for (uint8_t voice = 0; voice < VOICES; voice++)
     {
@@ -228,7 +294,7 @@ opl2_write(const midi_event *event)
         status &= 0xF0;
     }
 
-    if (VOICES <= channel)
+    if ((VOICES <= channel) && (MIDI_DRUMS_CHANNEL != channel))
     {
         return true;
     }
@@ -242,7 +308,21 @@ opl2_write(const midi_event *event)
 
         if ((MIDI_MSG_NOTEOFF == status) || (0 == velocity))
         {
+            if (MIDI_DRUMS_CHANNEL == channel)
+            {
+                _drums &= ~_get_drum(key);
+                _write(OPL2_REG_DEPTH_RHYTHM, OPL2_RHYTHM | _drums);
+                return true;
+            }
+
             _write(OPL2_REG_KEYON_FNUMHIx(channel), 0);
+            return true;
+        }
+
+        if (MIDI_DRUMS_CHANNEL == channel)
+        {
+            _drums |= _get_drum(key);
+            _write(OPL2_REG_DEPTH_RHYTHM, OPL2_RHYTHM | _drums);
             return true;
         }
 
