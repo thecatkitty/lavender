@@ -2,7 +2,7 @@
 #include <gfx.h>
 
 #define _par(dx, dy, sx, sy)                                                   \
-    (uint8_t)(64U * (unsigned)dy * (unsigned)sx / (unsigned)dx / (unsigned)sy)
+    (uint8_t)(64U * (uint32_t)dy * (uint32_t)sx / (uint32_t)dx / (uint32_t)sy)
 
 static bool
 _read_edid(edid_block *edid)
