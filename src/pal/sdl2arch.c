@@ -136,14 +136,29 @@ pal_get_keystroke(void)
 
     int c = _keycode;
     _keycode = 0;
+
+    switch (c)
+    {
+    case '-':
+        c = VK_OEM_MINUS;
+        break;
+    case SDLK_RIGHT:
+        c = VK_RIGHT;
+        break;
+    case SDLK_LEFT:
+        c = VK_LEFT;
+        break;
+    case SDLK_DOWN:
+        c = VK_DOWN;
+        break;
+    case SDLK_UP:
+        c = VK_UP;
+        break;
+    }
+    
     if (255 < c)
     {
         c = 0;
-    }
-
-    if ('-' == c)
-    {
-        c = VK_OEM_MINUS;
     }
 
     if (islower(c))
