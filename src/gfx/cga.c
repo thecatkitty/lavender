@@ -199,8 +199,10 @@ gfx_draw_bitmap(gfx_bitmap *bm, uint16_t x, uint16_t y)
     far void *bits = bm->bits;
     far void *plane0 = _plane0;
     far void *plane1 = _plane1;
-    plane0 += x + y * (CGA_HIMONO_LINE / 2);
-    plane1 += x + y * (CGA_HIMONO_LINE / 2);
+
+    uint16_t offset = (y / 2) * CGA_HIMONO_LINE + x;
+    plane0 += offset;
+    plane1 += offset;
 
     for (uint16_t line = 0; line < bm->height; line += 2)
     {
