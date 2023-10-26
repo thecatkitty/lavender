@@ -185,6 +185,7 @@ pal_disable_mouse(void)
     LOG("entry");
 
     _mouse_enabled = false;
+    _mouse_buttons = 0;
     return;
 }
 

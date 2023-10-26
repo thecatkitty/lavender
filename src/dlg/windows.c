@@ -190,6 +190,7 @@ dlg_alert(const char *title, const char *message)
     _thread = CreateThread(NULL, 0, _alert_routine, NULL, 0, NULL);
     _value = DLG_INCOMPLETE;
 
+    pal_disable_mouse();
     _draw_background();
 
     return true;
@@ -506,6 +507,7 @@ dlg_prompt(const char   *title,
     _thread = CreateThread(NULL, 0, _prompt_routine, NULL, 0, NULL);
     _value = DLG_INCOMPLETE;
 
+    pal_disable_mouse();
     _draw_background();
 
     return true;
