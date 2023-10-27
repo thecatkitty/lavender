@@ -64,7 +64,7 @@ extern uint16_t
 gfx_get_pixel_aspect(void);
 
 extern bool
-gfx_draw_bitmap(gfx_bitmap *bm, uint16_t x, uint16_t y);
+gfx_draw_bitmap(gfx_bitmap *bm, int x, int y);
 
 extern bool
 gfx_draw_line(gfx_dimensions *dim, uint16_t x, uint16_t y, gfx_color color);

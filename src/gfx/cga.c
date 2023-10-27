@@ -186,7 +186,7 @@ gfx_get_glyph_dimensions(gfx_dimensions *dim)
 }
 
 bool
-gfx_draw_bitmap(gfx_bitmap *bm, uint16_t x, uint16_t y)
+gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
 {
     if ((1 != bm->planes) || (1 != bm->bpp))
     {

@@ -173,7 +173,7 @@ gfx_get_pixel_aspect(void)
 }
 
 bool
-gfx_draw_bitmap(gfx_bitmap *bm, uint16_t x, uint16_t y)
+gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
 {
     LOG("entry, bm: %dx%d %ubpp (%u planes, %u octets per scanline), x: %u,"
         " y: %u",
