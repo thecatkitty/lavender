@@ -109,15 +109,15 @@ _fmidi_step(void)
 
     while ((0 != length) && (0 == _event.delta) && (_track_end > _track))
     {
-        if ((MIDI_MSG_META == (uint8_t)_event.msg[0]) &&
-            (MIDI_META_TEMPO == (uint8_t)_event.msg[1]) &&
-            (3 == (uint8_t)_event.msg[2]))
+        if ((MIDI_MSG_META == (uint8_t)_event.status) &&
+            (MIDI_META_TEMPO == (uint8_t)_event.msg[0]) &&
+            (3 == (uint8_t)_event.msg[1]))
         {
-            uint32_t usec_per_quarter = (uint32_t)_event.msg[3] & 0xFF;
+            uint32_t usec_per_quarter = (uint32_t)_event.msg[2] & 0xFF;
+            usec_per_quarter <<= 8;
+            usec_per_quarter |= (uint32_t)_event.msg[3] & 0xFF;
             usec_per_quarter <<= 8;
             usec_per_quarter |= (uint32_t)_event.msg[4] & 0xFF;
-            usec_per_quarter <<= 8;
-            usec_per_quarter |= (uint32_t)_event.msg[5] & 0xFF;
             _kilotick_rate = pal_get_ticks(usec_per_quarter / _division);
         }
 
