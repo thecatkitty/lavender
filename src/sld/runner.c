@@ -104,10 +104,14 @@ sld_handle(void)
         return;
     }
 
-    // SLD_STATE_STOP
-    if (SLD_STATE_STOP == ctx->state)
+    // SLD_STATE_STOP, SLD_QUIT
+    if ((SLD_STATE_STOP == ctx->state) || (SLD_QUIT == ctx->state))
     {
         sld_context *old_ctx = sld_exit_context();
+        if (0 > old_ctx->state)
+        {
+            __sld_ctx->state = old_ctx->state;
+        }
         sld_close_context(old_ctx);
         return;
     }
