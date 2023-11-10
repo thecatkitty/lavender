@@ -14,7 +14,7 @@ main(int argc, char *argv[])
 
     pal_initialize(argc, argv);
 
-    sld_context *script = sld_create_context("slides.txt", NULL);
+    sld_context *script = sld_create_context("slides.txt", O_RDONLY);
     if (NULL == script)
     {
         char msg[80];
