@@ -99,7 +99,7 @@ typedef struct _sld_context
 } sld_context;
 
 extern sld_context *
-sld_create_context(const char *name, sld_context *parent);
+sld_create_context(const char *name, int flags);
 
 extern bool
 sld_close_context(sld_context *ctx);

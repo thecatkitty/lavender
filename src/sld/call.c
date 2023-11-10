@@ -164,7 +164,9 @@ _validate_dsn(const char *dsn)
 static int
 _handle_prepare(sld_entry *sld)
 {
-    sld_context *script = sld_create_context(CONTENT(sld)->file_name, NULL);
+    sld_context *script = sld_create_context(
+        CONTENT(sld)->file_name,
+        (SLD_METHOD_STORE == CONTENT(sld)->method) ? O_RDONLY : O_RDWR);
     if (NULL == script)
     {
         __sld_errmsgcpy(sld, IDS_NOEXECCTX);

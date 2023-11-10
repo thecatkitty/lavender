@@ -5,7 +5,7 @@
 sld_context *__sld_ctx = NULL;
 
 sld_context *
-sld_create_context(const char *name, sld_context *parent)
+sld_create_context(const char *name, int flags)
 {
     sld_context *ctx = (sld_context *)malloc(sizeof(sld_context));
     if (NULL == ctx)
@@ -14,7 +14,7 @@ sld_create_context(const char *name, sld_context *parent)
         return NULL;
     }
 
-    ctx->script = pal_open_asset(name, O_RDWR);
+    ctx->script = pal_open_asset(name, flags);
     if (NULL == ctx->script)
     {
         free(ctx);
@@ -33,7 +33,6 @@ sld_create_context(const char *name, sld_context *parent)
     ctx->offset = 0;
     ctx->state = SLD_STATE_STOP;
     memset(ctx->message, 0, sizeof(ctx->message));
-    ctx->parent = parent;
     return ctx;
 }
 
