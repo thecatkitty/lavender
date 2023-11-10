@@ -8,6 +8,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <fmt/exe.h>
 #include <fmt/utf8.h>
 #include <fmt/zip.h>
 
@@ -40,6 +41,77 @@ _seek_read(void *ptr, off_t offset, size_t size)
 
     return true;
 }
+
+static off_t
+_get_bundle_length(void)
+{
+#ifdef __MINGW32__
+    exe_dos_header dos_header;
+    if (!_seek_read(&dos_header, 0, sizeof(dos_header)))
+    {
+        return -1;
+    }
+
+    if (0x5A4D != dos_header.e_magic)
+    {
+        // Not an EXE
+        return lseek(_fd, 0, SEEK_END);
+    }
+
+    ULONG new_signature;
+    if (!_seek_read(&new_signature, dos_header.e_lfanew, sizeof(new_signature)))
+    {
+        return -1;
+    }
+
+    if (0x00004550 != new_signature)
+    {
+        // Not a Portable Executable
+        return lseek(_fd, 0, SEEK_END);
+    }
+
+    lseek(_fd, sizeof(exe_pe_file_header), SEEK_CUR);
+
+    exe_pe_optional_header optional_header;
+    read(_fd, &optional_header, sizeof(optional_header));
+    if (EXE_PE_DIRECTORY_ENTRY_SECURITY >= optional_header.NumberOfRvaAndSizes)
+    {
+        // No Security directory
+        return lseek(_fd, 0, SEEK_END);
+    }
+
+    exe_pe_data_directory security;
+    lseek(_fd, sizeof(exe_pe_data_directory) * EXE_PE_DIRECTORY_ENTRY_SECURITY,
+          SEEK_CUR);
+    read(_fd, &security, sizeof(security));
+    if (0 == security.Size)
+    {
+        // Empty Security directory
+        return lseek(_fd, 0, SEEK_END);
+    }
+
+    char padded_cdirend[sizeof(zip_cdir_end_header) + 7];
+    if (!_seek_read(padded_cdirend,
+                    security.VirtualAddress - sizeof(padded_cdirend),
+                    sizeof(padded_cdirend)))
+    {
+        return -1;
+    }
+
+    for (size_t offset = 0; offset < 7; offset++)
+    {
+        zip_cdir_end_header *cdirend =
+            (zip_cdir_end_header *)(padded_cdirend + offset);
+        if ((ZIP_PK_SIGN == cdirend->pk_signature) &&
+            (ZIP_CDIR_END_SIGN == cdirend->header_signature))
+        {
+            return security.VirtualAddress - 7 + offset;
+        }
+    }
+#endif
+
+    return lseek(_fd, 0, SEEK_END);
+}
 #endif
 
 bool
@@ -66,7 +138,7 @@ zip_open(zip_archive archive)
         return false;
     }
 
-    _flen = lseek(_fd, 0, SEEK_END);
+    _flen = _get_bundle_length();
     if (-1 == _flen)
     {
         close(_fd);

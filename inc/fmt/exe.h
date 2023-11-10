@@ -91,6 +91,12 @@ typedef struct
 
 typedef struct
 {
+    DWORD VirtualAddress;
+    DWORD Size;
+} exe_pe_data_directory;
+
+typedef struct
+{
     DWORD Characteristics;
     DWORD TimeDateStamp;
     WORD  MajorVersion;
@@ -129,6 +135,8 @@ typedef struct
     DWORD Reserved;
 } exe_pe_resource_data_entry;
 #pragma pack(pop)
+
+#define EXE_PE_DIRECTORY_ENTRY_SECURITY 4
 
 #define EXE_PE_RT_STRING 6
 
