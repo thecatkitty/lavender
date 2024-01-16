@@ -144,7 +144,7 @@ sdl2arch_get_font(void)
     }
 
     FcPattern *pattern = FcPatternCreate();
-    FcPatternAddString(pattern, FC_FAMILY, "monospace");
+    FcPatternAddString(pattern, FC_FAMILY, (const FcChar8 *)"monospace");
     FcConfigSubstitute(NULL, pattern, FcMatchPattern);
     FcDefaultSubstitute(pattern);
 
@@ -160,7 +160,7 @@ sdl2arch_get_font(void)
         return NULL;
     }
 
-    _font = malloc(strlen(font) + 1);
+    _font = malloc(strlen((const char *)font) + 1);
     if (NULL == _font)
     {
         LOG("cannot allocate buffer");
@@ -168,7 +168,7 @@ sdl2arch_get_font(void)
         return NULL;
     }
 
-    strcpy(_font, font);
+    strcpy(_font, (const char *)font);
     FcPatternDestroy(match);
     LOG("matched: '%s'", _font);
     return _font;

@@ -71,6 +71,8 @@ fluid_open(void)
         _synth = NULL;
         return false;
     }
+
+    return true;
 }
 
 static void
