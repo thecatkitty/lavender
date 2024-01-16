@@ -8,12 +8,12 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
 endif ()
 
 add_compile_options(-Os)
+add_compile_options(-fno-strict-aliasing)
+add_compile_options(-Wall -Werror)
 
 if(DOS)
     add_compile_options(-march=i8088)
     add_link_options(-Wl,--nmagic)
-    add_compile_options(-fno-strict-aliasing)
-    add_compile_options(-Wall -Werror)
 
     if(DOS_TARGET_COM)
         set(CMAKE_EXECUTABLE_SUFFIX ".com")
