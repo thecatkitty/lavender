@@ -26,10 +26,16 @@ target_link_binary_object(lavender version)
 add_win32_strings(strings resource.ENU.rc)
 target_link_win32_strings(lavender strings)
 
-find_package(Fontconfig REQUIRED)
-target_link_libraries(lavender ${Fontconfig_LIBRARIES})
+if(DOS)
+    target_link_libraries(lavender -li86)
+endif()
 
-find_package(SDL2 REQUIRED)
-target_link_libraries(lavender ${SDL2_LIBRARIES} SDL2_ttf)
+if(LINUX)
+    find_package(Fontconfig REQUIRED)
+    target_link_libraries(lavender ${Fontconfig_LIBRARIES})
 
-target_link_libraries(lavender fluidsynth)
+    find_package(SDL2 REQUIRED)
+    target_link_libraries(lavender ${SDL2_LIBRARIES} SDL2_ttf)
+
+    target_link_libraries(lavender fluidsynth)
+endif()

@@ -2,4 +2,12 @@ add_library(gfx OBJECT)
 
 target_sources(gfx PRIVATE color.c)
 
-target_sources(gfx PRIVATE sdl2.c)
+if(DOS)
+    target_sources(gfx PRIVATE cga.c)
+    target_sources(gfx PRIVATE vbe.c)
+    target_sources(gfx PRIVATE font-8x8.c)
+endif()
+
+if(LINUX)
+    target_sources(gfx PRIVATE sdl2.c)
+endif()
