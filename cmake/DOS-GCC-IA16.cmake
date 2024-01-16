@@ -1,11 +1,30 @@
 find_path(TOOLCHAIN_ROOT
 	NAMES ia16-elf-gcc
-	PATHS /usr/bin /usr/local/bin /bin
-)
+	PATHS /usr/bin /usr/local/bin /bin)
 
 if(NOT TOOLCHAIN_ROOT)
 	message(FATAL_ERROR "Cannot find toolchain root directory")
-endif(NOT TOOLCHAIN_ROOT)
+endif()
+
+
+file(GLOB TOOLCHAIN_CRTBEGIN
+	/usr/lib/*/gcc/ia16-elf/*/crtbegin.o)
+if(NOT TOOLCHAIN_CRTBEGIN)
+	message(FATAL_ERROR "Cannot find toolchain library directory")
+else()
+	get_filename_component(TOOLCHAIN_LIBS ${TOOLCHAIN_CRTBEGIN} DIRECTORY CACHE)
+endif()
+
+
+find_path(I86_LIBS
+	NAMES libdos-t.a
+	PATHS /usr/ia16-elf/lib
+	NO_DEFAULT_PATH)
+
+if(NOT I86_LIBS)
+	message(FATAL_ERROR "Cannot find target architecture library directory")
+endif()
+
 
 set(CMAKE_SYSTEM_NAME DOS)
 set(CMAKE_SYSTEM_PROCESSOR I86)
