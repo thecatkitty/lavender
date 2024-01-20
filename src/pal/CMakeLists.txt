@@ -7,8 +7,15 @@ if(DOS)
     target_sources(pal PRIVATE dospc.c)
 endif()
 
-if(LINUX)
+if(WIN32 OR LINUX)
     target_sources(pal PRIVATE sdl2arch.c)
+endif()
+
+if(WIN32)
+    target_sources(pal PRIVATE windows.c)
+endif()
+
+if(LINUX)
     target_sources(pal PRIVATE log.c)
     target_sources(pal PRIVATE linux.c)
 endif()

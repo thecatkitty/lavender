@@ -4,7 +4,7 @@
 #include <fmt/utf8.h>
 
 // FIXME: W/A for https://sourceware.org/bugzilla/show_bug.cgi?id=30719
-#ifdef __x86_64__
+#if defined(__x86_64__) && !defined(WINVER)
 extern char __executable_start[];
 #endif
 
@@ -48,7 +48,7 @@ exe_pe_get_resource(void *rsrc, WORD type, WORD id)
     char *data = (char *)(intptr_t)data_ent->OffsetToData;
 
 // FIXME: W/A for https://sourceware.org/bugzilla/show_bug.cgi?id=30719
-#ifdef __x86_64__
+#if defined(__x86_64__) && !defined(WINVER)
     if (data < (char *)rsrc)
     {
         data += (intptr_t)__executable_start;
