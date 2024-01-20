@@ -8,6 +8,6 @@ if(DOS)
     target_sources(gfx PRIVATE font-8x8.c)
 endif()
 
-if(LINUX)
+if(WIN32 OR LINUX)
     target_sources(gfx PRIVATE sdl2.c)
 endif()

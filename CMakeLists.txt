@@ -1,9 +1,13 @@
 cmake_minimum_required(VERSION 3.16)
 
-project("Lavender" C ASM)
+if(WIN32)
+    project(Lavender C RC)
+else()
+    project(Lavender C ASM)
+endif()
 include(cmake/extensions.cmake)
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     set(LINUX 1)
 endif ()
 
@@ -25,6 +29,10 @@ if(DOS)
         add_compile_options(-mcmodel=small)
         add_link_options(-mcmodel=small)
     endif()
+endif()
+
+if(WIN32)
+    add_compile_definitions(WINVER=0x0500)
 endif()
 
 include_directories(BEFORE inc)

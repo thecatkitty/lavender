@@ -148,8 +148,8 @@ _hook_proc(int code, WPARAM wparam, LPARAM lparam)
         LPCWPSTRUCT cwp = (LPCWPSTRUCT)lparam;
         if (cwp->message == WM_INITDIALOG)
         {
-            _prev_wnd_proc = (WNDPROC)SetWindowLong(cwp->hwnd, GWL_WNDPROC,
-                                                    (LONG)_hook_wnd_proc);
+            _prev_wnd_proc = (WNDPROC)SetWindowLongPtrW(
+                cwp->hwnd, GWLP_WNDPROC, (LONG_PTR)_hook_wnd_proc);
         }
     }
 

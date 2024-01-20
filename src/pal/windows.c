@@ -69,18 +69,18 @@ pal_initialize(int argc, char *argv[])
         char *data = pal_get_asset_data(icon);
         int   size = pal_get_asset_size(icon);
 
-        int small_offset =
-            LookupIconIdFromDirectoryEx(data, TRUE, small_size, small_size, 0);
-        int large_offset =
-            LookupIconIdFromDirectoryEx(data, TRUE, large_size, large_size, 0);
+        int small_offset = LookupIconIdFromDirectoryEx(
+            (PBYTE)data, TRUE, small_size, small_size, 0);
+        int large_offset = LookupIconIdFromDirectoryEx(
+            (PBYTE)data, TRUE, large_size, large_size, 0);
         _icon = NULL;
 
         SendMessageW(_wnd, WM_SETICON, ICON_BIG,
-                     (LPARAM)CreateIconFromResource(data + large_offset,
+                     (LPARAM)CreateIconFromResource((PBYTE)data + large_offset,
                                                     size - large_offset, TRUE,
                                                     0x00030000));
         SendMessageW(_wnd, WM_SETICON, ICON_SMALL,
-                     (LPARAM)CreateIconFromResource(data + small_offset,
+                     (LPARAM)CreateIconFromResource((PBYTE)data + small_offset,
                                                     size - small_offset, TRUE,
                                                     0x00030000));
 

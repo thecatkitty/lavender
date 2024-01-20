@@ -1,3 +1,7 @@
 add_library(dlg OBJECT)
 
-target_sources(dlg PRIVATE fullscrn.c)
+if(WIN32)
+    target_sources(dlg PRIVATE windows.c)
+else()
+    target_sources(dlg PRIVATE fullscrn.c)
+endif()

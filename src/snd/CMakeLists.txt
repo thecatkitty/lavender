@@ -11,6 +11,10 @@ if(DOS)
     target_sources(snd PRIVATE dpcspk.c)
 endif()
 
+if(WIN32)
+    target_sources(snd PRIVATE dmme.c)
+endif()
+
 if(LINUX)
     target_sources(snd PRIVATE dfluid.c)
     target_sources(snd PRIVATE dpcspk.c)
