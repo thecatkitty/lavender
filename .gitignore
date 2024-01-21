@@ -1,6 +1,7 @@
 .env
 .vscode
 bin
+build
 ext
 obj
 src/version.h

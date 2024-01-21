@@ -16,13 +16,25 @@ jobs:
         platform:
           - name: DOS 2.0+ (COM)
             target: dospc-com
+            apts: gcc-mingw-w64-i686
+            flags: -DCMAKE_TOOLCHAIN_FILE=cmake/DOS-GCC-IA16.cmake -DDOS_TARGET_COM=1
           - name: DOS 3.0+ (EXE)
             target: dospc-exe
+            apts: gcc-mingw-w64-i686
+            flags: -DCMAKE_TOOLCHAIN_FILE=cmake/DOS-GCC-IA16.cmake
           - name: Linux
             target: linux
             apts: gcc-mingw-w64-x86-64 libsdl2-dev libsdl2-ttf-dev libfontconfig-dev libfluidsynth-dev
-          - name: Windows
-            target: windows
+          - name: Windows (IA-32)
+            target: windows-ia32
+            apts: gcc-mingw-w64-i686
+            cc: i686-w64-mingw32-gcc
+            flags: -DCMAKE_SYSTEM_NAME=Windows
+          - name: Windows (x64)
+            target: windows-x64
+            apts: gcc-mingw-w64-x86-64
+            cc: x86_64-w64-mingw32-gcc
+            flags: -DCMAKE_SYSTEM_NAME=Windows
 
     steps:
       - uses: actions/checkout@v4
@@ -31,7 +43,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install ${{ matrix.platform.apts }} gcc-mingw-w64-i686 zip -y
+          sudo apt install ${{ matrix.platform.apts }} cmake zip -y
 
       - name: Fetch DOS dependencies
         if: startsWith(matrix.platform.target, 'dospc')
@@ -41,7 +53,7 @@ jobs:
           sudo apt install gcc-ia16-elf libi86-ia16-elf -y
 
       - name: Fetch Windows dependencies
-        if: matrix.platform.target == 'windows'
+        if: startsWith(matrix.platform.target, 'windows')
         run: |
           wget -nv -P ext/ https://github.com/libsdl-org/SDL/releases/download/release-2.28.3/SDL2-devel-2.28.3-mingw.tar.gz
           wget -nv -P ext/ https://github.com/libsdl-org/SDL_ttf/releases/download/release-2.20.2/SDL2_ttf-devel-2.20.2-mingw.tar.gz
@@ -53,12 +65,14 @@ jobs:
 
       - name: Build for ${{ matrix.platform.name }}
         env:
-          LAV_TARGET: ${{ matrix.platform.target }}
+          CC: ${{ matrix.platform.cc }}
         run: |
           git fetch --depth=1 origin +refs/tags/*:refs/tags/*
-          LAV_LANG=ENU make
-          LAV_LANG=CSY make
-          LAV_LANG=PLK make
+          for lang in ENU CSY PLK
+          do
+            cmake -S . -B build -DCMAKE_INSTALL_PREFIX=bin/${{ matrix.platform.target }}/$lang -DLAV_LANG=$lang ${{ matrix.platform.flags }}
+            cd build && make bundle && make install && cd ..
+          done
 
       - name: Prepare release info
         if: startsWith(github.ref, 'refs/tags/')
@@ -89,7 +103,7 @@ jobs:
         run: |
           mv tools bin/
           cd bin
-          zip -r ../lavender-${{ github.ref_name }}.zip tools dospc-com dospc-exe windows
+          zip -r ../lavender-${{ github.ref_name }}.zip tools dospc-com dospc-exe windows-ia32 windows-x64
 
       - name: Release
         uses: softprops/action-gh-release@v1
