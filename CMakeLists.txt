@@ -43,3 +43,15 @@ endif()
 include_directories(BEFORE inc)
 
 add_subdirectory(src)
+
+add_custom_command(
+    OUTPUT data.zip
+    COMMAND zip -0 -r -j data.zip ${CMAKE_CURRENT_SOURCE_DIR}/data/*
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/data/*)
+
+add_custom_command(
+    OUTPUT sshow${CMAKE_EXECUTABLE_SUFFIX}
+    COMMAND cat src/lavender${CMAKE_EXECUTABLE_SUFFIX} data.zip > sshow${CMAKE_EXECUTABLE_SUFFIX}
+    DEPENDS src/lavender${CMAKE_EXECUTABLE_SUFFIX} data.zip)
+
+add_custom_target(bundle DEPENDS sshow${CMAKE_EXECUTABLE_SUFFIX})
