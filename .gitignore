@@ -3,6 +3,4 @@
 bin
 build
 ext
-obj
-src/version.h
 venv
