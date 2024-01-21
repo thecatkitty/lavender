@@ -15,6 +15,11 @@ add_compile_options(-Os)
 add_compile_options(-fno-strict-aliasing)
 add_compile_options(-Wall -Werror -Wpedantic)
 
+set(CMAKE_RC_FLAGS "-c 65001")
+if(NOT DEFINED LAV_LANG)
+    set(LAV_LANG ENU)
+endif()
+
 if(DOS)
     add_compile_options(-march=i8088)
     add_link_options(-Wl,--nmagic)
