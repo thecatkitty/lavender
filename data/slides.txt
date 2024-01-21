@@ -12,7 +12,7 @@
 500     B   40  ^lavndr<>.pbm
 :VersionInfo
 500     T   19  ^Version 0.4
-500     T   23  ^Copyright (c) Mateusz Karcz, 2021-2023. Shared under the MIT License.
+500     T   23  ^Copyright (c) Mateusz Karcz, 2021-2024. Shared under the MIT License.
 0       K
 0       =   50  ExtendedFont
 0       =   51  Rectangles

@@ -37,7 +37,7 @@ LANGUAGE LCID_ENU, 0x1
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 #define VER_FILEDESCRIPTION_STR     "Lavender slideshow player"
-#define VER_LEGALCOPYRIGHT_STR      "(C) 2021-2023 Mateusz Karcz. Shared under the MIT License."
+#define VER_LEGALCOPYRIGHT_STR      "(C) 2021-2024 Mateusz Karcz. Shared under the MIT License."
 #define VER_VERSION_UNICODE_LANG    "040904B0"
 #define VER_VERSION_TRANSLATION     LCID_ENU,0x04B0
 

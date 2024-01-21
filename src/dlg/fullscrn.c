@@ -48,7 +48,7 @@ _draw_background(void)
     gfx_draw_text(pal_get_version_string(), 1, 0);
 
     gfx_fill_rectangle(&bar, 0, _screen.height - bar.height, GFX_COLOR_BLACK);
-    gfx_draw_text("(C) 2021-2023", 1, 24);
+    gfx_draw_text("(C) 2021-2024", 1, 24);
     gfx_draw_text("https://github.com/thecatkitty/lavender/", 39, 24);
 }
 
