@@ -40,7 +40,7 @@ add_custom_target(version_text
     COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/../cmake/version.cmake)
 if(WIN32)
     add_dependencies(lavender version_text)
-    target_sources(lavender PRIVATE resource.ENU.rc)
+    target_sources(lavender PRIVATE resource.${LAV_LANG}.rc)
 else()
     add_custom_command(
         OUTPUT version.bin
