@@ -13,15 +13,7 @@
 
 extern char _binary_obj_version_txt_start[];
 
-// FIXME: W/A for https://sourceware.org/bugzilla/show_bug.cgi?id=30719
-#ifndef __x86_64__
-extern
-#endif
-    char __w32_rsrc_start[]
-#ifdef __x86_64__
-    __attribute__((section(".rsrc"))) = {}
-#endif
-;
+extern char __w32_rsrc_start[];
 
 static char *_font = NULL;
 static long  _start_msec;

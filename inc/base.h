@@ -19,6 +19,7 @@
 #define DEFINE_HANDLE(x)                                                       \
     typedef struct                                                             \
     {                                                                          \
+        int unused;                                                            \
     } *x
 
 #define align(p, a)           (((intptr_t)(p) + (a)-1) / (a) * (a))

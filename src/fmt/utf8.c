@@ -3,16 +3,16 @@
 uint16_t
 utf8_get_codepoint(const char *sequence, int *length)
 {
-    unsigned lead = *sequence & 0b11000000;
+    unsigned lead = *sequence & 0xC0;
 
-    if (0b10000000 == lead)
+    if (0x80 == lead)
     {
         errno = EILSEQ;
         *length = 0;
         return 0;
     }
 
-    if (0b11000000 != lead)
+    if (0xC0 != lead)
     {
         *length = 1;
         return *sequence;
@@ -20,21 +20,21 @@ utf8_get_codepoint(const char *sequence, int *length)
 
     // At first, assume two-byte sequence
     int      continuation = 1;
-    uint16_t cp = *sequence & 0b00011111;
+    uint16_t cp = *sequence & 0x1F;
 
-    if (0 != (*sequence & 0b00100000))
+    if (0 != (*sequence & 0x20))
     {
         // Then assume three-byte sequence
         continuation++;
-        cp &= 0b00001111;
+        cp &= 0x0F;
 
-        if (0 != (*sequence & 0b00010000))
+        if (0 != (*sequence & 0x10))
         {
             // Then assume four-byte sequence
             continuation++;
-            cp &= 0b00000111;
+            cp &= 0x07;
 
-            if (0 != (*sequence & 0b00001000))
+            if (0 != (*sequence & 0x08))
             {
                 errno = EILSEQ;
                 *length = 0;
@@ -45,14 +45,14 @@ utf8_get_codepoint(const char *sequence, int *length)
 
     for (int i = 1; i <= continuation; i++)
     {
-        if (0b10000000 != (sequence[i] & 0b11000000))
+        if (0x80 != (sequence[i] & 0xC0))
         {
             errno = EILSEQ;
             *length = 0;
             return 0;
         }
 
-        cp = (cp << 6) | (sequence[i] & 0b00111111);
+        cp = (cp << 6) | (sequence[i] & 0x3F);
     }
 
     *length = continuation + 1;

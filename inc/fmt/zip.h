@@ -31,14 +31,14 @@
 #define ZIP_VERSION_FS_OS400     18
 #define ZIP_VERSION_FS_DARWIN    19
 
-#define ZIP_FLAG_ENCRYPTED           0b0000000000000001
-#define ZIP_FLAG_COMPRESSION_OPTIONS 0b0000000000000110
-#define ZIP_FLAG_FIELDS_IN_DDESC     0b0000000000001000
-#define ZIP_FLAG_ENHANCED_DEFLATE    0b0000000000010000
-#define ZIP_FLAG_PATCHED_DATA        0b0000000000100000
-#define ZIP_FLAG_STRONG_ENCRYPTION   0b0000000001000000
-#define ZIP_FLAG_LANGUAGE_ENCODING   0b0000100000000000
-#define ZIP_FLAG_MASK_HEADER_VALUES  0b0010000000000000
+#define ZIP_FLAG_ENCRYPTED           (1 << 0)
+#define ZIP_FLAG_COMPRESSION_OPTIONS (3 << 1)
+#define ZIP_FLAG_FIELDS_IN_DDESC     (1 << 3)
+#define ZIP_FLAG_ENHANCED_DEFLATE    (1 << 4)
+#define ZIP_FLAG_PATCHED_DATA        (1 << 5)
+#define ZIP_FLAG_STRONG_ENCRYPTION   (1 << 6)
+#define ZIP_FLAG_LANGUAGE_ENCODING   (1 << 11)
+#define ZIP_FLAG_MASK_HEADER_VALUES  (1 << 13)
 #define ZIP_FLAGS_SUPPORTED          (ZIP_FLAG_LANGUAGE_ENCODING)
 
 #define ZIP_METHOD_STORE     0
@@ -202,7 +202,7 @@ zip_calculate_crc(uint8_t *buffer, size_t length);
 // Returns checksum value
 extern uint32_t
 zip_calculate_crc_indirect(uint8_t (*stream)(void *, size_t),
-                           void   *context,
-                           size_t  length);
+                           void  *context,
+                           size_t length);
 
 #endif // _FMT_ZIP_H_

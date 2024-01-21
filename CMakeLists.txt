@@ -13,7 +13,7 @@ endif ()
 
 add_compile_options(-Os)
 add_compile_options(-fno-strict-aliasing)
-add_compile_options(-Wall -Werror)
+add_compile_options(-Wall -Werror -Wpedantic)
 
 if(DOS)
     add_compile_options(-march=i8088)

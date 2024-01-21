@@ -20,7 +20,7 @@ bmp_load_bitmap(gfx_bitmap *bm, hasset asset)
     errno = EINVAL;
     return false;
 #else
-    LOG("entry, bm: %p, asset: %p", bm, asset);
+    LOG("entry, bm: %p, asset: %p", (void *)bm, (void *)asset);
     if (!bmp_is_format(asset))
     {
         LOG("exit, not a BMP!");
@@ -28,7 +28,7 @@ bmp_load_bitmap(gfx_bitmap *bm, hasset asset)
         return false;
     }
 
-    void *data = pal_get_asset_data(asset);
+    char *data = pal_get_asset_data(asset);
 
     const bmp_file_header *fh = (const bmp_file_header *)data;
     bm->bits = data + fh->off_bits;

@@ -52,8 +52,8 @@ static const uint64_t STACK_FILL_PATTERN = 0x0123456789ABCDEFULL;
 static zip_cdir_end_header *
 _locate_cdir(void *from, void *to)
 {
-    const void *ptr = to - sizeof(zip_cdir_end_header);
-    while (ptr >= from)
+    const char *ptr = (char *)to - sizeof(zip_cdir_end_header);
+    while (ptr >= (char *)from)
     {
         zip_cdir_end_header *cdir = (zip_cdir_end_header *)ptr;
         if ((ZIP_PK_SIGN == cdir->pk_signature) &&
@@ -293,6 +293,8 @@ pal_initialize(int argc, char *argv[])
         dos_exit(1);
     }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
     _disable();
     __dospc_bios_isr = _dos_getvect(INT_PIT);
     _dos_setvect(INT_PIT, MK_FP(__libi86_get_cs(), __dospc_pit_isr));
@@ -301,6 +303,7 @@ pal_initialize(int argc, char *argv[])
     __dospc_counter = 0;
     _pit_init_channel(0, PIT_MODE_RATE_GEN, PIT_FREQ_DIVISOR);
     _enable();
+#pragma GCC diagnostic pop
 
     if (!gfx_initialize())
     {

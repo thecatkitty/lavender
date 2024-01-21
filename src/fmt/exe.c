@@ -28,7 +28,8 @@ exe_pe_get_resource(void *rsrc, WORD type, WORD id)
     }
 
     // Item
-    dir = (exe_pe_resource_directory *)(rsrc + ent->dir.OffsetToDirectory);
+    dir = (exe_pe_resource_directory *)((char *)rsrc +
+                                        ent->dir.OffsetToDirectory);
     ent = (exe_pe_resource_directory_entry *)(dir + 1);
     ent += dir->NumberOfNamedEntries;
     for (int i = 0; (dir->NumberOfIdEntries > i) && (id != ent->Id); ++i, ++ent)
@@ -40,11 +41,12 @@ exe_pe_get_resource(void *rsrc, WORD type, WORD id)
     }
 
     // Language: first available
-    dir = (exe_pe_resource_directory *)(rsrc + ent->dir.OffsetToDirectory);
+    dir = (exe_pe_resource_directory *)((char *)rsrc +
+                                        ent->dir.OffsetToDirectory);
     ent = (exe_pe_resource_directory_entry *)(dir + 1);
 
     exe_pe_resource_data_entry *data_ent =
-        (exe_pe_resource_data_entry *)(rsrc + ent->OffsetToData);
+        (exe_pe_resource_data_entry *)((char *)rsrc + ent->OffsetToData);
     char *data = (char *)(intptr_t)data_ent->OffsetToData;
 
 // FIXME: W/A for https://sourceware.org/bugzilla/show_bug.cgi?id=30719

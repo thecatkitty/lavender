@@ -18,4 +18,9 @@ endif()
 if(LINUX)
     target_sources(pal PRIVATE log.c)
     target_sources(pal PRIVATE linux.c)
+
+    # FIXME: W/A for https://sourceware.org/bugzilla/show_bug.cgi?id=30719
+    if(POINTER_SIZE EQUAL 8)
+        target_sources(pal PRIVATE linux.S)
+    endif()
 endif()

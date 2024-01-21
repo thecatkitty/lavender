@@ -1,22 +1,22 @@
 #include "glyph.h"
 
-#define OVERLAY(name, top, height, bytes...)                                   \
-    static const char name[height + 1] = {(((top) << 4) | ((height)&0xF)),     \
-                                          bytes}
+#define OVERLAY(name, top, height, ...)                                        \
+    static const uint8_t name[height + 1] = {                                  \
+        (((top) << 4) | ((height) & 0xF)), __VA_ARGS__}
 
-#define TRANSFORMATION(name, bytes...)                                         \
-    static const char name[] = {bytes, GXF_END}
+#define TRANSFORMATION(name, ...)                                              \
+    static const uint8_t name[] = {__VA_ARGS__, GXF_END}
 
 // Character overlays
-OVERLAY(_acute, 0, 1, 0b00011100);
-OVERLAY(_dot_above, 0, 1, 0b00110000);
-OVERLAY(_ogonek, 6, 2, 0b00001110, 0b00000111);
-OVERLAY(_stroke, 2, 3, 0b00000100, 0b01111000, 0b10000000);
-OVERLAY(_tilde, 0, 1, 0b01111100);
-OVERLAY(_diaeresis, 0, 1, 0b11001100);
-OVERLAY(_caron, 0, 2, 0b01101100, 0b00111000);
-OVERLAY(_ring, 0, 2, 0b00110000, 0b00110000);
-OVERLAY(_apostrophe, 0, 1, 0b00000011);
+OVERLAY(_acute, 0, 1, 0x1C);
+OVERLAY(_dot_above, 0, 1, 0x30);
+OVERLAY(_ogonek, 6, 2, 0x0E, 0x07);
+OVERLAY(_stroke, 2, 3, 0x04, 0x78, 0x80);
+OVERLAY(_tilde, 0, 1, 0x7C);
+OVERLAY(_diaeresis, 0, 1, 0xCC);
+OVERLAY(_caron, 0, 2, 0x6C, 0x38);
+OVERLAY(_ring, 0, 2, 0x30, 0x30);
+OVERLAY(_apostrophe, 0, 1, 0x03);
 
 // Character transformations
 TRANSFORMATION(_move_two_top, //
