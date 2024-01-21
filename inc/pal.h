@@ -49,16 +49,18 @@ DEFINE_HANDLE(hasset);
 extern void
 __pal_log_time(void);
 
-#define LOG(fmt, ...)                                                          \
+#define LOG_MSG(fmt, ...) fprintf(stderr, fmt "\n", ##__VA_ARGS__);
+
+#define LOG(...)                                                               \
     {                                                                          \
         __pal_log_time();                                                      \
-        fprintf(stderr, "%s: ", __FUNCTION__);                                 \
-        fprintf(stderr, fmt "\n", ##__VA_ARGS__);                              \
+        fprintf(stderr, "%s: ", __func__);                                     \
+        LOG_MSG(__VA_ARGS__);                                                  \
     }
 
 #else
 
-#define LOG(fmt, ...)
+#define LOG(...)
 
 #endif
 

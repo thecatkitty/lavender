@@ -37,8 +37,8 @@
 extern char            __vid_xfont[];
 extern const vid_glyph __vid_font_8x8[];
 
-static far void *const _plane0 = MK_FP(CGA_HIMONO_MEM, 0);
-static far void *const _plane1 = MK_FP(CGA_HIMONO_MEM, CGA_HIMONO_PLANE);
+static far char *const _plane0 = MK_FP(CGA_HIMONO_MEM, 0);
+static far char *const _plane1 = MK_FP(CGA_HIMONO_MEM, CGA_HIMONO_PLANE);
 
 #define CGA_PLANE(y) (((y) % 2) ? _plane1 : _plane0)
 
@@ -55,7 +55,7 @@ enum
 
 #define BRUSH_HEIGHT 2
 
-static const char BRUSHES[BRUSH_MAX][BRUSH_HEIGHT] = {
+static const unsigned char BRUSHES[BRUSH_MAX][BRUSH_HEIGHT] = {
     [BRUSH_BLACK] = {0x00, 0x00},  // ........ ........
     [BRUSH_GRAY25] = {0x88, 0x22}, // #...#... ..#...#.
     [BRUSH_GRAY50] = {0xAA, 0x55}, // #.#.#.#. .#.#.#.#
@@ -67,7 +67,7 @@ static uint16_t  _prev_mode;
 static dospc_isr _prev_fontptr;
 
 static void
-_execute_glyph_trasformation(const char *gxf, char *glyph)
+_execute_glyph_trasformation(const uint8_t *gxf, char *glyph)
 {
     char    *sel_start = glyph;
     unsigned sel_length = 1;
@@ -116,10 +116,13 @@ gfx_initialize(void)
     }
 
     // Save and replace extended font pointer
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
     _disable();
     _prev_fontptr = _dos_getvect(INT_CGA_EXTENDED_FONT_PTR);
     _dos_setvect(INT_CGA_EXTENDED_FONT_PTR, (dospc_isr)__vid_xfont);
     _enable();
+#pragma GCC diagnostic pop
 
     // Load font
     far const char *bfont =
@@ -196,9 +199,9 @@ gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
 
     x >>= 3;
 
-    far void *bits = bm->bits;
-    far void *plane0 = _plane0;
-    far void *plane1 = _plane1;
+    far char *bits = bm->bits;
+    far char *plane0 = _plane0;
+    far char *plane1 = _plane1;
 
     uint16_t offset = (y / 2) * CGA_HIMONO_LINE + x;
     plane0 += offset;
@@ -218,7 +221,7 @@ gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
     return true;
 }
 
-static const char *
+static const uint8_t *
 _get_brush(gfx_color color)
 {
     switch (color)
@@ -288,8 +291,8 @@ gfx_draw_line(gfx_dimensions *dim, uint16_t x, uint16_t y, gfx_color color)
     uint8_t   lmask = (1 << (8 - (left % 8))) - 1;
     uint8_t   rmask = ~((1 << (7 - (right % 8))) - 1);
 
-    const char *brush = _get_brush(color);
-    char        pattern = brush[y % BRUSH_HEIGHT];
+    const uint8_t *brush = _get_brush(color);
+    char           pattern = brush[y % BRUSH_HEIGHT];
 
     _draw_block(plane, left, y, lmask, ~lmask, pattern);
     _draw_line(plane, y, left, right, pattern);
@@ -315,8 +318,8 @@ gfx_draw_rectangle(gfx_dimensions *rect,
     uint8_t   lborder = 1 << (7 - (left % 8));
     uint8_t   rborder = 1 << (7 - (right % 8));
 
-    const char *brush = _get_brush(color);
-    char        pattern;
+    const uint8_t *brush = _get_brush(color);
+    char           pattern;
 
     // Top line
     plane = CGA_PLANE(top);
@@ -363,8 +366,8 @@ gfx_fill_rectangle(gfx_dimensions *rect,
     uint8_t lmask = (1 << (8 - (x % 8))) - 1;
     uint8_t rmask = ~((1 << (8 - (right % 8))) - 1);
 
-    const char *brush = _get_brush(color);
-    char        pattern;
+    const uint8_t *brush = _get_brush(color);
+    char           pattern;
 
     // Vertical stripes
     _for_lines(y, bottom, {

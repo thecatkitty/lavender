@@ -6,10 +6,10 @@
 #pragma pack(push, 1)
 typedef struct
 {
-    uint16_t    codepoint;
-    const char *overlay;
-    const char *transformation;
-    char        base;
+    uint16_t       codepoint;
+    const uint8_t *overlay;
+    const uint8_t *transformation;
+    char           base;
 } vid_glyph;
 #pragma pack(pop)
 

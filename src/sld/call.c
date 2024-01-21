@@ -41,7 +41,7 @@ static_assert(sizeof(script_call_content) <= sizeofm(sld_entry, content),
 
 // Size of the plaintext stored at the end of the data buffer
 #define PT_SIZE(ctx)                                                           \
-    (*(uint32_t *)((ctx)->data + (ctx)->size - sizeof(uint32_t)))
+    (*(uint32_t *)((char *)(ctx)->data + (ctx)->size - sizeof(uint32_t)))
 
 enum
 {

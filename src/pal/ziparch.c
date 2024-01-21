@@ -66,7 +66,7 @@ pal_open_asset(const char *name, int flags)
             }
 
             LOG("exit, found a previously opened asset: %p",
-                __pal_assets + slot);
+                (void *)(__pal_assets + slot));
             return (hasset)(__pal_assets + slot);
         }
 
@@ -79,7 +79,7 @@ pal_open_asset(const char *name, int flags)
         }
     }
 
-    LOG("exit, opened a new asset: %p", __pal_assets + slot);
+    LOG("exit, opened a new asset: %p", (void *)(__pal_assets + slot));
     __pal_assets[slot].inzip = lfh;
     __pal_assets[slot].flags = flags;
     return (hasset)(__pal_assets + slot);
@@ -88,7 +88,7 @@ pal_open_asset(const char *name, int flags)
 bool
 pal_close_asset(hasset asset)
 {
-    LOG("entry, asset: %p", asset);
+    LOG("entry, asset: %p", (void *)asset);
 
     pal_asset *ptr = (pal_asset *)asset;
     if (-1 == ptr->inzip)
@@ -120,7 +120,7 @@ pal_close_asset(hasset asset)
 char *
 pal_get_asset_data(hasset asset)
 {
-    LOG("entry, asset: %p", asset);
+    LOG("entry, asset: %p", (void *)asset);
 
     pal_asset *ptr = (pal_asset *)asset;
     if (-1 == ptr->inzip)
@@ -143,7 +143,7 @@ pal_get_asset_data(hasset asset)
 int
 pal_get_asset_size(hasset asset)
 {
-    LOG("entry, asset: %p", asset);
+    LOG("entry, asset: %p", (void *)asset);
 
     pal_asset *ptr = (pal_asset *)asset;
     if (-1 == ptr->inzip)

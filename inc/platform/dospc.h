@@ -6,7 +6,10 @@
 #define interrupt __attribute__((interrupt))
 
 #ifndef __linux__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
 typedef void interrupt far (*dospc_isr)(void);
+#pragma GCC diagnostic pop
 #endif
 
 extern bool

@@ -167,7 +167,7 @@ zip_open(zip_archive archive)
     }
 
 #ifdef ZIP_PIGGYBACK
-    _cdir = (zip_cdir_file_header *)((void *)cdirend - cdirend->cdir_size);
+    _cdir = (zip_cdir_file_header *)((char *)cdirend - cdirend->cdir_size);
 #else
     long cdir_size = cdirend->cdir_size + sizeof(zip_cdir_end_header);
     _cdir = (zip_cdir_file_header *)malloc(cdir_size);
@@ -185,7 +185,7 @@ zip_open(zip_archive archive)
     }
 #endif
 
-    _cden = (const zip_cdir_end_header *)((void *)_cdir + cdirend->cdir_size);
+    _cden = (const zip_cdir_end_header *)((char *)_cdir + cdirend->cdir_size);
 #ifndef ZIP_PIGGYBACK
     _fbase = _flen - _cden->cdir_offset - _cden->cdir_size -
              sizeof(zip_cdir_end_header);
@@ -216,7 +216,7 @@ zip_search(const char *name, uint16_t length)
             return cfh->lfh_offset;
         }
 
-        cfh = (zip_cdir_file_header *)((void *)cfh + cfh->name_length +
+        cfh = (zip_cdir_file_header *)((char *)cfh + cfh->name_length +
                                        cfh->extra_length + cfh->comment_length);
         cfh++;
     }
@@ -242,7 +242,7 @@ zip_get_data(off_t olfh)
     zip_local_file_header *lfh;
 
 #ifdef ZIP_PIGGYBACK
-    void *base = (void *)_cdir - _cden->cdir_offset;
+    char *base = (char *)_cdir - _cden->cdir_offset;
     lfh = (zip_local_file_header *)(base + olfh);
 #else
     lfh = alloca(sizeof(zip_local_file_header));
@@ -315,7 +315,7 @@ zip_get_size(off_t olfh)
     zip_local_file_header *lfh;
 
 #ifdef ZIP_PIGGYBACK
-    void *base = (void *)_cdir - _cden->cdir_offset;
+    char *base = (char *)_cdir - _cden->cdir_offset;
     lfh = (zip_local_file_header *)(base + olfh);
 #else
     off_t base = _flen - _cden->cdir_offset - _cden->cdir_size -
@@ -380,14 +380,14 @@ _match_file_name(const char *name, uint16_t length, zip_cdir_file_header *cfh)
     }
 
     zip_extra_fields_header *hdr =
-        (zip_extra_fields_header *)((void *)(cfh + 1) + cfh->name_length);
+        (zip_extra_fields_header *)((char *)(cfh + 1) + cfh->name_length);
     zip_extra_fields_header *end =
-        (zip_extra_fields_header *)((void *)hdr + cfh->extra_length);
+        (zip_extra_fields_header *)((char *)hdr + cfh->extra_length);
     while (hdr < end)
     {
         if (ZIP_EXTRA_INFOZIP_UNICODE_PATH != hdr->signature)
         {
-            hdr = (zip_extra_fields_header *)((void *)hdr + hdr->total_size);
+            hdr = (zip_extra_fields_header *)((char *)hdr + hdr->total_size);
             hdr++;
             continue;
         }
@@ -429,8 +429,8 @@ zip_calculate_crc(uint8_t *buffer, size_t length)
 
 uint32_t
 zip_calculate_crc_indirect(uint8_t (*stream)(void *, size_t),
-                           void   *context,
-                           size_t  length)
+                           void  *context,
+                           size_t length)
 {
     _calculate_crc(stream(context, i));
 }
