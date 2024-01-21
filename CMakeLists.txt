@@ -52,6 +52,9 @@ add_custom_command(
 add_custom_command(
     OUTPUT sshow${CMAKE_EXECUTABLE_SUFFIX}
     COMMAND cat src/lavender${CMAKE_EXECUTABLE_SUFFIX} data.zip > sshow${CMAKE_EXECUTABLE_SUFFIX}
-    DEPENDS src/lavender${CMAKE_EXECUTABLE_SUFFIX} data.zip)
+    DEPENDS lavender data.zip)
 
 add_custom_target(bundle DEPENDS sshow${CMAKE_EXECUTABLE_SUFFIX})
+
+install(TARGETS lavender DESTINATION .)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/sshow${CMAKE_EXECUTABLE_SUFFIX} DESTINATION .)
