@@ -29,7 +29,6 @@ add_subdirectory(pal)
 add_subdirectory(sld)
 add_subdirectory(snd)
 
-target_compile_options(lavender PRIVATE -no-pie)
 target_link_options(lavender PRIVATE -no-pie -Wl,-Map=lavender.map)
 include_directories(lavender ${CMAKE_CURRENT_BINARY_DIR})
 

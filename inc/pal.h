@@ -44,19 +44,10 @@ DEFINE_HANDLE(hasset);
 
 #if defined(__linux__)
 
-#include <stdio.h>
-
 extern void
-__pal_log_time(void);
+pal_print_log(const char *location, const char *format, ...);
 
-#define LOG_MSG(fmt, ...) fprintf(stderr, fmt "\n", ##__VA_ARGS__);
-
-#define LOG(...)                                                               \
-    {                                                                          \
-        __pal_log_time();                                                      \
-        fprintf(stderr, "%s: ", __func__);                                     \
-        LOG_MSG(__VA_ARGS__);                                                  \
-    }
+#define LOG(...) pal_print_log(__func__, __VA_ARGS__)
 
 #else
 
