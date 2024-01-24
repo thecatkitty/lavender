@@ -20,14 +20,27 @@ This is still work in progress, but I'm doing my best to separate working versio
 * multiple language support (Czech, English, Polish)
 
 ## Building
-Building requires x86_64 Linux with *GNU Make*, *GNU Binutils*, *MinGW-w64* for i686 and x86_64 with SDL2, SDL2_ttf, and FluidSynth, [GCC for IA-16](https://github.com/tkchia/gcc-ia16/) with [libi86](https://github.com/tkchia/libi86/), and `zip`. If you have it, just run:
+Building requires x86_64 Linux with *CMake*, *GNU Make*, *GNU Binutils*, *MinGW-w64* for i686 and x86_64 with SDL2, SDL2_ttf, Fontconfig, and FluidSynth, [GCC for IA-16](https://github.com/tkchia/gcc-ia16/) with [libi86](https://github.com/tkchia/libi86/), and `zip`. If you have it all, you can configure the environment:
 ```sh
-make
+# Native (diagnostic) Linux build, either GCC or Clang is fine
+cmake -S . -B build
+
+# MS-DOS build, COM file (DOS 2+)
+cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=cmake/DOS-GCC-IA16.cmake -DDOS_TARGET_COM=1
+
+# MS-DOS build, EXE file (DOS 3+)
+cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=cmake/DOS-GCC-IA16.cmake
+
+# Windows build, IA-32 (Windows 2000+)
+CC=i686-w64-mingw32-gcc cmake -S . -B build -DCMAKE_SYSTEM_NAME=Windows
+
+# Windows build, x64 (Windows XP+)
+CC=x86_64-w64-mingw32-gcc cmake -S . -B build -DCMAKE_SYSTEM_NAME=Windows
 ```
 
-You can select the target platform (`dospc-exe`, `dospc-com`, `linux`, `windows`) by setting the `LAV_TARGET` environment variable.
+You can select user interface language (`ENU`, `CSY`, `PLK`) by setting adding the `-DLAV_LANG=` option.
 
-If you want to change the output slideshow application file name (`sshow.com` is default) or the slideshow source directory, you can set `LAV_SSHOW` and `LAV_DATA` environmental variables respectively.
+After finishing configuration, navigate to the `build` directory and run `make bundle`. An executable called `sshow` should appear. You can modify the slideshow by editing files in the `data` directory.
 
 ## Format of `slides.txt`
 The slideshow file consists of entries specifying various actions. Each entry ends with CRLF. Blank lines can be used for clarity.
