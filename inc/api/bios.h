@@ -96,4 +96,36 @@ bios_read_edid(far edid_block *edid)
     return ax;
 }
 
+static inline short
+bios_reset_disk(uint8_t drive)
+{
+    unsigned short ax;
+    asm volatile("int $0x13"
+                 : "=a"(ax)
+                 : "a"(0x0000), "d"(drive)
+                 : "memory", "cc");
+    return (ax >> 8) & 0xFF;
+}
+
+static inline short
+bios_read_sectors(uint8_t   drive,
+                  uint16_t  cylinder,
+                  uint8_t   head,
+                  uint8_t   sector,
+                  uint8_t   count,
+                  far char *buffer)
+{
+    unsigned short ax, bx, cx, dx, es;
+    ax = (0x02 << 8) | count;
+    cx = (cylinder << 6) | (sector & 0x3F);
+    dx = (head << 8) | drive;
+    es = FP_SEG(buffer);
+    bx = FP_OFF(buffer);
+    asm volatile("push %%es; mov %%di, %%es; int $0x13; pop %%es"
+                 : "=a"(ax)
+                 : "a"(ax), "b"(bx), "c"(cx), "d"(dx), "D"(es)
+                 : "memory", "cc");
+    return ax;
+}
+
 #endif // _API_BIOS_H
