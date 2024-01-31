@@ -392,6 +392,28 @@ pal_sleep(unsigned ms)
     }
 }
 
+static int
+_read_sector(uint8_t  drive,
+             uint16_t cylinder,
+             uint8_t  head,
+             uint8_t  sector,
+             char    *buffer)
+{
+    short status;
+    for (int i = 0; i < 3; ++i)
+    {
+        status = bios_read_sectors(drive, cylinder, head, sector, 1, buffer);
+        if (0 == (status & 0xFF00))
+        {
+            return 0;
+        }
+
+        bios_reset_disk(drive);
+    }
+
+    return -((status >> 8) & 0xFF);
+}
+
 static void
 _copy_volume_label(char *dst, const char *src)
 {
@@ -419,7 +441,7 @@ _get_volume_info(uint8_t drive, _volume_info *out)
         fat_directory_entry root[512 / sizeof(fat_directory_entry)];
     } sector;
 
-    if (0 != dos_read_disk(drive, 1, 0, sector.bytes))
+    if (0 > _read_sector(drive, 0, 0, 1, sector.bytes))
     {
         return false;
     }
@@ -454,21 +476,11 @@ _get_volume_info(uint8_t drive, _volume_info *out)
         out->label[0] = 0;
         break;
     }
-    case sizeof(fat_bpb40): {
+    case sizeof(fat_bpb40):
+    case sizeof(fat_bpb71):
+    case sizeof(fat_bpb71_full): {
         fat_bpb40 *bpb = (fat_bpb40 *)sector.boot.Payload;
         out->serial_number = bpb->bpb34.Id;
-        _copy_volume_label(out->label, bpb->FatLabel);
-        break;
-    }
-    case sizeof(fat_bpb71): {
-        fat_bpb71 *bpb = (fat_bpb71 *)sector.boot.Payload;
-        out->serial_number = bpb->Id;
-        out->label[0] = 0;
-        break;
-    }
-    case sizeof(fat_bpb71_full): {
-        fat_bpb71_full *bpb = (fat_bpb71_full *)sector.boot.Payload;
-        out->serial_number = bpb->bpb71.Id;
         _copy_volume_label(out->label, bpb->FatLabel);
         break;
     }
@@ -485,8 +497,12 @@ _get_volume_info(uint8_t drive, _volume_info *out)
                                  (bpb->NoFats * bpb->SectorsPerFat) +
                                  root_sectors;
     uint16_t first_root_sector = first_data_sector - root_sectors;
+    if (63 <= first_root_sector)
+    {
+        return false;
+    }
 
-    if (0 != dos_read_disk(drive, 1, first_root_sector, sector.bytes))
+    if (0 > _read_sector(drive, 0, 0, 1 + first_root_sector, sector.bytes))
     {
         return false;
     }
