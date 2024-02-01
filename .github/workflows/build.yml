@@ -24,7 +24,7 @@ jobs:
             flags: -DCMAKE_TOOLCHAIN_FILE=cmake/DOS-GCC-IA16.cmake
           - name: Linux
             target: linux
-            apts: gcc-mingw-w64-x86-64 libsdl2-dev libsdl2-ttf-dev libfontconfig-dev libfluidsynth-dev
+            apts: gcc-mingw-w64-x86-64 libsdl2-dev libsdl2-ttf-dev libfontconfig-dev libfluidsynth-dev libblkid-dev
           - name: Windows (IA-32)
             target: windows-ia32
             apts: gcc-mingw-w64-i686
