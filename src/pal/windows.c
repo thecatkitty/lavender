@@ -248,7 +248,46 @@ uint32_t
 pal_get_medium_id(const char *tag)
 {
     LOG("entry");
-    return 0;
+    DWORD volume_sn = 0;
+
+    wchar_t self[MAX_PATH];
+    if (0 == GetModuleFileNameW(NULL, self, MAX_PATH))
+    {
+        LOG("cannot retrieve executable path!");
+        goto end;
+    }
+
+    wchar_t volume_path[MAX_PATH];
+    if (!GetVolumePathNameW(self, volume_path, MAX_PATH))
+    {
+        LOG("cannot get volume path for '%ls'!", self);
+        goto end;
+    }
+
+    wchar_t volume_name[MAX_PATH];
+    if (!GetVolumeInformationW(volume_path, volume_name, MAX_PATH, &volume_sn,
+                               NULL, NULL, NULL, 0))
+    {
+        LOG("cannot get volume information for '%ls'!", volume_path);
+        goto end;
+    }
+
+    wchar_t wide_tag[12];
+    if (0 == MultiByteToWideChar(CP_OEMCP, 0, tag, -1, wide_tag, 12))
+    {
+        LOG("cannot widen tag '%s'!", tag);
+        goto end;
+    }
+
+    if (0 != wcscmp(wide_tag, volume_name))
+    {
+        LOG("volume name '%ls' not matching '%ls'!", volume_name, wide_tag);
+        goto end;
+    }
+
+end:
+    LOG("exit, %04X-%04X", HIWORD(volume_sn), LOWORD(volume_sn));
+    return (uint32_t)volume_sn;
 }
 
 int
