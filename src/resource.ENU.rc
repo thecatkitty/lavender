@@ -7,11 +7,13 @@ LANGUAGE LCID_ENU, 0x1
     IDS_NOARCHIVE, "Archive not found"
     IDS_UNSUPPENV, "Lavender cannot run in your environment."
 
+#if defined(CONFIG_ENCRYPTED_CONTENT)
     IDS_ENTERDSN, "Enter Disk Serial Number"
     IDS_ENTERDSN_DESC, "Please type the serial number\nattached to Your program diskette."
     IDS_ENTERPASS, "Enter Password"
     IDS_ENTERPASS_DESC, "This content is encrypted.\n\nPlease enter the access key."
     IDS_INVALIDKEY, "Provided key is invalid!"
+#endif
 
     IDS_LOADERROR, "Script loading error!"
     IDS_EXECERROR, "Script execution error!"
@@ -29,7 +31,9 @@ LANGUAGE LCID_ENU, 0x1
     IDS_BADENCODING, "Invalid or unsupported encoding"
     IDS_UNSUPPORTED, "Unsupported feature requested"
     IDS_TOOMANYAREAS, "Too many active areas defined"
+#if defined(CONFIG_ENCRYPTED_CONTENT)
     IDS_UNKNOWNKEYSRC, "Unknown key source"
+#endif
     IDS_BADSOUND, "Invalid or unsupported sound file" 
 }
 
