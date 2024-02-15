@@ -23,6 +23,7 @@ function(add_win32_strings target source_file)
             -c 65001
             -DSTRINGS_ONLY
             -I${CMAKE_SOURCE_DIR}/inc/
+            -I${CMAKE_BINARY_DIR}/inc/
         MAIN_DEPENDENCY ${source_file})
 
     add_custom_command(

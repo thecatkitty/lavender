@@ -7,11 +7,13 @@ LANGUAGE LCID_CSY, 0x1
     IDS_NOARCHIVE, "Archiv nenalezen"
     IDS_UNSUPPENV, "Lavender nemůže běžet ve vašem prostředí."
 
+#if defined(CONFIG_ENCRYPTED_CONTENT)
     IDS_ENTERDSN, "Zadejte sériové číslo disku"
     IDS_ENTERDSN_DESC, "Zadejte prosím sériové číslo\npřipojené k disketě programu."
     IDS_ENTERPASS, "Vložte heslo"
     IDS_ENTERPASS_DESC, "Tento obsah je zašifrován.\n\nZadejte přístupový klíč."
     IDS_INVALIDKEY, "Zadaný klíč je neplatný!"
+#endif
 
     IDS_LOADERROR, "Chyba načítání scénáře!"
     IDS_EXECERROR, "Chyba při provádění scénáře!"
@@ -29,7 +31,9 @@ LANGUAGE LCID_CSY, 0x1
     IDS_BADENCODING, "Neplatné nebo nepodporované kódování"
     IDS_UNSUPPORTED, "Byla požadována nepodporovaná funkce"
     IDS_TOOMANYAREAS, "Příliš mnoho definovaných aktivních oblastí"
+#if defined(CONFIG_ENCRYPTED_CONTENT)
     IDS_UNKNOWNKEYSRC, "Neznámý zdroj klíče"
+#endif
     IDS_BADSOUND, "Neplatný nebo nepodporovaný zvukový soubor"
 }
 
