@@ -11,6 +11,10 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     set(LINUX 1)
 endif ()
 
+import_dotconfig(.config)
+add_config_header(config .config)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/inc)
+
 add_compile_options(-Os)
 add_compile_options(-fno-strict-aliasing)
 add_compile_options(-Wall -Werror -Wpedantic)
@@ -43,6 +47,7 @@ endif()
 include_directories(BEFORE inc)
 
 add_subdirectory(src)
+add_dependencies(lavender config)
 
 add_custom_command(
     OUTPUT data.zip

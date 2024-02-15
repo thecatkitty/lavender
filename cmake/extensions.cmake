@@ -83,3 +83,46 @@ function(target_link_binary_object target object)
     add_dependencies(${target} ${object})
     target_sources(${target} PRIVATE $<TARGET_PROPERTY:${object},PATH>)
 endfunction()
+
+
+function(import_dotconfig dotconfig_file)
+    file(STRINGS ${dotconfig_file} DOTCONFIG_FILE
+        ENCODING "UTF-8")
+
+    foreach(LINE ${DOTCONFIG_FILE})
+        if("${LINE}" MATCHES "^(CONFIG_[^=]+)=([yn]|.+$)")
+            set(KCONFIG_VARIABLE_NAME "${CMAKE_MATCH_1}")
+            set(KCONFIG_VARIABLE_VALUE "${CMAKE_MATCH_2}")
+        elseif("${LINE}" MATCHES "^# (${prefix}[^ ]+) is not set")
+            set(KCONFIG_VARIABLE_NAME "${CMAKE_MATCH_1}")
+            set(KCONFIG_VARIABLE_VALUE "n")
+        else()
+            continue()
+        endif()
+
+        if("${KCONFIG_VARIABLE_VALUE}" STREQUAL "n")
+            unset("${KCONFIG_VARIABLE_NAME}" PARENT_SCOPE)
+        else()
+            if("${KCONFIG_VARIABLE_VALUE}" MATCHES "^\"(.*)\"$")
+                set(KCONFIG_VARIABLE_VALUE ${CMAKE_MATCH_1})
+            endif()
+            set("${KCONFIG_VARIABLE_NAME}" "${KCONFIG_VARIABLE_VALUE}" PARENT_SCOPE)
+        endif()
+    endforeach()
+endfunction()
+
+function(add_config_header target source_file)
+    file(MAKE_DIRECTORY inc/generated)
+
+    add_custom_command(
+        OUTPUT inc/generated/${target}.h
+        COMMAND ${CMAKE_COMMAND}
+            -Din=${CMAKE_CURRENT_SOURCE_DIR}/${source_file}
+            -Dout=inc/generated/${target}.h
+            -P ${CMAKE_CURRENT_LIST_DIR}/cmake/dotconfig.cmake
+        MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/${source_file})
+
+        add_custom_target(
+            ${target} ALL
+            DEPENDS inc/generated/${target}.h)
+endfunction()
