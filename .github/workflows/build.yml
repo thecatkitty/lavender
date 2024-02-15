@@ -18,6 +18,7 @@ jobs:
             target: dospc-com
             apts: gcc-mingw-w64-i686
             flags: -DCMAKE_TOOLCHAIN_FILE=cmake/DOS-GCC-IA16.cmake -DDOS_TARGET_COM=1
+            config: tiny
           - name: DOS 3.0+ (EXE)
             target: dospc-exe
             apts: gcc-mingw-w64-i686
@@ -66,6 +67,7 @@ jobs:
       - name: Build for ${{ matrix.platform.name }}
         env:
           CC: ${{ matrix.platform.cc }}
+          KCONFIG_CONFIG: ${{ matrix.platform.config }}.config
         run: |
           git fetch --depth=1 origin +refs/tags/*:refs/tags/*
           for lang in ENU CSY PLK
