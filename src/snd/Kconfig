@@ -1,0 +1,9 @@
+menu "Music playback"
+
+config SOUND
+    bool "Music playback support"
+    default y
+    help
+        Support for playback of music files.
+
+endmenu

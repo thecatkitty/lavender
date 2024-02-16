@@ -6,7 +6,7 @@
 int
 __sld_execute_play(sld_entry *sld)
 {
-    if (!snd_play(sld->content))
+    if (!snd_play(sld->content) && (ENOSYS != errno))
     {
         __sld_errmsgcpy(sld, IDS_NOASSET);
         return SLD_SYSERR;
