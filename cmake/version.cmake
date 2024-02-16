@@ -14,5 +14,5 @@ else()
     set(VER_FILEVERSION_STR "${GIT_TAG}-${GIT_COMMITS}")
 endif()
 
-configure_file(${CMAKE_CURRENT_LIST_DIR}/version.h.in version.h @ONLY)
+configure_file(${CMAKE_CURRENT_LIST_DIR}/version.h.in ../inc/generated/version.h @ONLY)
 configure_file(${CMAKE_CURRENT_LIST_DIR}/version.txt.in version.txt @ONLY)

@@ -1,6 +1,6 @@
 #include <winver.h>
 
-#include "version.h"
+#include <generated/version.h>
 
 #define VER_FILEFLAGSMASK           VS_FFI_FILEFLAGSMASK
 #define VER_FILEFLAGS               0

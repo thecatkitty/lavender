@@ -9,11 +9,13 @@
 
 #include "sld_impl.h"
 
+#if defined(CONFIG_ENCRYPTED_CONTENT)
 #define XOR48_KEY_SIZE      6
 #define XOR48_PROMPT_BASE   16
 #define XOR48_PASSCODE_SIZE 3
 #define XOR48_PASSCODE_BASE 10
 #define XOR48_DSN_LENGTH    9
+#endif // CONFIG_ENCRYPTED_CONTENT
 
 typedef struct
 {
@@ -27,12 +29,14 @@ typedef struct
     // Execution state
     int16_t      state;
     sld_context *context;
-    crg_stream   crs;
-    uquad        key;
-    uint32_t     local_part;
-    uint32_t     passcode;
-    char         dsn[16];
-    char         buffer[24];
+#if defined(CONFIG_ENCRYPTED_CONTENT)
+    crg_stream crs;
+    uquad      key;
+    uint32_t   local_part;
+    uint32_t   passcode;
+    char       dsn[16];
+    char       buffer[24];
+#endif // CONFIG_ENCRYPTED_CONTENT
 } script_call_content;
 
 #define CONTENT(sld) ((script_call_content *)(&sld->content))
@@ -46,8 +50,9 @@ static_assert(sizeof(script_call_content) <= sizeofm(sld_entry, content),
 enum
 {
     STATE_PREPARE,
-    STATE_DECODE,
     STATE_ENTER,
+#if defined(CONFIG_ENCRYPTED_CONTENT)
+    STATE_DECODE,
     STATE_KEY_ACQUIRE,
     STATE_KEY_COMBINE,
     STATE_KEY_VALIDATE,
@@ -58,8 +63,10 @@ enum
     STATE_DSN_GET,
     STATE_DSN_PROMPT,
     STATE_DSN_TYPE
+#endif // CONFIG_ENCRYPTED_CONTENT
 };
 
+#if defined(CONFIG_ENCRYPTED_CONTENT)
 typedef bool (*prompt_predicate)(const char *);
 
 #define _isctypestr(predicate)                                                 \
@@ -160,6 +167,7 @@ _validate_dsn(const char *dsn)
 
     return true;
 }
+#endif // CONFIG_ENCRYPTED_CONTENT
 
 static int
 _handle_prepare(sld_entry *sld)
@@ -183,6 +191,7 @@ _handle_prepare(sld_entry *sld)
         return CONTINUE;
     }
 
+#if defined(CONFIG_ENCRYPTED_CONTENT)
     if ((SLD_METHOD_XOR48 == CONTENT(sld)->method) &&
         (zip_calculate_crc(script->data, script->size) == CONTENT(sld)->crc32))
     {
@@ -205,8 +214,13 @@ _handle_prepare(sld_entry *sld)
     // Go to key acquisition if encrypted
     CONTENT(sld)->state = STATE_KEY_ACQUIRE;
     return CONTINUE;
+#else
+    __sld_errmsgcpy(sld, IDS_UNSUPPORTED);
+    return SLD_SYSERR;
+#endif // CONFIG_ENCRYPTED_CONTENT
 }
 
+#if defined(CONFIG_ENCRYPTED_CONTENT)
 static int
 _handle_key_acquire_xor48(sld_entry *sld)
 {
@@ -542,6 +556,7 @@ _handle_decode(sld_entry *sld)
     CONTENT(sld)->state = STATE_ENTER;
     return CONTINUE;
 }
+#endif // CONFIG_ENCRYPTED_CONTENT
 
 static int
 _handle_enter(sld_entry *sld)
@@ -559,10 +574,11 @@ __sld_handle_script_call(sld_entry *sld)
     {
     case STATE_PREPARE:
         return _handle_prepare(sld);
-    case STATE_DECODE:
-        return _handle_decode(sld);
     case STATE_ENTER:
         return _handle_enter(sld);
+#if defined(CONFIG_ENCRYPTED_CONTENT)
+    case STATE_DECODE:
+        return _handle_decode(sld);
     case STATE_KEY_ACQUIRE:
         return _handle_key_acquire(sld);
     case STATE_KEY_VALIDATE:
@@ -581,6 +597,7 @@ __sld_handle_script_call(sld_entry *sld)
         return _handle_dsn_prompt(sld);
     case STATE_DSN_TYPE:
         return _handle_dsn_type(sld);
+#endif // CONFIG_ENCRYPTED_CONTENT
     }
 
     __sld_errmsgcpy(sld, IDS_UNSUPPORTED);

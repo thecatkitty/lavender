@@ -3,6 +3,9 @@
 
 #include <base.h>
 
+#include <generated/config.h>
+
+#if defined(CONFIG_ENCRYPTED_CONTENT)
 typedef enum
 {
     CRG_XOR,
@@ -55,5 +58,6 @@ crg_validate(crg_stream *stream, uint32_t crc);
 
 extern uint64_t
 crg_decode_key(const void *src, crg_keysm sm);
+#endif // CONFIG_ENCRYPTED_CONTENT
 
 #endif // _CRG_H_

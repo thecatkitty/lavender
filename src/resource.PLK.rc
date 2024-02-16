@@ -7,11 +7,13 @@ LANGUAGE LCID_PLK, 0x1
     IDS_NOARCHIVE, "Nie znaleziono archiwum"
     IDS_UNSUPPENV, "Lavender nie uruchomi się w Twoim środowisku."
 
+#if defined(CONFIG_ENCRYPTED_CONTENT)
     IDS_ENTERDSN, "Wprowadź numer seryjny dysku"
     IDS_ENTERDSN_DESC, "Proszę podać numer seryjny dołączony\ndo dyskietki z programem."
     IDS_ENTERPASS, "Wprowadź hasło"
     IDS_ENTERPASS_DESC, "Ta zawartość jest zaszyfrowana.\n\nProszę podać klucz dostępu."
     IDS_INVALIDKEY, "Wprowadzony klucz jest niepoprawny!"
+#endif
 
     IDS_LOADERROR, "Błąd ładowania scenariusza!"
     IDS_EXECERROR, "Błąd wykonania scenariusza!"
@@ -29,7 +31,9 @@ LANGUAGE LCID_PLK, 0x1
     IDS_BADENCODING, "Niepoprawne lub niewspierane kodowanie"
     IDS_UNSUPPORTED, "Zażądano niewspieranej funkcjonalności"
     IDS_TOOMANYAREAS, "Zdefiniowano za dużo obszarów aktywnych"
+#if defined(CONFIG_ENCRYPTED_CONTENT)
     IDS_UNKNOWNKEYSRC, "Nieznane źródło klucza"
+#endif
     IDS_BADSOUND, "Niepoprawny lub niewspierany plik dźwiękowy"
 }
 
