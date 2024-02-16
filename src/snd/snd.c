@@ -1,8 +1,11 @@
 #include <string.h>
 
+#include <generated/config.h>
+
 #include <pal.h>
 #include <snd.h>
 
+#if defined(CONFIG_SOUND)
 extern snd_device_protocol __snd_dfluid;
 extern snd_device_protocol __snd_dmme;
 extern snd_device_protocol __snd_dmpu401;
@@ -34,10 +37,12 @@ static snd_format_protocol *_formats[] = {
 static snd_device_protocol _device = {NULL, NULL, NULL};
 static snd_format_protocol _format;
 static hasset              _music = NULL;
+#endif // CONFIG_SOUND
 
 void
 snd_enum_devices(snd_enum_devices_callback callback, void *data)
 {
+#if defined(CONFIG_SOUND)
     for (snd_device_protocol **device = _devices;
          device < _devices + lengthof(_devices); device++)
     {
@@ -46,8 +51,10 @@ snd_enum_devices(snd_enum_devices_callback callback, void *data)
             return;
         }
     }
+#endif // CONFIG_SOUND
 }
 
+#if defined(CONFIG_SOUND)
 static bool
 _try_open(snd_device_protocol *device, void *data)
 {
@@ -71,37 +78,49 @@ _try_open(snd_device_protocol *device, void *data)
 
     return true;
 }
+#endif // CONFIG_SOUND
 
 bool
 snd_initialize(const char *arg)
 {
+#if defined(CONFIG_SOUND)
     snd_enum_devices(_try_open, (void *)arg);
     return NULL != _device.open;
+#else
+    return false;
+#endif // CONFIG_SOUND
 }
 
 void
 snd_cleanup(void)
 {
+#if defined(CONFIG_SOUND)
     if (_device.close)
     {
         _device.close();
     }
+#endif // CONFIG_SOUND
 }
 
 bool
 snd_send(const midi_event *event)
 {
+#if defined(CONFIG_SOUND)
     if (NULL == _device.write)
     {
         return false;
     }
 
     return _device.write(event);
+#else
+    return false;
+#endif // CONFIG_SOUND
 }
 
 void
 snd_handle(void)
 {
+#if defined(CONFIG_SOUND)
     if (_format.step && _music)
     {
         if (!_format.step())
@@ -110,11 +129,13 @@ snd_handle(void)
             _music = NULL;
         }
     }
+#endif // CONFIG_SOUND
 }
 
 bool
 snd_play(const char *name)
 {
+#if defined(CONFIG_SOUND)
     _format.probe = 0;
     _format.start = 0;
     _format.step = 0;
@@ -155,5 +176,8 @@ snd_play(const char *name)
 
     pal_close_asset(_music);
     _music = NULL;
+#else
+    errno = ENOSYS;
+#endif // CONFIG_SOUND
     return false;
 }

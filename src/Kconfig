@@ -3,3 +3,5 @@ config ENCRYPTED_CONTENT
     default y
     help
         Support for inclusion of encrypted scripts.
+
+rsource "snd/Kconfig"
