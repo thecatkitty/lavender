@@ -226,6 +226,13 @@ _get_content_size(
     *lines = _get_content_height(message);
 }
 
+static void
+_reset(void)
+{
+    pal_disable_mouse();
+    _state = STATE_NONE;
+}
+
 static int
 _handle_alert(void)
 {
@@ -237,13 +244,13 @@ _handle_alert(void)
 
     if (VK_ESCAPE == scancode)
     {
-        _state = STATE_NONE;
+        _reset();
         return DLG_CANCEL;
     }
 
     if (VK_RETURN == scancode)
     {
-        _state = STATE_NONE;
+        _reset();
         return DLG_OK;
     }
 
@@ -264,6 +271,7 @@ dlg_alert(const char *title, const char *message)
     _draw_frame(columns, lines, title, title_length);
     _draw_text(columns, lines, message);
 
+    pal_enable_mouse();
     _state = STATE_ALERT;
     return true;
 }
@@ -316,6 +324,7 @@ _handle_prompt(void)
             gfx_draw_rectangle(&_box, _box_left, _box_top, GFX_COLOR_GRAY);
             _draw_text_box();
             _state = STATE_PROMPT;
+            pal_enable_mouse();
         }
 
         return DLG_INCOMPLETE;
@@ -329,7 +338,7 @@ _handle_prompt(void)
 
     if (VK_ESCAPE == scancode)
     {
-        _state = STATE_NONE;
+        _reset();
         return 0;
     }
 
@@ -337,22 +346,24 @@ _handle_prompt(void)
     {
         if (_validator && _validator(_buffer))
         {
-            _state = STATE_NONE;
+            _reset();
             return _cursor;
         }
 
         if (!_validator)
         {
-            _state = STATE_NONE;
+            _reset();
             return _cursor;
         }
 
+        pal_disable_mouse();
         gfx_draw_rectangle(&_box, _box_left, _box_top, GFX_COLOR_BLACK);
         _blink_start = pal_get_counter();
         _state = STATE_PROMPT_INVALID1;
         return DLG_INCOMPLETE;
     }
 
+    pal_disable_mouse();
     if ((VK_BACK == scancode) && (0 < _cursor))
     {
         _cursor--;
@@ -370,6 +381,7 @@ _handle_prompt(void)
         _draw_text_box();
     }
 
+    pal_enable_mouse();
     return DLG_INCOMPLETE;
 }
 
@@ -411,7 +423,7 @@ dlg_prompt(const char   *title,
     _buffer[0] = 0;
     _draw_text_box();
 
-    _state = STATE_PROMPT;
+    pal_enable_mouse();
     return true;
 }
 
