@@ -58,6 +58,8 @@ _draw_background(void)
 static void
 _draw_frame(int columns, int lines, const char *title, int title_length)
 {
+    columns += 1 - (columns % 2);
+
     gfx_dimensions window = {_glyph.width * (columns + 3),
                              _glyph.height * (lines + 6)};
 
@@ -134,6 +136,8 @@ _strndcpy(char *dst, const char *src, size_t count, char delimiter)
 static bool
 _draw_text(int columns, int lines, const char *text)
 {
+    columns += 1 - (columns % 2);
+
 #ifdef UTF8_NATIVE
     const char *text_l = text;
 #else
@@ -168,6 +172,8 @@ _draw_text(int columns, int lines, const char *text)
 static void
 _draw_ok(int columns, int lines)
 {
+    columns += 1 - (columns % 2);
+
     int left = (_screen.width / _glyph.width - columns) / 2;
     int top = (_screen.height / _glyph.height - 3 - lines) / 2 + 2;
 
