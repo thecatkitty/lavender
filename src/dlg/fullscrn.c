@@ -78,11 +78,10 @@ _draw_frame(int columns, int lines, const char *title, int title_length)
     gfx_draw_line(&title_line, left, top + _glyph.height + 1, GFX_COLOR_BLACK);
 
     gfx_dimensions stripe = {
-        (window.width - ((title_length + 2) * _glyph.width)) / 2 - 1, 1};
+        (window.width - ((title_length + 6) * _glyph.width)), 1};
     for (int i = 0; i < _glyph.height; i += 2)
     {
         int y = top + 1 + i;
-        gfx_draw_line(&stripe, left + 1, y, GFX_COLOR_BLACK);
         gfx_draw_line(&stripe, left + window.width - stripe.width - 4, y,
                       GFX_COLOR_BLACK);
     }
@@ -93,8 +92,7 @@ _draw_frame(int columns, int lines, const char *title, int title_length)
     char *title_l = alloca(strlen(title) + 1);
     utf8_encode(title, title_l, gfx_wctob);
 #endif
-    gfx_draw_text(title_l, (_screen.width / _glyph.width - title_length) / 2,
-                  top / _glyph.height);
+    gfx_draw_text(title_l, left / _glyph.width + 4, top / _glyph.height);
 }
 
 static int
