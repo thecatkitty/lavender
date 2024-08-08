@@ -34,6 +34,9 @@ static int            _field_top;
 static gfx_dimensions _box;
 static int            _box_top;
 static int            _box_left;
+static gfx_dimensions _ok;
+static int            _ok_top;
+static int            _ok_left;
 
 static void
 _draw_background(void)
@@ -56,7 +59,7 @@ static void
 _draw_frame(int columns, int lines, const char *title, int title_length)
 {
     gfx_dimensions window = {_glyph.width * (columns + 3),
-                             _glyph.height * (lines + 3)};
+                             _glyph.height * (lines + 6)};
 
     int left = (_screen.width - window.width) / 2;
     int top =
@@ -146,7 +149,7 @@ _draw_text(int columns, int lines, const char *text)
 #endif
 
     int left = (_screen.width / _glyph.width - columns) / 2;
-    int top = (_screen.height / _glyph.height - 3 - lines) / 2 + 2;
+    int top = (_screen.height / _glyph.height - 6 - lines) / 2 + 2;
 
     int line = 0;
     while (*fragment && (lines > line))
@@ -157,6 +160,49 @@ _draw_text(int columns, int lines, const char *text)
             return false;
         }
         line++;
+    }
+
+    return true;
+}
+
+static void
+_draw_ok(int columns, int lines)
+{
+    int left = (_screen.width / _glyph.width - columns) / 2;
+    int top = (_screen.height / _glyph.height - 3 - lines) / 2 + 2;
+
+    _ok.width = _glyph.width * 7;
+    _ok.height = _glyph.height * 3 / 2;
+    _ok_left = (left + columns - 7) * _glyph.width - (_glyph.width / 2);
+    _ok_top = (top + lines + 1) * _glyph.height - (_glyph.height / 4);
+
+    gfx_dimensions inner = {_ok.width + 2, _ok.height};
+    gfx_fill_rectangle(&_ok, _ok_left, _ok_top, GFX_COLOR_WHITE);
+    gfx_draw_rectangle(&_ok, _ok_left, _ok_top, GFX_COLOR_BLACK);
+    gfx_draw_rectangle(&inner, _ok_left - 1, _ok_top, GFX_COLOR_BLACK);
+    gfx_draw_text("Ok", left + columns - 5, top + lines + 1);
+}
+
+static bool
+_is_pressed(const gfx_dimensions *dims, int left, int top)
+{
+    uint16_t msx, msy;
+    if (0 == (PAL_MOUSE_LBUTTON & pal_get_mouse(&msx, &msy)))
+    {
+        return false;
+    }
+
+    msx *= _glyph.width;
+    msy *= _glyph.height;
+
+    if ((left > msx) || ((left + dims->width) <= msx))
+    {
+        return false;
+    }
+
+    if ((top > msy) || ((top + dims->height) <= msy))
+    {
+        return false;
     }
 
     return true;
@@ -236,7 +282,17 @@ _reset(void)
 static int
 _handle_alert(void)
 {
-    uint16_t scancode = pal_get_keystroke();
+    uint16_t scancode = 0;
+    if (_is_pressed(&_ok, _ok_left, _ok_top))
+    {
+        scancode = VK_RETURN;
+    }
+
+    if (0 == scancode)
+    {
+        scancode = pal_get_keystroke();
+    }
+
     if (0 == scancode)
     {
         return DLG_INCOMPLETE;
@@ -270,6 +326,7 @@ dlg_alert(const char *title, const char *message)
     _draw_background();
     _draw_frame(columns, lines, title, title_length);
     _draw_text(columns, lines, message);
+    _draw_ok(columns, lines);
 
     pal_enable_mouse();
     _state = STATE_ALERT;
@@ -330,7 +387,17 @@ _handle_prompt(void)
         return DLG_INCOMPLETE;
     }
 
-    uint16_t scancode = pal_get_keystroke();
+    uint16_t scancode = 0;
+    if (_is_pressed(&_ok, _ok_left, _ok_top))
+    {
+        scancode = VK_RETURN;
+    }
+
+    if (0 == scancode)
+    {
+        scancode = pal_get_keystroke();
+    }
+
     if (0 == scancode)
     {
         return DLG_INCOMPLETE;
@@ -422,6 +489,7 @@ dlg_prompt(const char   *title,
 
     _buffer[0] = 0;
     _draw_text_box();
+    _draw_ok(columns, lines);
 
     pal_enable_mouse();
     return true;
