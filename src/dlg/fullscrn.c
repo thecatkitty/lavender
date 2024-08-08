@@ -34,6 +34,9 @@ static int            _field_top;
 static gfx_dimensions _box;
 static int            _box_top;
 static int            _box_left;
+static gfx_dimensions _close;
+static int            _close_top;
+static int            _close_left;
 static gfx_dimensions _ok;
 static int            _ok_top;
 static int            _ok_left;
@@ -170,6 +173,26 @@ _draw_text(int columns, int lines, const char *text)
 }
 
 static void
+_draw_close(int columns, int lines)
+{
+    columns += 1 - (columns % 2);
+
+    int left = (_screen.width / _glyph.width - columns) / 2 - 1;
+    int top = (_screen.height / _glyph.height - 3 - lines) / 2 - 1;
+
+    _close.width = _glyph.width * 3;
+    _close.height = _glyph.height * 1 + 1;
+    _close_left = left * _glyph.width;
+    _close_top = top * _glyph.height;
+
+    gfx_dimensions inner = {_close.width - 1, _close.height};
+    gfx_fill_rectangle(&_close, _close_left, _close_top, GFX_COLOR_WHITE);
+    gfx_draw_rectangle(&_close, _close_left, _close_top, GFX_COLOR_BLACK);
+    gfx_draw_rectangle(&inner, _close_left, _close_top, GFX_COLOR_BLACK);
+    gfx_draw_text("X", left + 1, top);
+}
+
+static void
 _draw_ok(int columns, int lines)
 {
     columns += 1 - (columns % 2);
@@ -293,6 +316,10 @@ _handle_alert(void)
     {
         scancode = VK_RETURN;
     }
+    else if (_is_pressed(&_close, _close_left, _close_top))
+    {
+        scancode = VK_ESCAPE;
+    }
 
     if (0 == scancode)
     {
@@ -332,6 +359,7 @@ dlg_alert(const char *title, const char *message)
     _draw_background();
     _draw_frame(columns, lines, title, title_length);
     _draw_text(columns, lines, message);
+    _draw_close(columns, lines);
     _draw_ok(columns, lines);
 
     pal_enable_mouse();
@@ -397,6 +425,10 @@ _handle_prompt(void)
     if (_is_pressed(&_ok, _ok_left, _ok_top))
     {
         scancode = VK_RETURN;
+    }
+    else if (_is_pressed(&_close, _close_left, _close_top))
+    {
+        scancode = VK_ESCAPE;
     }
 
     if (0 == scancode)
@@ -496,6 +528,7 @@ dlg_prompt(const char   *title,
     _buffer[0] = 0;
     _draw_text_box();
     _draw_ok(columns, lines);
+    _draw_close(columns, lines);
 
     pal_enable_mouse();
     return true;
