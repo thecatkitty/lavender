@@ -38,10 +38,12 @@ __sld_execute_rectangle(sld_entry *sld)
 
     _translate(&x, &y, &CONTENT(sld)->dimensions);
 
-    bool (*draw)(gfx_dimensions *, uint16_t, uint16_t, gfx_color);
+    bool (*draw)(gfx_rect *, gfx_color);
+    gfx_rect rect = {x, y, CONTENT(sld)->dimensions.width,
+                     CONTENT(sld)->dimensions.height};
     draw =
         (SLD_TYPE_RECT == sld->type) ? gfx_draw_rectangle : gfx_fill_rectangle;
-    if (!draw(&CONTENT(sld)->dimensions, x, y, CONTENT(sld)->color))
+    if (!draw(&rect, CONTENT(sld)->color))
     {
         __sld_errmsgcpy(sld, IDS_UNSUPPORTED);
         return SLD_SYSERR;
