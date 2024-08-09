@@ -279,27 +279,40 @@ bool
 gfx_draw_line(gfx_rect *rect, gfx_color color)
 {
     uint16_t left = rect->left;
-    uint16_t right = rect->left + rect->width;
     uint16_t y = rect->top;
-
-    if (1 != rect->height)
-    {
-        errno = EINVAL;
-        return false;
-    }
-
-    far void *plane = CGA_PLANE(y);
-    uint8_t   lmask = (1 << (8 - (left % 8))) - 1;
-    uint8_t   rmask = ~((1 << (7 - (right % 8))) - 1);
+    uint16_t right = rect->left + rect->width;
+    uint16_t bottom = y + rect->height;
 
     const uint8_t *brush = _get_brush(color);
     char           pattern = brush[y % BRUSH_HEIGHT];
 
-    _draw_block(plane, left, y, lmask, ~lmask, pattern);
-    _draw_line(plane, y, left, right, pattern);
-    _draw_block(plane, right, y, rmask, ~rmask, pattern);
+    if (1 == rect->height)
+    {
+        far void *plane = CGA_PLANE(y);
+        uint8_t   lmask = (1 << (8 - (left % 8))) - 1;
+        uint8_t   rmask = ~((1 << (7 - (right % 8))) - 1);
 
-    return true;
+        _draw_block(plane, left, y, lmask, ~lmask, pattern);
+        _draw_line(plane, y, left, right, pattern);
+        _draw_block(plane, right, y, rmask, ~rmask, pattern);
+
+        return true;
+    }
+
+    if (1 == rect->width)
+    {
+        uint8_t mask = 1 << (7 - (left % 8));
+
+        _for_lines(y, bottom, {
+            pattern = brush[line % BRUSH_HEIGHT];
+            _draw_block(plane, left, line, mask, ~mask, pattern);
+        });
+
+        return true;
+    }
+
+    errno = EINVAL;
+    return false;
 }
 
 bool
