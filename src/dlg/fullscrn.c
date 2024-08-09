@@ -21,7 +21,6 @@ enum
     STATE_PROMPT_INVALID3 = STATE_PROMPT | (3 << 8)
 };
 
-static gfx_dimensions _screen = {0, 0};
 static gfx_dimensions _glyph = {0, 0};
 static int            _state = STATE_NONE;
 static uint32_t       _blink_start;
@@ -31,23 +30,26 @@ static dlg_validator  _validator;
 static int            _cursor;
 static int            _field_left;
 static int            _field_top;
-static gfx_dimensions _box;
-static int            _box_top;
-static int            _box_left;
+
+static gfx_rect _screen = {0, 0, 0, 0};
+static gfx_rect _box;
+static gfx_rect _close;
+static gfx_rect _ok;
 
 static void
 _draw_background(void)
 {
-    gfx_fill_rectangle(&_screen, 0, 0, GFX_COLOR_GRAY);
+    gfx_fill_rectangle(&_screen, GFX_COLOR_GRAY);
 
-    gfx_dimensions bar = {_screen.width, _glyph.height + 1};
-    gfx_fill_rectangle(&bar, 0, 0, GFX_COLOR_WHITE);
+    gfx_rect bar = {0, 0, _screen.width, _glyph.height + 1};
+    gfx_fill_rectangle(&bar, GFX_COLOR_WHITE);
 
-    gfx_dimensions hline = {_screen.width - 1, 1};
-    gfx_draw_line(&hline, 0, bar.height, GFX_COLOR_BLACK);
+    gfx_rect hline = {0, bar.height, _screen.width - 1, 1};
+    gfx_draw_line(&hline, GFX_COLOR_BLACK);
     gfx_draw_text(pal_get_version_string(), 1, 0);
 
-    gfx_fill_rectangle(&bar, 0, _screen.height - bar.height, GFX_COLOR_BLACK);
+    bar.top = _screen.height - bar.height;
+    gfx_fill_rectangle(&bar, GFX_COLOR_BLACK);
     gfx_draw_text("(C) 2021-2024", 1, 24);
     gfx_draw_text("https://github.com/thecatkitty/lavender/", 39, 24);
 }
@@ -55,28 +57,32 @@ _draw_background(void)
 static void
 _draw_frame(int columns, int lines, const char *title, int title_length)
 {
-    gfx_dimensions window = {_glyph.width * (columns + 3),
-                             _glyph.height * (lines + 3)};
+    columns += 1 - (columns % 2);
 
-    int left = (_screen.width - window.width) / 2;
-    int top =
+    gfx_rect window = {0, 0, _glyph.width * (columns + 3),
+                       _glyph.height * (lines + 6)};
+
+    window.left = (_screen.width - window.width) / 2;
+    window.top =
         (_screen.height - window.height) / 2 / _glyph.height * _glyph.height;
-    gfx_fill_rectangle(&window, left, top, GFX_COLOR_WHITE);
-    gfx_draw_rectangle(&window, left, top, GFX_COLOR_BLACK);
+    gfx_fill_rectangle(&window, GFX_COLOR_WHITE);
+    gfx_draw_rectangle(&window, GFX_COLOR_BLACK);
+    window.left -= 1;
     window.width += 2;
-    gfx_draw_rectangle(&window, left - 1, top, GFX_COLOR_BLACK);
+    gfx_draw_rectangle(&window, GFX_COLOR_BLACK);
+    window.left += 1;
 
-    gfx_dimensions title_line = {window.width - 1, 1};
-    gfx_draw_line(&title_line, left, top + _glyph.height + 1, GFX_COLOR_BLACK);
+    gfx_rect title_line = {window.left, window.top + _glyph.height + 1,
+                           window.width - 1, 1};
+    gfx_draw_line(&title_line, GFX_COLOR_BLACK);
 
-    gfx_dimensions stripe = {
-        (window.width - ((title_length + 2) * _glyph.width)) / 2 - 1, 1};
+    gfx_rect stripe = {window.left + window.width - stripe.width - 4,
+                       window.top + 1,
+                       (window.width - ((title_length + 6) * _glyph.width)), 1};
     for (int i = 0; i < _glyph.height; i += 2)
     {
-        int y = top + 1 + i;
-        gfx_draw_line(&stripe, left + 1, y, GFX_COLOR_BLACK);
-        gfx_draw_line(&stripe, left + window.width - stripe.width - 4, y,
-                      GFX_COLOR_BLACK);
+        stripe.top += 2;
+        gfx_draw_line(&stripe, GFX_COLOR_BLACK);
     }
 
 #ifdef UTF8_NATIVE
@@ -85,8 +91,8 @@ _draw_frame(int columns, int lines, const char *title, int title_length)
     char *title_l = alloca(strlen(title) + 1);
     utf8_encode(title, title_l, gfx_wctob);
 #endif
-    gfx_draw_text(title_l, (_screen.width / _glyph.width - title_length) / 2,
-                  top / _glyph.height);
+    gfx_draw_text(title_l, window.left / _glyph.width + 4,
+                  window.top / _glyph.height);
 }
 
 static int
@@ -131,6 +137,8 @@ _strndcpy(char *dst, const char *src, size_t count, char delimiter)
 static bool
 _draw_text(int columns, int lines, const char *text)
 {
+    columns += 1 - (columns % 2);
+
 #ifdef UTF8_NATIVE
     const char *text_l = text;
 #else
@@ -146,7 +154,7 @@ _draw_text(int columns, int lines, const char *text)
 #endif
 
     int left = (_screen.width / _glyph.width - columns) / 2;
-    int top = (_screen.height / _glyph.height - 3 - lines) / 2 + 2;
+    int top = (_screen.height / _glyph.height - 6 - lines) / 2 + 2;
 
     int line = 0;
     while (*fragment && (lines > line))
@@ -157,6 +165,71 @@ _draw_text(int columns, int lines, const char *text)
             return false;
         }
         line++;
+    }
+
+    return true;
+}
+
+static void
+_draw_close(int columns, int lines)
+{
+    columns += 1 - (columns % 2);
+
+    int left = (_screen.width / _glyph.width - columns) / 2 - 1;
+    int top = (_screen.height / _glyph.height - 3 - lines) / 2 - 1;
+
+    _close.width = _glyph.width * 3;
+    _close.height = _glyph.height * 1 + 1;
+    _close.left = left * _glyph.width;
+    _close.top = top * _glyph.height;
+
+    gfx_rect inner = {_close.left, _close.top, _close.width - 1, _close.height};
+    gfx_fill_rectangle(&_close, GFX_COLOR_WHITE);
+    gfx_draw_rectangle(&_close, GFX_COLOR_BLACK);
+    gfx_draw_rectangle(&inner, GFX_COLOR_BLACK);
+    gfx_draw_text("X", left + 1, top);
+}
+
+static void
+_draw_ok(int columns, int lines)
+{
+    columns += 1 - (columns % 2);
+
+    int left = (_screen.width / _glyph.width - columns) / 2;
+    int top = (_screen.height / _glyph.height - 3 - lines) / 2 + 2;
+
+    _ok.width = _glyph.width * 7;
+    _ok.height = _glyph.height * 3 / 2;
+    _ok.left = (left + columns - 7) * _glyph.width - (_glyph.width / 2);
+    _ok.top = (top + lines + 1) * _glyph.height - (_glyph.height / 4);
+
+    gfx_rect inner = {_ok.left - 1, _ok.top, _ok.width + 2, _ok.height};
+    gfx_fill_rectangle(&_ok, GFX_COLOR_WHITE);
+    gfx_draw_rectangle(&_ok, GFX_COLOR_BLACK);
+    gfx_draw_rectangle(&inner, GFX_COLOR_BLACK);
+    gfx_draw_text("Ok", left + columns - 5, top + lines + 1);
+}
+
+static bool
+_is_pressed(const gfx_rect *rect)
+{
+    uint16_t msx, msy;
+    if (0 == (PAL_MOUSE_LBUTTON & pal_get_mouse(&msx, &msy)))
+    {
+        return false;
+    }
+
+    msx *= _glyph.width;
+    msy *= _glyph.height;
+
+    if ((rect->left > msx) || ((rect->left + rect->width) <= msx))
+    {
+        return false;
+    }
+
+    if ((rect->top > msy) || ((rect->top + rect->height) <= msy))
+    {
+        return false;
     }
 
     return true;
@@ -217,8 +290,12 @@ _get_content_size(
 {
     if (!_screen.width)
     {
-        gfx_get_screen_dimensions(&_screen);
+        gfx_dimensions dim;
+        gfx_get_screen_dimensions(&dim);
         gfx_get_glyph_dimensions(&_glyph);
+
+        _screen.width = dim.width;
+        _screen.height = dim.height;
     }
 
     *head = _get_content_width(title, _screen.width / 10);
@@ -226,10 +303,31 @@ _get_content_size(
     *lines = _get_content_height(message);
 }
 
+static void
+_reset(void)
+{
+    pal_disable_mouse();
+    _state = STATE_NONE;
+}
+
 static int
 _handle_alert(void)
 {
-    uint16_t scancode = pal_get_keystroke();
+    uint16_t scancode = 0;
+    if (_is_pressed(&_ok))
+    {
+        scancode = VK_RETURN;
+    }
+    else if (_is_pressed(&_close))
+    {
+        scancode = VK_ESCAPE;
+    }
+
+    if (0 == scancode)
+    {
+        scancode = pal_get_keystroke();
+    }
+
     if (0 == scancode)
     {
         return DLG_INCOMPLETE;
@@ -237,13 +335,13 @@ _handle_alert(void)
 
     if (VK_ESCAPE == scancode)
     {
-        _state = STATE_NONE;
+        _reset();
         return DLG_CANCEL;
     }
 
     if (VK_RETURN == scancode)
     {
-        _state = STATE_NONE;
+        _reset();
         return DLG_OK;
     }
 
@@ -263,7 +361,10 @@ dlg_alert(const char *title, const char *message)
     _draw_background();
     _draw_frame(columns, lines, title, title_length);
     _draw_text(columns, lines, message);
+    _draw_close(columns, lines);
+    _draw_ok(columns, lines);
 
+    pal_enable_mouse();
     _state = STATE_ALERT;
     return true;
 }
@@ -273,14 +374,14 @@ _draw_text_box(void)
 {
     if (_validator && !_validator(_buffer))
     {
-        gfx_draw_rectangle(&_box, _box_left, _box_top, GFX_COLOR_GRAY);
+        gfx_draw_rectangle(&_box, GFX_COLOR_GRAY);
     }
     else
     {
-        gfx_draw_rectangle(&_box, _box_left, _box_top, GFX_COLOR_BLACK);
+        gfx_draw_rectangle(&_box, GFX_COLOR_BLACK);
     }
 
-    gfx_fill_rectangle(&_box, _box_left, _box_top, GFX_COLOR_WHITE);
+    gfx_fill_rectangle(&_box, GFX_COLOR_WHITE);
     gfx_draw_text(_buffer, _field_left, _field_top);
 }
 
@@ -291,7 +392,7 @@ _handle_prompt(void)
     {
         if (pal_get_counter() > _blink_start + pal_get_ticks(63))
         {
-            gfx_draw_rectangle(&_box, _box_left, _box_top, GFX_COLOR_GRAY);
+            gfx_draw_rectangle(&_box, GFX_COLOR_GRAY);
             _state = STATE_PROMPT_INVALID2;
         }
 
@@ -302,7 +403,7 @@ _handle_prompt(void)
     {
         if (pal_get_counter() > _blink_start + pal_get_ticks(126))
         {
-            gfx_draw_rectangle(&_box, _box_left, _box_top, GFX_COLOR_BLACK);
+            gfx_draw_rectangle(&_box, GFX_COLOR_BLACK);
             _state = STATE_PROMPT_INVALID3;
         }
 
@@ -313,15 +414,30 @@ _handle_prompt(void)
     {
         if (pal_get_counter() > _blink_start + pal_get_ticks(189))
         {
-            gfx_draw_rectangle(&_box, _box_left, _box_top, GFX_COLOR_GRAY);
+            gfx_draw_rectangle(&_box, GFX_COLOR_GRAY);
             _draw_text_box();
             _state = STATE_PROMPT;
+            pal_enable_mouse();
         }
 
         return DLG_INCOMPLETE;
     }
 
-    uint16_t scancode = pal_get_keystroke();
+    uint16_t scancode = 0;
+    if (_is_pressed(&_ok))
+    {
+        scancode = VK_RETURN;
+    }
+    else if (_is_pressed(&_close))
+    {
+        scancode = VK_ESCAPE;
+    }
+
+    if (0 == scancode)
+    {
+        scancode = pal_get_keystroke();
+    }
+
     if (0 == scancode)
     {
         return DLG_INCOMPLETE;
@@ -329,7 +445,7 @@ _handle_prompt(void)
 
     if (VK_ESCAPE == scancode)
     {
-        _state = STATE_NONE;
+        _reset();
         return 0;
     }
 
@@ -337,22 +453,24 @@ _handle_prompt(void)
     {
         if (_validator && _validator(_buffer))
         {
-            _state = STATE_NONE;
+            _reset();
             return _cursor;
         }
 
         if (!_validator)
         {
-            _state = STATE_NONE;
+            _reset();
             return _cursor;
         }
 
-        gfx_draw_rectangle(&_box, _box_left, _box_top, GFX_COLOR_BLACK);
+        pal_disable_mouse();
+        gfx_draw_rectangle(&_box, GFX_COLOR_BLACK);
         _blink_start = pal_get_counter();
         _state = STATE_PROMPT_INVALID1;
         return DLG_INCOMPLETE;
     }
 
+    pal_disable_mouse();
     if ((VK_BACK == scancode) && (0 < _cursor))
     {
         _cursor--;
@@ -370,6 +488,7 @@ _handle_prompt(void)
         _draw_text_box();
     }
 
+    pal_enable_mouse();
     return DLG_INCOMPLETE;
 }
 
@@ -395,8 +514,8 @@ dlg_prompt(const char   *title,
 
     _box.width = field_width * _glyph.width + 2;
     _box.height = _glyph.height + 2;
-    _box_top = _field_top * _glyph.height - 1;
-    _box_left = _field_left * _glyph.width - 1;
+    _box.top = _field_top * _glyph.height - 1;
+    _box.left = _field_left * _glyph.width - 1;
 
     _draw_background();
     _draw_frame(columns, lines, title, title_length);
@@ -410,8 +529,10 @@ dlg_prompt(const char   *title,
 
     _buffer[0] = 0;
     _draw_text_box();
+    _draw_ok(columns, lines);
+    _draw_close(columns, lines);
 
-    _state = STATE_PROMPT;
+    pal_enable_mouse();
     return true;
 }
 
