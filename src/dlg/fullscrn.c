@@ -30,6 +30,9 @@ static dlg_validator  _validator;
 static int            _cursor;
 static int            _field_left;
 static int            _field_top;
+static uint32_t       _cursor_period = 0;
+static uint32_t       _cursor_counter;
+static bool           _cursor_visible = true;
 
 static gfx_rect _screen = {0, 0, 0, 0};
 static gfx_rect _box;
@@ -423,6 +426,16 @@ _handle_prompt(void)
         return DLG_INCOMPLETE;
     }
 
+    if (pal_get_counter() > _cursor_counter + _cursor_period)
+    {
+        gfx_rect cur = {(_field_left + _cursor) * _glyph.width, _box.top + 1, 1,
+                        _glyph.height};
+        gfx_draw_line(&cur,
+                      _cursor_visible ? GFX_COLOR_BLACK : GFX_COLOR_WHITE);
+        _cursor_counter = pal_get_counter();
+        _cursor_visible = !_cursor_visible;
+    }
+
     uint16_t scancode = 0;
     if (_is_pressed(&_ok))
     {
@@ -526,6 +539,7 @@ dlg_prompt(const char   *title,
     _size = size;
     _validator = validator;
     _cursor = 0;
+    _cursor_counter = pal_get_counter();
 
     _buffer[0] = 0;
     _draw_text_box();
@@ -539,6 +553,11 @@ dlg_prompt(const char   *title,
 int
 dlg_handle(void)
 {
+    if (0 == _cursor_period)
+    {
+        _cursor_period = pal_get_ticks(500);
+    }
+
     switch (_state & 0xFF)
     {
     case STATE_ALERT:
