@@ -1,6 +1,6 @@
 .env
 .vscode
 bin
-build
+build*
 ext
 venv

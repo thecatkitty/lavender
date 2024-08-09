@@ -276,12 +276,13 @@ _draw_line(
 }
 
 bool
-gfx_draw_line(gfx_dimensions *dim, uint16_t x, uint16_t y, gfx_color color)
+gfx_draw_line(gfx_rect *rect, gfx_color color)
 {
-    uint16_t left = x;
-    uint16_t right = x + dim->width;
+    uint16_t left = rect->left;
+    uint16_t right = rect->left + rect->width;
+    uint16_t y = rect->top;
 
-    if (1 != dim->height)
+    if (1 != rect->height)
     {
         errno = EINVAL;
         return false;
@@ -302,11 +303,11 @@ gfx_draw_line(gfx_dimensions *dim, uint16_t x, uint16_t y, gfx_color color)
 }
 
 bool
-gfx_draw_rectangle(gfx_dimensions *rect,
-                   uint16_t        x,
-                   uint16_t        y,
-                   gfx_color       color)
+gfx_draw_rectangle(gfx_rect *rect, gfx_color color)
 {
+    uint16_t x = rect->left;
+    uint16_t y = rect->top;
+
     uint16_t left = x - 1;
     uint16_t right = x + rect->width;
     uint16_t top = y - 1;
@@ -354,11 +355,11 @@ gfx_draw_rectangle(gfx_dimensions *rect,
 }
 
 bool
-gfx_fill_rectangle(gfx_dimensions *rect,
-                   uint16_t        x,
-                   uint16_t        y,
-                   gfx_color       color)
+gfx_fill_rectangle(gfx_rect *rect, gfx_color color)
 {
+    uint16_t x = rect->left;
+    uint16_t y = rect->top;
+
     uint16_t left = x;
     uint16_t right = x + rect->width;
     uint16_t bottom = y + rect->height;

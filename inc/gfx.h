@@ -23,6 +23,14 @@ typedef struct
     int height;
 } gfx_dimensions;
 
+typedef struct
+{
+    int left;
+    int top;
+    int width;
+    int height;
+} gfx_rect;
+
 typedef enum
 {
     GFX_COLOR_BLACK = 0,
@@ -67,19 +75,13 @@ extern bool
 gfx_draw_bitmap(gfx_bitmap *bm, int x, int y);
 
 extern bool
-gfx_draw_line(gfx_dimensions *dim, uint16_t x, uint16_t y, gfx_color color);
+gfx_draw_line(gfx_rect *rect, gfx_color color);
 
 extern bool
-gfx_draw_rectangle(gfx_dimensions *rect,
-                   uint16_t        x,
-                   uint16_t        y,
-                   gfx_color       color);
+gfx_draw_rectangle(gfx_rect *rect, gfx_color color);
 
 extern bool
-gfx_fill_rectangle(gfx_dimensions *rect,
-                   uint16_t        x,
-                   uint16_t        y,
-                   gfx_color       color);
+gfx_fill_rectangle(gfx_rect *rect, gfx_color color);
 
 extern bool
 gfx_draw_text(const char *str, uint16_t x, uint16_t y);
