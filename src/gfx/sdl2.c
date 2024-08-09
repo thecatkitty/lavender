@@ -230,29 +230,28 @@ gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
 }
 
 bool
-gfx_draw_line(gfx_dimensions *dim, uint16_t x, uint16_t y, gfx_color color)
+gfx_draw_line(gfx_rect *rect, gfx_color color)
 {
-    LOG("entry, dim: %dx%d, x: %u, y: %u, color: %d", dim->width, dim->height,
-        x, y, color);
+    LOG("entry, rect: %dx%d@%u,%u, color: %d", rect->width, rect->height,
+        rect->left, rect->top, color);
     _rendering_text = false;
 
     _set_color(color);
-    SDL_RenderDrawLine(_renderer, x, y, x + dim->width, y + dim->height - 1);
+    SDL_RenderDrawLine(_renderer, rect->left, rect->top,
+                       rect->left + rect->width, rect->top + rect->height - 1);
     sdl2arch_present(_renderer);
     return true;
 }
 
 bool
-gfx_draw_rectangle(gfx_dimensions *rect,
-                   uint16_t        x,
-                   uint16_t        y,
-                   gfx_color       color)
+gfx_draw_rectangle(gfx_rect *rect, gfx_color color)
 {
-    LOG("entry, dim: %dx%d, x: %u, y: %u, color: %d", rect->width, rect->height,
-        x, y, color);
+    LOG("entry, rect: %dx%d@%u,%u, color: %d", rect->width, rect->height,
+        rect->left, rect->top, color);
     _rendering_text = false;
 
-    SDL_Rect sdl_rect = {x - 1, y - 1, rect->width + 2, rect->height + 2};
+    SDL_Rect sdl_rect = {rect->left - 1, rect->top - 1, rect->width + 2,
+                         rect->height + 2};
     _set_color(color);
     SDL_RenderDrawRect(_renderer, &sdl_rect);
     sdl2arch_present(_renderer);
@@ -260,16 +259,13 @@ gfx_draw_rectangle(gfx_dimensions *rect,
 }
 
 bool
-gfx_fill_rectangle(gfx_dimensions *rect,
-                   uint16_t        x,
-                   uint16_t        y,
-                   gfx_color       color)
+gfx_fill_rectangle(gfx_rect *rect, gfx_color color)
 {
-    LOG("entry, dim: %dx%d, x: %u, y: %u, color: %d", rect->width, rect->height,
-        x, y, color);
+    LOG("entry, rect: %dx%d@%u,%u, color: %d", rect->width, rect->height,
+        rect->left, rect->top, color);
     _rendering_text = false;
 
-    SDL_Rect sdl_rect = {x, y, rect->width, rect->height};
+    SDL_Rect sdl_rect = {rect->left, rect->top, rect->width, rect->height};
     _set_color(color);
     SDL_RenderFillRect(_renderer, &sdl_rect);
     sdl2arch_present(_renderer);
