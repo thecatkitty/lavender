@@ -446,6 +446,26 @@ _handle_prompt(void)
     {
         scancode = VK_ESCAPE;
     }
+    else if (_is_pressed(&_box))
+    {
+        uint16_t x, y;
+        pal_get_mouse(&x, &y);
+
+        int cursor = x - _field_left;
+        if (_input_end < cursor)
+        {
+            cursor = _input_end;
+        }
+
+        if (_cursor != cursor)
+        {
+            _cursor = cursor;
+            cur.left = (_field_left + _cursor) * _glyph.width;
+            pal_disable_mouse();
+            _draw_text_box();
+            pal_enable_mouse();
+        }
+    }
 
     if (0 == scancode)
     {
