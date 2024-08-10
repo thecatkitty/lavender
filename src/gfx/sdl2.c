@@ -95,6 +95,7 @@ gfx_initialize(void)
 
     LOG("font: '%s'", font_path);
     TTF_SizeText(_font, "W", &_font_w, &_font_h);
+    _font_w--;
 
     _screen_w = 80 * _font_w;
     _screen_h = 25 * 16;
@@ -238,7 +239,8 @@ gfx_draw_line(gfx_rect *rect, gfx_color color)
 
     _set_color(color);
     SDL_RenderDrawLine(_renderer, rect->left, rect->top,
-                       rect->left + rect->width, rect->top + rect->height - 1);
+                       rect->left + rect->width - ((1 == rect->height) ? 0 : 1),
+                       rect->top + rect->height - ((1 == rect->width) ? 0 : 1));
     sdl2arch_present(_renderer);
     return true;
 }
