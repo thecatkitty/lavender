@@ -142,6 +142,9 @@ pal_get_keystroke(void)
     case '-':
         c = VK_OEM_MINUS;
         break;
+    case SDLK_DELETE:
+        c = VK_DELETE;
+        break;
     case SDLK_RIGHT:
         c = VK_RIGHT;
         break;
