@@ -25,11 +25,12 @@ static gfx_dimensions _glyph = {0, 0};
 static int            _state = STATE_NONE;
 static uint32_t       _blink_start;
 static char          *_buffer;
-static int            _size;
 static dlg_validator  _validator;
-static int            _cursor;
 static int            _field_left;
 static int            _field_top;
+static int            _cursor;
+static int            _input_end;
+static int            _size;
 static uint32_t       _cursor_period = 0;
 static uint32_t       _cursor_counter;
 static bool           _cursor_visible = true;
@@ -426,10 +427,10 @@ _handle_prompt(void)
         return DLG_INCOMPLETE;
     }
 
+    gfx_rect cur = {(_field_left + _cursor) * _glyph.width, _box.top + 1, 1,
+                    _glyph.height};
     if (pal_get_counter() > _cursor_counter + _cursor_period)
     {
-        gfx_rect cur = {(_field_left + _cursor) * _glyph.width, _box.top + 1, 1,
-                        _glyph.height};
         gfx_draw_line(&cur,
                       _cursor_visible ? GFX_COLOR_BLACK : GFX_COLOR_WHITE);
         _cursor_counter = pal_get_counter();
@@ -467,13 +468,13 @@ _handle_prompt(void)
         if (_validator && _validator(_buffer))
         {
             _reset();
-            return _cursor;
+            return _input_end;
         }
 
         if (!_validator)
         {
             _reset();
-            return _cursor;
+            return _input_end;
         }
 
         pal_disable_mouse();
@@ -484,23 +485,52 @@ _handle_prompt(void)
     }
 
     pal_disable_mouse();
-    if ((VK_BACK == scancode) && (0 < _cursor))
+    gfx_draw_line(&cur, GFX_COLOR_WHITE);
+
+    if ((VK_LEFT == scancode) && (0 < _cursor))
     {
         _cursor--;
-        _buffer[_cursor] = 0;
+        _draw_text_box();
+    }
+
+    if ((VK_RIGHT == scancode) && (_input_end > _cursor))
+    {
+        _cursor++;
+        _draw_text_box();
+    }
+
+    if ((VK_BACK == scancode) && (0 < _cursor))
+    {
+        memmove(_buffer + _cursor - 1, _buffer + _cursor, _input_end - _cursor);
+        _cursor--;
+        _input_end--;
+        _buffer[_input_end] = 0;
+        _draw_text_box();
+    }
+
+    if ((VK_DELETE == scancode) && (_input_end > _cursor))
+    {
+        memmove(_buffer + _cursor, _buffer + _cursor + 1,
+                _input_end - _cursor - 1);
+        _input_end--;
+        _buffer[_input_end] = 0;
         _draw_text_box();
     }
 
     if (((' ' == scancode) || (VK_OEM_MINUS == scancode) ||
          ((VK_DELETE < scancode) && (VK_F1 > scancode))) &&
-        (_cursor < _size))
+        (_input_end < _size))
     {
+        memmove(_buffer + _cursor + 1, _buffer + _cursor, _input_end - _cursor);
         _buffer[_cursor] = (VK_OEM_MINUS == scancode) ? '-' : (scancode & 0xFF);
         _cursor++;
-        _buffer[_cursor] = 0;
+        _input_end++;
+        _buffer[_input_end] = 0;
         _draw_text_box();
     }
 
+    cur.left = (_field_left + _cursor) * _glyph.width;
+    gfx_draw_line(&cur, GFX_COLOR_BLACK);
     pal_enable_mouse();
     return DLG_INCOMPLETE;
 }
@@ -538,7 +568,7 @@ dlg_prompt(const char   *title,
     _buffer = buffer;
     _size = size;
     _validator = validator;
-    _cursor = 0;
+    _cursor = _input_end = 0;
     _cursor_counter = pal_get_counter();
 
     _buffer[0] = 0;
