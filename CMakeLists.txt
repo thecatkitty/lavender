@@ -49,6 +49,10 @@ if(WIN32)
     add_compile_definitions(WINVER=0x0500)
 endif()
 
+if(LINUX)
+    add_compile_options(-g)
+endif()
+
 include_directories(BEFORE inc)
 
 add_subdirectory(src)
