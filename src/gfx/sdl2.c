@@ -94,8 +94,8 @@ gfx_initialize(void)
     }
 
     LOG("font: '%s'", font_path);
-    TTF_SizeText(_font, "W", &_font_w, &_font_h);
-    _font_w--;
+    TTF_SizeText(_font, "WW", &_font_w, &_font_h);
+    _font_w /= 2;
 
     _screen_w = 80 * _font_w;
     _screen_h = 25 * 16;
