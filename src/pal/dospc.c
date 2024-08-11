@@ -19,6 +19,10 @@
 #include <platform/dospc.h>
 #include <snd.h>
 
+#ifdef CONFIG_ANDREA
+#include <andrea.h>
+#endif
+
 #include "../resource.h"
 #include "dospc.h"
 #include "pal_impl.h"
@@ -213,6 +217,10 @@ pal_initialize(int argc, char *argv[])
     for (uint64_t *ptr = _stack_start; ptr < _stack_end; ptr++)
         *ptr = STACK_FILL_PATTERN;
 #endif // STACK_PROFILING
+
+#ifdef CONFIG_ANDREA
+    andrea_init();
+#endif
 
     const char *arg_snd = NULL;
     for (int i = 1; i <= argc; i++)

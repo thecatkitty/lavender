@@ -58,6 +58,9 @@ else()
 endif()
 
 if(DOS)
+    if(NOT DOS_TARGET_COM)
+        target_link_options(lavender PRIVATE -T ${ANDREA_LIB}/andrea-host.ld)
+    endif()
     target_link_libraries(lavender -li86)
 endif()
 
