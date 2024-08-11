@@ -14,19 +14,19 @@ jobs:
     strategy:
       matrix:
         platform:
-          - name: DOS 2.0+ (COM)
-            target: dospc-com
+          - name: DOS 2.0+ (IA16, COM)
+            target: dos-ia16-com
             apts: gcc-mingw-w64-i686
-            flags: -DCMAKE_TOOLCHAIN_FILE=cmake/DOS-GCC-IA16.cmake -DDOS_TARGET_COM=1
+            flags: -DCMAKE_TOOLCHAIN_FILE=ext/nicetia16/cmake/DOS-GCC-IA16.cmake -DDOS_TARGET_COM=1
             config: tiny
-          - name: DOS 3.0+ (EXE)
-            target: dospc-exe
+          - name: DOS 3.0+ (IA16, EXE)
+            target: dos-ia16-exe
             apts: gcc-mingw-w64-i686
-            flags: -DCMAKE_TOOLCHAIN_FILE=cmake/DOS-GCC-IA16.cmake
+            flags: -DCMAKE_TOOLCHAIN_FILE=ext/nicetia16/cmake/DOS-GCC-IA16.cmake
           - name: Linux
             target: linux
             apts: gcc-mingw-w64-x86-64 libsdl2-dev libsdl2-ttf-dev libfontconfig-dev libfluidsynth-dev libblkid-dev
-          - name: Windows (IA-32)
+          - name: Windows (IA32)
             target: windows-ia32
             apts: gcc-mingw-w64-i686
             cc: i686-w64-mingw32-gcc
@@ -41,17 +41,19 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+  
       - name: Install dependencies
         run: |
           sudo apt update
           sudo apt install ${{ matrix.platform.apts }} cmake zip -y
 
       - name: Fetch DOS dependencies
-        if: startsWith(matrix.platform.target, 'dospc')
+        if: startsWith(matrix.platform.target, 'dos')
         run: |
           sudo add-apt-repository ppa:tkchia/build-ia16
           sudo apt update
           sudo apt install gcc-ia16-elf libi86-ia16-elf -y
+          wget -nv -P ext/nicetia16/cmake/ https://github.com/thecatkitty/nicetia16/raw/REL-20240425/cmake/DOS-GCC-IA16.cmake
 
       - name: Fetch Windows dependencies
         if: startsWith(matrix.platform.target, 'windows')
@@ -82,12 +84,11 @@ jobs:
           git tag -l --format='%(contents:subject)' ${{ github.ref_name }} | sed -r "s/^.+: //" > bin/RELEASE.md
   
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: lavender
+          name: lavender-${{ matrix.platform.target }}
           path: |
             bin
-            tools
 
   Release:
 
@@ -97,19 +98,22 @@ jobs:
 
     steps:
       - name: Fetch build output
-        uses: actions/download-artifact@v3
-        with:
-          name: lavender
+        uses: actions/download-artifact@v4
           
-      - name: Prepare archive
+      - name: Prepare archives
         run: |
-          mv tools bin/
-          cd bin
-          zip -r ../lavender-${{ github.ref_name }}.zip tools dospc-com dospc-exe windows-ia32 windows-x64
+          cd lavender-dos-ia16-com && zip -r ../lavender-${{ github.ref_name }}-dos-com.zip      * && cd ..
+          cd lavender-dos-ia16-exe && zip -r ../lavender-${{ github.ref_name }}-dos-exe.zip      * && cd ..
+          cd lavender-windows-ia32 && zip -r ../lavender-${{ github.ref_name }}-windows-ia32.zip * && cd ..
+          cd lavender-windows-x64  && zip -r ../lavender-${{ github.ref_name }}-windows-x64.zip  * && cd ..
 
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
           name: Version ${{ github.ref_name }}
-          body_path: bin/RELEASE.md
-          files: lavender-${{ github.ref_name }}.zip
+          body_path: lavender-dos-ia16-com/RELEASE.md
+          files: |
+            lavender-${{ github.ref_name }}-dos-com.zip
+            lavender-${{ github.ref_name }}-dos-exe.zip
+            lavender-${{ github.ref_name }}-windows-ia32.zip
+            lavender-${{ github.ref_name }}-windows-x64.zip
