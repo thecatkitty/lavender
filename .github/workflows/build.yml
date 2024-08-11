@@ -54,6 +54,8 @@ jobs:
           sudo apt update
           sudo apt install gcc-ia16-elf libi86-ia16-elf -y
           wget -nv -P ext/nicetia16/cmake/ https://github.com/thecatkitty/nicetia16/raw/REL-20240425/cmake/DOS-GCC-IA16.cmake
+          wget -nv -P ext/ https://github.com/thecatkitty/andrea/releases/download/0.1.1/andrea-0.1.1.zip
+          unzip ext/andrea-0.1.1.zip -d ext/andrea
 
       - name: Fetch Windows dependencies
         if: startsWith(matrix.platform.target, 'windows')
