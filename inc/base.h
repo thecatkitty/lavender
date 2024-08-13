@@ -9,7 +9,7 @@
 #include <sys/types.h>
 
 #ifndef far
-#ifndef EDITING
+#if !defined(EDITING) && defined(__ia16__)
 #define far __far
 #else
 #define far

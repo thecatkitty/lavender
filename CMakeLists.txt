@@ -22,7 +22,10 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/inc)
 
 add_compile_options(-Os)
 add_compile_options(-fno-strict-aliasing)
-add_compile_options(-Wall -Werror -Wpedantic)
+add_compile_options(-Wall -Werror)
+if(NOT DOS)
+    add_compile_options(-Wpedantic)
+endif()
 
 set(CMAKE_RC_FLAGS "-c 65001")
 if(NOT DEFINED LAV_LANG)
