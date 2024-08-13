@@ -23,19 +23,19 @@ static const uint8_t KEY_MULTIPLIERS[] = {
     227  // G#  .888
 };
 
-static bool
-pcspk_open(void)
+static bool ddcall
+pcspk_open(snd_device *dev)
 {
     return true;
 }
 
-static void
-pcspk_close(void)
+static void ddcall
+pcspk_close(snd_device *dev)
 {
 }
 
-static bool
-pcspk_write(const midi_event *event)
+static bool ddcall
+pcspk_write(snd_device *dev, const midi_event *event)
 {
     uint8_t     status = event->status;
     const char *msg = event->msg;
@@ -103,5 +103,15 @@ pcspk_write(const midi_event *event)
     return true;
 }
 
-snd_device_protocol __snd_dpcspk = {pcspk_open, pcspk_close, pcspk_write,
-                                    "pcspk", "PC Speaker"};
+static snd_device_ops _ops = {pcspk_open, pcspk_close, pcspk_write};
+
+int
+__pcspk_init(void)
+{
+    snd_device dev = {"pcspk", "PC Speaker", &_ops, NULL};
+    return snd_register_device(&dev);
+}
+
+#if defined(__linux__)
+snd_device_ops *__pcspk_ops = &_ops;
+#endif

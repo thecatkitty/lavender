@@ -16,6 +16,12 @@
 #endif
 #endif
 
+#if defined(__ia16__) && !defined(__IA16_CMODEL_TINY__)
+#define ddcall far
+#else
+#define ddcall
+#endif
+
 #define DEFINE_HANDLE(x)                                                       \
     typedef struct                                                             \
     {                                                                          \

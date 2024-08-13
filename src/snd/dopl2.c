@@ -225,8 +225,8 @@ _get_drum(uint8_t key)
     return 0;
 }
 
-static bool
-opl2_open(void)
+static bool ddcall
+opl2_open(snd_device *dev)
 {
     // Reset timers and interrupts
     _write(OPL2_REG_TIMER_CONTROL, OPL2_MASK_TIMER1 | OPL2_MASK_TIMER2);
@@ -276,14 +276,14 @@ opl2_open(void)
     return true;
 }
 
-static void
-opl2_close(void)
+static void ddcall
+opl2_close(snd_device *dev)
 {
     _reset();
 }
 
-static bool
-opl2_write(const midi_event *event)
+static bool ddcall
+opl2_write(snd_device *dev, const midi_event *event)
 {
     uint8_t     status = event->status;
     const char *msg = event->msg;
@@ -345,5 +345,11 @@ opl2_write(const midi_event *event)
     return true;
 }
 
-snd_device_protocol __snd_dopl2 = {opl2_open, opl2_close, opl2_write, "opl2",
-                                   "Yamaha YM3812 (OPL2)"};
+static snd_device_ops _ops = {opl2_open, opl2_close, opl2_write};
+
+int
+__opl2_init(void)
+{
+    snd_device dev = {"opl", "Yamaha YM3812 (OPL2)", &_ops, NULL};
+    return snd_register_device(&dev);
+}
