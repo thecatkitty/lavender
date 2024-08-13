@@ -3,15 +3,30 @@
 
 #include <fmt/midi.h>
 
+#define SND_MAX_NAME        9
+#define SND_MAX_DESCRIPTION 32
+
+typedef struct _snd_device snd_device;
+
 typedef struct
 {
-    bool (*open)(void);
-    void (*close)(void);
-    bool (*write)(const midi_event *);
+    bool ddcall (*open)(snd_device *dev);
+    void ddcall (*close)(snd_device *dev);
+    bool ddcall (*write)(snd_device *dev, const midi_event *);
+} snd_device_ops;
 
-    const char *name;
-    const char *description;
-} snd_device_protocol;
+typedef struct _snd_device
+{
+    char name[SND_MAX_NAME];
+    char description[SND_MAX_DESCRIPTION];
+
+    far snd_device_ops *ops;
+    far void           *data;
+} snd_device;
+
+#define snd_device_open(dev)         ((dev)->ops->open((dev)))
+#define snd_device_close(dev)        ((dev)->ops->close((dev)))
+#define snd_device_write(dev, event) ((dev)->ops->write((dev), (event)))
 
 typedef struct
 {
@@ -20,12 +35,15 @@ typedef struct
     bool (*step)(void);
 } snd_format_protocol;
 
-typedef bool (*snd_enum_devices_callback)(snd_device_protocol *device,
-                                          void                *data);
+typedef bool (*snd_enum_devices_callback)(snd_device *device, void *data);
 
 // Enumerate playback devices
 extern void
 snd_enum_devices(snd_enum_devices_callback callback, void *data);
+
+// Register a sound device
+extern int ddcall
+snd_register_device(far snd_device *dev);
 
 // Initialize sound system
 extern bool

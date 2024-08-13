@@ -25,6 +25,9 @@ extern char __w32_rsrc_start[];
 static char *_font = NULL;
 static long  _start_msec;
 
+extern int
+__fluid_init(void);
+
 void
 pal_initialize(int argc, char *argv[])
 {
@@ -46,6 +49,8 @@ pal_initialize(int argc, char *argv[])
         pal_cleanup();
         abort();
     }
+
+    __fluid_init();
 
     if (!snd_initialize(NULL))
     {

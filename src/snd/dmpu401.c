@@ -117,8 +117,8 @@ _init_uart(unsigned ms)
     return true;
 }
 
-static bool
-mpu401_open(void)
+static bool ddcall
+mpu401_open(snd_device *dev)
 {
     if (!_reset(MPU401_TIMEOUT_CONTROL_MS))
     {
@@ -147,8 +147,8 @@ mpu401_open(void)
     return true;
 }
 
-static void
-mpu401_close(void)
+static void ddcall
+mpu401_close(snd_device *dev)
 {
     if (!_operational)
     {
@@ -176,8 +176,8 @@ mpu401_close(void)
     _reset(MPU401_TIMEOUT_CONTROL_MS);
 }
 
-static bool
-mpu401_write(const midi_event *event)
+static bool ddcall
+mpu401_write(snd_device *dev, const midi_event *event)
 {
     if (!_operational)
     {
@@ -214,5 +214,11 @@ mpu401_write(const midi_event *event)
     return true;
 }
 
-snd_device_protocol __snd_dmpu401 = {mpu401_open, mpu401_close, mpu401_write,
-                                     "mpu401", "Roland MPU-401 UART"};
+static snd_device_ops _ops = {mpu401_open, mpu401_close, mpu401_write};
+
+int
+__mpu401_init(void)
+{
+    snd_device dev = {"mpu", "Roland MPU-401 UART", &_ops, NULL};
+    return snd_register_device(&dev);
+}

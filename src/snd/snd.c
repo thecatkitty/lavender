@@ -1,40 +1,34 @@
 #include <string.h>
 
+#ifdef CONFIG_ANDREA
+#include <andrea.h>
+#endif
+
 #include <generated/config.h>
 
 #include <pal.h>
 #include <snd.h>
 
-#if defined(CONFIG_SOUND)
-extern snd_device_protocol __snd_dfluid;
-extern snd_device_protocol __snd_dmme;
-extern snd_device_protocol __snd_dmpu401;
-extern snd_device_protocol __snd_dopl2;
-extern snd_device_protocol __snd_dpcspk;
+#ifdef __ia16__
+#include <libi86/string.h>
+#define fmemcpy _fmemcpy
+#else
+#define fmemcpy memcpy
+#endif
 
+#define MAX_DEVICES 4
+
+#if defined(CONFIG_SOUND)
 extern snd_format_protocol __snd_fmidi;
 extern snd_format_protocol __snd_fspk;
 
-static snd_device_protocol *_devices[] = {
-#ifdef __MINGW32__
-    &__snd_dmme,
-#endif
-#ifdef __linux__
-    &__snd_dfluid,
-#endif
-#if !defined(__MINGW32__) && !defined(__linux__)
-    &__snd_dopl2,
-    &__snd_dmpu401,
-    &__snd_dpcspk,
-#endif
-};
-
+static snd_device           _devices[MAX_DEVICES] = {{{0}}};
 static snd_format_protocol *_formats[] = {
     &__snd_fmidi, // Standard MIDI File, type 0
     &__snd_fspk   // length-divisor pairs for PC Speaker
 };
 
-static snd_device_protocol _device = {NULL, NULL, NULL};
+static snd_device         *_device = NULL;
 static snd_format_protocol _format;
 static hasset              _music = NULL;
 #endif // CONFIG_SOUND
@@ -43,10 +37,14 @@ void
 snd_enum_devices(snd_enum_devices_callback callback, void *data)
 {
 #if defined(CONFIG_SOUND)
-    for (snd_device_protocol **device = _devices;
-         device < _devices + lengthof(_devices); device++)
+    for (int i = 0; i < MAX_DEVICES; i++)
     {
-        if (!callback(*device, data))
+        if (NULL == _devices[i].ops)
+        {
+            continue;
+        }
+
+        if (!callback(_devices + i, data))
         {
             return;
         }
@@ -54,9 +52,33 @@ snd_enum_devices(snd_enum_devices_callback callback, void *data)
 #endif // CONFIG_SOUND
 }
 
+int ddcall
+snd_register_device(far snd_device *dev)
+{
+#if defined(CONFIG_SOUND)
+    for (int i = 0; i < MAX_DEVICES; i++)
+    {
+        if (NULL == _devices[i].ops)
+        {
+            fmemcpy(_devices + i, dev, sizeof(*dev));
+            return 0;
+        }
+    }
+
+    errno = ENOMEM;
+#else  // CONFIG_SOUND
+    errno = ENOSYS;
+#endif // CONFIG_SOUND
+    return -errno;
+}
+
+#ifdef CONFIG_ANDREA
+ANDREA_EXPORT(snd_register_device);
+#endif
+
 #if defined(CONFIG_SOUND)
 static bool
-_try_open(snd_device_protocol *device, void *data)
+_try_open(snd_device *device, void *data)
 {
     const char *arg = (const char *)data;
 
@@ -65,9 +87,9 @@ _try_open(snd_device_protocol *device, void *data)
         return true;
     }
 
-    if (device->open())
+    if (snd_device_open(device))
     {
-        _device = *device;
+        _device = device;
         return false;
     }
 
@@ -85,7 +107,7 @@ snd_initialize(const char *arg)
 {
 #if defined(CONFIG_SOUND)
     snd_enum_devices(_try_open, (void *)arg);
-    return NULL != _device.open;
+    return NULL != _device;
 #else
     return false;
 #endif // CONFIG_SOUND
@@ -95,9 +117,9 @@ void
 snd_cleanup(void)
 {
 #if defined(CONFIG_SOUND)
-    if (_device.close)
+    if (_device)
     {
-        _device.close();
+        snd_device_close(_device);
     }
 #endif // CONFIG_SOUND
 }
@@ -106,12 +128,12 @@ bool
 snd_send(const midi_event *event)
 {
 #if defined(CONFIG_SOUND)
-    if (NULL == _device.write)
+    if (NULL == _device)
     {
         return false;
     }
 
-    return _device.write(event);
+    return snd_device_write(_device, event);
 #else
     return false;
 #endif // CONFIG_SOUND

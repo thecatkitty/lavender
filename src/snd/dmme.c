@@ -5,8 +5,8 @@
 
 static HMIDIOUT _out = NULL;
 
-static bool
-mme_open(void)
+static bool ddcall
+mme_open(snd_device *dev)
 {
     LOG("entry");
 
@@ -42,8 +42,8 @@ mme_open(void)
     return true;
 }
 
-static void
-mme_close(void)
+static void ddcall
+mme_close(snd_device *dev)
 {
     LOG("entry");
 
@@ -53,8 +53,8 @@ mme_close(void)
     }
 }
 
-static bool
-mme_write(const midi_event *event)
+static bool ddcall
+mme_write(snd_device *dev, const midi_event *event)
 {
     if (MIDI_MSG_SYSEX <= event->status)
     {
@@ -102,5 +102,11 @@ mme_write(const midi_event *event)
     return true;
 }
 
-snd_device_protocol __snd_dmme = {mme_open, mme_close, mme_write, "mme",
-                                  "Windows MME"};
+static snd_device_ops _ops = {mme_open, mme_close, mme_write};
+
+int
+__mme_init(void)
+{
+    snd_device dev = {"mme", "Windows MME", &_ops, NULL};
+    return snd_register_device(&dev);
+}

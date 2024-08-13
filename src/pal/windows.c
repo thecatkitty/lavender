@@ -28,6 +28,9 @@ static HWND          _wnd = NULL;
 static char         *_font = NULL;
 static LARGE_INTEGER _start_pc, _pc_freq;
 
+extern int
+__mme_init(void);
+
 void
 pal_initialize(int argc, char *argv[])
 {
@@ -92,6 +95,8 @@ pal_initialize(int argc, char *argv[])
         SendMessageW(_wnd, WM_SETICON, ICON_BIG, (LPARAM)_icon);
         SendMessageW(_wnd, WM_SETICON, ICON_SMALL, (LPARAM)_icon);
     }
+
+    __mme_init();
 
     if (!snd_initialize(NULL))
     {

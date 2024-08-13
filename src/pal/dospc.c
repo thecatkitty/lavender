@@ -41,8 +41,14 @@ dospc_isr         __dospc_bios_isr;
 extern void
 __dospc_pit_isr(void);
 
-extern void
-__snd_timer_callback(void);
+extern int
+__mpu401_init(void);
+
+extern int
+__opl2_init(void);
+
+extern int
+__pcspk_init(void);
 
 static bool _has_mouse = false;
 
@@ -176,7 +182,7 @@ _is_compatible(void)
 }
 
 static bool
-_snd_enum_callback(snd_device_protocol *device, void *data)
+_snd_enum_callback(snd_device *device, void *data)
 {
     fputs("  ", stdout);
     fputs(device->name, stdout);
@@ -217,6 +223,10 @@ pal_initialize(int argc, char *argv[])
     for (uint64_t *ptr = _stack_start; ptr < _stack_end; ptr++)
         *ptr = STACK_FILL_PATTERN;
 #endif // STACK_PROFILING
+
+    __mpu401_init();
+    __opl2_init();
+    __pcspk_init();
 
 #ifdef CONFIG_ANDREA
     andrea_init();
