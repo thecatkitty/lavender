@@ -44,7 +44,7 @@ __dospc_pit_isr(void);
 extern int
 __mpu401_init(void);
 
-extern int
+extern int ddcall
 __opl2_init(void);
 
 extern int
@@ -400,7 +400,7 @@ pal_get_ticks(unsigned ms)
     return (UINT32_MAX < ticks) ? UINT32_MAX : ticks;
 }
 
-void
+void ddcall
 pal_sleep(unsigned ms)
 {
     uint32_t until = pal_get_counter() + pal_get_ticks((uint32_t)ms);
@@ -409,6 +409,10 @@ pal_sleep(unsigned ms)
         asm("hlt");
     }
 }
+
+#ifdef CONFIG_ANDREA
+ANDREA_EXPORT(pal_sleep);
+#endif
 
 static int
 _read_sector(uint8_t  drive,

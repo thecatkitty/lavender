@@ -17,7 +17,7 @@
 #endif
 
 #if defined(__ia16__) && !defined(__IA16_CMODEL_TINY__)
-#define ddcall far
+#define ddcall __attribute__((no_assume_ds_data)) far
 #else
 #define ddcall
 #endif

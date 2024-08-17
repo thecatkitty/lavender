@@ -1,6 +1,8 @@
+#include <snd.h>
+
 #include "opl2.h"
 
-const opl2_patch __snd_gm_opl2[128] = {
+const opl2_patch DRV_RDAT __snd_gm_opl2[128] = {
     // WS       Carrier                         Modulator
     // C,M,FBC, KSLT, AMV,  D,   A,   R,   S,   KSLT, AMV,  D,   A,   R,   S
 
@@ -151,7 +153,7 @@ const opl2_patch __snd_gm_opl2[128] = {
     // End of General MIDI melodic instruments
 };
 
-const opl2_patch __snd_drums_opl2[5] = {
+const opl2_patch DRV_RDAT __snd_drums_opl2[5] = {
     // Bass Drum
     {0, 0, 0x0, 0x00, 0x00, 0x8, 0xA, 0xC, 0x4, 0x0B, 0x00, 0x8, 0xA, 0xC, 0x4},
     // Snare Drum

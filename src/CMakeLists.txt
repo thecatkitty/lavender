@@ -60,6 +60,14 @@ endif()
 if(DOS)
     if(NOT DOS_TARGET_COM)
         target_link_options(lavender PRIVATE -T ${ANDREA_LIB}/andrea-host.ld)
+        add_custom_target(
+            lavender.exe.a
+            COMMAND python3
+                ${ANDREA_LIB}/../libman/libman.py
+                lavender.exe
+                -o lavender.exe.a
+            BYPRODUCTS lavender.exe.a
+            DEPENDS lavender)
     endif()
     target_link_libraries(lavender -li86)
 endif()

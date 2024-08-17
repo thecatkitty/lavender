@@ -74,24 +74,24 @@
 // Offsets within AM_VIBx, KSL_TLx, ATTACK_DECAYx, SUSTAIN_RELEASEx,
 // and WAVE_SELECTx register blocks, for both operators of six supported voices
 // and drums
-static const int8_t OPL2_VOICE_OFFSET[2][VOICES] = {
+static const int8_t DRV_RDAT OPL2_VOICE_OFFSET[2][VOICES] = {
     [MODULATOR] = {0, 1, 2, 8, 9, 10}, [CARRIER] = {3, 4, 5, 11, 12, 13}};
-static const int8_t OPL2_DRUM_OFFSET[2][DRUMS] = {
+static const int8_t DRV_RDAT OPL2_DRUM_OFFSET[2][DRUMS] = {
     [MODULATOR] = {16, -1, 18, -1, 17}, [CARRIER] = {19, 20, -1, 21, -1}};
 
-static const uint8_t OPL2_DRUM_CHANNEL[DRUMS] = {6, 7, 8, 8, 7};
-static const uint8_t DRUM_NOTE[DRUMS] = {12, 24, 36, 36, 24};
+static const uint8_t DRV_RDAT OPL2_DRUM_CHANNEL[DRUMS] = {6, 7, 8, 8, 7};
+static const uint8_t DRV_RDAT DRUM_NOTE[DRUMS] = {12, 24, 36, 36, 24};
 
 // MIDI note to FNUM mapping
-static const uint16_t OPL2_MIDI_FNUM[2 * 12] = {
+static const uint16_t DRV_RDAT OPL2_MIDI_FNUM[2 * 12] = {
     // Lowest octave
     345, 365, 387, 410, 435, 460, 488, 517, 547, 580, 615, 651,
     // Every other octave
     690, 731, 774, 820, 869, 921, 975, 517, 547, 580, 615, 651};
 
 // Current voice and drum state
-static uint8_t _drums = 0;
-static uint8_t _voices[VOICES];
+static uint8_t DRV_DATA _drums = 0;
+static uint8_t DRV_DATA _voices[VOICES];
 
 static void
 _write(uint8_t addr, uint8_t value)
@@ -119,10 +119,10 @@ _reset(void)
 }
 
 static void
-_load_patch(const opl2_patch *patch,
-            int8_t            channel,
-            int8_t            mod_offset,
-            int8_t            car_offset)
+_load_patch(far const opl2_patch *patch,
+            int8_t                channel,
+            int8_t                mod_offset,
+            int8_t                car_offset)
 {
     if (0 <= car_offset)
     {
@@ -345,11 +345,11 @@ opl2_write(snd_device *dev, const midi_event *event)
     return true;
 }
 
-static snd_device_ops _ops = {opl2_open, opl2_close, opl2_write};
+static snd_device DRV_DATA     _dev = {"opl", "Yamaha YM3812 (OPL2)"};
+static snd_device_ops DRV_DATA _ops = {opl2_open, opl2_close, opl2_write};
 
-int
-__opl2_init(void)
+DRV_INIT(opl2)(void)
 {
-    snd_device dev = {"opl", "Yamaha YM3812 (OPL2)", &_ops, NULL};
-    return snd_register_device(&dev);
+    _dev.ops = &_ops;
+    return snd_register_device(&_dev);
 }
