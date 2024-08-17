@@ -127,3 +127,15 @@ function(add_config_header target source_file)
             ${target} ALL
             DEPENDS inc/generated/${target}.h)
 endfunction()
+
+
+function(add_driver target)
+    add_executable(${target})
+    set_target_properties(${target} PROPERTIES SUFFIX ".sys")
+    target_compile_definitions(${target} PRIVATE LOADABLE)
+    target_link_options(${target} PRIVATE -T ${ANDREA_LIB}/andrea-module.ld)
+    target_link_options(${target} PRIVATE -Wl,-Map=${target}.map)
+    target_link_libraries(${target} ${CMAKE_BINARY_DIR}/src/lavender.exe.a)
+    target_link_libraries(${target} -lc)
+    add_dependencies(${target} lavender.exe.a)
+endfunction()

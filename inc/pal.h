@@ -70,7 +70,7 @@ pal_get_counter(void);
 extern uint32_t
 pal_get_ticks(unsigned ms);
 
-extern void
+extern void ddcall
 pal_sleep(unsigned ms);
 
 extern hasset
