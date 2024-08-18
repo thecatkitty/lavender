@@ -64,10 +64,10 @@ pal_cleanup(void);
 extern bool
 pal_handle(void);
 
-extern uint32_t
+extern uint32_t ddcall
 pal_get_counter(void);
 
-extern uint32_t
+extern uint32_t ddcall
 pal_get_ticks(unsigned ms);
 
 extern void ddcall

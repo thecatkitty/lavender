@@ -14,6 +14,9 @@ if(CONFIG_SOUND)
         target_sources(snd PRIVATE dpcspk.c)
 
         if(NOT DOS_TARGET_COM)
+            add_driver(sndmpu)
+            target_sources(sndmpu PRIVATE dmpu401.c)
+
             add_driver(sndopl)
             target_sources(sndopl PRIVATE gm-opl2.c)
             target_sources(sndopl PRIVATE dopl2.c)
