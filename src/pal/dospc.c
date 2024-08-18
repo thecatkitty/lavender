@@ -41,7 +41,7 @@ dospc_isr         __dospc_bios_isr;
 extern void
 __dospc_pit_isr(void);
 
-extern int
+extern int ddcall
 __mpu401_init(void);
 
 extern int ddcall
@@ -377,7 +377,7 @@ pal_handle(void)
     return true;
 }
 
-uint32_t
+uint32_t ddcall
 pal_get_counter(void)
 {
     uint16_t count = 0;
@@ -392,7 +392,7 @@ pal_get_counter(void)
            (count & ((1 << PIT_FREQ_POWER) - 1));
 }
 
-uint32_t
+uint32_t ddcall
 pal_get_ticks(unsigned ms)
 {
     uint64_t ticks = (uint64_t)ms * PIT_INPUT_FREQ;
@@ -411,6 +411,8 @@ pal_sleep(unsigned ms)
 }
 
 #ifdef CONFIG_ANDREA
+ANDREA_EXPORT(pal_get_counter);
+ANDREA_EXPORT(pal_get_ticks);
 ANDREA_EXPORT(pal_sleep);
 #endif
 

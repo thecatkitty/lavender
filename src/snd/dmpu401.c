@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <conio.h>
 
 #include <pal.h>
@@ -17,7 +18,15 @@
 #define MPU401_TIMEOUT_CONTROL_MS 250
 #define MPU401_TIMEOUT_DATA_MS    25
 
-static bool _operational = false;
+typedef struct
+{
+    bool is_good;
+} mpu401_data;
+
+static_assert(sizeof(mpu401_data) <= sizeof(far void *),
+              "Device data size exceeds the field size.");
+
+#define get_data(dev) ((mpu401_data *)(&(dev)->data))
 
 inline static bool
 _can_write(void)
@@ -118,6 +127,9 @@ _init_uart(unsigned ms)
 }
 
 static bool ddcall
+mpu401_write(snd_device *dev, const midi_event *event);
+
+static bool ddcall
 mpu401_open(snd_device *dev)
 {
     if (!_reset(MPU401_TIMEOUT_CONTROL_MS))
@@ -140,17 +152,17 @@ mpu401_open(snd_device *dev)
         }
 
         event.status = MIDI_MSG_PROGRAM | i;
-        snd_send(&event);
+        mpu401_write(dev, &event);
     }
 
-    _operational = true;
+    get_data(dev)->is_good = true;
     return true;
 }
 
 static void ddcall
 mpu401_close(snd_device *dev)
 {
-    if (!_operational)
+    if (!get_data(dev)->is_good)
     {
         return;
     }
@@ -163,15 +175,15 @@ mpu401_close(snd_device *dev)
 
         // All notes off
         message[0] = 123;
-        snd_send(&event);
+        mpu401_write(dev, &event);
 
         // All sounds off
         message[0] = 120;
-        snd_send(&event);
+        mpu401_write(dev, &event);
 
         // All controllers off
         message[0] = 121;
-        snd_send(&event);
+        mpu401_write(dev, &event);
     }
     _reset(MPU401_TIMEOUT_CONTROL_MS);
 }
@@ -179,7 +191,7 @@ mpu401_close(snd_device *dev)
 static bool ddcall
 mpu401_write(snd_device *dev, const midi_event *event)
 {
-    if (!_operational)
+    if (!get_data(dev)->is_good)
     {
         return false;
     }
@@ -193,7 +205,7 @@ mpu401_write(snd_device *dev, const midi_event *event)
 
     if (!_wait_write(pal_get_counter() + ticks))
     {
-        _operational = false;
+        get_data(dev)->is_good = false;
         return false;
     }
 
@@ -205,7 +217,7 @@ mpu401_write(snd_device *dev, const midi_event *event)
     {
         if (!_wait_write(pal_get_counter() + ticks))
         {
-            _operational = false;
+            get_data(dev)->is_good = false;
             return false;
         }
 
@@ -214,11 +226,12 @@ mpu401_write(snd_device *dev, const midi_event *event)
     return true;
 }
 
-static snd_device_ops _ops = {mpu401_open, mpu401_close, mpu401_write};
+static snd_device DRV_DATA     _dev = {"mpu", "Roland MPU-401 UART"};
+static snd_device_ops DRV_DATA _ops = {mpu401_open, mpu401_close, mpu401_write};
 
-int
-__mpu401_init(void)
+DRV_INIT(mpu401)(void)
 {
-    snd_device dev = {"mpu", "Roland MPU-401 UART", &_ops, NULL};
-    return snd_register_device(&dev);
+    _dev.ops = &_ops;
+    get_data(&_dev)->is_good = false;
+    return snd_register_device(&_dev);
 }
