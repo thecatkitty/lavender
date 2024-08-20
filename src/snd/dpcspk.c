@@ -8,7 +8,7 @@
 #define INPUT_FREQ_U32F8 305454507UL
 
 // As 8-bit fractional part; integer part always 1
-static const uint8_t KEY_MULTIPLIERS[] = {
+static const uint8_t DRV_RDAT KEY_MULTIPLIERS[] = {
     0,   // A   .000
     15,  // A#  .059
     31,  // B   .122
@@ -103,13 +103,13 @@ pcspk_write(snd_device *dev, const midi_event *event)
     return true;
 }
 
-static snd_device_ops _ops = {pcspk_open, pcspk_close, pcspk_write};
+static snd_device DRV_DATA     _dev = {"beep", "PC Speaker"};
+static snd_device_ops DRV_DATA _ops = {pcspk_open, pcspk_close, pcspk_write};
 
-int
-__pcspk_init(void)
+DRV_INIT(pcspk)(void)
 {
-    snd_device dev = {"pcspk", "PC Speaker", &_ops, NULL};
-    return snd_register_device(&dev);
+    _dev.ops = &_ops;
+    return snd_register_device(&_dev);
 }
 
 #if defined(__linux__)

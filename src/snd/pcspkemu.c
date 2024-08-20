@@ -96,7 +96,7 @@ pcspkemu_stop(void)
     }
 }
 
-void
+void ddcall
 dospc_beep(uint16_t divisor)
 {
     _flush();
@@ -104,7 +104,7 @@ dospc_beep(uint16_t divisor)
     _enabled = true;
 }
 
-void
+void ddcall
 dospc_silence(void)
 {
     _flush();

@@ -14,6 +14,10 @@ if(CONFIG_SOUND)
         target_sources(snd PRIVATE dpcspk.c)
 
         if(NOT DOS_TARGET_COM)
+            add_driver(sndbeep)
+            target_sources(sndbeep PRIVATE dpcspk.c)
+            target_link_libraries(sndbeep -lgcc)
+
             add_driver(sndmpu)
             target_sources(sndmpu PRIVATE dmpu401.c)
 

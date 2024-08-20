@@ -15,10 +15,10 @@ typedef void interrupt far (*dospc_isr)(void);
 extern bool
 dospc_is_dosbox(void);
 
-extern void
+extern void ddcall
 dospc_beep(uint16_t divisor);
 
-extern void
+extern void ddcall
 dospc_silence(void);
 
 #endif // _PLATFORM_DOSPC_H_
