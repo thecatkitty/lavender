@@ -47,7 +47,7 @@ __mpu401_init(void);
 extern int ddcall
 __opl2_init(void);
 
-extern int
+extern int ddcall
 __pcspk_init(void);
 
 static bool _has_mouse = false;
@@ -723,15 +723,20 @@ dospc_is_dosbox(void)
     return 0 == _fmemcmp((const char far *)0xF000E061, "DOSBox", 6);
 }
 
-void
+void ddcall
 dospc_beep(uint16_t divisor)
 {
     _pit_init_channel(2, PIT_MODE_SQUARE_WAVE_GEN, divisor);
     _outp(0x61, _inp(0x61) | SPKR_ENABLE);
 }
 
-void
+void ddcall
 dospc_silence(void)
 {
     _outp(0x61, _inp(0x61) & ~SPKR_ENABLE);
 }
+
+#ifdef CONFIG_ANDREA
+ANDREA_EXPORT(dospc_beep);
+ANDREA_EXPORT(dospc_silence);
+#endif
