@@ -235,34 +235,43 @@ zip_enum_files(zip_enum_files_callback callback, void *data)
     }
 }
 
+typedef struct
+{
+    const char *name;
+    uint16_t    length;
+
+    zip_cdir_file_header *result;
+} zip_search_context;
+
+static bool
+_zip_enum_files_callback(zip_cdir_file_header *cfh, void *data)
+{
+    zip_search_context *ctx = (zip_search_context *)data;
+
+    int status = _match_file_name(ctx->name, ctx->length, cfh);
+    if (0 == status)
+    {
+        ctx->result = cfh;
+    }
+
+    return 0 < status;
+}
+
 off_t
 zip_search(const char *name, uint16_t length)
 {
-    if (NULL == _cdir)
+    zip_search_context ctx = {name, length, NULL};
+    if (0 > zip_enum_files(_zip_enum_files_callback, &ctx))
     {
-        errno = EINVAL;
         return -1;
     }
 
-    zip_cdir_file_header *cfh = _cdir;
-    while (true)
+    if (NULL != ctx.result)
     {
-        int status = _match_file_name(name, length, cfh);
-        if (0 > status)
-        {
-            return -1;
-        }
-
-        if (0 == status)
-        {
-            return cfh->lfh_offset;
-        }
-
-        cfh = (zip_cdir_file_header *)((char *)cfh + cfh->name_length +
-                                       cfh->extra_length + cfh->comment_length);
-        cfh++;
+        return ctx.result->lfh_offset;
     }
 
+    errno = ENOENT;
     return -1;
 }
 
