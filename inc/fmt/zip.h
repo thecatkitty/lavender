@@ -170,11 +170,17 @@ typedef zip_cdir_end_header *zip_archive;
 typedef const char *zip_archive;
 #endif
 
+typedef bool (*zip_enum_files_callback)(zip_cdir_file_header *cfh, void *data);
+
 // Set working archive
 // archive is either a pointer to file name, or to address of ZIP central
 // directory
 extern bool
 zip_open(zip_archive archive);
+
+// Enumerate all files present in the archive
+int
+zip_enum_files(zip_enum_files_callback callback, void *data);
 
 // Locate ZIP local file header structure
 extern off_t

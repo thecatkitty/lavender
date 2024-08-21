@@ -193,6 +193,48 @@ zip_open(zip_archive archive)
     return true;
 }
 
+int
+zip_enum_files(zip_enum_files_callback callback, void *data)
+{
+    if (NULL == _cdir)
+    {
+        errno = EINVAL;
+        return -1;
+    }
+
+    int                   i = 0;
+    zip_cdir_file_header *cfh = _cdir;
+    while (true)
+    {
+        if (ZIP_PK_SIGN != cfh->pk_signature)
+        {
+            errno = EFTYPE;
+            return -1;
+        }
+
+        if (ZIP_CDIR_END_SIGN == cfh->header_signature)
+        {
+            return i;
+        }
+
+        if (ZIP_CDIR_FILE_SIGN != cfh->header_signature)
+        {
+            errno = EFTYPE;
+            return -1;
+        }
+
+        if (!callback(cfh, data))
+        {
+            return i;
+        }
+
+        cfh = (zip_cdir_file_header *)((char *)cfh + cfh->name_length +
+                                       cfh->extra_length + cfh->comment_length);
+        cfh++;
+        i++;
+    }
+}
+
 off_t
 zip_search(const char *name, uint16_t length)
 {
