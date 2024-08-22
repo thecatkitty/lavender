@@ -1,0 +1,3 @@
+[submodule "ext/MatchingWildcards"]
+	path = ext/MatchingWildcards
+	url = https://github.com/kirkjkrauss/MatchingWildcards.git

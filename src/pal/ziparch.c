@@ -1,7 +1,13 @@
+#ifdef __MINGW32__
+#include <malloc.h>
+#else
+#include <alloca.h>
+#endif
 #include <string.h>
 
 #include <fmt/zip.h>
 
+#include "../../ext/MatchingWildcards/Listing1.cpp"
 #include "pal_impl.h"
 
 pal_asset __pal_assets[MAX_OPEN_ASSETS];
@@ -41,6 +47,44 @@ ziparch_cleanup(void)
             zip_free_data(__pal_assets[i].data);
         }
     }
+}
+
+typedef struct
+{
+    pal_enum_assets_callback callback;
+    const char              *pattern;
+
+    int   count;
+    void *data;
+} pal_enum_assets_ctx;
+
+static bool
+_zip_enum_files_callback(zip_cdir_file_header *cfh, void *data)
+{
+    pal_enum_assets_ctx *ctx = (pal_enum_assets_ctx *)data;
+
+    char *name = alloca(cfh->name_length + 1);
+    memcpy(name, cfh->name, cfh->name_length + 1);
+    name[cfh->name_length] = 0;
+
+    if (FastWildCompare((char *)ctx->pattern, name))
+    {
+        ctx->count++;
+        return ctx->callback(name, ctx->data);
+    }
+
+    return true;
+}
+
+int
+pal_enum_assets(pal_enum_assets_callback callback,
+                const char              *pattern,
+                void                    *data)
+{
+    pal_enum_assets_ctx ctx = {callback, pattern, 0, data};
+
+    int status = zip_enum_files(_zip_enum_files_callback, &ctx);
+    return (0 > status) ? status : ctx.count;
 }
 
 hasset
