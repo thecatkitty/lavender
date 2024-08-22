@@ -7,6 +7,8 @@
 
 DEFINE_HANDLE(hasset);
 
+typedef bool (*pal_enum_assets_callback)(const char *, void *);
+
 #define PAL_MOUSE_LBUTTON 0x0001
 #define PAL_MOUSE_RBUTTON 0x0002
 
@@ -72,6 +74,11 @@ pal_get_ticks(unsigned ms);
 
 extern void ddcall
 pal_sleep(unsigned ms);
+
+extern int
+pal_enum_assets(pal_enum_assets_callback callback,
+                const char              *pattern,
+                void                    *data);
 
 extern hasset
 pal_open_asset(const char *name, int flags);
