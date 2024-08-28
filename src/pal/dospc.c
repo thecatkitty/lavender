@@ -1,6 +1,7 @@
 #include <conio.h>
 #include <ctype.h>
 #include <fcntl.h>
+#include <libi86/stdlib.h>
 #include <libi86/string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,6 +30,8 @@
 
 #define TEXT_COLUMNS 80
 #define TEXT_LINES   25
+
+typedef int ddcall (*pf_drvinit)(void);
 
 extern char __edata[], __sbss[], __ebss[];
 extern char _binary_obj_version_txt_start[];
@@ -722,6 +725,39 @@ dospc_is_dosbox(void)
 {
     return 0 == _fmemcmp((const char far *)0xF000E061, "DOSBox", 6);
 }
+
+#ifdef CONFIG_ANDREA
+uint16_t
+dospc_load_driver(const char *name)
+{
+    char path[_MAX_PATH];
+    if (0 > pal_extract_asset(name, path))
+    {
+        return 0;
+    }
+
+    andrea_module module = andrea_load(path);
+    if (0 == module)
+    {
+        return 0;
+    }
+
+    pf_drvinit drv_init = (pf_drvinit)andrea_get_procedure(module, "drv_init");
+    if (NULL == drv_init)
+    {
+        return 0;
+    }
+
+    if (0 > drv_init())
+    {
+        andrea_free(module);
+        return 0;
+    }
+
+    unlink(path);
+    return module;
+}
+#endif // CONFIG_ANDREA
 
 void ddcall
 dospc_beep(uint16_t divisor)
