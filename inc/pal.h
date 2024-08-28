@@ -80,6 +80,9 @@ pal_enum_assets(pal_enum_assets_callback callback,
                 const char              *pattern,
                 void                    *data);
 
+extern int
+pal_extract_asset(const char *name, char *path);
+
 extern hasset
 pal_open_asset(const char *name, int flags);
 
