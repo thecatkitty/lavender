@@ -3,6 +3,8 @@
 #else
 #include <alloca.h>
 #endif
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <fmt/zip.h>
@@ -11,6 +13,51 @@
 #include "pal_impl.h"
 
 pal_asset __pal_assets[MAX_OPEN_ASSETS];
+
+#ifdef __ia16__
+// newlib-ia16 seems to have some misbehaving tmpnam implementation
+static int _tmpnam_num = 0;
+
+static char *
+_tmpnam(char *path)
+{
+    *path = 0;
+
+    const char *tmp_dir = getenv("TMP");
+    tmp_dir = tmp_dir ? tmp_dir : getenv("TEMP");
+    if (tmp_dir)
+    {
+        strcpy(path, tmp_dir);
+        strcat(path, "\\");
+    }
+
+    char name[13];
+    sprintf(name, "~laven%02x.tmp", _tmpnam_num++);
+    strcat(path, name);
+
+    return path;
+}
+#elif defined(__MINGW32__)
+#include <windows.h>
+
+static char *
+_tmpnam(char *path)
+{
+    if (0 == GetTempPathA(MAX_PATH, path))
+    {
+        return NULL;
+    }
+
+    if (0 == GetTempFileNameA(path, NULL, 0, path))
+    {
+        return NULL;
+    }
+
+    return path;
+}
+#else
+#define _tmpnam tmpnam
+#endif
 
 #ifndef ZIP_PIGGYBACK
 bool
@@ -85,6 +132,64 @@ pal_enum_assets(pal_enum_assets_callback callback,
 
     int status = zip_enum_files(_zip_enum_files_callback, &ctx);
     return (0 > status) ? status : ctx.count;
+}
+
+int
+pal_extract_asset(const char *name, char *path)
+{
+    LOG("entry, name: '%s'", name);
+
+    hasset asset = NULL;
+    char  *data = NULL;
+    FILE  *out = NULL;
+
+    if (NULL == (asset = pal_open_asset(name, O_RDONLY)))
+    {
+        LOG("cannot open the asset!");
+        goto exit;
+    }
+
+    if (NULL == (data = pal_get_asset_data(asset)))
+    {
+        LOG("cannot retrieve the asset data!");
+        goto exit;
+    }
+
+    if (NULL == _tmpnam(path))
+    {
+        LOG("cannot create the temporary file name!");
+        errno = ENOMEM;
+        goto exit;
+    }
+
+    if (NULL == (out = fopen(path, "wb")))
+    {
+        LOG("cannot open the file!");
+        goto exit;
+    }
+
+    int size = pal_get_asset_size(asset);
+    if (size != fwrite(data, 1, size, out))
+    {
+        LOG("cannot write the file!");
+        goto exit;
+    }
+
+    errno = 0;
+
+exit:
+    if (NULL != asset)
+    {
+        pal_close_asset(asset);
+    }
+
+    if (NULL != out)
+    {
+        fclose(out);
+    }
+
+    LOG("exit, %d", -errno);
+    return -errno;
 }
 
 hasset
