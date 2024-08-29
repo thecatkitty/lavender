@@ -235,3 +235,13 @@ DRV_INIT(mpu401)(void)
     get_data(&_dev)->is_good = false;
     return snd_register_device(&_dev);
 }
+
+#ifdef LOADABLE
+int ddcall
+drv_deinit(void)
+{
+    return snd_unregister_devices(&_ops);
+}
+
+ANDREA_EXPORT(drv_deinit);
+#endif

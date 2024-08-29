@@ -353,3 +353,13 @@ DRV_INIT(opl2)(void)
     _dev.ops = &_ops;
     return snd_register_device(&_dev);
 }
+
+#ifdef LOADABLE
+int ddcall
+drv_deinit(void)
+{
+    return snd_unregister_devices(&_ops);
+}
+
+ANDREA_EXPORT(drv_deinit);
+#endif
