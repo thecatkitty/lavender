@@ -31,8 +31,14 @@
 #define TEXT_COLUMNS 80
 #define TEXT_LINES   25
 
+#ifdef CONFIG_ANDREA
+#define MAX_DRIVERS 4
+
 typedef int ddcall (*pf_drvinit)(void);
 typedef int ddcall (*pf_drvdeinit)(void);
+
+static uint16_t _drivers[MAX_DRIVERS] = {0};
+#endif
 
 extern char __edata[], __sbss[], __ebss[];
 extern char _binary_obj_version_txt_start[];
@@ -45,11 +51,13 @@ dospc_isr         __dospc_bios_isr;
 extern void
 __dospc_pit_isr(void);
 
+#ifndef CONFIG_ANDREA
 extern int ddcall
 __mpu401_init(void);
 
 extern int ddcall
 __opl2_init(void);
+#endif
 
 extern int ddcall
 __pcspk_init(void);
@@ -219,6 +227,35 @@ _show_help(const char *self)
     snd_enum_devices(_snd_enum_callback, NULL);
 }
 
+#ifdef CONFIG_ANDREA
+static bool
+_pal_enum_callback(const char *name, void *data)
+{
+    for (size_t i = 0; i < MAX_DRIVERS; i++)
+    {
+        if (0 == _drivers[i])
+        {
+            _drivers[i] = dospc_load_driver(name);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static void
+_unload_drivers(void)
+{
+    for (size_t i = 0; i < MAX_DRIVERS; i++)
+    {
+        if (0 != _drivers[i])
+        {
+            dospc_unload_driver(_drivers[i]);
+        }
+    }
+}
+#endif
+
 void
 pal_initialize(int argc, char *argv[])
 {
@@ -227,34 +264,6 @@ pal_initialize(int argc, char *argv[])
     for (uint64_t *ptr = _stack_start; ptr < _stack_end; ptr++)
         *ptr = STACK_FILL_PATTERN;
 #endif // STACK_PROFILING
-
-    __mpu401_init();
-    __opl2_init();
-    __pcspk_init();
-
-#ifdef CONFIG_ANDREA
-    andrea_init();
-#endif
-
-    const char *arg_snd = NULL;
-    for (int i = 1; i <= argc; i++)
-    {
-        if ('/' != argv[i][0])
-        {
-            continue;
-        }
-
-        if ('s' == tolower(argv[i][1]))
-        {
-            arg_snd = argv[i] + 2;
-        }
-
-        if ('?' == argv[i][1])
-        {
-            _show_help(argv[0]);
-            dos_exit(1);
-        }
-    }
 
 #ifdef ZIP_PIGGYBACK
     zip_cdir_end_header *cdir = _locate_cdir(__edata, __sbss);
@@ -293,6 +302,38 @@ pal_initialize(int argc, char *argv[])
         __pal_assets[i].inzip = -1;
         __pal_assets[i].flags = 0;
         __pal_assets[i].data = NULL;
+    }
+
+#ifdef CONFIG_ANDREA
+    andrea_init();
+    pal_enum_assets(_pal_enum_callback, "snd*.sys", NULL);
+#else
+    __mpu401_init();
+    __opl2_init();
+#endif
+    __pcspk_init();
+
+    const char *arg_snd = NULL;
+    for (int i = 1; i <= argc; i++)
+    {
+        if ('/' != argv[i][0])
+        {
+            continue;
+        }
+
+        if ('s' == tolower(argv[i][1]))
+        {
+            arg_snd = argv[i] + 2;
+        }
+
+        if ('?' == argv[i][1])
+        {
+            _show_help(argv[0]);
+#ifdef CONFIG_ANDREA
+            _unload_drivers();
+#endif
+            dos_exit(1);
+        }
     }
 
     if (!_is_compatible())
@@ -351,6 +392,9 @@ pal_cleanup(void)
 
     _dos_setvect(INT_PIT, __dospc_bios_isr);
     _pit_init_channel(0, PIT_MODE_RATE_GEN, 0);
+#ifdef CONFIG_ANDREA
+    _unload_drivers();
+#endif
 
     nosound();
 
@@ -766,7 +810,7 @@ dospc_unload_driver(uint16_t driver)
         (pf_drvdeinit)andrea_get_procedure(driver, "drv_deinit");
     if (NULL != deinit)
     {
-    deinit();
+        deinit();
     }
 
     andrea_free(driver);

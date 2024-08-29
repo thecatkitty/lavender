@@ -51,6 +51,9 @@ if(DOS)
         include_directories(ext/andrea/include)
         link_directories(${ANDREA_LIB})
         add_compile_definitions(CONFIG_ANDREA)
+        set(SOUND_DRIVERS 
+            $<TARGET_FILE:sndmpu>
+            $<TARGET_FILE:sndopl>)
     endif()
 endif()
 
@@ -69,7 +72,10 @@ add_dependencies(lavender config)
 
 add_custom_command(
     OUTPUT data.zip
-    COMMAND zip -0 -r -j data.zip ${CMAKE_CURRENT_SOURCE_DIR}/data/*
+    COMMAND
+        zip -0 -r -j data.zip
+        ${CMAKE_CURRENT_SOURCE_DIR}/data/*
+        ${SOUND_DRIVERS}
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/data/*)
 
 add_custom_command(
