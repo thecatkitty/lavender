@@ -32,6 +32,7 @@
 #define TEXT_LINES   25
 
 typedef int ddcall (*pf_drvinit)(void);
+typedef int ddcall (*pf_drvdeinit)(void);
 
 extern char __edata[], __sbss[], __ebss[];
 extern char _binary_obj_version_txt_start[];
@@ -756,6 +757,19 @@ dospc_load_driver(const char *name)
 
     unlink(path);
     return module;
+}
+
+void
+dospc_unload_driver(uint16_t driver)
+{
+    pf_drvdeinit deinit =
+        (pf_drvdeinit)andrea_get_procedure(driver, "drv_deinit");
+    if (NULL != deinit)
+    {
+    deinit();
+    }
+
+    andrea_free(driver);
 }
 #endif // CONFIG_ANDREA
 

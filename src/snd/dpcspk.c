@@ -112,6 +112,16 @@ DRV_INIT(pcspk)(void)
     return snd_register_device(&_dev);
 }
 
+#ifdef LOADABLE
+int ddcall
+drv_deinit(void)
+{
+    return snd_unregister_devices(&_ops);
+}
+
+ANDREA_EXPORT(drv_deinit);
+#endif
+
 #if defined(__linux__)
 snd_device_ops *__pcspk_ops = &_ops;
 #endif
