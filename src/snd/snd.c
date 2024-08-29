@@ -72,8 +72,31 @@ snd_register_device(far snd_device *dev)
     return -errno;
 }
 
+int ddcall
+snd_unregister_devices(far snd_device_ops *ops)
+{
+#if defined(CONFIG_SOUND)
+    int count = 0;
+
+    for (int i = 0; i < MAX_DEVICES; i++)
+    {
+        if (ops == _devices[i].ops)
+        {
+            _devices[i].ops = NULL;
+            count++;
+        }
+    }
+
+    return count;
+#else  // CONFIG_SOUND
+    errno = ENOSYS;
+    return -errno;
+#endif // CONFIG_SOUND
+}
+
 #ifdef CONFIG_ANDREA
 ANDREA_EXPORT(snd_register_device);
+ANDREA_EXPORT(snd_unregister_devices);
 #endif
 
 #if defined(CONFIG_SOUND)

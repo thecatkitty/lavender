@@ -60,6 +60,10 @@ snd_enum_devices(snd_enum_devices_callback callback, void *data);
 extern int ddcall
 snd_register_device(far snd_device *dev);
 
+// Unregister all sound devices sharing one protocol
+extern int ddcall
+snd_unregister_devices(far snd_device_ops *ops);
+
 // Initialize sound system
 extern bool
 snd_initialize(const char *arg);
