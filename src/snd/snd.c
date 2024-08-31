@@ -2,6 +2,7 @@
 
 #ifdef CONFIG_ANDREA
 #include <andrea.h>
+#include <platform/dospc.h>
 #endif
 
 #include <generated/config.h>
@@ -31,7 +32,32 @@ static snd_format_protocol *_formats[] = {
 static snd_device         *_device = NULL;
 static snd_format_protocol _format;
 static hasset              _music = NULL;
+
+#if defined(CONFIG_ANDREA)
+static uint16_t _driver = 0;
+#else
+extern int ddcall
+__mpu401_init(void);
+
+extern int ddcall
+__opl2_init(void);
+#endif
+
+extern int ddcall
+__pcspk_init(void);
 #endif // CONFIG_SOUND
+
+void
+snd_load_inbox_drivers(void)
+{
+#if defined(__ia16__)
+#if !defined(CONFIG_ANDREA)
+    __mpu401_init();
+    __opl2_init();
+#endif // CONFIG_ANDREA
+    __pcspk_init();
+#endif // __ia16__
+}
 
 void
 snd_enum_devices(snd_enum_devices_callback callback, void *data)
@@ -123,13 +149,47 @@ _try_open(snd_device *device, void *data)
 
     return true;
 }
+
+#if defined(CONFIG_ANDREA)
+static bool
+_try_driver(const char *name, void *data)
+{
+    uint16_t driver = dospc_load_driver(name);
+    if (0 == driver)
+    {
+        return true;
+    }
+
+    snd_enum_devices(_try_open, data);
+    if (NULL != _device)
+    {
+        _driver = driver;
+        return false;
+    }
+
+    dospc_unload_driver(driver);
+    return true;
+}
+#endif // CONFIG_ANDREA
 #endif // CONFIG_SOUND
 
 bool
 snd_initialize(const char *arg)
 {
 #if defined(CONFIG_SOUND)
-    snd_enum_devices(_try_open, (void *)arg);
+#if defined(CONFIG_ANDREA)
+    if (NULL == _device)
+    {
+        pal_enum_assets(_try_driver, "snd*.sys", (void *)arg);
+    }
+#endif // CONFIG_ANDREA
+
+    if (NULL == _device)
+    {
+        snd_load_inbox_drivers();
+        snd_enum_devices(_try_open, (void *)arg);
+    }
+
     return NULL != _device;
 #else
     return false;
@@ -144,6 +204,13 @@ snd_cleanup(void)
     {
         snd_device_close(_device);
     }
+
+#if defined(CONFIG_ANDREA)
+    if (0 != _driver)
+    {
+        dospc_unload_driver(_driver);
+    }
+#endif // CONFIG_ANDREA
 #endif // CONFIG_SOUND
 }
 
