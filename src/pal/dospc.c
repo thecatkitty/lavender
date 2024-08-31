@@ -36,8 +36,6 @@
 
 typedef int ddcall (*pf_drvinit)(void);
 typedef int ddcall (*pf_drvdeinit)(void);
-
-static uint16_t _drivers[MAX_DRIVERS] = {0};
 #endif
 
 extern char __edata[], __sbss[], __ebss[];
@@ -50,17 +48,6 @@ dospc_isr         __dospc_bios_isr;
 
 extern void
 __dospc_pit_isr(void);
-
-#ifndef CONFIG_ANDREA
-extern int ddcall
-__mpu401_init(void);
-
-extern int ddcall
-__opl2_init(void);
-#endif
-
-extern int ddcall
-__pcspk_init(void);
 
 static bool _has_mouse = false;
 
@@ -193,6 +180,25 @@ _is_compatible(void)
     return !_is_dos(1) && (!_is_winnt() || (0x0600 > _get_winnt_version()));
 }
 
+#ifdef CONFIG_ANDREA
+static bool
+_pal_enum_callback(const char *name, void *data)
+{
+    uint16_t *drivers = (uint16_t *)data;
+
+    for (size_t i = 0; i < MAX_DRIVERS; i++)
+    {
+        if (0 == drivers[i])
+        {
+            drivers[i] = dospc_load_driver(name);
+            return true;
+        }
+    }
+
+    return false;
+}
+#endif
+
 static bool
 _snd_enum_callback(snd_device *device, void *data)
 {
@@ -211,6 +217,12 @@ _snd_enum_callback(snd_device *device, void *data)
 static void
 _show_help(const char *self)
 {
+#if defined(CONFIG_ANDREA)
+    uint16_t drivers[MAX_DRIVERS] = {0};
+    pal_enum_assets(_pal_enum_callback, "snd*.sys", drivers);
+#endif
+    snd_load_inbox_drivers();
+
     const char *name = strrchr(self, '\\');
     if (NULL == name)
     {
@@ -225,36 +237,17 @@ _show_help(const char *self)
     puts(" [/? | /S<dev>]");
     puts("\ndev:");
     snd_enum_devices(_snd_enum_callback, NULL);
-}
 
-#ifdef CONFIG_ANDREA
-static bool
-_pal_enum_callback(const char *name, void *data)
-{
+#if defined(CONFIG_ANDREA)
     for (size_t i = 0; i < MAX_DRIVERS; i++)
     {
-        if (0 == _drivers[i])
+        if (0 != drivers[i])
         {
-            _drivers[i] = dospc_load_driver(name);
-            return true;
+            dospc_unload_driver(drivers[i]);
         }
     }
-
-    return false;
-}
-
-static void
-_unload_drivers(void)
-{
-    for (size_t i = 0; i < MAX_DRIVERS; i++)
-    {
-        if (0 != _drivers[i])
-        {
-            dospc_unload_driver(_drivers[i]);
-        }
-    }
-}
 #endif
+}
 
 void
 pal_initialize(int argc, char *argv[])
@@ -306,12 +299,7 @@ pal_initialize(int argc, char *argv[])
 
 #ifdef CONFIG_ANDREA
     andrea_init();
-    pal_enum_assets(_pal_enum_callback, "snd*.sys", NULL);
-#else
-    __mpu401_init();
-    __opl2_init();
 #endif
-    __pcspk_init();
 
     const char *arg_snd = NULL;
     for (int i = 1; i <= argc; i++)
@@ -329,9 +317,6 @@ pal_initialize(int argc, char *argv[])
         if ('?' == argv[i][1])
         {
             _show_help(argv[0]);
-#ifdef CONFIG_ANDREA
-            _unload_drivers();
-#endif
             dos_exit(1);
         }
     }
@@ -392,9 +377,6 @@ pal_cleanup(void)
 
     _dos_setvect(INT_PIT, __dospc_bios_isr);
     _pit_init_channel(0, PIT_MODE_RATE_GEN, 0);
-#ifdef CONFIG_ANDREA
-    _unload_drivers();
-#endif
 
     nosound();
 

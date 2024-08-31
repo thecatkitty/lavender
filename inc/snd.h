@@ -52,6 +52,10 @@ typedef struct
 
 typedef bool (*snd_enum_devices_callback)(snd_device *device, void *data);
 
+// Load inbox drivers
+extern void
+snd_load_inbox_drivers(void);
+
 // Enumerate playback devices
 extern void
 snd_enum_devices(snd_enum_devices_callback callback, void *data);
