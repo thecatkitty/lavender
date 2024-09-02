@@ -24,18 +24,18 @@ static const uint8_t DRV_RDAT KEY_MULTIPLIERS[] = {
 };
 
 static bool ddcall
-pcspk_open(snd_device *dev)
+beep_open(snd_device *dev)
 {
     return true;
 }
 
 static void ddcall
-pcspk_close(snd_device *dev)
+beep_close(snd_device *dev)
 {
 }
 
 static bool ddcall
-pcspk_write(snd_device *dev, const midi_event *event)
+beep_write(snd_device *dev, const midi_event *event)
 {
     uint8_t     status = event->status;
     const char *msg = event->msg;
@@ -104,9 +104,9 @@ pcspk_write(snd_device *dev, const midi_event *event)
 }
 
 static snd_device DRV_DATA     _dev = {"beep", "PC Speaker"};
-static snd_device_ops DRV_DATA _ops = {pcspk_open, pcspk_close, pcspk_write};
+static snd_device_ops DRV_DATA _ops = {beep_open, beep_close, beep_write};
 
-DRV_INIT(pcspk)(void)
+DRV_INIT(beep)(void)
 {
     _dev.ops = &_ops;
     return snd_register_device(&_dev);
@@ -123,5 +123,5 @@ ANDREA_EXPORT(drv_deinit);
 #endif
 
 #if defined(__linux__)
-snd_device_ops *__pcspk_ops = &_ops;
+snd_device_ops *__beep_ops = &_ops;
 #endif

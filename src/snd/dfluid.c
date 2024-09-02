@@ -13,10 +13,10 @@ static fluid_settings_t     *_settings;
 static fluid_synth_t        *_synth;
 static fluid_audio_driver_t *_audio;
 
-extern snd_device_ops *__pcspk_ops;
+extern snd_device_ops *__beep_ops;
 
 extern void
-pcspkemu_stop(void);
+beepemu_stop(void);
 
 static bool ddcall
 fluid_open(snd_device *dev)
@@ -95,7 +95,7 @@ fluid_close(snd_device *dev)
         delete_fluid_settings(_settings);
     }
 
-    pcspkemu_stop();
+    beepemu_stop();
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
 }
 
@@ -331,7 +331,7 @@ fluid_write(snd_device *dev, const midi_event *event)
     }
     }
 
-    __pcspk_ops->write(NULL, event);
+    __beep_ops->write(NULL, event);
     return true;
 }
 
