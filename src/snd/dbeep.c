@@ -7,6 +7,8 @@
 #define FREQ_A4          440
 #define INPUT_FREQ_U32F8 305454507UL
 
+#define VOICES 1
+
 // As 8-bit fractional part; integer part always 1
 static const uint8_t DRV_RDAT KEY_MULTIPLIERS[] = {
     0,   // A   .000
@@ -23,20 +25,41 @@ static const uint8_t DRV_RDAT KEY_MULTIPLIERS[] = {
     227  // G#  .888
 };
 
+typedef struct
+{
+    uint16_t div[VOICES];
+    unsigned voice;
+} beep_data;
+
+#define get_data(dev) ((far beep_data *)((dev)->data))
+
 static bool ddcall
 beep_open(snd_device *dev)
 {
+    if (NULL == (dev->data = _fmalloc(sizeof(beep_data))))
+    {
+        return false;
+    }
+
+    _fmemset(dev->data, 0, sizeof(beep_data));
     return true;
 }
 
 static void ddcall
 beep_close(snd_device *dev)
 {
+    if (NULL != dev->data)
+    {
+        _ffree(dev->data);
+        dev->data = NULL;
+    }
 }
 
 static bool ddcall
 beep_write(snd_device *dev, const midi_event *event)
 {
+    far beep_data *data = get_data(dev);
+
     uint8_t     status = event->status;
     const char *msg = event->msg;
 
@@ -69,7 +92,7 @@ beep_write(snd_device *dev, const midi_event *event)
 
         if ((MIDI_MSG_NOTEOFF == status) || (0 == velocity))
         {
-            dospc_silence();
+            data->div[0] = 0;
             return true;
         }
 
@@ -94,8 +117,7 @@ beep_write(snd_device *dev, const midi_event *event)
         }
 
         // freq is u32f8
-        uint16_t divisor = INPUT_FREQ_U32F8 / freq;
-        dospc_beep(divisor);
+        data->div[0] = INPUT_FREQ_U32F8 / freq;
         break;
     }
     }
@@ -103,8 +125,39 @@ beep_write(snd_device *dev, const midi_event *event)
     return true;
 }
 
+static bool ddcall
+beep_tick(snd_device *dev, uint32_t ts)
+{
+    far beep_data *data = get_data(dev);
+
+    bool is_silent = true;
+    for (unsigned i = 0; i < VOICES; i++)
+    {
+        if (0 != data->div[i])
+        {
+            is_silent = false;
+            break;
+        }
+    }
+
+    if (is_silent)
+    {
+        dospc_silence();
+        data->voice = 0;
+        return true;
+    }
+
+    dospc_beep(data->div[data->voice]);
+    do
+    {
+        data->voice = (data->voice + 1) % VOICES;
+    } while (0 == data->div[data->voice]);
+    return true;
+}
+
 static snd_device DRV_DATA     _dev = {"beep", "PC Speaker"};
-static snd_device_ops DRV_DATA _ops = {beep_open, beep_close, beep_write};
+static snd_device_ops DRV_DATA _ops = {beep_open, beep_close, beep_write,
+                                       beep_tick};
 
 DRV_INIT(beep)(void)
 {

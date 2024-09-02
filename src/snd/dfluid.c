@@ -13,6 +13,7 @@ static fluid_settings_t     *_settings;
 static fluid_synth_t        *_synth;
 static fluid_audio_driver_t *_audio;
 
+static snd_device      _beep;
 extern snd_device_ops *__beep_ops;
 
 extern void
@@ -72,6 +73,12 @@ fluid_open(snd_device *dev)
         return false;
     }
 
+    _beep.ops = __beep_ops;
+    if (!snd_device_open(&_beep))
+    {
+        _beep.ops = NULL;
+    }
+
     return true;
 }
 
@@ -96,6 +103,11 @@ fluid_close(snd_device *dev)
     }
 
     beepemu_stop();
+    if (NULL != _beep.ops)
+    {
+        snd_device_close(&_beep);
+    }
+
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
 }
 
@@ -331,11 +343,21 @@ fluid_write(snd_device *dev, const midi_event *event)
     }
     }
 
-    __beep_ops->write(NULL, event);
+    if (NULL != _beep.ops)
+    {
+        snd_device_write(&_beep, event);
+    }
+
     return true;
 }
 
-static snd_device_ops _ops = {fluid_open, fluid_close, fluid_write};
+static bool ddcall
+fluid_tick(snd_device *dev, uint32_t ts)
+{
+    return snd_device_tick(&_beep, ts);
+}
+
+static snd_device_ops _ops = {fluid_open, fluid_close, fluid_write, fluid_tick};
 
 int
 __fluid_init(void)
