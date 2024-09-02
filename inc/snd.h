@@ -28,6 +28,7 @@ typedef struct
     bool ddcall (*open)(snd_device *dev);
     void ddcall (*close)(snd_device *dev);
     bool ddcall (*write)(snd_device *dev, const midi_event *);
+    bool ddcall (*tick)(snd_device *dev, uint32_t ts);
 } snd_device_ops;
 
 typedef struct _snd_device
@@ -42,6 +43,7 @@ typedef struct _snd_device
 #define snd_device_open(dev)         ((dev)->ops->open((dev)))
 #define snd_device_close(dev)        ((dev)->ops->close((dev)))
 #define snd_device_write(dev, event) ((dev)->ops->write((dev), (event)))
+#define snd_device_tick(dev, ts)     ((dev)->ops->tick((dev), (ts)))
 
 typedef struct
 {

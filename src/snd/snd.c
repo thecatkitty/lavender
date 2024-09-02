@@ -32,6 +32,7 @@ static snd_format_protocol *_formats[] = {
 static snd_device         *_device = NULL;
 static snd_format_protocol _format;
 static hasset              _music = NULL;
+static uint32_t            _ts = 0;
 
 #if defined(CONFIG_ANDREA)
 static uint16_t _driver = 0;
@@ -233,12 +234,24 @@ void
 snd_handle(void)
 {
 #if defined(CONFIG_SOUND)
-    if (_format.step && _music)
+    if ((NULL == _device) || (NULL == _format.step) || (NULL == _music))
     {
-        if (!_format.step())
+        return;
+    }
+
+    if (!_format.step())
+    {
+        pal_close_asset(_music);
+        _music = NULL;
+    }
+
+    if (NULL != _device->ops->tick)
+    {
+        uint32_t ts = pal_get_counter();
+        if (_ts != ts)
         {
-            pal_close_asset(_music);
-            _music = NULL;
+            _ts = ts;
+            snd_device_tick(_device, ts);
         }
     }
 #endif // CONFIG_SOUND
