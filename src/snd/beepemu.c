@@ -3,7 +3,7 @@
 #include <fmt/wave.h>
 #include <pal.h>
 
-#define PCSPK_RATE 44100
+#define BEEP_RATE 44100
 
 uint16_t _divisor = 0;
 uint32_t _counter = 0;
@@ -27,8 +27,8 @@ _flush(void)
         _ch_fmt.type.dw = WAVE_FOURCC_FMT.dw;
         _format.wf.format = WAVE_FORMAT_PCM;
         _format.wf.channels = 1;
-        _format.wf.sample_rate = PCSPK_RATE;
-        _format.wf.byte_rate = PCSPK_RATE;
+        _format.wf.sample_rate = BEEP_RATE;
+        _format.wf.byte_rate = BEEP_RATE;
         _format.wf.block_align = _format.wf.byte_rate;
         _format.bits_per_sample = 8;
         _ch_fmt.length = sizeof(_format);
@@ -54,8 +54,8 @@ _flush(void)
     fseek(_wav, 0, SEEK_END);
 
     uint32_t now = pal_get_counter();
-    uint32_t length = (now - _last) * PCSPK_RATE / 1000;
-    uint32_t cycle = PCSPK_RATE * _divisor / 1193182;
+    uint32_t length = (now - _last) * BEEP_RATE / 1000;
+    uint32_t cycle = BEEP_RATE * _divisor / 1193182;
     if (_enabled)
     {
         for (int i = 0; i < length; i++, _counter++)
@@ -84,7 +84,7 @@ _flush(void)
 }
 
 void
-pcspkemu_stop(void)
+beepemu_stop(void)
 {
     LOG("entry");
 

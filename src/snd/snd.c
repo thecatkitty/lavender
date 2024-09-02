@@ -45,7 +45,7 @@ __opl2_init(void);
 #endif
 
 extern int ddcall
-__pcspk_init(void);
+__beep_init(void);
 #endif // CONFIG_SOUND
 
 void
@@ -56,7 +56,7 @@ snd_load_inbox_drivers(void)
     __mpu401_init();
     __opl2_init();
 #endif // CONFIG_ANDREA
-    __pcspk_init();
+    __beep_init();
 #endif // __ia16__
 }
 
