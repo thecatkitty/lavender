@@ -2,12 +2,14 @@
 #include <platform/dospc.h>
 #include <snd.h>
 
+#define KEY_NONE         255
 #define KEY_MIN          14 // PIT incapable of frequencies lower than D0
 #define KEY_A4           69
 #define FREQ_A4          440
 #define INPUT_FREQ_U32F8 305454507UL
 
-#define VOICES 1
+#define VOICES   3
+#define SWEEP_MS 16
 
 // As 8-bit fractional part; integer part always 1
 static const uint8_t DRV_RDAT KEY_MULTIPLIERS[] = {
@@ -27,11 +29,30 @@ static const uint8_t DRV_RDAT KEY_MULTIPLIERS[] = {
 
 typedef struct
 {
+    uint8_t  key[VOICES];
     uint16_t div[VOICES];
     unsigned voice;
+    uint32_t last_ts;
+    uint32_t sweep;
 } beep_data;
 
 #define get_data(dev) ((far beep_data *)((dev)->data))
+
+static unsigned
+_find_slot(far beep_data *data, uint8_t key)
+{
+    unsigned i;
+
+    for (i = 0; i < VOICES; i++)
+    {
+        if (key == data->key[i])
+        {
+            break;
+        }
+    }
+
+    return i;
+}
 
 static bool ddcall
 beep_open(snd_device *dev)
@@ -42,6 +63,14 @@ beep_open(snd_device *dev)
     }
 
     _fmemset(dev->data, 0, sizeof(beep_data));
+
+    far beep_data *data = get_data(dev);
+    for (unsigned i = 0; i < VOICES; i++)
+    {
+        data->key[i] = KEY_NONE;
+    }
+
+    data->sweep = pal_get_ticks(SWEEP_MS);
     return true;
 }
 
@@ -73,7 +102,7 @@ beep_write(snd_device *dev, const midi_event *event)
         channel = 0;
     }
 
-    if (0 != channel)
+    if ((VOICES <= channel) || (MIDI_DRUMS_CHANNEL == channel))
     {
         return true;
     }
@@ -90,15 +119,24 @@ beep_write(snd_device *dev, const midi_event *event)
             return false;
         }
 
+        unsigned slot = VOICES;
         if ((MIDI_MSG_NOTEOFF == status) || (0 == velocity))
         {
-            data->div[0] = 0;
+            if (VOICES != (slot = _find_slot(data, key)))
+            {
+                data->key[slot] = KEY_NONE;
+            }
             return true;
         }
 
         if (KEY_MIN > key)
         {
             return false;
+        }
+
+        if (VOICES == (slot = _find_slot(data, KEY_NONE)))
+        {
+            return true;
         }
 
         uint32_t freq = FREQ_A4;
@@ -117,7 +155,8 @@ beep_write(snd_device *dev, const midi_event *event)
         }
 
         // freq is u32f8
-        data->div[0] = INPUT_FREQ_U32F8 / freq;
+        data->key[slot] = key;
+        data->div[slot] = INPUT_FREQ_U32F8 / freq;
         break;
     }
     }
@@ -133,7 +172,7 @@ beep_tick(snd_device *dev, uint32_t ts)
     bool is_silent = true;
     for (unsigned i = 0; i < VOICES; i++)
     {
-        if (0 != data->div[i])
+        if (KEY_NONE != data->key[i])
         {
             is_silent = false;
             break;
@@ -147,11 +186,17 @@ beep_tick(snd_device *dev, uint32_t ts)
         return true;
     }
 
+    if (data->sweep > (ts - data->last_ts))
+    {
+        return true;
+    }
+
+    data->last_ts = ts;
     dospc_beep(data->div[data->voice]);
     do
     {
         data->voice = (data->voice + 1) % VOICES;
-    } while (0 == data->div[data->voice]);
+    } while (KEY_NONE == data->key[data->voice]);
     return true;
 }
 
