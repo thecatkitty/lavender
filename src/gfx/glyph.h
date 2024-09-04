@@ -7,10 +7,10 @@
 typedef struct
 {
     uint16_t       codepoint;
+    char           base;
     const uint8_t *overlay;
     const uint8_t *transformation;
-    char           base;
-} vid_glyph;
+} gfx_glyph;
 #pragma pack(pop)
 
 #define GXF_CMD_GROW   0

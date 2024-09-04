@@ -35,7 +35,7 @@
     }
 
 extern char            __vid_xfont[];
-extern const vid_glyph __vid_font_8x8[];
+extern const gfx_glyph __vid_font_8x8[];
 
 static far char *const _plane0 = MK_FP(CGA_HIMONO_MEM, 0);
 static far char *const _plane1 = MK_FP(CGA_HIMONO_MEM, CGA_HIMONO_PLANE);
@@ -128,7 +128,7 @@ gfx_initialize(void)
     far const char *bfont =
         MK_FP(CGA_BASIC_FONT_SEGMENT, CGA_BASIC_FONT_OFFSET);
     char            *xfont = __vid_xfont;
-    const vid_glyph *fdata = __vid_font_8x8;
+    const gfx_glyph *fdata = __vid_font_8x8;
     bool             is_dosbox = dospc_is_dosbox();
 
     if (is_dosbox)
@@ -426,7 +426,7 @@ gfx_wctoa(uint16_t wc)
         return wc;
     }
 
-    const vid_glyph *fdata = __vid_font_8x8;
+    const gfx_glyph *fdata = __vid_font_8x8;
     while (wc > fdata->codepoint)
     {
         fdata++;
@@ -449,7 +449,7 @@ gfx_wctob(uint16_t wc)
     }
 
     uint8_t          local = 0x80;
-    const vid_glyph *fdata = __vid_font_8x8;
+    const gfx_glyph *fdata = __vid_font_8x8;
 
     while (wc > fdata->codepoint)
     {
