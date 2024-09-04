@@ -6,7 +6,7 @@
 static int
 _convert_text(const char *str, sld_entry *inout)
 {
-    inout->length = utf8_encode(inout->content, inout->content, gfx_wctob);
+    inout->length = utf8_encode(inout->content, inout->content, pal_wctob);
     if (0 > inout->length)
     {
         __sld_errmsgcpy(inout, IDS_BADENCODING);

@@ -3,7 +3,7 @@
 
 #include <fcntl.h>
 
-#include <base.h>
+#include <fmt/utf8.h>
 
 DEFINE_HANDLE(hasset);
 
@@ -118,5 +118,13 @@ pal_load_string(unsigned id, char *buffer, int max_length);
 
 extern void
 pal_alert(const char *text, int error);
+
+#ifndef UTF8_NATIVE
+extern char
+pal_wctoa(uint16_t wc);
+
+extern char
+pal_wctob(uint16_t wc);
+#endif
 
 #endif // _PAL_H_

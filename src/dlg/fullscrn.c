@@ -93,7 +93,7 @@ _draw_frame(int columns, int lines, const char *title, int title_length)
     const char *title_l = title;
 #else
     char *title_l = alloca(strlen(title) + 1);
-    utf8_encode(title, title_l, gfx_wctob);
+    utf8_encode(title, title_l, pal_wctob);
 #endif
     gfx_draw_text(title_l, window.left / _glyph.width + 4,
                   window.top / _glyph.height);
@@ -147,7 +147,7 @@ _draw_text(int columns, int lines, const char *text)
     const char *text_l = text;
 #else
     char *text_l = alloca(strlen(text) + 1);
-    utf8_encode(text, text_l, gfx_wctob);
+    utf8_encode(text, text_l, pal_wctob);
 #endif
 
     const char *fragment = text_l;
