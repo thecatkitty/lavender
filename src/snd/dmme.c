@@ -6,7 +6,7 @@
 static HMIDIOUT _out = NULL;
 
 static bool ddcall
-mme_open(snd_device *dev)
+mme_open(device *dev)
 {
     LOG("entry");
 
@@ -43,7 +43,7 @@ mme_open(snd_device *dev)
 }
 
 static void ddcall
-mme_close(snd_device *dev)
+mme_close(device *dev)
 {
     LOG("entry");
 
@@ -54,7 +54,7 @@ mme_close(snd_device *dev)
 }
 
 static bool ddcall
-mme_write(snd_device *dev, const midi_event *event)
+mme_write(device *dev, const midi_event *event)
 {
     if (MIDI_MSG_SYSEX <= event->status)
     {
@@ -107,6 +107,6 @@ static snd_device_ops _ops = {mme_open, mme_close, mme_write};
 int
 __mme_init(void)
 {
-    snd_device dev = {"mme", "Windows MME", &_ops, NULL};
+    device dev = {"mme", "Windows MME", &_ops, NULL};
     return snd_register_device(&dev);
 }

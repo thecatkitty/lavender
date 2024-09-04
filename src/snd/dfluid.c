@@ -13,14 +13,14 @@ static fluid_settings_t     *_settings;
 static fluid_synth_t        *_synth;
 static fluid_audio_driver_t *_audio;
 
-static snd_device      _beep;
+static device          _beep;
 extern snd_device_ops *__beep_ops;
 
 extern void
 beepemu_stop(void);
 
 static bool ddcall
-fluid_open(snd_device *dev)
+fluid_open(device *dev)
 {
     LOG("entry");
 
@@ -83,7 +83,7 @@ fluid_open(snd_device *dev)
 }
 
 static void ddcall
-fluid_close(snd_device *dev)
+fluid_close(device *dev)
 {
     LOG("entry");
 
@@ -112,7 +112,7 @@ fluid_close(snd_device *dev)
 }
 
 static bool ddcall
-fluid_write(snd_device *dev, const midi_event *event)
+fluid_write(device *dev, const midi_event *event)
 {
     uint8_t     status = event->status;
     const char *msg = event->msg;
@@ -352,7 +352,7 @@ fluid_write(snd_device *dev, const midi_event *event)
 }
 
 static bool ddcall
-fluid_tick(snd_device *dev, uint32_t ts)
+fluid_tick(device *dev, uint32_t ts)
 {
     return snd_device_tick(&_beep, ts);
 }
@@ -362,6 +362,6 @@ static snd_device_ops _ops = {fluid_open, fluid_close, fluid_write, fluid_tick};
 int
 __fluid_init(void)
 {
-    snd_device dev = {"fluid", "FluidSynth", &_ops, NULL};
+    device dev = {"fluid", "FluidSynth", &_ops, NULL};
     return snd_register_device(&dev);
 }

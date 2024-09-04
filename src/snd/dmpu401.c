@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <conio.h>
 
+#include <drv.h>
 #include <pal.h>
 #include <snd.h>
 
@@ -127,10 +128,10 @@ _init_uart(unsigned ms)
 }
 
 static bool ddcall
-mpu401_write(snd_device *dev, const midi_event *event);
+mpu401_write(device *dev, const midi_event *event);
 
 static bool ddcall
-mpu401_open(snd_device *dev)
+mpu401_open(device *dev)
 {
     if (!_reset(MPU401_TIMEOUT_CONTROL_MS))
     {
@@ -160,7 +161,7 @@ mpu401_open(snd_device *dev)
 }
 
 static void ddcall
-mpu401_close(snd_device *dev)
+mpu401_close(device *dev)
 {
     if (!get_data(dev)->is_good)
     {
@@ -189,7 +190,7 @@ mpu401_close(snd_device *dev)
 }
 
 static bool ddcall
-mpu401_write(snd_device *dev, const midi_event *event)
+mpu401_write(device *dev, const midi_event *event)
 {
     if (!get_data(dev)->is_good)
     {
@@ -226,7 +227,7 @@ mpu401_write(snd_device *dev, const midi_event *event)
     return true;
 }
 
-static snd_device DRV_DATA     _dev = {"mpu", "Roland MPU-401 UART"};
+static device DRV_DATA         _dev = {"mpu", "Roland MPU-401 UART"};
 static snd_device_ops DRV_DATA _ops = {mpu401_open, mpu401_close, mpu401_write};
 
 DRV_INIT(mpu401)(void)

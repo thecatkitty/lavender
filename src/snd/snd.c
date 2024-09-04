@@ -10,26 +10,19 @@
 #include <pal.h>
 #include <snd.h>
 
-#ifdef __ia16__
-#include <libi86/string.h>
-#define fmemcpy _fmemcpy
-#else
-#define fmemcpy memcpy
-#endif
-
 #define MAX_DEVICES 4
 
 #if defined(CONFIG_SOUND)
 extern snd_format_protocol __snd_fmidi;
 extern snd_format_protocol __snd_fspk;
 
-static snd_device           _devices[MAX_DEVICES] = {{{0}}};
+static device               _devices[MAX_DEVICES] = {{{0}}};
 static snd_format_protocol *_formats[] = {
     &__snd_fmidi, // Standard MIDI File, type 0
     &__snd_fspk   // length-divisor pairs for PC Speaker
 };
 
-static snd_device         *_device = NULL;
+static device             *_device = NULL;
 static snd_format_protocol _format;
 static hasset              _music = NULL;
 static uint32_t            _ts = 0;
@@ -80,14 +73,14 @@ snd_enum_devices(snd_enum_devices_callback callback, void *data)
 }
 
 int ddcall
-snd_register_device(far snd_device *dev)
+snd_register_device(far device *dev)
 {
 #if defined(CONFIG_SOUND)
     for (int i = 0; i < MAX_DEVICES; i++)
     {
         if (NULL == _devices[i].ops)
         {
-            fmemcpy(_devices + i, dev, sizeof(*dev));
+            _fmemcpy(_devices + i, dev, sizeof(*dev));
             return 0;
         }
     }
@@ -128,18 +121,18 @@ ANDREA_EXPORT(snd_unregister_devices);
 
 #if defined(CONFIG_SOUND)
 static bool
-_try_open(snd_device *device, void *data)
+_try_open(device *dev, void *data)
 {
     const char *arg = (const char *)data;
 
-    if (arg && (0 != strcasecmp(arg, device->name)))
+    if (arg && (0 != strcasecmp(arg, dev->name)))
     {
         return true;
     }
 
-    if (snd_device_open(device))
+    if (snd_device_open(dev))
     {
-        _device = device;
+        _device = dev;
         return false;
     }
 
@@ -245,7 +238,7 @@ snd_handle(void)
         _music = NULL;
     }
 
-    if (NULL != _device->ops->tick)
+    if (NULL != ((far snd_device_ops *)_device->ops)->tick)
     {
         uint32_t ts = pal_get_counter();
         if (_ts != ts)
