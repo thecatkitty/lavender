@@ -86,12 +86,6 @@ gfx_fill_rectangle(gfx_rect *rect, gfx_color color);
 extern bool
 gfx_draw_text(const char *str, uint16_t x, uint16_t y);
 
-extern char
-gfx_wctoa(uint16_t wc);
-
-extern char
-gfx_wctob(uint16_t wc);
-
 extern gfx_color
 gfx_get_color(const char *str);
 

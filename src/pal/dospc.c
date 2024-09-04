@@ -27,6 +27,7 @@
 #include "../resource.h"
 #include "dospc.h"
 #include "pal_impl.h"
+#include "../gfx/glyph.h"
 
 #define TEXT_COLUMNS 80
 #define TEXT_LINES   25
@@ -41,6 +42,8 @@ typedef int ddcall (*pf_drvdeinit)(void);
 extern char __edata[], __sbss[], __ebss[];
 extern char _binary_obj_version_txt_start[];
 extern char __w32_rsrc_start[];
+
+extern const gfx_glyph __vid_font_8x8[];
 
 extern uint16_t   __dospc_ds;
 volatile uint32_t __dospc_counter;
@@ -733,7 +736,7 @@ void
 pal_alert(const char *text, int error)
 {
     char *texta = (char *)alloca(strlen(text + 1));
-    utf8_encode(text, texta, gfx_wctoa);
+    utf8_encode(text, texta, pal_wctoa);
 
     puts("\n=====");
     puts(texta);
@@ -745,6 +748,61 @@ pal_alert(const char *text, int error)
     }
 
     bios_get_keystroke();
+}
+
+char
+pal_wctoa(uint16_t wc)
+{
+    if (0x80 > wc)
+    {
+        return wc;
+    }
+
+    const gfx_glyph *fdata = __vid_font_8x8;
+    while (wc > fdata->codepoint)
+    {
+        fdata++;
+    }
+
+    if (wc != fdata->codepoint)
+    {
+        return '?';
+    }
+
+    return fdata->base;
+}
+
+char
+pal_wctob(uint16_t wc)
+{
+    if (0x80 > wc)
+    {
+        return wc;
+    }
+
+    uint8_t          local = 0x80;
+    const gfx_glyph *fdata = __vid_font_8x8;
+
+    while (wc > fdata->codepoint)
+    {
+        if (NULL != fdata->overlay)
+        {
+            local++;
+        }
+        fdata++;
+    }
+
+    if (wc != fdata->codepoint)
+    {
+        return '?';
+    }
+
+    if (NULL == fdata->overlay)
+    {
+        return fdata->base;
+    }
+
+    return local;
 }
 
 bool
