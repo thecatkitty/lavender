@@ -96,6 +96,11 @@ typedef struct
 #define gfx_device_draw_text(dev, str, x, y)                                   \
     (((far gfx_device_ops *)((dev)->ops))->draw_text((dev), (str), (x), (y)))
 
+#if defined(__ia16__)
+extern int ddcall
+gfx_register_device(far device *dev);
+#endif
+
 extern bool
 gfx_initialize(void);
 

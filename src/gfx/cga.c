@@ -3,6 +3,7 @@
 #include <libi86/string.h>
 
 #include <api/bios.h>
+#include <drv.h>
 #include <gfx.h>
 #include <platform/dospc.h>
 
@@ -104,8 +105,8 @@ _execute_glyph_trasformation(const uint8_t *gxf, char *glyph)
     }
 }
 
-bool
-gfx_initialize(void)
+bool ddcall
+cga_open(device *dev)
 {
     // Set video mode
     _prev_mode = _getvideomode();
@@ -174,22 +175,32 @@ gfx_initialize(void)
     return true;
 }
 
-void
-gfx_get_screen_dimensions(gfx_dimensions *dim)
+bool ddcall
+cga_get_property(device *dev, gfx_property property, void *out)
 {
-    dim->width = CGA_HIMONO_WIDTH;
-    dim->height = CGA_HIMONO_HEIGHT;
+    switch (property)
+    {
+    case GFX_PROPERTY_SCREEN_SIZE: {
+        gfx_dimensions *dim = (gfx_dimensions *)out;
+        dim->width = CGA_HIMONO_WIDTH;
+        dim->height = CGA_HIMONO_HEIGHT;
+        return true;
+    }
+
+    case GFX_PROPERTY_GLYPH_SIZE: {
+        gfx_dimensions *dim = (gfx_dimensions *)out;
+        dim->width = CGA_CHARACTER_HEIGHT;
+        dim->height = CGA_CHARACTER_HEIGHT;
+        return true;
+    }
+
+    default:
+        return false;
+    }
 }
 
-void
-gfx_get_glyph_dimensions(gfx_dimensions *dim)
-{
-    dim->width = CGA_CHARACTER_HEIGHT;
-    dim->height = CGA_CHARACTER_HEIGHT;
-}
-
-bool
-gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
+bool ddcall
+cga_draw_bitmap(device *dev, gfx_bitmap *bm, int x, int y)
 {
     if ((1 != bm->planes) || (1 != bm->bpp))
     {
@@ -275,8 +286,8 @@ _draw_line(
     }
 }
 
-bool
-gfx_draw_line(gfx_rect *rect, gfx_color color)
+bool ddcall
+cga_draw_line(device *dev, gfx_rect *rect, gfx_color color)
 {
     uint16_t left = rect->left;
     uint16_t y = rect->top;
@@ -315,8 +326,8 @@ gfx_draw_line(gfx_rect *rect, gfx_color color)
     return false;
 }
 
-bool
-gfx_draw_rectangle(gfx_rect *rect, gfx_color color)
+bool ddcall
+cga_draw_rectangle(device *dev, gfx_rect *rect, gfx_color color)
 {
     uint16_t x = rect->left;
     uint16_t y = rect->top;
@@ -367,8 +378,8 @@ gfx_draw_rectangle(gfx_rect *rect, gfx_color color)
     return true;
 }
 
-bool
-gfx_fill_rectangle(gfx_rect *rect, gfx_color color)
+bool ddcall
+cga_fill_rectangle(device *dev, gfx_rect *rect, gfx_color color)
 {
     uint16_t x = rect->left;
     uint16_t y = rect->top;
@@ -398,8 +409,8 @@ gfx_fill_rectangle(gfx_rect *rect, gfx_color color)
     return true;
 }
 
-bool
-gfx_draw_text(const char *str, uint16_t x, uint16_t y)
+bool ddcall
+cga_draw_text(device *dev, const char *str, uint16_t x, uint16_t y)
 {
     while (*str)
     {
@@ -411,9 +422,27 @@ gfx_draw_text(const char *str, uint16_t x, uint16_t y)
     return true;
 }
 
-void
-gfx_cleanup(void)
+void ddcall
+cga_close(device *dev)
 {
     _dos_setvect(INT_CGA_EXTENDED_FONT_PTR, (dospc_isr)_prev_fontptr);
     _setvideomode(_prev_mode);
+}
+
+static device DRV_DATA         _dev = {"cga", "Color Graphics Adapter"};
+static gfx_device_ops DRV_DATA _ops = {
+    .open = cga_open,
+    .close = cga_close,
+    .get_property = cga_get_property,
+    .draw_line = cga_draw_line,
+    .draw_rectangle = cga_draw_rectangle,
+    .fill_rectangle = cga_fill_rectangle,
+    .draw_bitmap = cga_draw_bitmap,
+    .draw_text = cga_draw_text,
+};
+
+DRV_INIT(cga)(void)
+{
+    _dev.ops = &_ops;
+    return gfx_register_device(&_dev);
 }
