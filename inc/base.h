@@ -8,6 +8,18 @@
 #include <stdint.h>
 #include <sys/types.h>
 
+#if defined(__ia16__)
+#include <libi86/malloc.h>
+#include <libi86/string.h>
+#else
+#include <stdlib.h>
+#include <string.h>
+#define _ffree   free
+#define _fmalloc malloc
+#define _fmemcpy memcpy
+#define _fmemset memset
+#endif
+
 #ifndef far
 #if !defined(EDITING) && defined(__ia16__)
 #define far __far

@@ -24,10 +24,10 @@
 #include <andrea.h>
 #endif
 
+#include "../gfx/glyph.h"
 #include "../resource.h"
 #include "dospc.h"
 #include "pal_impl.h"
-#include "../gfx/glyph.h"
 
 #define TEXT_COLUMNS 80
 #define TEXT_LINES   25
@@ -203,15 +203,15 @@ _pal_enum_callback(const char *name, void *data)
 #endif
 
 static bool
-_snd_enum_callback(snd_device *device, void *data)
+_snd_enum_callback(device *dev, void *data)
 {
     fputs("  ", stdout);
-    fputs(device->name, stdout);
-    for (int i = strlen(device->name); i < 8; i++)
+    fputs(dev->name, stdout);
+    for (int i = strlen(dev->name); i < 8; i++)
     {
         fputc(' ', stdout);
     }
-    fputs(device->description, stdout);
+    fputs(dev->description, stdout);
     fputc('\n', stdout);
     fflush(stdout);
     return true;

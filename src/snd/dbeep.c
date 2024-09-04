@@ -1,3 +1,4 @@
+#include <drv.h>
 #include <pal.h>
 #include <platform/dospc.h>
 #include <snd.h>
@@ -55,7 +56,7 @@ _find_slot(far beep_data *data, uint8_t key)
 }
 
 static bool ddcall
-beep_open(snd_device *dev)
+beep_open(device *dev)
 {
     if (NULL == (dev->data = _fmalloc(sizeof(beep_data))))
     {
@@ -75,7 +76,7 @@ beep_open(snd_device *dev)
 }
 
 static void ddcall
-beep_close(snd_device *dev)
+beep_close(device *dev)
 {
     if (NULL != dev->data)
     {
@@ -85,7 +86,7 @@ beep_close(snd_device *dev)
 }
 
 static bool ddcall
-beep_write(snd_device *dev, const midi_event *event)
+beep_write(device *dev, const midi_event *event)
 {
     far beep_data *data = get_data(dev);
 
@@ -165,7 +166,7 @@ beep_write(snd_device *dev, const midi_event *event)
 }
 
 static bool ddcall
-beep_tick(snd_device *dev, uint32_t ts)
+beep_tick(device *dev, uint32_t ts)
 {
     far beep_data *data = get_data(dev);
 
@@ -200,7 +201,7 @@ beep_tick(snd_device *dev, uint32_t ts)
     return true;
 }
 
-static snd_device DRV_DATA     _dev = {"beep", "PC Speaker"};
+static device DRV_DATA         _dev = {"beep", "PC Speaker"};
 static snd_device_ops DRV_DATA _ops = {beep_open, beep_close, beep_write,
                                        beep_tick};
 

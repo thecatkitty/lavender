@@ -3,17 +3,6 @@
 
 #include <base.h>
 
-#if defined(__ia16__)
-#include <libi86/malloc.h>
-#include <libi86/string.h>
-#else
-#include <stdlib.h>
-#include <string.h>
-#define _ffree   free
-#define _fmalloc malloc
-#define _fmemset memset
-#endif
-
 #define interrupt __attribute__((interrupt))
 
 #ifndef __linux__
