@@ -35,9 +35,7 @@
             body;                                                              \
     }
 
-extern char            __vid_xfont[];
-extern const gfx_glyph __vid_font_8x8[];
-
+extern char            __gfx_xfont[];
 static far char *const _plane0 = MK_FP(CGA_HIMONO_MEM, 0);
 static far char *const _plane1 = MK_FP(CGA_HIMONO_MEM, CGA_HIMONO_PLANE);
 
@@ -68,10 +66,12 @@ static uint16_t  _prev_mode;
 static dospc_isr _prev_fontptr;
 
 static void
-_execute_glyph_trasformation(const uint8_t *gxf, char *glyph)
+_execute_glyph_trasformation(uint8_t idx, char *glyph)
 {
     char    *sel_start = glyph;
     unsigned sel_length = 1;
+
+    far const char *gxf = (far const char *)(__gfx_transformations + idx);
     while (*gxf)
     {
         unsigned command = (unsigned)*gxf >> 4;
@@ -121,15 +121,15 @@ cga_open(device *dev)
 #pragma GCC diagnostic ignored "-Wpedantic"
     _disable();
     _prev_fontptr = _dos_getvect(INT_CGA_EXTENDED_FONT_PTR);
-    _dos_setvect(INT_CGA_EXTENDED_FONT_PTR, (dospc_isr)__vid_xfont);
+    _dos_setvect(INT_CGA_EXTENDED_FONT_PTR, (dospc_isr)__gfx_xfont);
     _enable();
 #pragma GCC diagnostic pop
 
     // Load font
     far const char *bfont =
         MK_FP(CGA_BASIC_FONT_SEGMENT, CGA_BASIC_FONT_OFFSET);
-    char            *xfont = __vid_xfont;
-    const gfx_glyph *fdata = __vid_font_8x8;
+    char            *xfont = __gfx_xfont;
+    const gfx_glyph *fdata = __gfx_font_8x8;
     bool             is_dosbox = dospc_is_dosbox();
 
     if (is_dosbox)
@@ -139,7 +139,7 @@ cga_open(device *dev)
 
     while (0xFFFF != fdata->codepoint)
     {
-        if (NULL == fdata->overlay)
+        if (0 == fdata->overlay)
         {
             fdata++;
             continue;
@@ -150,13 +150,15 @@ cga_open(device *dev)
             _fmemcpy(xfont, bfont + 8 * fdata->base, 8);
         }
 
-        if (NULL != fdata->transformation)
+        if (0 != fdata->transformation)
         {
             _execute_glyph_trasformation(fdata->transformation, xfont);
         }
 
-        unsigned ovheight = fdata->overlay[0] & 0xF;
-        unsigned ovtop = (unsigned)fdata->overlay[0] >> 4;
+        far const char *overlay =
+            (far const char *)(__gfx_overlays + fdata->overlay);
+        unsigned ovheight = overlay[0] & 0xF;
+        unsigned ovtop = (unsigned)overlay[0] >> 4;
 
         if (is_dosbox && (8 <= (ovtop + ovheight)))
         {
@@ -165,7 +167,7 @@ cga_open(device *dev)
 
         for (unsigned i = 0; i < ovheight; i++)
         {
-            xfont[ovtop + i] |= fdata->overlay[1 + i];
+            xfont[ovtop + i] |= overlay[1 + i];
         }
 
         fdata++;

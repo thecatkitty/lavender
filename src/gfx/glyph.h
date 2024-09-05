@@ -6,12 +6,15 @@
 #pragma pack(push, 1)
 typedef struct
 {
-    uint16_t       codepoint;
-    char           base;
-    const uint8_t *overlay;
-    const uint8_t *transformation;
+    uint16_t codepoint;
+    char     base;
+    uint8_t  overlay;
+    uint8_t  transformation;
 } gfx_glyph;
 #pragma pack(pop)
+
+#define GFX_MAX_OVERLAY_SIZE        3
+#define GFX_MAX_TRANSFORMATION_SIZE 7
 
 #define GXF_CMD_GROW   0
 #define GXF_CMD_SELECT 1
@@ -23,5 +26,9 @@ typedef struct
 #define GXF_MOVE(n)   ((GXF_CMD_MOVE << 4) | (n & 0xF))
 #define GXF_CLEAR(n)  ((GXF_CMD_CLEAR << 4) | (n & 0xF))
 #define GXF_END       GXF_GROW(0)
+
+extern const gfx_glyph __gfx_font_8x8[];
+extern const uint8_t   __gfx_overlays[][1 + GFX_MAX_OVERLAY_SIZE];
+extern const uint8_t   __gfx_transformations[][GFX_MAX_TRANSFORMATION_SIZE];
 
 #endif // _GLYPH_H_

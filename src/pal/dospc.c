@@ -43,7 +43,7 @@ extern char __edata[], __sbss[], __ebss[];
 extern char _binary_obj_version_txt_start[];
 extern char __w32_rsrc_start[];
 
-extern const gfx_glyph __vid_font_8x8[];
+extern const gfx_glyph __gfx_font_8x8[];
 
 extern uint16_t   __dospc_ds;
 volatile uint32_t __dospc_counter;
@@ -758,7 +758,7 @@ pal_wctoa(uint16_t wc)
         return wc;
     }
 
-    const gfx_glyph *fdata = __vid_font_8x8;
+    const gfx_glyph *fdata = __gfx_font_8x8;
     while (wc > fdata->codepoint)
     {
         fdata++;
@@ -781,11 +781,11 @@ pal_wctob(uint16_t wc)
     }
 
     uint8_t          local = 0x80;
-    const gfx_glyph *fdata = __vid_font_8x8;
+    const gfx_glyph *fdata = __gfx_font_8x8;
 
     while (wc > fdata->codepoint)
     {
-        if (NULL != fdata->overlay)
+        if (0 != fdata->overlay)
         {
             local++;
         }
@@ -797,7 +797,7 @@ pal_wctob(uint16_t wc)
         return '?';
     }
 
-    if (NULL == fdata->overlay)
+    if (0 == fdata->overlay)
     {
         return fdata->base;
     }
