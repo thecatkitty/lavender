@@ -1,107 +1,131 @@
 #include "glyph.h"
 
 #define OVERLAY(name, top, height, ...)                                        \
-    static const uint8_t name[height + 1] = {                                  \
-        (((top) << 4) | ((height) & 0xF)), __VA_ARGS__}
+    [name] = {(((top) << 4) | ((height) & 0xF)), __VA_ARGS__}
 
-#define TRANSFORMATION(name, ...)                                              \
-    static const uint8_t name[] = {__VA_ARGS__, GXF_END}
+#define TRANSFORMATION(name, ...) [name] = {__VA_ARGS__, GXF_END}
 
 // Character overlays
-OVERLAY(_acute, 0, 1, 0x1C);
-OVERLAY(_dot_above, 0, 1, 0x30);
-OVERLAY(_ogonek, 6, 2, 0x0E, 0x07);
-OVERLAY(_stroke, 2, 3, 0x04, 0x78, 0x80);
-OVERLAY(_tilde, 0, 1, 0x7C);
-OVERLAY(_diaeresis, 0, 1, 0xCC);
-OVERLAY(_caron, 0, 2, 0x6C, 0x38);
-OVERLAY(_ring, 0, 2, 0x30, 0x30);
-OVERLAY(_apostrophe, 0, 1, 0x03);
+enum overlay
+{
+    ACUTE = 1,
+    DOT_ABOVE,
+    OGONEK,
+    STROKE,
+    TILDE,
+    DIAERESIS,
+    CARON,
+    RING,
+    APOSTROPHE,
+};
+
+const uint8_t __gfx_overlays[][1 + GFX_MAX_OVERLAY_SIZE] = {
+    OVERLAY(ACUTE, 0, 1, 0x1C),              //
+    OVERLAY(DOT_ABOVE, 0, 1, 0x30),          //
+    OVERLAY(OGONEK, 6, 2, 0x0E, 0x07),       //
+    OVERLAY(STROKE, 2, 3, 0x04, 0x78, 0x80), //
+    OVERLAY(TILDE, 0, 1, 0x7C),              //
+    OVERLAY(DIAERESIS, 0, 1, 0xCC),          //
+    OVERLAY(CARON, 0, 2, 0x6C, 0x38),        //
+    OVERLAY(RING, 0, 2, 0x30, 0x30),         //
+    OVERLAY(APOSTROPHE, 0, 1, 0x03),         //
+};
 
 // Character transformations
-TRANSFORMATION(_move_two_top, //
-               GXF_SELECT(0),
-               GXF_GROW(1),
-               GXF_MOVE(2));
-TRANSFORMATION(_squish_upper_a, //
-               GXF_SELECT(0),
-               GXF_GROW(4),
-               GXF_MOVE(1),
-               GXF_SELECT(1),
-               GXF_GROW(1),
-               GXF_MOVE(1));
-TRANSFORMATION(_squish_upper_e, //
-               GXF_SELECT(0),
-               GXF_GROW(1),
-               GXF_MOVE(1),
-               GXF_SELECT(1),
-               GXF_GROW(2),
-               GXF_MOVE(1));
-TRANSFORMATION(_squish_upper_n, //
-               GXF_SELECT(1),
-               GXF_GROW(3),
-               GXF_MOVE(1),
-               GXF_CLEAR(0));
-TRANSFORMATION(_squish_upper_y, //
-               GXF_SELECT(1),
-               GXF_GROW(2),
-               GXF_MOVE(1),
-               GXF_CLEAR(0));
+enum transformation
+{
+    MOVE_TWO_TOP = 1,
+    SQUISH_UPPER_A,
+    SQUISH_UPPER_E,
+    SQUISH_UPPER_N,
+    SQUISH_UPPER_Y,
+};
+
+const uint8_t __gfx_transformations[][GFX_MAX_TRANSFORMATION_SIZE] = {
+    TRANSFORMATION(MOVE_TWO_TOP, //
+                   GXF_SELECT(0),
+                   GXF_GROW(1),
+                   GXF_MOVE(2)),
+    TRANSFORMATION(SQUISH_UPPER_A, //
+                   GXF_SELECT(0),
+                   GXF_GROW(4),
+                   GXF_MOVE(1),
+                   GXF_SELECT(1),
+                   GXF_GROW(1),
+                   GXF_MOVE(1)),
+    TRANSFORMATION(SQUISH_UPPER_E, //
+                   GXF_SELECT(0),
+                   GXF_GROW(1),
+                   GXF_MOVE(1),
+                   GXF_SELECT(1),
+                   GXF_GROW(2),
+                   GXF_MOVE(1)),
+    TRANSFORMATION(SQUISH_UPPER_N, //
+                   GXF_SELECT(1),
+                   GXF_GROW(3),
+                   GXF_MOVE(1),
+                   GXF_CLEAR(0)),
+    TRANSFORMATION(SQUISH_UPPER_Y, //
+                   GXF_SELECT(1),
+                   GXF_GROW(2),
+                   GXF_MOVE(1),
+                   GXF_CLEAR(0)),
+};
 
 // Character descriptors
-const gfx_glyph __vid_font_8x8[] = {
+const gfx_glyph __gfx_font_8x8[] = {
     {0x00A7, 0x15}, // SECTION SIGN
     {0x00B6, 0x14}, // PILCROW SIGN
-    {0x00C1, 'A', _acute, _squish_upper_a},
-    {0x00C9, 'E', _acute, _squish_upper_e},
-    {0x00CD, 'I', _acute, _move_two_top},
-    {0x00D1, 'N', _tilde, _squish_upper_n},
-    {0x00D3, 'O', _acute, _move_two_top},
-    {0x00DA, 'U', _acute, _move_two_top},
-    {0x00DC, 'U', _diaeresis, _move_two_top},
-    {0x00DD, 'Y', _acute, _squish_upper_y},
-    {0x00E1, 'a', _acute},
-    {0x00E9, 'e', _acute},
-    {0x00ED, 'i', _acute},
-    {0x00F1, 'n', _tilde},
-    {0x00F3, 'o', _acute},
-    {0x00FA, 'u', _acute},
-    {0x00FC, 'u', _diaeresis},
-    {0x00FD, 'y', _acute},
-    {0x0104, 'A', _ogonek},
-    {0x0105, 'a', _ogonek},
-    {0x0106, 'C', _acute, _move_two_top},
-    {0x0107, 'c', _acute},
-    {0x010C, 'C', _caron, _move_two_top},
-    {0x010D, 'c', _caron},
-    {0x010E, 'D', _caron, _move_two_top},
-    {0x010F, 'd', _apostrophe},
-    {0x0118, 'E', _ogonek},
-    {0x0119, 'e', _ogonek},
-    {0x011A, 'E', _caron, _squish_upper_e},
-    {0x011B, 'e', _caron},
-    {0x0141, 'L', _stroke},
-    {0x0142, 'l', _stroke},
-    {0x0143, 'N', _acute, _squish_upper_n},
-    {0x0144, 'n', _acute},
-    {0x0147, 'N', _caron, _squish_upper_n},
-    {0x0148, 'n', _caron},
-    {0x0158, 'R', _caron, _move_two_top},
-    {0x0159, 'r', _caron},
-    {0x015A, 's', _acute},
-    {0x015B, 's', _acute},
-    {0x0160, 's', _caron},
-    {0x0161, 's', _caron},
-    {0x0164, 'T', _caron, _move_two_top},
-    {0x0165, 't', _apostrophe},
-    {0x016E, 'U', _ring, _move_two_top},
-    {0x016F, 'u', _ring},
-    {0x0179, 'z', _acute},
-    {0x017A, 'z', _acute},
-    {0x017B, 'z', _dot_above},
-    {0x017C, 'z', _dot_above},
-    {0x017D, 'z', _caron},
-    {0x017E, 'z', _caron},
+    {0x00C1, 'A', ACUTE, SQUISH_UPPER_A},
+    {0x00C9, 'E', ACUTE, SQUISH_UPPER_E},
+    {0x00CD, 'I', ACUTE, MOVE_TWO_TOP},
+    {0x00D1, 'N', TILDE, SQUISH_UPPER_N},
+    {0x00D3, 'O', ACUTE, MOVE_TWO_TOP},
+    {0x00DA, 'U', ACUTE, MOVE_TWO_TOP},
+    {0x00DC, 'U', DIAERESIS, MOVE_TWO_TOP},
+    {0x00DD, 'Y', ACUTE, SQUISH_UPPER_Y},
+    {0x00E1, 'a', ACUTE},
+    {0x00E9, 'e', ACUTE},
+    {0x00ED, 'i', ACUTE},
+    {0x00F1, 'n', TILDE},
+    {0x00F3, 'o', ACUTE},
+    {0x00FA, 'u', ACUTE},
+    {0x00FC, 'u', DIAERESIS},
+    {0x00FD, 'y', ACUTE},
+    {0x0104, 'A', OGONEK},
+    {0x0105, 'a', OGONEK},
+    {0x0106, 'C', ACUTE, MOVE_TWO_TOP},
+    {0x0107, 'c', ACUTE},
+    {0x010C, 'C', CARON, MOVE_TWO_TOP},
+    {0x010D, 'c', CARON},
+    {0x010E, 'D', CARON, MOVE_TWO_TOP},
+    {0x010F, 'd', APOSTROPHE},
+    {0x0118, 'E', OGONEK},
+    {0x0119, 'e', OGONEK},
+    {0x011A, 'E', CARON, SQUISH_UPPER_E},
+    {0x011B, 'e', CARON},
+    {0x0141, 'L', STROKE},
+    {0x0142, 'l', STROKE},
+    {0x0143, 'N', ACUTE, SQUISH_UPPER_N},
+    {0x0144, 'n', ACUTE},
+    {0x0147, 'N', CARON, SQUISH_UPPER_N},
+    {0x0148, 'n', CARON},
+    {0x0158, 'R', CARON, MOVE_TWO_TOP},
+    {0x0159, 'r', CARON},
+    {0x015A, 's', ACUTE},
+    {0x015B, 's', ACUTE},
+    {0x0160, 's', CARON},
+    {0x0161, 's', CARON},
+    {0x0164, 'T', CARON, MOVE_TWO_TOP},
+    {0x0165, 't', APOSTROPHE},
+    {0x016E, 'U', RING, MOVE_TWO_TOP},
+    {0x016F, 'u', RING},
+    {0x0179, 'z', ACUTE},
+    {0x017A, 'z', ACUTE},
+    {0x017B, 'z', DOT_ABOVE},
+    {0x017C, 'z', DOT_ABOVE},
+    {0x017D, 'z', CARON},
+    {0x017E, 'z', CARON},
     {0x2022, 0x07}, // BULLET
     {0x203C, 0x13}, // DOUBLE EXCLAMATION MARK
     {0x2190, 0x1B}, // LEFTWARDS ARROW
@@ -134,4 +158,4 @@ const gfx_glyph __vid_font_8x8[] = {
     {0x266B, 0x0E}, // BEAMED EIGHTH NOTES
     {0xFFFF}};
 
-char __vid_xfont[8 * sizeof(__vid_font_8x8) / sizeof(gfx_glyph)];
+char __gfx_xfont[8 * sizeof(__gfx_font_8x8) / sizeof(gfx_glyph)];
