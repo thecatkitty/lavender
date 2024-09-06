@@ -805,7 +805,7 @@ pal_wctob(uint16_t wc)
     return local;
 }
 
-bool
+bool ddcall
 dospc_is_dosbox(void)
 {
     return 0 == _fmemcmp((const char far *)0xF000E061, "DOSBox", 6);
@@ -871,6 +871,7 @@ dospc_silence(void)
 }
 
 #ifdef CONFIG_ANDREA
+ANDREA_EXPORT(dospc_is_dosbox);
 ANDREA_EXPORT(dospc_beep);
 ANDREA_EXPORT(dospc_silence);
 #endif
