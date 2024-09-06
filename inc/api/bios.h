@@ -67,6 +67,24 @@ bios_write_character(uint8_t  page,
                    "b"((uint16_t)(page << 8) | attribute), "c"(count));
 }
 
+static inline uint8_t
+bios_get_video_mode(void)
+{
+    uint8_t mode;
+    asm volatile("int $0x10"
+                 : "=a"(mode)
+                 : "Rah"((uint8_t)0xF)
+                 : "cc", "bx", "cx", "dx");
+    return mode;
+}
+
+static inline void
+bios_set_video_mode(uint8_t mode)
+{
+    uint16_t ax;
+    asm volatile("int $0x10" : "=a"(ax) : "0"(mode) : "cc", "bx", "cx", "dx");
+}
+
 static inline short
 bios_get_vbedc_capabilities()
 {
