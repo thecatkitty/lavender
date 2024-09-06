@@ -3,6 +3,7 @@
 #include <libi86/string.h>
 
 #include <api/bios.h>
+#include <api/dos.h>
 #include <drv.h>
 #include <gfx.h>
 #include <platform/dospc.h>
@@ -35,11 +36,9 @@
             body;                                                              \
     }
 
-extern char            __gfx_xfont[];
-static far char *const _plane0 = MK_FP(CGA_HIMONO_MEM, 0);
-static far char *const _plane1 = MK_FP(CGA_HIMONO_MEM, CGA_HIMONO_PLANE);
-
-#define CGA_PLANE(y) (((y) % 2) ? _plane1 : _plane0)
+#define CGA_PLANE0   ((far char *)MK_FP(CGA_HIMONO_MEM, 0))
+#define CGA_PLANE1   ((far char *)MK_FP(CGA_HIMONO_MEM, CGA_HIMONO_PLANE))
+#define CGA_PLANE(y) (((y) % 2) ? CGA_PLANE1 : CGA_PLANE0)
 
 // Grayscale pattern brushes
 enum
@@ -54,7 +53,7 @@ enum
 
 #define BRUSH_HEIGHT 2
 
-static const unsigned char BRUSHES[BRUSH_MAX][BRUSH_HEIGHT] = {
+static const uint8_t DRV_RDAT BRUSHES[BRUSH_MAX][BRUSH_HEIGHT] = {
     [BRUSH_BLACK] = {0x00, 0x00},  // ........ ........
     [BRUSH_GRAY25] = {0x88, 0x22}, // #...#... ..#...#.
     [BRUSH_GRAY50] = {0xAA, 0x55}, // #.#.#.#. .#.#.#.#
@@ -62,16 +61,33 @@ static const unsigned char BRUSHES[BRUSH_MAX][BRUSH_HEIGHT] = {
     [BRUSH_WHITE] = {0xFF, 0xFF}   // ######## ########
 };
 
-static uint16_t  _prev_mode;
-static dospc_isr _prev_fontptr;
+static const unsigned DRV_RDAT MAPPINGS[] = {
+    [GFX_COLOR_BLACK] = BRUSH_BLACK,   [GFX_COLOR_NAVY] = BRUSH_BLACK,
+    [GFX_COLOR_GREEN] = BRUSH_BLACK,   [GFX_COLOR_TEAL] = BRUSH_GRAY25,
+    [GFX_COLOR_MAROON] = BRUSH_BLACK,  [GFX_COLOR_PURPLE] = BRUSH_GRAY25,
+    [GFX_COLOR_OLIVE] = BRUSH_GRAY25,  [GFX_COLOR_SILVER] = BRUSH_GRAY75,
+    [GFX_COLOR_GRAY] = BRUSH_GRAY50,   [GFX_COLOR_BLUE] = BRUSH_GRAY25,
+    [GFX_COLOR_LIME] = BRUSH_GRAY25,   [GFX_COLOR_CYAN] = BRUSH_GRAY50,
+    [GFX_COLOR_RED] = BRUSH_GRAY25,    [GFX_COLOR_FUCHSIA] = BRUSH_GRAY50,
+    [GFX_COLOR_YELLOW] = BRUSH_GRAY50, [GFX_COLOR_WHITE] = BRUSH_WHITE,
+};
+
+typedef struct
+{
+    far void *font;
+    uint16_t  old_mode;
+    dospc_isr old_font;
+} cga_data;
+
+#define get_data(dev) ((far cga_data *)((dev)->data))
 
 static void
-_execute_glyph_trasformation(uint8_t idx, char *glyph)
+_execute_glyph_trasformation(uint8_t idx, far char *glyph)
 {
-    char    *sel_start = glyph;
-    unsigned sel_length = 1;
+    far char *sel_start = glyph;
+    unsigned  sel_length = 1;
 
-    far const char *gxf = (far const char *)(__gfx_transformations + idx);
+    far const char *gxf = (far const char *)(__gfx_xforms + idx);
     while (*gxf)
     {
         unsigned command = (unsigned)*gxf >> 4;
@@ -89,8 +105,8 @@ _execute_glyph_trasformation(uint8_t idx, char *glyph)
             break;
 
         case GXF_CMD_MOVE:
-            memmove(sel_start + param, sel_start, sel_length);
-            memset(sel_start, 0, param);
+            _fmemmove(sel_start + param, sel_start, sel_length);
+            _fmemset(sel_start, 0, param);
             break;
 
         case GXF_CMD_CLEAR:
@@ -108,29 +124,37 @@ _execute_glyph_trasformation(uint8_t idx, char *glyph)
 bool ddcall
 cga_open(device *dev)
 {
-    // Set video mode
-    _prev_mode = _getvideomode();
-    if (!_setvideomode(_HRESBW))
+    if (NULL == (dev->data = _fmalloc(sizeof(cga_data))))
     {
-        errno = ENODEV;
         return false;
     }
+
+    far cga_data *data = get_data(dev);
+    if (NULL == (data->font = _fmalloc(128 * CGA_CHARACTER_HEIGHT)))
+    {
+        _ffree(dev->data);
+        return false;
+    }
+
+    // Set video mode
+    data->old_mode = bios_get_video_mode();
+    bios_set_video_mode(_HRESBW);
 
     // Save and replace extended font pointer
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
     _disable();
-    _prev_fontptr = _dos_getvect(INT_CGA_EXTENDED_FONT_PTR);
-    _dos_setvect(INT_CGA_EXTENDED_FONT_PTR, (dospc_isr)__gfx_xfont);
+    data->old_font = _dos_getvect(INT_CGA_EXTENDED_FONT_PTR);
+    _dos_setvect(INT_CGA_EXTENDED_FONT_PTR, (dospc_isr)data->font);
     _enable();
 #pragma GCC diagnostic pop
 
     // Load font
     far const char *bfont =
         MK_FP(CGA_BASIC_FONT_SEGMENT, CGA_BASIC_FONT_OFFSET);
-    char            *xfont = __gfx_xfont;
-    const gfx_glyph *fdata = __gfx_font_8x8;
-    bool             is_dosbox = dospc_is_dosbox();
+    far char            *xfont = (far char *)data->font;
+    far const gfx_glyph *fdata = __gfx_font_8x8;
+    bool                 is_dosbox = dospc_is_dosbox();
 
     if (is_dosbox)
     {
@@ -213,8 +237,8 @@ cga_draw_bitmap(device *dev, gfx_bitmap *bm, int x, int y)
     x >>= 3;
 
     far char *bits = bm->bits;
-    far char *plane0 = _plane0;
-    far char *plane1 = _plane1;
+    far char *plane0 = CGA_PLANE0;
+    far char *plane1 = CGA_PLANE1;
 
     uint16_t offset = (y / 2) * CGA_HIMONO_LINE + x;
     plane0 += offset;
@@ -232,37 +256,6 @@ cga_draw_bitmap(device *dev, gfx_bitmap *bm, int x, int y)
     }
 
     return true;
-}
-
-static const uint8_t *
-_get_brush(gfx_color color)
-{
-    switch (color)
-    {
-    case GFX_COLOR_BLACK:
-    case GFX_COLOR_NAVY:
-    case GFX_COLOR_GREEN:
-    case GFX_COLOR_MAROON:
-        return BRUSHES[BRUSH_BLACK];
-    case GFX_COLOR_TEAL:
-    case GFX_COLOR_PURPLE:
-    case GFX_COLOR_OLIVE:
-    case GFX_COLOR_BLUE:
-    case GFX_COLOR_LIME:
-    case GFX_COLOR_RED:
-        return BRUSHES[BRUSH_GRAY25];
-    case GFX_COLOR_GRAY:
-    case GFX_COLOR_CYAN:
-    case GFX_COLOR_FUCHSIA:
-    case GFX_COLOR_YELLOW:
-        return BRUSHES[BRUSH_GRAY50];
-    case GFX_COLOR_SILVER:
-        return BRUSHES[BRUSH_GRAY75];
-    case GFX_COLOR_WHITE:
-        return BRUSHES[BRUSH_WHITE];
-    default:
-        return BRUSHES[BRUSH_GRAY50];
-    }
 }
 
 static void
@@ -296,8 +289,8 @@ cga_draw_line(device *dev, gfx_rect *rect, gfx_color color)
     uint16_t right = rect->left + rect->width;
     uint16_t bottom = y + rect->height;
 
-    const uint8_t *brush = _get_brush(color);
-    char           pattern = brush[y % BRUSH_HEIGHT];
+    far const uint8_t *brush = BRUSHES[MAPPINGS[color]];
+    char               pattern = brush[y % BRUSH_HEIGHT];
 
     if (1 == rect->height)
     {
@@ -345,8 +338,8 @@ cga_draw_rectangle(device *dev, gfx_rect *rect, gfx_color color)
     uint8_t   lborder = 1 << (7 - (left % 8));
     uint8_t   rborder = 1 << (7 - (right % 8));
 
-    const uint8_t *brush = _get_brush(color);
-    char           pattern;
+    far const uint8_t *brush = BRUSHES[MAPPINGS[color]];
+    char               pattern;
 
     // Top line
     plane = CGA_PLANE(top);
@@ -393,8 +386,8 @@ cga_fill_rectangle(device *dev, gfx_rect *rect, gfx_color color)
     uint8_t lmask = (1 << (8 - (x % 8))) - 1;
     uint8_t rmask = ~((1 << (8 - (right % 8))) - 1);
 
-    const uint8_t *brush = _get_brush(color);
-    char           pattern;
+    far const uint8_t *brush = BRUSHES[MAPPINGS[color]];
+    char               pattern;
 
     // Vertical stripes
     _for_lines(y, bottom, {
@@ -427,8 +420,12 @@ cga_draw_text(device *dev, const char *str, uint16_t x, uint16_t y)
 void ddcall
 cga_close(device *dev)
 {
-    _dos_setvect(INT_CGA_EXTENDED_FONT_PTR, (dospc_isr)_prev_fontptr);
-    _setvideomode(_prev_mode);
+    far cga_data *data = get_data(dev);
+
+    _dos_setvect(INT_CGA_EXTENDED_FONT_PTR, (dospc_isr)data->old_font);
+    bios_set_video_mode(data->old_mode);
+    _ffree(data->font);
+    _ffree(dev->data);
 }
 
 static device DRV_DATA         _dev = {"cga", "Color Graphics Adapter"};
@@ -448,3 +445,13 @@ DRV_INIT(cga)(void)
     _dev.ops = &_ops;
     return gfx_register_device(&_dev);
 }
+
+#ifdef LOADABLE
+int ddcall
+drv_deinit(void)
+{
+    return 0;
+}
+
+ANDREA_EXPORT(drv_deinit);
+#endif
