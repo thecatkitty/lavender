@@ -12,7 +12,7 @@ typedef void interrupt far (*dospc_isr)(void);
 #pragma GCC diagnostic pop
 #endif
 
-extern bool
+extern bool ddcall
 dospc_is_dosbox(void);
 
 #ifdef CONFIG_ANDREA
