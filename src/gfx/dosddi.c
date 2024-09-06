@@ -1,4 +1,4 @@
-#include <assert.h>
+#include <andrea.h>
 #include <gfx.h>
 #include <platform/dospc.h>
 
@@ -25,6 +25,10 @@ gfx_register_device(far device *dev)
     errno = ENOMEM;
     return -errno;
 }
+
+#ifdef CONFIG_ANDREA
+ANDREA_EXPORT(gfx_register_device);
+#endif
 
 bool
 gfx_initialize(void)

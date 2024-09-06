@@ -19,7 +19,7 @@ enum overlay
     APOSTROPHE,
 };
 
-const uint8_t __gfx_overlays[][1 + GFX_MAX_OVERLAY_SIZE] = {
+const uint8_t DRV_RDAT __gfx_overlays[][1 + GFX_MAX_OVERLAY_SIZE] = {
     OVERLAY(ACUTE, 0, 1, 0x1C),              //
     OVERLAY(DOT_ABOVE, 0, 1, 0x30),          //
     OVERLAY(OGONEK, 6, 2, 0x0E, 0x07),       //
@@ -41,7 +41,7 @@ enum transformation
     SQUISH_UPPER_Y,
 };
 
-const uint8_t __gfx_transformations[][GFX_MAX_TRANSFORMATION_SIZE] = {
+const uint8_t DRV_RDAT __gfx_xforms[][GFX_MAX_TRANSFORMATION_SIZE] = {
     TRANSFORMATION(MOVE_TWO_TOP, //
                    GXF_SELECT(0),
                    GXF_GROW(1),
@@ -73,7 +73,7 @@ const uint8_t __gfx_transformations[][GFX_MAX_TRANSFORMATION_SIZE] = {
 };
 
 // Character descriptors
-const gfx_glyph __gfx_font_8x8[] = {
+const gfx_glyph DRV_RDAT __gfx_font_8x8[] = {
     {0x00A7, 0x15}, // SECTION SIGN
     {0x00B6, 0x14}, // PILCROW SIGN
     {0x00C1, 'A', ACUTE, SQUISH_UPPER_A},
@@ -157,5 +157,3 @@ const gfx_glyph __gfx_font_8x8[] = {
     {0x266A, 0x0D}, // EIGHTH NOTE
     {0x266B, 0x0E}, // BEAMED EIGHTH NOTES
     {0xFFFF}};
-
-char __gfx_xfont[8 * sizeof(__gfx_font_8x8) / sizeof(gfx_glyph)];

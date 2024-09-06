@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#include <drv.h>
+
 #pragma pack(push, 1)
 typedef struct
 {
@@ -27,8 +29,8 @@ typedef struct
 #define GXF_CLEAR(n)  ((GXF_CMD_CLEAR << 4) | (n & 0xF))
 #define GXF_END       GXF_GROW(0)
 
-extern const gfx_glyph __gfx_font_8x8[];
-extern const uint8_t   __gfx_overlays[][1 + GFX_MAX_OVERLAY_SIZE];
-extern const uint8_t   __gfx_transformations[][GFX_MAX_TRANSFORMATION_SIZE];
+extern const gfx_glyph DRV_RDAT __gfx_font_8x8[];
+extern const uint8_t DRV_RDAT   __gfx_overlays[][1 + GFX_MAX_OVERLAY_SIZE];
+extern const uint8_t DRV_RDAT   __gfx_xforms[][GFX_MAX_TRANSFORMATION_SIZE];
 
 #endif // _GLYPH_H_
