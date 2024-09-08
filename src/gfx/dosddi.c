@@ -1,5 +1,8 @@
+#ifdef CONFIG_ANDREA
 #include <andrea.h>
+#endif
 #include <gfx.h>
+#include <pal.h>
 #include <platform/dospc.h>
 
 #define MAX_DEVICES 1
@@ -8,7 +11,10 @@ extern int ddcall
 __cga_init(void);
 
 static device  _devices[MAX_DEVICES] = {{{0}}};
-static device *_dev;
+static device *_dev = NULL;
+#if defined(CONFIG_ANDREA)
+static uint16_t _driver = 0;
+#endif
 
 int ddcall
 gfx_register_device(far device *dev)
@@ -18,6 +24,7 @@ gfx_register_device(far device *dev)
         if (NULL == _devices[i].ops)
         {
             _fmemcpy(_devices + i, dev, sizeof(*dev));
+            _dev = _devices + i;
             return 0;
         }
     }
@@ -30,10 +37,44 @@ gfx_register_device(far device *dev)
 ANDREA_EXPORT(gfx_register_device);
 #endif
 
+#if defined(CONFIG_ANDREA)
+static bool
+_try_driver(const char *name, void *data)
+{
+    uint16_t driver = dospc_load_driver(name);
+    if (0 == driver)
+    {
+        return true;
+    }
+
+    if (NULL != _dev)
+    {
+        _driver = driver;
+        return false;
+    }
+
+    dospc_unload_driver(driver);
+    return true;
+}
+#endif // CONFIG_ANDREA
+
 bool
 gfx_initialize(void)
 {
-    __cga_init();
+    memset(_devices, 0, sizeof(_devices));
+#if defined(CONFIG_ANDREA)
+    pal_enum_assets(_try_driver, "gfx*.sys", NULL);
+    if (0 == _driver)
+#endif // CONFIG_ANDREA
+    {
+        __cga_init();
+    }
+
+    if (NULL == _dev)
+    {
+        return false;
+    }
+
     _dev = _devices + 0;
     return gfx_device_open(_dev);
 }
