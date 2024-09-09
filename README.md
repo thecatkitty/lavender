@@ -10,7 +10,7 @@ This is still work in progress, but I'm doing my best to separate working versio
 * DOS, Windows, and diagnostic Linux targets
 * [text-based script file format](docs/slides.md)
 * graphics mode
-  * CGA 640x200 monochrome under DOS
+  * CGA 640x200 monochrome under DOS, with loadable driver support
   * 24-bit RGB under Windows and Linux 
 * display delays (animations)
   * millisecond resolution
@@ -23,12 +23,12 @@ This is still work in progress, but I'm doing my best to separate working versio
   * 16 colors on Windows and Linux
   * mapped 5 monochrome patterns on DOS
 * MIDI Type 0 and [own mono format](docs/spk.md) music playback
-  * PC Speaker, Yamaha OPL2, Roland MPU-401 UART under DOS
+  * PC Speaker (with 3 simulated voices), Yamaha OPL2, Roland MPU-401 UART under DOS, with loadable driver support
   * Windows MME API
   * FluidSynth under Linux
 * script nesting
   * plain text, or encrypted using XOR or DES
-* navigation using key presses and mouse clicks
+* navigation and user input using key presses and mouse clicks
 * multiple language support (Czech, English, Polish)
 
 ## Building
