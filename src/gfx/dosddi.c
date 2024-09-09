@@ -92,6 +92,12 @@ gfx_get_glyph_dimensions(gfx_dimensions *dim)
 }
 
 bool
+gfx_get_font_data(gfx_glyph_data *data)
+{
+    return gfx_device_get_property(_dev, GFX_PROPERTY_GLYPH_DATA, data);
+}
+
+bool
 gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
 {
     return gfx_device_draw_bitmap(_dev, bm, x, y);
