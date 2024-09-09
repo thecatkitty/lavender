@@ -220,6 +220,12 @@ cga_get_property(device *dev, gfx_property property, void *out)
         return true;
     }
 
+    case GFX_PROPERTY_GLYPH_DATA: {
+        gfx_glyph_data *data = (gfx_glyph_data *)out;
+        *data = __gfx_font_8x8;
+        return true;
+    }
+
     default:
         return false;
     }

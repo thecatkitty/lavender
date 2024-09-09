@@ -56,6 +56,7 @@ typedef enum
 {
     GFX_PROPERTY_SCREEN_SIZE = 1,
     GFX_PROPERTY_GLYPH_SIZE = 2,
+    GFX_PROPERTY_GLYPH_DATA = 3,
 } gfx_property;
 
 typedef struct
@@ -96,6 +97,18 @@ typedef struct
 #define gfx_device_draw_text(dev, str, x, y)                                   \
     (((far gfx_device_ops *)((dev)->ops))->draw_text((dev), (str), (x), (y)))
 
+#pragma pack(push, 1)
+typedef struct
+{
+    uint16_t codepoint;
+    char     base;
+    uint8_t  overlay;
+    uint8_t  transformation;
+} gfx_glyph;
+#pragma pack(pop)
+
+typedef far const gfx_glyph *gfx_glyph_data;
+
 #if defined(__ia16__)
 extern int ddcall
 gfx_register_device(far device *dev);
@@ -119,6 +132,11 @@ gfx_get_glyph_dimensions(gfx_dimensions *dim);
 // Returns pixel aspect ratio (PAR = 64 / value), default value on error
 extern uint16_t
 gfx_get_pixel_aspect(void);
+
+#if defined(__ia16__)
+extern bool
+gfx_get_font_data(gfx_glyph_data *data);
+#endif
 
 extern bool
 gfx_draw_bitmap(gfx_bitmap *bm, int x, int y);

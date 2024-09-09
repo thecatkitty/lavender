@@ -1,19 +1,8 @@
 #ifndef _GLYPH_H_
 #define _GLYPH_H_
 
-#include <stdint.h>
-
 #include <drv.h>
-
-#pragma pack(push, 1)
-typedef struct
-{
-    uint16_t codepoint;
-    char     base;
-    uint8_t  overlay;
-    uint8_t  transformation;
-} gfx_glyph;
-#pragma pack(pop)
+#include <gfx.h>
 
 #define GFX_MAX_OVERLAY_SIZE        3
 #define GFX_MAX_TRANSFORMATION_SIZE 7

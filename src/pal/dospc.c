@@ -24,7 +24,6 @@
 #include <andrea.h>
 #endif
 
-#include "../gfx/glyph.h"
 #include "../resource.h"
 #include "dospc.h"
 #include "pal_impl.h"
@@ -43,8 +42,6 @@ extern char __edata[], __sbss[], __ebss[];
 extern char _binary_obj_version_txt_start[];
 extern char __w32_rsrc_start[];
 
-extern const gfx_glyph __gfx_font_8x8[];
-
 extern uint16_t   __dospc_ds;
 volatile uint32_t __dospc_counter;
 dospc_isr         __dospc_bios_isr;
@@ -52,7 +49,8 @@ dospc_isr         __dospc_bios_isr;
 extern void
 __dospc_pit_isr(void);
 
-static bool _has_mouse = false;
+static gfx_glyph_data _font = NULL;
+static bool           _has_mouse = false;
 
 #ifdef STACK_PROFILING
 static uint64_t      *_stack_start;
@@ -366,6 +364,7 @@ pal_initialize(int argc, char *argv[])
         _enable();
     }
 
+    gfx_get_font_data(&_font);
     _has_mouse = msmouse_init();
 
     snd_initialize(arg_snd);
@@ -758,7 +757,7 @@ pal_wctoa(uint16_t wc)
         return wc;
     }
 
-    const gfx_glyph *fdata = __gfx_font_8x8;
+    gfx_glyph_data fdata = _font;
     while (wc > fdata->codepoint)
     {
         fdata++;
@@ -780,8 +779,8 @@ pal_wctob(uint16_t wc)
         return wc;
     }
 
-    uint8_t          local = 0x80;
-    const gfx_glyph *fdata = __gfx_font_8x8;
+    uint8_t        local = 0x80;
+    gfx_glyph_data fdata = _font;
 
     while (wc > fdata->codepoint)
     {
