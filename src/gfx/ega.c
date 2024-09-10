@@ -1,3 +1,4 @@
+#include <conio.h>
 #include <graph.h>
 
 #include <api/bios.h>
@@ -10,6 +11,7 @@
 #define EGA_HIRES_MEM        0xA000 // Video memory base
 #define EGA_CHARACTER_WIDTH  8
 #define EGA_CHARACTER_HEIGHT 14
+#define EGA_PLANES           4
 
 typedef struct
 {
@@ -18,31 +20,6 @@ typedef struct
 } ega_data;
 
 #define get_data(dev) ((far ega_data *)((dev)->data))
-
-enum
-{
-    BRUSH_BLACK,
-    BRUSH_WHITE,
-    BRUSH_MAX
-};
-
-#define BRUSH_PLANES 1
-
-static const uint8_t DRV_RDAT BRUSHES[BRUSH_MAX][BRUSH_PLANES] = {
-    [BRUSH_BLACK] = {0x00}, // ........ ........
-    [BRUSH_WHITE] = {0xFF}, // ######## ########
-};
-
-static const unsigned DRV_RDAT MAPPINGS[] = {
-    [GFX_COLOR_BLACK] = BRUSH_BLACK,  [GFX_COLOR_NAVY] = BRUSH_BLACK,
-    [GFX_COLOR_GREEN] = BRUSH_BLACK,  [GFX_COLOR_TEAL] = BRUSH_BLACK,
-    [GFX_COLOR_MAROON] = BRUSH_BLACK, [GFX_COLOR_PURPLE] = BRUSH_BLACK,
-    [GFX_COLOR_OLIVE] = BRUSH_BLACK,  [GFX_COLOR_SILVER] = BRUSH_WHITE,
-    [GFX_COLOR_GRAY] = BRUSH_BLACK,   [GFX_COLOR_BLUE] = BRUSH_BLACK,
-    [GFX_COLOR_LIME] = BRUSH_BLACK,   [GFX_COLOR_CYAN] = BRUSH_WHITE,
-    [GFX_COLOR_RED] = BRUSH_BLACK,    [GFX_COLOR_FUCHSIA] = BRUSH_WHITE,
-    [GFX_COLOR_YELLOW] = BRUSH_WHITE, [GFX_COLOR_WHITE] = BRUSH_WHITE,
-};
 
 bool ddcall
 ega_open(device *dev)
@@ -85,6 +62,25 @@ ega_get_property(device *dev, gfx_property property, void *out)
     }
 }
 
+static inline void
+_read_plane(unsigned i)
+{
+    outpw(0x03CE, (i << 8) | 0x04);
+}
+
+static inline void
+_write_planes(unsigned i)
+{
+    outpw(0x03C4, (i << 8) | 0x02);
+}
+
+static inline void
+_set_plane(unsigned i)
+{
+    _read_plane(i);
+    _write_planes(1 << i);
+}
+
 bool ddcall
 ega_draw_bitmap(device *dev, gfx_bitmap *bm, int x, int y)
 {
@@ -114,8 +110,7 @@ _draw_hline(uint16_t top,
 bool ddcall
 ega_draw_line(device *dev, gfx_rect *rect, gfx_color color)
 {
-    far const uint8_t *brush = BRUSHES[MAPPINGS[color]];
-    uint8_t            pattern = brush[0];
+    uint8_t pattern;
 
     if (1 == rect->height)
     {
@@ -123,7 +118,13 @@ ega_draw_line(device *dev, gfx_rect *rect, gfx_color color)
         uint8_t  lmask = (1 << (8 - (rect->left % 8))) - 1;
         uint8_t  rmask = ~((1 << (7 - (right % 8))) - 1);
 
-        _draw_hline(rect->top, rect->left, rect->width, pattern, lmask, rmask);
+        for (int i = 0; i < EGA_PLANES; i++)
+        {
+            _set_plane(i);
+            pattern = (color & (1 << i)) ? 0xFF : 0x00;
+            _draw_hline(rect->top, rect->left, rect->width, pattern, lmask,
+                        rmask);
+        }
         return true;
     }
 
@@ -131,12 +132,18 @@ ega_draw_line(device *dev, gfx_rect *rect, gfx_color color)
     {
         uint8_t mask = 1 << (7 - (rect->left % 8));
 
-        far uint8_t *fb = MK_FP(EGA_HIRES_MEM, rect->top * EGA_HIRES_LINE);
-        for (uint16_t line = 0; line < rect->height; line++)
+        for (int i = 0; i < EGA_PLANES; i++)
         {
-            fb[rect->left / 8] =
-                (pattern & mask) | (fb[rect->left / 8] & ~mask);
-            fb += EGA_HIRES_LINE;
+            _set_plane(i);
+            pattern = (color & (1 << i)) ? 0xFF : 0x00;
+
+            far uint8_t *fb = MK_FP(EGA_HIRES_MEM, rect->top * EGA_HIRES_LINE);
+            for (uint16_t line = 0; line < rect->height; line++)
+            {
+                fb[rect->left / 8] =
+                    (pattern & mask) | (fb[rect->left / 8] & ~mask);
+                fb += EGA_HIRES_LINE;
+            }
         }
 
         return true;
@@ -158,21 +165,24 @@ ega_draw_rectangle(device *dev, gfx_rect *rect, gfx_color color)
     uint8_t lborder = 1 << (7 - (left % 8));
     uint8_t rborder = 1 << (7 - (right % 8));
 
-    far const uint8_t *brush = BRUSHES[MAPPINGS[color]];
-    uint8_t            pattern = brush[0];
-
-    // Vertical lines
-    far uint8_t *fb = MK_FP(EGA_HIRES_MEM, (top + 1) * EGA_HIRES_LINE);
-    for (uint16_t line = top + 1; line < bottom; line++)
+    for (int i = 0; i < EGA_PLANES; i++)
     {
-        fb[left / 8] = (pattern & lborder) | (fb[left / 8] & ~lborder);
-        fb[right / 8] = (pattern & rborder) | (fb[right / 8] & ~rborder);
-        fb += EGA_HIRES_LINE;
-    }
+        _set_plane(i);
+        uint8_t pattern = (color & (1 << i)) ? 0xFF : 0x00;
 
-    // Horizontal line
-    _draw_hline(top, left, rect->width + 1, pattern, lmask, rmask);
-    _draw_hline(bottom, left, rect->width + 1, pattern, lmask, rmask);
+        // Vertical lines
+        far uint8_t *fb = MK_FP(EGA_HIRES_MEM, (top + 1) * EGA_HIRES_LINE);
+        for (uint16_t line = top + 1; line < bottom; line++)
+        {
+            fb[left / 8] = (pattern & lborder) | (fb[left / 8] & ~lborder);
+            fb[right / 8] = (pattern & rborder) | (fb[right / 8] & ~rborder);
+            fb += EGA_HIRES_LINE;
+        }
+
+        // Horizontal line
+        _draw_hline(top, left, rect->width + 1, pattern, lmask, rmask);
+        _draw_hline(bottom, left, rect->width + 1, pattern, lmask, rmask);
+    }
 
     return true;
 }
@@ -185,23 +195,42 @@ ega_fill_rectangle(device *dev, gfx_rect *rect, gfx_color color)
     uint16_t top = rect->top;
     uint16_t bottom = top + rect->height;
     uint16_t rbyte = rect->width / 8;
+    unsigned lspan = 0 != (left % 8);
 
     uint8_t lmask = (1 << (8 - (left % 8))) - 1;
     uint8_t rmask = ~((1 << (8 - (right % 8))) - 1);
 
-    far const uint8_t *brush = BRUSHES[MAPPINGS[color]];
-    uint8_t            pattern = brush[0];
-
+    // Light up active channels in inner area
     far uint8_t *fb = MK_FP(EGA_HIRES_MEM, top * EGA_HIRES_LINE + (left / 8));
+    _write_planes(color);
     for (uint16_t line = top; line < bottom; line++)
     {
-        fb[0] = (pattern & lmask) | (fb[0] & ~lmask);
-        for (uint16_t byte = (0 != (left % 8)); byte < rbyte; byte++)
-        {
-            fb[byte] = pattern;
-        }
-        fb[rbyte] = (pattern & rmask) | (fb[rbyte] & ~rmask);
+        _fmemset(fb + lspan, 0xFF, rbyte - lspan);
         fb += EGA_HIRES_LINE;
+    }
+
+    // Put out inactive channels in inner area
+    fb = MK_FP(EGA_HIRES_MEM, top * EGA_HIRES_LINE + (left / 8));
+    _write_planes(~color & 0xF);
+    for (uint16_t line = top; line < bottom; line++)
+    {
+        _fmemset(fb + lspan, 0x00, rbyte - lspan);
+        fb += EGA_HIRES_LINE;
+    }
+
+    // Draw vertical border area
+    for (int i = 0; i < EGA_PLANES; i++)
+    {
+        _set_plane(i);
+        uint8_t pattern = (color & (1 << i)) ? 0xFF : 0x00;
+
+        fb = MK_FP(EGA_HIRES_MEM, top * EGA_HIRES_LINE + (left / 8));
+        for (uint16_t line = top; line < bottom; line++)
+        {
+            fb[0] = (pattern & lmask) | (fb[0] & ~lmask);
+            fb[rbyte] = (pattern & rmask) | (fb[rbyte] & ~rmask);
+            fb += EGA_HIRES_LINE;
+        }
     }
 
     return true;
@@ -214,12 +243,17 @@ ega_draw_text(device *dev, const char *str, uint16_t x, uint16_t y)
     far uint8_t  *fb =
         MK_FP(EGA_HIRES_MEM, y * (EGA_HIRES_LINE * EGA_CHARACTER_HEIGHT) + x);
 
-    for (int i = 0; str[i]; i++)
+    for (int i = 0; i < EGA_PLANES; i++)
     {
-        far uint8_t *glyph = data->font + (str[i] * EGA_CHARACTER_HEIGHT);
-        for (int line = 0; line < EGA_CHARACTER_HEIGHT; line++)
+        _set_plane(i);
+
+        for (int i = 0; str[i]; i++)
         {
-            fb[line * EGA_HIRES_LINE + i] ^= glyph[line];
+            far uint8_t *glyph = data->font + (str[i] * EGA_CHARACTER_HEIGHT);
+            for (int line = 0; line < EGA_CHARACTER_HEIGHT; line++)
+            {
+                fb[line * EGA_HIRES_LINE + i] ^= glyph[line];
+            }
         }
     }
 
