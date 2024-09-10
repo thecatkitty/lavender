@@ -85,6 +85,21 @@ bios_set_video_mode(uint8_t mode)
     asm volatile("int $0x10" : "=a"(ax) : "0"(mode) : "cc", "bx", "cx", "dx");
 }
 
+static inline far uint8_t *
+bios_get_font_information(uint8_t spec)
+{
+    uint16_t ax, dx;
+    asm volatile("push %%bp; push %%es;"
+                 "int $0x10;"
+                 "mov %%es, %%dx;"
+                 "mov %%bp, %%ax;"
+                 "pop %%es; pop %%bp;"
+                 : "=a"(ax), "=d"(dx)
+                 : "a"(0x1130), "b"((uint16_t)spec << 8)
+                 : "cc", "cx", "memory");
+    return MK_FP(dx, ax);
+}
+
 static inline short
 bios_get_vbedc_capabilities()
 {
