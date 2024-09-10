@@ -91,10 +91,58 @@ ega_draw_bitmap(device *dev, gfx_bitmap *bm, int x, int y)
     return true;
 }
 
+static void
+_draw_hline(uint16_t top,
+            uint16_t left,
+            uint16_t width,
+            uint8_t  pattern,
+            uint8_t  lmask,
+            uint8_t  rmask)
+{
+    far uint8_t *fb = MK_FP(EGA_HIRES_MEM, top * EGA_HIRES_LINE);
+
+    uint16_t right = left + width;
+    for (uint16_t byte = left / 8 + (0 != (left % 8)); byte < right / 8; byte++)
+    {
+        fb[byte] = pattern;
+    }
+
+    fb[left / 8] = (pattern & lmask) | (fb[left / 8] & ~lmask);
+    fb[right / 8] = (pattern & rmask) | (fb[right / 8] & ~rmask);
+}
+
 bool ddcall
 ega_draw_line(device *dev, gfx_rect *rect, gfx_color color)
 {
-    return true;
+    far const uint8_t *brush = BRUSHES[MAPPINGS[color]];
+    uint8_t            pattern = brush[0];
+
+    if (1 == rect->height)
+    {
+        uint16_t right = rect->left + rect->width;
+        uint8_t  lmask = (1 << (8 - (rect->left % 8))) - 1;
+        uint8_t  rmask = ~((1 << (7 - (right % 8))) - 1);
+
+        _draw_hline(rect->top, rect->left, rect->width, pattern, lmask, rmask);
+        return true;
+    }
+
+    if (1 == rect->width)
+    {
+        uint8_t mask = 1 << (7 - (rect->left % 8));
+
+        far uint8_t *fb = MK_FP(EGA_HIRES_MEM, rect->top * EGA_HIRES_LINE);
+        for (uint16_t line = 0; line < rect->height; line++)
+        {
+            fb[rect->left / 8] =
+                (pattern & mask) | (fb[rect->left / 8] & ~mask);
+            fb += EGA_HIRES_LINE;
+        }
+
+        return true;
+    }
+
+    return false;
 }
 
 bool ddcall
@@ -104,7 +152,6 @@ ega_draw_rectangle(device *dev, gfx_rect *rect, gfx_color color)
     uint16_t right = rect->left + rect->width;
     uint16_t top = rect->top - 1;
     uint16_t bottom = rect->top + rect->height;
-    uint16_t rbyte = right / 8 - left / 8;
 
     uint8_t lmask = (1 << (8 - (left % 8))) - 1;
     uint8_t rmask = ~((1 << (7 - (right % 8))) - 1);
@@ -114,33 +161,18 @@ ega_draw_rectangle(device *dev, gfx_rect *rect, gfx_color color)
     far const uint8_t *brush = BRUSHES[MAPPINGS[color]];
     uint8_t            pattern = brush[0];
 
-    far uint8_t *fb = MK_FP(EGA_HIRES_MEM, top * EGA_HIRES_LINE + (left / 8));
-
-    // Top line
-    fb[0] = (pattern & lmask) | (fb[0] & ~lmask);
-    for (uint16_t byte = (0 != (left % 8)); byte < rbyte; byte++)
-    {
-        fb[byte] = pattern;
-    }
-    fb[rbyte] = (pattern & rmask) | (fb[rbyte] & ~rmask);
-    fb += EGA_HIRES_LINE;
-
     // Vertical lines
-    for (uint16_t line = top; line < bottom; line++)
+    far uint8_t *fb = MK_FP(EGA_HIRES_MEM, (top + 1) * EGA_HIRES_LINE);
+    for (uint16_t line = top + 1; line < bottom; line++)
     {
-        fb[0] = (pattern & lborder) | (fb[0] & ~lborder);
-        fb[rbyte] = (pattern & rborder) | (fb[rbyte] & ~rborder);
+        fb[left / 8] = (pattern & lborder) | (fb[left / 8] & ~lborder);
+        fb[right / 8] = (pattern & rborder) | (fb[right / 8] & ~rborder);
         fb += EGA_HIRES_LINE;
     }
 
-    // Bottom line
-    fb[0] = (pattern & lmask) | (fb[0] & ~lmask);
-    for (uint16_t byte = (0 != (left % 8)); byte < rbyte; byte++)
-    {
-        fb[byte] = pattern;
-    }
-    fb[rbyte] = (pattern & rmask) | (fb[rbyte] & ~rmask);
-    fb += EGA_HIRES_LINE;
+    // Horizontal line
+    _draw_hline(top, left, rect->width + 1, pattern, lmask, rmask);
+    _draw_hline(bottom, left, rect->width + 1, pattern, lmask, rmask);
 
     return true;
 }
