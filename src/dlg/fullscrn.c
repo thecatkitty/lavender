@@ -223,8 +223,8 @@ _is_pressed(const gfx_rect *rect)
         return false;
     }
 
-    msx *= _glyph.width;
-    msy *= _glyph.height;
+    msx *= 8;
+    msy *= 8;
 
     if ((rect->left > msx) || ((rect->left + rect->width) <= msx))
     {
