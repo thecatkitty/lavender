@@ -51,7 +51,8 @@ if(DOS)
         include_directories(ext/andrea/include)
         link_directories(${ANDREA_LIB})
         add_compile_definitions(CONFIG_ANDREA)
-        set(SOUND_DRIVERS 
+        set(DRIVERS 
+            $<TARGET_FILE:gfxega>
             $<TARGET_FILE:sndmpu>
             $<TARGET_FILE:sndopl>)
     endif()
@@ -75,7 +76,7 @@ add_custom_command(
     COMMAND
         zip -0 -r -j data.zip
         ${CMAKE_CURRENT_SOURCE_DIR}/data/*
-        ${SOUND_DRIVERS}
+        ${DRIVERS}
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/data/*)
 
 add_custom_command(
