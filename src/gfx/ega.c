@@ -84,6 +84,25 @@ _set_plane(unsigned i)
 bool ddcall
 ega_draw_bitmap(device *dev, gfx_bitmap *bm, int x, int y)
 {
+    if ((1 != bm->planes) || (1 != bm->bpp))
+    {
+        errno = EFTYPE;
+        return false;
+    }
+
+    x >>= 3;
+
+    const uint8_t *bits = (const uint8_t *)bm->bits;
+    far uint8_t   *fb = MK_FP(EGA_HIRES_MEM, y * EGA_HIRES_LINE + x);
+
+    outpw(0x03C4, 0x0F02); // select all planes for writing (white)
+    for (int line = 0; line < bm->height; line++)
+    {
+        _fmemcpy(fb, bits, bm->opl);
+        bits += bm->opl;
+        fb += EGA_HIRES_LINE;
+    }
+
     return true;
 }
 
