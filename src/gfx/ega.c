@@ -19,6 +19,31 @@ typedef struct
 
 #define get_data(dev) ((far ega_data *)((dev)->data))
 
+enum
+{
+    BRUSH_BLACK,
+    BRUSH_WHITE,
+    BRUSH_MAX
+};
+
+#define BRUSH_PLANES 1
+
+static const uint8_t DRV_RDAT BRUSHES[BRUSH_MAX][BRUSH_PLANES] = {
+    [BRUSH_BLACK] = {0x00}, // ........ ........
+    [BRUSH_WHITE] = {0xFF}, // ######## ########
+};
+
+static const unsigned DRV_RDAT MAPPINGS[] = {
+    [GFX_COLOR_BLACK] = BRUSH_BLACK,  [GFX_COLOR_NAVY] = BRUSH_BLACK,
+    [GFX_COLOR_GREEN] = BRUSH_BLACK,  [GFX_COLOR_TEAL] = BRUSH_BLACK,
+    [GFX_COLOR_MAROON] = BRUSH_BLACK, [GFX_COLOR_PURPLE] = BRUSH_BLACK,
+    [GFX_COLOR_OLIVE] = BRUSH_BLACK,  [GFX_COLOR_SILVER] = BRUSH_WHITE,
+    [GFX_COLOR_GRAY] = BRUSH_BLACK,   [GFX_COLOR_BLUE] = BRUSH_BLACK,
+    [GFX_COLOR_LIME] = BRUSH_BLACK,   [GFX_COLOR_CYAN] = BRUSH_WHITE,
+    [GFX_COLOR_RED] = BRUSH_BLACK,    [GFX_COLOR_FUCHSIA] = BRUSH_WHITE,
+    [GFX_COLOR_YELLOW] = BRUSH_WHITE, [GFX_COLOR_WHITE] = BRUSH_WHITE,
+};
+
 bool ddcall
 ega_open(device *dev)
 {
@@ -75,12 +100,78 @@ ega_draw_line(device *dev, gfx_rect *rect, gfx_color color)
 bool ddcall
 ega_draw_rectangle(device *dev, gfx_rect *rect, gfx_color color)
 {
+    uint16_t left = rect->left - 1;
+    uint16_t right = rect->left + rect->width;
+    uint16_t top = rect->top - 1;
+    uint16_t bottom = rect->top + rect->height;
+    uint16_t rbyte = right / 8 - left / 8;
+
+    uint8_t lmask = (1 << (8 - (left % 8))) - 1;
+    uint8_t rmask = ~((1 << (7 - (right % 8))) - 1);
+    uint8_t lborder = 1 << (7 - (left % 8));
+    uint8_t rborder = 1 << (7 - (right % 8));
+
+    far const uint8_t *brush = BRUSHES[MAPPINGS[color]];
+    uint8_t            pattern = brush[0];
+
+    far uint8_t *fb = MK_FP(EGA_HIRES_MEM, top * EGA_HIRES_LINE + (left / 8));
+
+    // Top line
+    fb[0] = (pattern & lmask) | (fb[0] & ~lmask);
+    for (uint16_t byte = (0 != (left % 8)); byte < rbyte; byte++)
+    {
+        fb[byte] = pattern;
+    }
+    fb[rbyte] = (pattern & rmask) | (fb[rbyte] & ~rmask);
+    fb += EGA_HIRES_LINE;
+
+    // Vertical lines
+    for (uint16_t line = top; line < bottom; line++)
+    {
+        fb[0] = (pattern & lborder) | (fb[0] & ~lborder);
+        fb[rbyte] = (pattern & rborder) | (fb[rbyte] & ~rborder);
+        fb += EGA_HIRES_LINE;
+    }
+
+    // Bottom line
+    fb[0] = (pattern & lmask) | (fb[0] & ~lmask);
+    for (uint16_t byte = (0 != (left % 8)); byte < rbyte; byte++)
+    {
+        fb[byte] = pattern;
+    }
+    fb[rbyte] = (pattern & rmask) | (fb[rbyte] & ~rmask);
+    fb += EGA_HIRES_LINE;
+
     return true;
 }
 
 bool ddcall
 ega_fill_rectangle(device *dev, gfx_rect *rect, gfx_color color)
 {
+    uint16_t left = rect->left;
+    uint16_t right = left + rect->width;
+    uint16_t top = rect->top;
+    uint16_t bottom = top + rect->height;
+    uint16_t rbyte = rect->width / 8;
+
+    uint8_t lmask = (1 << (8 - (left % 8))) - 1;
+    uint8_t rmask = ~((1 << (8 - (right % 8))) - 1);
+
+    far const uint8_t *brush = BRUSHES[MAPPINGS[color]];
+    uint8_t            pattern = brush[0];
+
+    far uint8_t *fb = MK_FP(EGA_HIRES_MEM, top * EGA_HIRES_LINE + (left / 8));
+    for (uint16_t line = top; line < bottom; line++)
+    {
+        fb[0] = (pattern & lmask) | (fb[0] & ~lmask);
+        for (uint16_t byte = (0 != (left % 8)); byte < rbyte; byte++)
+        {
+            fb[byte] = pattern;
+        }
+        fb[rbyte] = (pattern & rmask) | (fb[rbyte] & ~rmask);
+        fb += EGA_HIRES_LINE;
+    }
+
     return true;
 }
 
@@ -88,14 +179,15 @@ bool ddcall
 ega_draw_text(device *dev, const char *str, uint16_t x, uint16_t y)
 {
     far ega_data *data = get_data(dev);
-    far uint8_t  *fb = MK_FP(EGA_HIRES_MEM, y * EGA_CHARACTER_HEIGHT + x);
+    far uint8_t  *fb =
+        MK_FP(EGA_HIRES_MEM, y * (EGA_HIRES_LINE * EGA_CHARACTER_HEIGHT) + x);
 
     for (int i = 0; str[i]; i++)
     {
-        far uint8_t *glyph = data->font + (*str * EGA_CHARACTER_HEIGHT);
+        far uint8_t *glyph = data->font + (str[i] * EGA_CHARACTER_HEIGHT);
         for (int line = 0; line < EGA_CHARACTER_HEIGHT; line++)
         {
-            fb[line * EGA_HIRES_LINE + i] = glyph[line];
+            fb[line * EGA_HIRES_LINE + i] ^= glyph[line];
         }
     }
 
