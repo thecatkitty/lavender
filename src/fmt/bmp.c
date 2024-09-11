@@ -16,10 +16,6 @@ bmp_is_format(hasset asset)
 bool
 bmp_load_bitmap(gfx_bitmap *bm, hasset asset)
 {
-#ifndef GFX_COLORFUL
-    errno = EINVAL;
-    return false;
-#else
     LOG("entry, bm: %p, asset: %p", (void *)bm, (void *)asset);
     if (!bmp_is_format(asset))
     {
@@ -55,7 +51,7 @@ bmp_load_bitmap(gfx_bitmap *bm, hasset asset)
     bm->bpp = ih->bit_count;
     LOG("%dx%d, %u planes, %u bpp", bm->width, bm->height, bm->planes, bm->bpp);
 
-    if (32 != bm->bpp)
+    if ((4 != bm->bpp) && (32 != bm->bpp))
     {
         LOG("exit, %d bit depth not supported!", bm->bpp);
         errno = EFTYPE;
@@ -84,5 +80,4 @@ bmp_load_bitmap(gfx_bitmap *bm, hasset asset)
 
     bm->opl = (((bm->width * bm->bpp) + 31) & ~31) >> 3;
     return true;
-#endif
 }

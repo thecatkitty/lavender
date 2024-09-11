@@ -190,7 +190,7 @@ gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
         return false;
     }
 
-    if ((1 != bm->bpp) && (32 != bm->bpp))
+    if ((1 != bm->bpp) && (4 != bm->bpp) && (32 != bm->bpp))
     {
         errno = EFTYPE;
         return false;
@@ -201,6 +201,8 @@ gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
     SDL_Rect src_rect = {0, 0, bm->width, abs(bm->height)};
     SDL_Rect dst_rect = {x, y, bm->width, abs(bm->height)};
     uint32_t format = SDL_PIXELFORMAT_XRGB8888;
+
+    SDL_Surface *surface = NULL;
 
     if (1 == bm->bpp)
     {
@@ -215,8 +217,37 @@ gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
         format = SDL_PIXELFORMAT_INDEX1MSB;
     }
 
-    SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormatFrom(
-        bm->bits, bm->width, abs(bm->height), bm->bpp, bm->opl, format);
+    if (4 == bm->bpp)
+    {
+        surface = SDL_CreateRGBSurfaceWithFormat(0, bm->width, abs(bm->height),
+                                                 32, SDL_PIXELFORMAT_XRGB8888);
+        SDL_LockSurface(surface);
+
+        uint8_t  *src = (uint8_t *)bm->bits;
+        uint32_t *dst = (uint32_t *)surface->pixels;
+        for (int y = 0; y < surface->h; y++)
+        {
+            for (int x = 0; x < surface->w; x += 2)
+            {
+                const SDL_Color *rgb = COLORS + (src[x / 2] >> 4);
+                dst[x] = (rgb->r << 16) | (rgb->g << 8) | (rgb->b << 0);
+
+                rgb = COLORS + (src[x / 2] & 0xF);
+                dst[x + 1] = (rgb->r << 16) | (rgb->g << 8) | (rgb->b << 0);
+            }
+
+            src += bm->opl;
+            dst += surface->w;
+        }
+
+        SDL_UnlockSurface(surface);
+    }
+    else
+    {
+        surface = SDL_CreateRGBSurfaceWithFormatFrom(
+            bm->bits, bm->width, abs(bm->height), bm->bpp, bm->opl, format);
+    }
+
     if (0 > bm->height)
     {
         SDL_Texture *texture = SDL_CreateTextureFromSurface(_renderer, surface);
