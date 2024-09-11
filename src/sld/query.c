@@ -2,7 +2,7 @@
 
 #include "sld_impl.h"
 
-#ifdef GFX_COLORFUL
+#if defined(__linux__) || defined(__MINGW32__)
 #include <platform/sdl2arch.h>
 #endif
 
@@ -11,11 +11,7 @@ _get(const char *name)
 {
     if (0 == strcmp("gfx.colorful", name))
     {
-#ifdef GFX_COLORFUL
-        return 1;
-#else
-        return 0;
-#endif
+        return gfx_get_color_depth() > 2;
     }
 
     return UINT16_MAX;
@@ -26,7 +22,7 @@ _set(const char *name, const char *value)
 {
     if (0 == strcmp("gfx.title", name))
     {
-#ifdef GFX_COLORFUL
+#if defined(__linux__) || defined(__MINGW32__)
         sdl2arch_set_window_title(value);
         return 1;
 #else

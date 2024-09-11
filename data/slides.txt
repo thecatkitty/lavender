@@ -6,7 +6,7 @@
 0       ?   gfx.colorful
 0       =   0   Colorless
 0       =   65535   VersionInfo
-500     B   40  ^lavender.bmp
+500     B   40  ^lavndr<>.bmp
 0       J   VersionInfo
 :Colorless
 500     B   40  ^lavndr<>.pbm
