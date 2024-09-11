@@ -177,6 +177,12 @@ gfx_get_pixel_aspect(void)
     return ratio;
 }
 
+unsigned
+gfx_get_color_depth(void)
+{
+    return 24;
+}
+
 bool
 gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
 {

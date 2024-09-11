@@ -97,6 +97,14 @@ gfx_get_font_data(gfx_glyph_data *data)
     return gfx_device_get_property(_dev, GFX_PROPERTY_GLYPH_DATA, data);
 }
 
+unsigned
+gfx_get_color_depth(void)
+{
+    unsigned depth = 1;
+    gfx_device_get_property(_dev, GFX_PROPERTY_COLOR_DEPTH, &depth);
+    return depth;
+}
+
 bool
 gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
 {

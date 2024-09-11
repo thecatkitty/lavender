@@ -57,6 +57,7 @@ typedef enum
     GFX_PROPERTY_SCREEN_SIZE = 1,
     GFX_PROPERTY_GLYPH_SIZE = 2,
     GFX_PROPERTY_GLYPH_DATA = 3,
+    GFX_PROPERTY_COLOR_DEPTH = 4,
 } gfx_property;
 
 typedef struct
@@ -137,6 +138,9 @@ gfx_get_pixel_aspect(void);
 extern bool
 gfx_get_font_data(gfx_glyph_data *data);
 #endif
+
+extern unsigned
+gfx_get_color_depth(void);
 
 extern bool
 gfx_draw_bitmap(gfx_bitmap *bm, int x, int y);

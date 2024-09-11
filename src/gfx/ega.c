@@ -65,6 +65,12 @@ ega_get_property(device *dev, gfx_property property, void *out)
         return true;
     }
 
+    case GFX_PROPERTY_COLOR_DEPTH: {
+        unsigned *depth = (unsigned *)out;
+        *depth = 4;
+        return true;
+    }
+
     default:
         return false;
     }
