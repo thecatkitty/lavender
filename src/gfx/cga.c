@@ -226,6 +226,12 @@ cga_get_property(device *dev, gfx_property property, void *out)
         return true;
     }
 
+    case GFX_PROPERTY_COLOR_DEPTH: {
+        unsigned *depth = (unsigned *)out;
+        *depth = 1;
+        return true;
+    }
+
     default:
         return false;
     }
