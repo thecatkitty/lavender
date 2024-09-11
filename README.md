@@ -10,7 +10,8 @@ This is still work in progress, but I'm doing my best to separate working versio
 * DOS, Windows, and diagnostic Linux targets
 * [text-based script file format](docs/slides.md)
 * graphics mode
-  * CGA 640x200 monochrome under DOS, with loadable driver support
+  * CGA 640x200 monochrome under DOS
+  * EGA 640x350 16-color under DOS using a loadable driver
   * 24-bit RGB under Windows and Linux 
 * display delays (animations)
   * millisecond resolution
@@ -18,10 +19,11 @@ This is still work in progress, but I'm doing my best to separate working versio
   * under DOS, supports Czech, Polish, and Spanish diacritics, and 0x00-0x1F, 0x7F CP437 special characters
 * displaying bitmap images
   * monochrome binary Portable BitMap (P4) files
+  * 16-color Windows Device Independent Bitmaps (BMP)
   * XRGB8888 Windows Device Independent Bitmaps (BMP) under Windows and Linux
 * drawing and filling rectangles
-  * 16 colors on Windows and Linux
-  * mapped 5 monochrome patterns on DOS
+  * 16 colors on Windows, Linux, and DOS with EGA
+  * mapped 5 monochrome patterns on DOS with CGA
 * MIDI Type 0 and [own mono format](docs/spk.md) music playback
   * PC Speaker (with 3 simulated voices), Yamaha OPL2, Roland MPU-401 UART under DOS, with loadable driver support
   * Windows MME API
