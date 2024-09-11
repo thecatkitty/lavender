@@ -92,7 +92,13 @@ _set_plane(unsigned i)
 bool ddcall
 ega_draw_bitmap(device *dev, gfx_bitmap *bm, int x, int y)
 {
-    if ((1 != bm->planes) || (1 != bm->bpp))
+    if (1 != bm->planes)
+    {
+        errno = EFTYPE;
+        return false;
+    }
+
+    if ((1 != bm->bpp) && (4 != bm->bpp))
     {
         errno = EFTYPE;
         return false;
@@ -103,15 +109,61 @@ ega_draw_bitmap(device *dev, gfx_bitmap *bm, int x, int y)
     const uint8_t *bits = (const uint8_t *)bm->bits;
     far uint8_t   *fb = MK_FP(EGA_HIRES_MEM, y * EGA_HIRES_LINE + x);
 
-    outpw(0x03C4, 0x0F02); // select all planes for writing (white)
-    for (int line = 0; line < bm->height; line++)
+    int line_span = EGA_HIRES_LINE;
+    int lines = bm->height;
+    if (0 > bm->height)
     {
-        _fmemcpy(fb, bits, bm->opl);
-        bits += bm->opl;
-        fb += EGA_HIRES_LINE;
+        fb -= (bm->height + 1) * EGA_HIRES_LINE;
+        line_span = -EGA_HIRES_LINE;
+        lines = -bm->height;
     }
 
-    return true;
+    if (1 == bm->bpp)
+    {
+        _write_planes(0xF);
+        for (int line = 0; line < bm->height; line++)
+        {
+            _fmemcpy(fb, bits, bm->opl);
+            bits += bm->opl;
+            fb += EGA_HIRES_LINE;
+        }
+
+        return true;
+    }
+
+    if (4 == bm->bpp)
+    {
+        for (int plane = 0; plane < EGA_PLANES; plane++)
+        {
+            const uint8_t *pbits = bits;
+            far uint8_t   *pfb = fb;
+
+            _write_planes(1 << plane);
+            for (int line = 0; line < lines; line++)
+            {
+                for (int column = 0; column < bm->width; column += 8)
+                {
+                    uint8_t cell = 0;
+                    for (int byte = 0; byte < 4; byte++)
+                    {
+                        cell <<= 1;
+                        cell |= (pbits[column / 2 + byte] >> (4 + plane)) & 1;
+                        cell <<= 1;
+                        cell |= (pbits[column / 2 + byte] >> plane) & 1;
+                    }
+
+                    pfb[column / 8] = cell;
+                }
+
+                pbits += bm->opl;
+                pfb += line_span;
+            }
+        }
+
+        return true;
+    }
+
+    return false;
 }
 
 static void
