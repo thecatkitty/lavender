@@ -1,10 +1,6 @@
 #ifndef _GFX_H_
 #define _GFX_H_
 
-#if defined(__linux__) || defined(__MINGW32__)
-#define GFX_COLORFUL
-#endif
-
 #include <dev.h>
 
 typedef struct
