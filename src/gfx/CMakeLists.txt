@@ -12,6 +12,7 @@ if(DOS)
         add_driver(gfxega)
         target_sources(gfxega PRIVATE ega.c)
         target_sources(gfxega PRIVATE errno.c)
+        target_sources(gfxega PRIVATE font-8x14.c)
     endif()
 endif()
 

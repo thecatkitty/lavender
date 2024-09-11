@@ -5,6 +5,8 @@
 #include <drv.h>
 #include <gfx.h>
 
+#include "glyph.h"
+
 #define EGA_HIRES_WIDTH      640
 #define EGA_HIRES_HEIGHT     350
 #define EGA_HIRES_LINE       (EGA_HIRES_WIDTH / 8)
@@ -54,6 +56,12 @@ ega_get_property(device *dev, gfx_property property, void *out)
         gfx_dimensions *dim = (gfx_dimensions *)out;
         dim->width = EGA_CHARACTER_WIDTH;
         dim->height = EGA_CHARACTER_HEIGHT;
+        return true;
+    }
+
+    case GFX_PROPERTY_GLYPH_DATA: {
+        gfx_glyph_data *data = (gfx_glyph_data *)out;
+        *data = __gfx_font_8x14;
         return true;
     }
 
@@ -255,6 +263,44 @@ ega_fill_rectangle(device *dev, gfx_rect *rect, gfx_color color)
     return true;
 }
 
+static far uint8_t *
+_get_glyph(uint8_t c, far ega_data *data, gfx_overlay *overlay)
+{
+    if (0x80 > c)
+    {
+        *overlay = NULL;
+        return data->font + c * EGA_CHARACTER_HEIGHT;
+    }
+
+    gfx_glyph_data fdata = __gfx_font_8x14;
+    c -= 0x80;
+
+    unsigned idx = 0;
+    while (true)
+    {
+        while ((0xFFFF != fdata->base) && (0 == fdata->overlay))
+        {
+            fdata++;
+            continue;
+        }
+
+        if (0xFFFF == fdata->base)
+        {
+            *overlay = NULL;
+            return data->font + '?' * EGA_CHARACTER_HEIGHT;
+        }
+
+        if (idx == c)
+        {
+            *overlay = (gfx_overlay)(__gfx_overlays + fdata->overlay);
+            return data->font + fdata->base * EGA_CHARACTER_HEIGHT;
+        }
+
+        fdata++;
+        idx++;
+    }
+}
+
 bool ddcall
 ega_draw_text(device *dev, const char *str, uint16_t x, uint16_t y)
 {
@@ -262,13 +308,28 @@ ega_draw_text(device *dev, const char *str, uint16_t x, uint16_t y)
     far uint8_t  *fb =
         MK_FP(EGA_HIRES_MEM, y * (EGA_HIRES_LINE * EGA_CHARACTER_HEIGHT) + x);
 
-    for (int i = 0; i < EGA_PLANES; i++)
+    for (int i = 0; str[i]; i++)
     {
-        _set_plane(i);
+        gfx_overlay  overlay;
+        far uint8_t *base = _get_glyph(str[i], data, &overlay);
 
-        for (int i = 0; str[i]; i++)
+        uint8_t glyph[EGA_CHARACTER_HEIGHT];
+        _fmemcpy(glyph, base, EGA_CHARACTER_HEIGHT);
+
+        if (NULL != overlay)
         {
-            far uint8_t *glyph = data->font + (str[i] * EGA_CHARACTER_HEIGHT);
+            unsigned top = overlay[0] >> 4;
+            unsigned height = overlay[0] & 0xF;
+
+            for (int i = 0; i < height; i++)
+            {
+                glyph[top + i] |= overlay[1 + i];
+            }
+        }
+
+        for (int plane = 0; plane < EGA_PLANES; plane++)
+        {
+            _set_plane(plane);
             for (int line = 0; line < EGA_CHARACTER_HEIGHT; line++)
             {
                 fb[line * EGA_HIRES_LINE + i] ^= glyph[line];

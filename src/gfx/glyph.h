@@ -18,7 +18,10 @@
 #define GXF_CLEAR(n)  ((GXF_CMD_CLEAR << 4) | (n & 0xF))
 #define GXF_END       GXF_GROW(0)
 
+typedef far const uint8_t *gfx_overlay;
+
 extern const gfx_glyph DRV_RDAT __gfx_font_8x8[];
+extern const gfx_glyph DRV_RDAT __gfx_font_8x14[];
 extern const uint8_t DRV_RDAT   __gfx_overlays[][1 + GFX_MAX_OVERLAY_SIZE];
 extern const uint8_t DRV_RDAT   __gfx_xforms[][GFX_MAX_TRANSFORMATION_SIZE];
 
