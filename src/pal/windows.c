@@ -44,8 +44,73 @@ static HWND          _wnd = NULL;
 static char         *_font = NULL;
 static LARGE_INTEGER _start_pc, _pc_freq;
 
+#if !defined(CONFIG_SDL2)
+static HINSTANCE _instance = NULL;
+static int       _cmd_show;
+#endif
+
 extern int
 __mme_init(void);
+
+#if !defined(CONFIG_SDL2)
+extern int
+main(int argc, char *argv[]);
+
+int WINAPI
+wWinMain(HINSTANCE instance,
+         HINSTANCE prev_instance,
+         PWSTR     cmd_line,
+         int       cmd_show)
+{
+    _instance = instance;
+    _cmd_show = cmd_show;
+
+    char  argv0[MAX_PATH];
+    char *argv[] = {argv0, NULL};
+    WideCharToMultiByte(CP_UTF8, 0, __wargv[0], -1, argv0, MAX_PATH, NULL,
+                        NULL);
+    return main(__argc, argv);
+}
+
+static LRESULT CALLBACK
+_wnd_proc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
+{
+    switch (msg)
+    {
+    case WM_DESTROY:
+        PostQuitMessage(0);
+        return 0;
+
+    case WM_PAINT: {
+        PAINTSTRUCT ps;
+        HDC         hdc = BeginPaint(wnd, &ps);
+
+        // All painting occurs here, between BeginPaint and EndPaint.
+
+        FillRect(hdc, &ps.rcPaint, GetStockObject(BLACK_BRUSH));
+
+        EndPaint(wnd, &ps);
+
+        return 0;
+    }
+    }
+    return DefWindowProc(wnd, msg, wparam, lparam);
+}
+#endif
+
+#if defined(_MSC_VER)
+__declspec(noreturn)
+#else
+__attribute__((noreturn))
+#endif
+static void
+_die(unsigned ids)
+{
+    WCHAR msg[MAX_PATH];
+    LoadStringW(NULL, ids, msg, MAX_PATH);
+    MessageBoxW(NULL, msg, L"Lavender", MB_ICONERROR);
+    exit(1);
+}
 
 void
 pal_initialize(int argc, char *argv[])
@@ -58,28 +123,63 @@ pal_initialize(int argc, char *argv[])
     if (!ziparch_initialize(argv[0]))
     {
         LOG("ZIP architecture initialization failed");
-
-        WCHAR msg[MAX_PATH];
-        LoadStringW(NULL, IDS_NOARCHIVE, msg, MAX_PATH);
-        MessageBoxW(NULL, msg, L"Lavender", MB_ICONERROR);
-        exit(1);
+        _die(IDS_NOARCHIVE);
     }
 
 #if defined(CONFIG_SDL2)
     if (!sdl2arch_initialize())
     {
         LOG("SDL2 architecture initialization failed");
-
-        WCHAR msg[MAX_PATH];
-        LoadStringW(NULL, IDS_UNSUPPENV, msg, MAX_PATH);
-        MessageBoxW(NULL, msg, L"Lavender", MB_ICONERROR);
-        exit(1);
+        _die(IDS_UNSUPPENV);
     }
 
     SDL_SysWMinfo wminfo;
     SDL_VERSION(&wminfo.version);
     SDL_GetWindowWMInfo(_window, &wminfo);
     _wnd = wminfo.info.win.window;
+#else
+    const wchar_t wndc_name[] = L"Slideshow Window Class";
+    WNDCLASS      wndc = {.lpfnWndProc = _wnd_proc,
+                          .hInstance = _instance,
+                          .lpszClassName = wndc_name};
+
+    if (0 == RegisterClassW(&wndc))
+    {
+        LOG("cannot register the window class");
+        _die(IDS_UNSUPPENV);
+    }
+
+    WCHAR title[MAX_PATH];
+    MultiByteToWideChar(CP_UTF8, 0, pal_get_version_string(), -1, title,
+                        MAX_PATH);
+
+    _wnd = CreateWindowExW(0,         // Optional window styles
+                           wndc_name, // Window class
+                           title,     // Window text
+                           WS_OVERLAPPEDWINDOW &
+                               ~(WS_MAXIMIZEBOX | WS_SIZEBOX), // Window style
+                           CW_USEDEFAULT, CW_USEDEFAULT,       // Position
+                           640, 480,                           // Size
+                           NULL,                               // Parent
+                           NULL,                               // Menu
+                           _instance, // Application instance
+                           NULL);
+    if (NULL == _wnd)
+    {
+        LOG("cannot create the window");
+        UnregisterClassW(wndc_name, _instance);
+        _die(IDS_UNSUPPENV);
+    }
+
+    if (!gfx_initialize())
+    {
+        LOG("cannot initialize graphics");
+        DestroyWindow(_wnd);
+        UnregisterClassW(wndc_name, _instance);
+        _die(IDS_UNSUPPENV);
+    }
+
+    ShowWindow(_wnd, _cmd_show);
 #endif
 
     hasset icon = pal_open_asset("windows.ico", O_RDONLY);
@@ -142,6 +242,18 @@ pal_cleanup(void)
 bool
 pal_handle(void)
 {
+    MSG msg;
+    while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
+    {
+        if (WM_QUIT == msg.message)
+        {
+            return false;
+        }
+
+        TranslateMessage(&msg);
+        DispatchMessageW(&msg);
+    }
+
     return true;
 }
 

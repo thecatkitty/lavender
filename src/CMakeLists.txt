@@ -1,4 +1,4 @@
-add_executable(lavender)
+add_executable(lavender WIN32)
 
 if(CONFIG_SDL2)
     find_package(SDL2 REQUIRED PATHS ../ext)
@@ -83,6 +83,8 @@ if(WIN32)
     target_link_libraries(lavender msimg32 version winmm)
     if(CONFIG_SDL2)
         target_link_libraries(lavender SDL2::SDL2-static SDL2_ttf::SDL2_ttf-static)
+    elseif(NOT MSVC)
+        target_link_options(lavender PRIVATE -municode)
     endif()
 endif()
 
