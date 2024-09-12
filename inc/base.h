@@ -20,6 +20,17 @@
 #define _fmemset memset
 #endif
 
+#if defined(_MSC_VER)
+#include <intrin.h>
+
+#define __builtin_bswap16(x) _byteswap_ushort(x)
+#define __builtin_bswap32(x) _byteswap_ulong(x)
+#define __builtin_bswap64(x) _byteswap_uint64(x)
+#define __builtin_parity(x) (__popcnt(x) % 2)
+
+#define strcasecmp _stricmp
+#endif
+
 #ifndef far
 #if !defined(EDITING) && defined(__ia16__)
 #define far __far
@@ -52,9 +63,9 @@ typedef union {
 } uquad;
 
 extern uint64_t
-rstrtoull(const char *restrict str, int base);
+rstrtoull(const char *str, int base);
 
-#if !__MISC_VISIBLE
+#if !defined(_WIN32) && !__MISC_VISIBLE
 extern char *
 itoa(int value, char *str, int base);
 #endif

@@ -36,7 +36,7 @@
     }
 
 uint64_t
-rstrtoull(const char *restrict str, int base)
+rstrtoull(const char *str, int base)
 {
     while (isspace(*str))
     {
@@ -57,7 +57,7 @@ rstrtoull(const char *restrict str, int base)
     }
 }
 
-#if !__MISC_VISIBLE
+#if !defined(_WIN32) && !__MISC_VISIBLE
 char *
 itoa(int value, char *str, int base)
 {

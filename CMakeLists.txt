@@ -20,11 +20,15 @@ import_dotconfig(${DOTCONFIG})
 add_config_header(config ${DOTCONFIG})
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/inc)
 
-add_compile_options(-Os)
-add_compile_options(-fno-strict-aliasing)
-add_compile_options(-Wall -Werror)
-if(NOT DOS)
-    add_compile_options(-Wpedantic)
+if(MSVC)
+    add_compile_options(/utf-8)
+else()
+    add_compile_options(-Os)
+    add_compile_options(-fno-strict-aliasing)
+    add_compile_options(-Wall -Werror)
+    if(NOT DOS)
+        add_compile_options(-Wpedantic)
+    endif()
 endif()
 
 set(CMAKE_RC_FLAGS "-c 65001")
@@ -87,7 +91,7 @@ add_custom_command(
 
 add_custom_command(
     OUTPUT sshow${CMAKE_EXECUTABLE_SUFFIX}
-    COMMAND cat src/lavender${CMAKE_EXECUTABLE_SUFFIX} data.zip > sshow${CMAKE_EXECUTABLE_SUFFIX}
+    COMMAND cmake -E cat $<TARGET_FILE:lavender> data.zip > sshow${CMAKE_EXECUTABLE_SUFFIX}
     DEPENDS lavender data.zip)
 
 add_custom_target(bundle DEPENDS sshow${CMAKE_EXECUTABLE_SUFFIX})
