@@ -4,24 +4,34 @@
 #include <wchar.h>
 
 #define UNICODE
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_syswm.h>
 #include <shlobj.h>
 #include <windows.h>
 
 #include <fmt/utf8.h>
 #include <pal.h>
-#include <platform/sdl2arch.h>
 #include <snd.h>
+
+#if defined(CONFIG_SDL2)
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_syswm.h>
+
+#include <platform/sdl2arch.h>
+#endif
 
 #include "../resource.h"
 #include "pal_impl.h"
+
+#if !defined(CONFIG_SDL2)
+#include "evtmouse.h"
+#endif
 
 static LPVOID _ver_resource = NULL;
 static WORD  *_ver_vfi_translation = NULL;
 static char   _ver_string[MAX_PATH] = {0};
 
+#if defined(CONFIG_SDL2)
 extern SDL_Window *_window;
+#endif
 
 static HICON         _icon = NULL;
 static HWND          _wnd = NULL;
@@ -49,6 +59,7 @@ pal_initialize(int argc, char *argv[])
         exit(1);
     }
 
+#if defined(CONFIG_SDL2)
     if (!sdl2arch_initialize())
     {
         LOG("SDL2 architecture initialization failed");
@@ -63,6 +74,7 @@ pal_initialize(int argc, char *argv[])
     SDL_VERSION(&wminfo.version);
     SDL_GetWindowWMInfo(_window, &wminfo);
     _wnd = wminfo.info.win.window;
+#endif
 
     hasset icon = pal_open_asset("windows.ico", O_RDONLY);
     if (icon)
@@ -114,9 +126,25 @@ pal_cleanup(void)
         free(_font);
     }
 
+#if defined(CONFIG_SDL2)
     sdl2arch_cleanup();
+#endif
     ziparch_cleanup();
 }
+
+#if !defined(CONFIG_SDL2)
+bool
+pal_handle(void)
+{
+    return true;
+}
+
+uint16_t
+pal_get_keystroke(void)
+{
+    return 0;
+}
+#endif
 
 uint32_t
 pal_get_counter(void)
@@ -319,6 +347,7 @@ pal_load_string(unsigned id, char *buffer, int max_length)
     return length;
 }
 
+#if defined(CONFIG_SDL2)
 static int CALLBACK
 enum_font_fam_proc(const LOGFONTW    *logfont,
                    const TEXTMETRICW *metric,
@@ -418,6 +447,7 @@ sdl2arch_get_font(void)
     WideCharToMultiByte(CP_UTF8, 0, path, -1, _font, length, NULL, NULL);
     return _font;
 }
+#endif
 
 void
 pal_alert(const char *text, int error)
@@ -442,6 +472,7 @@ windows_get_hwnd(void)
     return _wnd;
 }
 
+#if defined(CONFIG_SDL2)
 #define WINAPISHIM(dll, name, type, args, body)                                \
     type __stdcall _imp__##name args                                           \
     {                                                                          \
@@ -537,3 +568,4 @@ WINAPISHIM("user32.dll",
 
                return FALSE;
            })
+#endif
