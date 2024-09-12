@@ -16,6 +16,6 @@ if(DOS)
     endif()
 endif()
 
-if(WIN32 OR LINUX)
+if(CONFIG_SDL2)
     target_sources(gfx PRIVATE sdl2.c)
 endif()

@@ -2,7 +2,7 @@
 
 #include "sld_impl.h"
 
-#if defined(__linux__) || defined(__MINGW32__)
+#if defined(CONFIG_SDL2)
 #include <platform/sdl2arch.h>
 #endif
 
@@ -22,7 +22,7 @@ _set(const char *name, const char *value)
 {
     if (0 == strcmp("gfx.title", name))
     {
-#if defined(__linux__) || defined(__MINGW32__)
+#if defined(CONFIG_SDL2)
         sdl2arch_set_window_title(value);
         return 1;
 #else

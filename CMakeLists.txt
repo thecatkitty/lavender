@@ -60,10 +60,16 @@ endif()
 
 if(WIN32)
     add_compile_definitions(WINVER=0x0500)
+    set(CONFIG_SDL2 1)
 endif()
 
 if(LINUX)
     add_compile_options(-g)
+    set(CONFIG_SDL2 1)
+endif()
+
+if(CONFIG_SDL2)
+    add_compile_definitions(CONFIG_SDL2)
 endif()
 
 include_directories(BEFORE inc)
