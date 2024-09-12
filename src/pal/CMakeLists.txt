@@ -7,7 +7,7 @@ if(DOS)
     target_sources(pal PRIVATE dospc.c)
 endif()
 
-if(WIN32 OR LINUX)
+if(CONFIG_SDL2)
     target_sources(pal PRIVATE sdl2arch.c)
 endif()
 
