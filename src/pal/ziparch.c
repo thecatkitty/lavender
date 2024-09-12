@@ -1,4 +1,5 @@
-#ifdef __MINGW32__
+#ifdef _WIN32
+#include <windows.h>
 #include <malloc.h>
 #else
 #include <alloca.h>
@@ -11,6 +12,10 @@
 
 #include "../../ext/MatchingWildcards/Listing1.cpp"
 #include "pal_impl.h"
+
+#ifndef O_ACCMODE
+#define O_ACCMODE (_O_RDONLY | _O_WRONLY | _O_RDWR)
+#endif
 
 pal_asset __pal_assets[MAX_OPEN_ASSETS];
 
@@ -37,7 +42,7 @@ _tmpnam(char *path)
 
     return path;
 }
-#elif defined(__MINGW32__)
+#elif defined(_WIN32)
 #include <windows.h>
 
 static char *

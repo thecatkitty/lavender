@@ -8,24 +8,24 @@ __sld_loadu(const char *str, uint16_t *out)
     const char *cur = str;
     *out = 0;
 
-    while (isspace(*cur))
+    while (isspace((uint8_t)*cur))
     {
         cur++;
     }
 
-    while (isdigit(*cur))
+    while (isdigit((uint8_t)*cur))
     {
         *out *= 10;
         *out += *cur - '0';
         cur++;
     }
 
-    if (!isspace(*cur))
+    if (!isspace((uint8_t)*cur))
     {
         return -1;
     }
 
-    while (isspace(*cur))
+    while (isspace((uint8_t)*cur))
     {
         cur++;
     }
@@ -40,7 +40,7 @@ __sld_load_content(const char *str, sld_entry *out)
     char       *content = out->content;
     int         length = 0;
 
-    while (isspace(*cur))
+    while (isspace((uint8_t)*cur))
     {
         cur++;
     }

@@ -25,6 +25,12 @@
 #include "evtmouse.h"
 #endif
 
+#ifdef _MSC_VER
+#define FMT_AS "%S"
+#else
+#define FMT_AS "%s"
+#endif
+
 static LPVOID _ver_resource = NULL;
 static WORD  *_ver_vfi_translation = NULL;
 static char   _ver_string[MAX_PATH] = {0};
@@ -222,7 +228,7 @@ static LPCWSTR
 _load_string_file_info(const char *name)
 {
     WCHAR path[MAX_PATH];
-    swprintf(path, MAX_PATH, L"\\StringFileInfo\\%04X%04X\\%s",
+    swprintf(path, MAX_PATH, L"\\StringFileInfo\\%04X%04X\\" FMT_AS,
              _ver_vfi_translation[0], _ver_vfi_translation[1], name);
 
     WCHAR *string;
@@ -264,8 +270,8 @@ pal_get_version_string(void)
     if (NULL == version)
     {
         LOG("cannot load product version string");
-        WideCharToMultiByte(CP_UTF8, 0, version, -1, _ver_string, MAX_PATH,
-                            NULL, NULL);
+        WideCharToMultiByte(CP_UTF8, 0, name, -1, _ver_string, MAX_PATH, NULL,
+                            NULL);
     }
     else
     {
@@ -455,7 +461,7 @@ pal_alert(const char *text, int error)
     WCHAR msg[MAX_PATH];
     if (error)
     {
-        swprintf(msg, MAX_PATH, L"%s\nerror %d", text, error);
+        swprintf(msg, MAX_PATH, L"" FMT_AS "\nerror %d", text, error);
     }
     else
     {

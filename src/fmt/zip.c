@@ -1,12 +1,15 @@
-#ifdef __MINGW32__
+#ifdef _WIN32
 #include <malloc.h>
 #else
 #include <alloca.h>
 #endif
 #include <fcntl.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 
 #include <fmt/exe.h>
 #include <fmt/utf8.h>
@@ -45,7 +48,7 @@ _seek_read(void *ptr, off_t offset, size_t size)
 static off_t
 _get_bundle_length(void)
 {
-#ifdef __MINGW32__
+#ifdef _WIN32
     exe_dos_header dos_header;
     if (!_seek_read(&dos_header, 0, sizeof(dos_header)))
     {

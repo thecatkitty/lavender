@@ -1,4 +1,4 @@
-#ifdef __MINGW32__
+#ifdef _WIN32
 #include <winnt.rh>
 #endif
 
