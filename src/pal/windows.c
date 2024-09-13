@@ -47,6 +47,8 @@ static LARGE_INTEGER _start_pc, _pc_freq;
 #if !defined(CONFIG_SDL2)
 static HINSTANCE _instance = NULL;
 static int       _cmd_show;
+
+static WPARAM _keycode;
 #endif
 
 extern int
@@ -77,6 +79,57 @@ _wnd_proc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     switch (msg)
     {
+    case WM_KEYDOWN: {
+        switch (wparam)
+        {
+        case VK_BACK:
+        case VK_TAB:
+        case VK_RETURN:
+        case VK_ESCAPE:
+        case VK_PRIOR:
+        case VK_NEXT:
+        case VK_END:
+        case VK_HOME:
+        case VK_LEFT:
+        case VK_UP:
+        case VK_RIGHT:
+        case VK_DOWN:
+        case VK_INSERT:
+        case VK_DELETE:
+        case VK_F1:
+        case VK_F2:
+        case VK_F3:
+        case VK_F4:
+        case VK_F5:
+        case VK_F6:
+        case VK_F7:
+        case VK_F8:
+        case VK_F9:
+        case VK_F10:
+        case VK_F11:
+        case VK_F12:
+        case VK_OEM_MINUS: {
+            _keycode = wparam;
+            return 0;
+        }
+
+        default: {
+            if ((('0' <= wparam) && ('9' >= wparam)) ||
+                (('A' <= wparam) && ('Z' >= wparam)))
+            {
+                _keycode = wparam;
+            }
+
+            return 0;
+        }
+        }
+    }
+
+    case WM_KEYUP: {
+        _keycode = 0;
+        return 0;
+    }
+
     case WM_DESTROY:
         PostQuitMessage(0);
         return 0;
@@ -260,7 +313,9 @@ pal_handle(void)
 uint16_t
 pal_get_keystroke(void)
 {
-    return 0;
+    uint16_t keycode = _keycode;
+    _keycode = 0;
+    return keycode;
 }
 #endif
 
