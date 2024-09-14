@@ -100,6 +100,12 @@ gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
 bool
 gfx_draw_line(gfx_rect *rect, gfx_color color)
 {
+    HDC dc = GetDC(_wnd);
+    SetDCPenColor(dc, COLORS[color]);
+    SelectObject(dc, GetStockObject(DC_PEN));
+    MoveToEx(dc, rect->left, rect->top, NULL);
+    LineTo(dc, rect->left + rect->width - 1, rect->top + rect->height - 1);
+    ReleaseDC(_wnd, dc);
     return true;
 }
 
