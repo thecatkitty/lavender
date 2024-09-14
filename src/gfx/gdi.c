@@ -94,6 +94,97 @@ _to_wrect(const gfx_rect *rect, RECT *wrect)
 bool
 gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
 {
+    BITMAPINFO *bmi = (BITMAPINFO *)calloc(1, sizeof(BITMAPINFOHEADER) +
+                                                  16 * sizeof(COLORREF));
+    if (NULL == bmi)
+    {
+        return false;
+    }
+
+    bmi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bmi->bmiHeader.biWidth = bm->width;
+    bmi->bmiHeader.biHeight = -bm->height;
+    bmi->bmiHeader.biPlanes = bm->planes;
+    bmi->bmiHeader.biBitCount = bm->bpp;
+    bmi->bmiHeader.biCompression = BI_RGB;
+
+    HDC     dc = GetDC(_wnd);
+    HDC     bmp_dc = NULL;
+    HBITMAP bmp = NULL;
+
+    // Prepare pixel data
+    const void *bits = bm->bits;
+    if (1 == bm->bpp)
+    {
+        // Prepare a DWORD-aligned buffer for 1bpp bitmaps
+        if (bm->opl % 4)
+        {
+            size_t aligned_opl = align(bm->opl, sizeof(DWORD));
+            size_t lines = abs(bm->height);
+
+            char *aligned_bits = malloc(aligned_opl * lines);
+            if (NULL == aligned_bits)
+            {
+                goto end;
+            }
+
+            const char *src = bm->bits;
+            char       *dst = aligned_bits;
+            for (size_t i = 0; i < lines; i++)
+            {
+                memcpy(dst, src, bm->opl);
+                src += bm->opl;
+                dst += aligned_opl;
+            }
+
+            bits = aligned_bits;
+        }
+
+        // Initialize the palette for 1bpp bitmaps
+        bmi->bmiColors[1].rgbRed = 255;
+        bmi->bmiColors[1].rgbGreen = 255;
+        bmi->bmiColors[1].rgbBlue = 255;
+    }
+    else if (4 == bm->bpp)
+    {
+        // Initialize the palette for 4bpp bitmaps
+        memcpy(bmi->bmiColors, COLORS, 16 * sizeof(COLORREF));
+    }
+
+    bmp = CreateDIBitmap(dc, &bmi->bmiHeader, CBM_INIT, bits, bmi,
+                         DIB_RGB_COLORS);
+    if (NULL == bmp)
+    {
+        goto end;
+    }
+
+    bmp_dc = CreateCompatibleDC(dc);
+    if (NULL == bmp_dc)
+    {
+        goto end;
+    }
+
+    SelectObject(bmp_dc, bmp);
+    BitBlt(dc, x, y, bm->width, abs(bm->height), bmp_dc, 0, 0, SRCCOPY);
+
+end:
+    if (NULL != bmp_dc)
+    {
+        DeleteDC(bmp_dc);
+    }
+
+    if (NULL != bmp)
+    {
+        DeleteObject(bmp);
+    }
+
+    if ((NULL != bits) && (bm->bits != bits))
+    {
+        free((void *)bits);
+    }
+
+    ReleaseDC(_wnd, dc);
+    free(bmi);
     return true;
 }
 
