@@ -9,4 +9,9 @@
 extern HWND
 windows_get_hwnd(void);
 
+#if !defined(CONFIG_SDL2)
+extern void
+windows_set_window_title(const char *title);
+#endif
+
 #endif // _PLATFORM_WINDOWS_H_
