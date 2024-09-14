@@ -1,3 +1,7 @@
+#if defined(_WIN32)
+#include <platform/windows.h>
+#endif
+
 #include <string.h>
 
 #include "sld_impl.h"
@@ -24,6 +28,9 @@ _set(const char *name, const char *value)
     {
 #if defined(CONFIG_SDL2)
         sdl2arch_set_window_title(value);
+        return 1;
+#elif defined(_WIN32)
+        windows_set_window_title(value);
         return 1;
 #else
         return 0;

@@ -645,6 +645,16 @@ windows_get_hwnd(void)
     return _wnd;
 }
 
+#if !defined(CONFIG_SDL2)
+void
+windows_set_window_title(const char *title)
+{
+    WCHAR wtitle[MAX_PATH];
+    MultiByteToWideChar(CP_UTF8, 0, title, -1, wtitle, MAX_PATH);
+    SetWindowTextW(_wnd, wtitle);
+}
+#endif
+
 #if defined(CONFIG_SDL2)
 #define WINAPISHIM(dll, name, type, args, body)                                \
     type __stdcall _imp__##name args                                           \
