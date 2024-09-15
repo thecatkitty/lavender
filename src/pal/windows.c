@@ -22,6 +22,8 @@
 #include "pal_impl.h"
 
 #if !defined(CONFIG_SDL2)
+#include <windowsx.h>
+
 #include "evtmouse.h"
 #endif
 
@@ -49,6 +51,8 @@ static HINSTANCE _instance = NULL;
 static int       _cmd_show;
 
 static WPARAM _keycode;
+
+static gfx_dimensions _mouse_cell;
 #endif
 
 extern int
@@ -127,6 +131,31 @@ _wnd_proc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
     case WM_KEYUP: {
         _keycode = 0;
+        return 0;
+    }
+
+    case WM_MOUSEMOVE: {
+        _mouse_x = GET_X_LPARAM(lparam) / _mouse_cell.width;
+        _mouse_y = GET_Y_LPARAM(lparam) / _mouse_cell.height;
+        return 0;
+    }
+
+    case WM_LBUTTONDOWN:
+    case WM_RBUTTONDOWN: {
+        if (!_mouse_enabled)
+        {
+            return 0;
+        }
+
+        _mouse_buttons |=
+            ((WM_LBUTTONDOWN == msg) ? PAL_MOUSE_LBUTTON : PAL_MOUSE_RBUTTON);
+        return 0;
+    }
+
+    case WM_LBUTTONUP:
+    case WM_RBUTTONUP: {
+        _mouse_buttons &=
+            ~((WM_LBUTTONUP == msg) ? PAL_MOUSE_LBUTTON : PAL_MOUSE_RBUTTON);
         return 0;
     }
 
@@ -231,6 +260,8 @@ pal_initialize(int argc, char *argv[])
         UnregisterClassW(wndc_name, _instance);
         _die(IDS_UNSUPPENV);
     }
+
+    gfx_get_glyph_dimensions(&_mouse_cell);
 
     ShowWindow(_wnd, _cmd_show);
 #endif
