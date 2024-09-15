@@ -64,7 +64,6 @@ endif()
 
 if(WIN32)
     add_compile_definitions(WINVER=0x0500)
-    set(CONFIG_SDL2 1)
 endif()
 
 if(LINUX)
