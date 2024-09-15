@@ -35,9 +35,8 @@ This is still work in progress, but I'm doing my best to separate working versio
 
 ## Building
 Building requires x86_64 Linux with *CMake*, *GNU Make*, *GNU Binutils*, and `zip`.
-Both Windows and Linux builds rely on *SDL2* and *SDL2_ttf* libraries.
-Windows target is built using *MinGW-w64* for i686 or x86_64.
-Linux build requires Fontconfig, FluidSynth, and libblkid.
+Windows target is built using *MinGW-w64* for i686 or x86_64, but can be built using Visual C++.
+Linux builds relies on *SDL2* and *SDL2_ttf* libraries, also requiring Fontconfig, FluidSynth, and libblkid.
 MS-DOS builds require [GCC for IA-16](https://github.com/tkchia/gcc-ia16/) with [libi86](https://github.com/tkchia/libi86/).
 Script encryption tools are written in *Python 3*.
 

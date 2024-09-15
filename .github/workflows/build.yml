@@ -58,17 +58,6 @@ jobs:
           wget -nv -P ext/ https://github.com/thecatkitty/andrea/releases/download/0.1.1/andrea-0.1.1.zip
           unzip ext/andrea-0.1.1.zip -d ext/andrea
 
-      - name: Fetch Windows dependencies
-        if: startsWith(matrix.platform.target, 'windows')
-        run: |
-          wget -nv -P ext/ https://github.com/libsdl-org/SDL/releases/download/release-2.28.3/SDL2-devel-2.28.3-mingw.tar.gz
-          wget -nv -P ext/ https://github.com/libsdl-org/SDL_ttf/releases/download/release-2.20.2/SDL2_ttf-devel-2.20.2-mingw.tar.gz
-          tar -xf ext/SDL2-devel-2.28.3-mingw.tar.gz -C ext/
-          tar -xf ext/SDL2_ttf-devel-2.20.2-mingw.tar.gz -C ext/
-          mkdir ext/include
-          cp -r ext/SDL2-2.28.3/i686-w64-mingw32/include/* ext/include/
-          cp -r ext/SDL2_ttf-2.20.2/i686-w64-mingw32/include/* ext/include/
-
       - name: Build for ${{ matrix.platform.name }}
         env:
           CC: ${{ matrix.platform.cc }}
