@@ -27,7 +27,7 @@
 #include "evtmouse.h"
 #endif
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__clang__)
 #define FMT_AS "%S"
 #else
 #define FMT_AS "%s"

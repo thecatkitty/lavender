@@ -1,7 +1,7 @@
 #include "resource.h"
 
 STRINGTABLE
-LANGUAGE LCID_PLK, 0x1
+LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
 {
     IDS_ERROR, "BŁĄD: "
     IDS_NOARCHIVE, "Nie znaleziono archiwum"

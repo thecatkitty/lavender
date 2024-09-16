@@ -1,7 +1,7 @@
 #include "resource.h"
 
 STRINGTABLE
-LANGUAGE LCID_ENU, 0x1
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 {
     IDS_ERROR, "ERROR: "
     IDS_NOARCHIVE, "Archive not found"
