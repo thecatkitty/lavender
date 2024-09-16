@@ -5,15 +5,12 @@
 
 #include <dlg.h>
 #include <fmt/utf8.h>
-#include <gfx.h>
 #include <pal.h>
 #include <platform/sdl2arch.h>
 #include <platform/windows.h>
 
 #define ID_EDITBOX 150
 #define ID_TEXT    200
-
-static gfx_dimensions _screen = {0, 0};
 
 static HGLOBAL           _hgbl = NULL;
 static NONCLIENTMETRICSW _nclm = {0};
@@ -44,11 +41,6 @@ _free_fonts(void)
 static void
 _draw_background(void)
 {
-    if (!_screen.width)
-    {
-        gfx_get_screen_dimensions(&_screen);
-    }
-
     RECT rect;
     HWND wnd = windows_get_hwnd();
     HDC  dc = GetDC(wnd);
@@ -289,10 +281,10 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
         // Activate edit box
         SetFocus(GetDlgItem(dlg, ID_EDITBOX));
 
-        return FALSE;
+        return TRUE;
     }
 
-    case WM_COMMAND:
+    case WM_COMMAND: {
         if ((EN_CHANGE == HIWORD(wparam)) && (ID_EDITBOX == LOWORD(wparam)))
         {
             if (!_validator)
@@ -323,20 +315,22 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
             GetWindowTextW(edit_box, text, length + 1);
             WideCharToMultiByte(CP_UTF8, 0, text, -1, _buffer, _size, NULL,
                                 NULL);
-            EndDialog(dlg, wparam);
+            DestroyWindow(dlg);
             _value = length;
             return TRUE;
         }
 
         case IDCANCEL:
-            EndDialog(dlg, wparam);
+            DestroyWindow(dlg);
             _value = 0;
-            // Fall through
+            return TRUE;
 
         default:
-            return TRUE;
+            return FALSE;
         }
     }
+    }
+
     return FALSE;
 }
 
@@ -344,10 +338,10 @@ static DWORD WINAPI
 _prompt_routine(LPVOID lpparam)
 {
     // Dialog box
-    LPDLGTEMPLATE dt = (LPDLGTEMPLATE)GlobalLock(_hgbl);
+    LPDLGTEMPLATEW dt = (LPDLGTEMPLATEW)GlobalLock(_hgbl);
     ZeroMemory(dt, 1024);
-    dt->style = WS_POPUP | WS_BORDER | WS_SYSMENU | DS_MODALFRAME | WS_CAPTION |
-                DS_SETFONT;
+    dt->style = WS_VISIBLE | WS_POPUP | WS_BORDER | WS_SYSMENU | DS_MODALFRAME |
+                WS_CAPTION | DS_SETFONT;
     dt->cdit = 3;
 
     // no menu
@@ -375,7 +369,7 @@ _prompt_routine(LPVOID lpparam)
     LPWORD creation_data;
 
     // OK button
-    LPDLGITEMTEMPLATE ok_button = (LPDLGITEMTEMPLATE)align(
+    LPDLGITEMTEMPLATEW ok_button = (LPDLGITEMTEMPLATEW)align(
         font_face + wcslen(font_face) + 1, sizeof(DWORD));
     ok_button->cx = 50;
     ok_button->cy = 14;
@@ -397,8 +391,8 @@ _prompt_routine(LPVOID lpparam)
     *creation_data = 0;
 
     // Edit box
-    LPDLGITEMTEMPLATE edit_box =
-        (LPDLGITEMTEMPLATE)align(creation_data + 1, sizeof(DWORD));
+    LPDLGITEMTEMPLATEW edit_box =
+        (LPDLGITEMTEMPLATEW)align(creation_data + 1, sizeof(DWORD));
     edit_box->cx = (_size + 2) * 4;
     edit_box->cy = 14;
     edit_box->id = ID_EDITBOX;
@@ -420,8 +414,8 @@ _prompt_routine(LPVOID lpparam)
     *creation_data = 0;
 
     // Static text control
-    LPDLGITEMTEMPLATE label =
-        (LPDLGITEMTEMPLATE)align(creation_data + 1, sizeof(DWORD));
+    LPDLGITEMTEMPLATEW label =
+        (LPDLGITEMTEMPLATEW)align(creation_data + 1, sizeof(DWORD));
     label->x = 5;
     label->y = 5;
     label->id = ID_TEXT;
@@ -441,11 +435,10 @@ _prompt_routine(LPVOID lpparam)
     creation_data = (LPWORD)(caption + caption_length);
     *creation_data = 0;
 
-    GlobalUnlock(_hgbl);
-    DialogBoxIndirectParamW(GetModuleHandleW(NULL), (LPDLGTEMPLATE)_hgbl,
+    DialogBoxIndirectParamW(GetModuleHandleW(NULL), (LPDLGTEMPLATEW)_hgbl,
                             windows_get_hwnd(), (DLGPROC)_dialog_proc,
                             (LPARAM)caption);
-
+    GlobalUnlock(_hgbl);
     free(_title);
     free(_message);
     return 0;
