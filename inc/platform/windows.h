@@ -6,8 +6,13 @@
 #endif
 #include <windows.h>
 
+#include <base.h>
+
 extern HWND
 windows_get_hwnd(void);
+
+extern bool
+windows_set_dialog(HWND dlg);
 
 #if !defined(CONFIG_SDL2)
 extern void

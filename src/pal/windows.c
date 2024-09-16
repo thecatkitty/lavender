@@ -43,6 +43,7 @@ extern SDL_Window *_window;
 
 static HICON         _icon = NULL;
 static HWND          _wnd = NULL;
+static HWND          _dlg = NULL;
 static char         *_font = NULL;
 static LARGE_INTEGER _start_pc, _pc_freq;
 
@@ -334,8 +335,11 @@ pal_handle(void)
             return false;
         }
 
-        TranslateMessage(&msg);
-        DispatchMessageW(&msg);
+        if ((NULL == _dlg) || !IsDialogMessageW(_dlg, &msg))
+        {
+            TranslateMessage(&msg);
+            DispatchMessageW(&msg);
+        }
     }
 
     return true;
@@ -674,6 +678,23 @@ HWND
 windows_get_hwnd(void)
 {
     return _wnd;
+}
+
+bool
+windows_set_dialog(HWND dlg)
+{
+    if (_dlg == dlg)
+    {
+        return true;
+    }
+
+    if ((NULL == _dlg) || (NULL == dlg))
+    {
+        _dlg = dlg;
+        return true;
+    }
+
+    return false;
 }
 
 #if !defined(CONFIG_SDL2)
