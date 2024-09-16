@@ -1,7 +1,7 @@
 #include "resource.h"
 
 STRINGTABLE
-LANGUAGE LCID_CSY, 0x1
+LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
 {
     IDS_ERROR, "CHYBA: "
     IDS_NOARCHIVE, "Archiv nenalezen"

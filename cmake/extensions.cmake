@@ -11,8 +11,11 @@ else()
     set(WIN32_STRINGS_SUFFIX ".o")
 endif()
 
-set(CMAKE_RC_COMPILER ${WIN32_TRIPLE}-windres)
-set(CMAKE_WIN32_OBJCOPY ${WIN32_TRIPLE}-objcopy)
+cmake_path(GET CMAKE_C_COMPILER PARENT_PATH compiler_root)
+find_program(win32_windres ${WIN32_TRIPLE}-windres PATHS ${compiler_root})
+find_program(win32_objcopy ${WIN32_TRIPLE}-objcopy PATHS ${compiler_root})
+set(CMAKE_RC_COMPILER ${win32_windres})
+set(CMAKE_WIN32_OBJCOPY ${win32_objcopy})
 
 function(add_win32_strings target source_file)
     add_custom_command(
