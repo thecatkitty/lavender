@@ -21,15 +21,12 @@ static WNDPROC _prev_wnd_proc = NULL;
 static HFONT _font_banner = NULL;
 static HFONT _font_footer = NULL;
 
-static LPWSTR _title = NULL;
-static LPWSTR _message = NULL;
-
 static char         *_buffer = NULL;
 static int           _size;
 static dlg_validator _validator = NULL;
 
-static HANDLE _thread = NULL;
-static int    _value;
+static HWND _dlg;
+static int  _value;
 
 static void
 _free_fonts(void)
@@ -150,42 +147,30 @@ _hook_proc(int code, WPARAM wparam, LPARAM lparam)
     return CallNextHookEx(_hook, code, wparam, lparam);
 }
 
-static DWORD WINAPI
-_alert_routine(LPVOID lpparam)
-{
-    _hook = SetWindowsHookExW(WH_CALLWNDPROC, _hook_proc, NULL,
-                              GetCurrentThreadId());
-
-    MessageBoxW(windows_get_hwnd(), _message, _title,
-                MB_OK | MB_ICONEXCLAMATION);
-    _value = DLG_OK;
-
-    free(_title);
-    free(_message);
-    return 0;
-}
-
 bool
 dlg_alert(const char *title, const char *message)
 {
-    if (_thread)
+    if (_dlg)
     {
         return false;
     }
 
-    int title_length = MultiByteToWideChar(CP_UTF8, 0, title, -1, NULL, 0);
-    _title = (LPWSTR)malloc(title_length * sizeof(WCHAR));
-    MultiByteToWideChar(CP_UTF8, 0, title, -1, _title, title_length);
+    int    title_length = MultiByteToWideChar(CP_UTF8, 0, title, -1, NULL, 0);
+    LPWSTR wtitle = (LPWSTR)alloca(title_length * sizeof(WCHAR));
+    MultiByteToWideChar(CP_UTF8, 0, title, -1, wtitle, title_length);
 
     int message_length = MultiByteToWideChar(CP_UTF8, 0, message, -1, NULL, 0);
-    _message = (LPWSTR)malloc(message_length * sizeof(WCHAR));
-    MultiByteToWideChar(CP_UTF8, 0, message, -1, _message, message_length);
-
-    _thread = CreateThread(NULL, 0, _alert_routine, NULL, 0, NULL);
-    _value = DLG_INCOMPLETE;
+    LPWSTR wmessage = (LPWSTR)alloca(message_length * sizeof(WCHAR));
+    MultiByteToWideChar(CP_UTF8, 0, message, -1, wmessage, message_length);
 
     pal_disable_mouse();
     _draw_background();
+
+    _hook = SetWindowsHookExW(WH_CALLWNDPROC, _hook_proc, NULL,
+                              GetCurrentThreadId());
+    MessageBoxW(windows_get_hwnd(), wmessage, wtitle,
+                MB_OK | MB_ICONEXCLAMATION);
+    _value = DLG_OK;
 
     return true;
 }
@@ -334,8 +319,8 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
     return FALSE;
 }
 
-static DWORD WINAPI
-_prompt_routine(LPVOID lpparam)
+static HWND
+_create_prompt(LPCWSTR title, LPCWSTR message)
 {
     // Dialog box
     LPDLGTEMPLATEW dt = (LPDLGTEMPLATEW)GlobalLock(_hgbl);
@@ -354,8 +339,8 @@ _prompt_routine(LPVOID lpparam)
 
     // caption
     LPWSTR caption = (LPWSTR)(class + 1);
-    int    caption_length = wcslen(_title) + 1;
-    wcscpy(caption, _title);
+    int    caption_length = wcslen(title) + 1;
+    wcscpy(caption, title);
 
     // font size
     LPWORD font_size = (LPWORD)(caption + caption_length);
@@ -428,20 +413,18 @@ _prompt_routine(LPVOID lpparam)
 
     // caption
     caption = (LPWSTR)(class + 2);
-    caption_length = wcslen(_message) + 1;
-    wcscpy(caption, _message);
+    caption_length = wcslen(message) + 1;
+    wcscpy(caption, message);
 
     // no creation data
     creation_data = (LPWORD)(caption + caption_length);
     *creation_data = 0;
 
-    DialogBoxIndirectParamW(GetModuleHandleW(NULL), (LPDLGTEMPLATEW)_hgbl,
-                            windows_get_hwnd(), (DLGPROC)_dialog_proc,
-                            (LPARAM)caption);
+    HWND wnd = CreateDialogIndirectParamW(
+        GetModuleHandleW(NULL), (LPDLGTEMPLATEW)_hgbl, windows_get_hwnd(),
+        (DLGPROC)_dialog_proc, (LPARAM)caption);
     GlobalUnlock(_hgbl);
-    free(_title);
-    free(_message);
-    return 0;
+    return wnd;
 }
 
 static void
@@ -460,7 +443,7 @@ dlg_prompt(const char   *title,
            int           size,
            dlg_validator validator)
 {
-    if (_thread)
+    if (_dlg)
     {
         return false;
     }
@@ -487,20 +470,20 @@ dlg_prompt(const char   *title,
         atexit(_free_hgbl);
     }
 
-    int title_length = MultiByteToWideChar(CP_UTF8, 0, title, -1, NULL, 0);
-    _title = (LPWSTR)malloc(title_length * sizeof(WCHAR));
-    MultiByteToWideChar(CP_UTF8, 0, title, -1, _title, title_length);
+    int    title_length = MultiByteToWideChar(CP_UTF8, 0, title, -1, NULL, 0);
+    LPWSTR wtitle = (LPWSTR)alloca(title_length * sizeof(WCHAR));
+    MultiByteToWideChar(CP_UTF8, 0, title, -1, wtitle, title_length);
 
     int message_length = MultiByteToWideChar(CP_UTF8, 0, message, -1, NULL, 0);
-    _message = (LPWSTR)malloc(message_length * sizeof(WCHAR));
-    MultiByteToWideChar(CP_UTF8, 0, message, -1, _message, message_length);
+    LPWSTR wmessage = (LPWSTR)alloca(message_length * sizeof(WCHAR));
+    MultiByteToWideChar(CP_UTF8, 0, message, -1, wmessage, message_length);
 
     _buffer = buffer;
     _size = size;
     _validator = validator;
 
-    _thread = CreateThread(NULL, 0, _prompt_routine, NULL, 0, NULL);
     _value = DLG_INCOMPLETE;
+    windows_set_dialog(_dlg = _create_prompt(wtitle, wmessage));
 
     pal_disable_mouse();
     _draw_background();
@@ -511,20 +494,14 @@ dlg_prompt(const char   *title,
 int
 dlg_handle(void)
 {
-    if (NULL == _thread)
+    if (NULL == _dlg)
     {
         return 0;
     }
 
     if (DLG_INCOMPLETE != _value)
     {
-        if (WAIT_TIMEOUT == WaitForSingleObject(_thread, 1))
-        {
-            return DLG_INCOMPLETE;
-        }
-
-        CloseHandle(_thread);
-        _thread = NULL;
+        windows_set_dialog(_dlg = NULL);
     }
 
     return _value;
