@@ -221,6 +221,10 @@ pal_initialize(int argc, char *argv[])
     SDL_GetWindowWMInfo(_window, &wminfo);
     _wnd = wminfo.info.win.window;
 #else
+    INITCOMMONCONTROLSEX icc = {.dwSize = sizeof(INITCOMMONCONTROLSEX),
+                                .dwICC = ICC_STANDARD_CLASSES};
+    InitCommonControlsEx(&icc);
+
     const wchar_t wndc_name[] = L"Slideshow Window Class";
     WNDCLASS      wndc = {.lpfnWndProc = _wnd_proc,
                           .hInstance = _instance,
