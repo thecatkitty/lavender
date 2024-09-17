@@ -27,7 +27,7 @@
 #include "evtmouse.h"
 #endif
 
-#if defined(_MSC_VER) || defined(__clang__)
+#if defined(_MSC_VER) || (defined(__USE_MINGW_ANSI_STDIO) && !__USE_MINGW_ANSI_STDIO)
 #define FMT_AS "%S"
 #else
 #define FMT_AS "%s"
