@@ -1,7 +1,14 @@
 include(CheckTypeSize)
 check_type_size("void *" POINTER_SIZE)
 
-if(POINTER_SIZE EQUAL 8)
+cmake_path(GET CMAKE_C_COMPILER FILENAME compiler_name)
+if(${compiler_name} MATCHES "-")
+    string(REGEX REPLACE "-[a-z]+$" "-" compiler_prefix ${compiler_name})
+endif()
+
+if(${compiler_prefix} MATCHES "mingw")
+    string(REGEX REPLACE "-$" "" WIN32_TRIPLE ${compiler_prefix})
+elseif((${compiler_prefix} MATCHES "x86_64") OR (("${compiler_prefix}" STREQUAL "") AND ("${CMAKE_HOST_SYSTEM_PROCESSOR}" MATCHES "x86_64")))
     set(WIN32_TRIPLE x86_64-w64-mingw32)
     set(WIN32_OBJCOPY_FMT elf64-x86-64)
     set(WIN32_STRINGS_SUFFIX ".obj")
