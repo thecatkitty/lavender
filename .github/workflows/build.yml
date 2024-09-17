@@ -28,13 +28,19 @@ jobs:
             apts: gcc-mingw-w64-x86-64 libsdl2-dev libsdl2-ttf-dev libfontconfig-dev libfluidsynth-dev libblkid-dev
           - name: Windows (IA32)
             target: windows-ia32
-            apts: gcc-mingw-w64-i686
             cc: i686-w64-mingw32-gcc
             flags: -DCMAKE_SYSTEM_NAME=Windows
           - name: Windows (x64)
             target: windows-x64
-            apts: gcc-mingw-w64-x86-64
             cc: x86_64-w64-mingw32-gcc
+            flags: -DCMAKE_SYSTEM_NAME=Windows
+          - name: Windows (ARM)
+            target: windows-arm
+            cc: armv7-w64-mingw32-gcc
+            flags: -DCMAKE_SYSTEM_NAME=Windows
+          - name: Windows (ARM64)
+            target: windows-arm64
+            cc: aarch64-w64-mingw32-gcc
             flags: -DCMAKE_SYSTEM_NAME=Windows
 
     steps:
@@ -47,6 +53,13 @@ jobs:
         run: |
           sudo apt update
           sudo apt install ${{ matrix.platform.apts }} cmake zip -y
+
+      - name: Fetch Windows dependencies
+        if: startsWith(matrix.platform.target, 'windows')
+        run: |
+          wget -nv -P ext/ https://github.com/mstorsjo/llvm-mingw/releases/download/20240619/llvm-mingw-20240619-msvcrt-ubuntu-20.04-x86_64.tar.xz
+          tar -xf ext/llvm-mingw-20240619-msvcrt-ubuntu-20.04-x86_64.tar.xz -C ext/
+          echo "$PWD/ext/llvm-mingw-20240619-msvcrt-ubuntu-20.04-x86_64/bin" >> $GITHUB_PATH
 
       - name: Fetch DOS dependencies
         if: startsWith(matrix.platform.target, 'dos')
@@ -94,10 +107,12 @@ jobs:
           
       - name: Prepare archives
         run: |
-          cd lavender-dos-ia16-com && zip -r ../lavender-${{ github.ref_name }}-dos-com.zip      * && cd ..
-          cd lavender-dos-ia16-exe && zip -r ../lavender-${{ github.ref_name }}-dos-exe.zip      * && cd ..
-          cd lavender-windows-ia32 && zip -r ../lavender-${{ github.ref_name }}-windows-ia32.zip * && cd ..
-          cd lavender-windows-x64  && zip -r ../lavender-${{ github.ref_name }}-windows-x64.zip  * && cd ..
+          cd lavender-dos-ia16-com  && zip -r ../lavender-${{ github.ref_name }}-dos-com.zip       * && cd ..
+          cd lavender-dos-ia16-exe  && zip -r ../lavender-${{ github.ref_name }}-dos-exe.zip       * && cd ..
+          cd lavender-windows-ia32  && zip -r ../lavender-${{ github.ref_name }}-windows-ia32.zip  * && cd ..
+          cd lavender-windows-x64   && zip -r ../lavender-${{ github.ref_name }}-windows-x64.zip   * && cd ..
+          cd lavender-windows-arm   && zip -r ../lavender-${{ github.ref_name }}-windows-arm.zip   * && cd ..
+          cd lavender-windows-arm64 && zip -r ../lavender-${{ github.ref_name }}-windows-arm64.zip * && cd ..
 
       - name: Release
         uses: softprops/action-gh-release@v1
@@ -109,3 +124,5 @@ jobs:
             lavender-${{ github.ref_name }}-dos-exe.zip
             lavender-${{ github.ref_name }}-windows-ia32.zip
             lavender-${{ github.ref_name }}-windows-x64.zip
+            lavender-${{ github.ref_name }}-windows-arm.zip
+            lavender-${{ github.ref_name }}-windows-arm64.zip
