@@ -5,6 +5,17 @@
 
 static HMIDIOUT _out = NULL;
 
+#if PAL_EXTERNAL_TICK
+static unsigned _period = 0;
+static UINT     _timer = 0;
+
+static void CALLBACK
+_time_callback(UINT id, UINT msg, DWORD_PTR user, DWORD_PTR dw1, DWORD_PTR dw2)
+{
+    snd_handle();
+}
+#endif
+
 static bool ddcall
 mme_open(device *dev)
 {
@@ -32,12 +43,41 @@ mme_open(device *dev)
             caps.szPname);
     }
 
+#if PAL_EXTERNAL_TICK
+    TIMECAPS tc;
+    if (TIMERR_NOERROR != timeGetDevCaps(&tc, sizeof(TIMECAPS)))
+    {
+        LOG("cannot get multimedia timer capabilities");
+        return false;
+    }
+#endif
+
     if (MMSYSERR_NOERROR !=
         midiOutOpen(&_out, MIDI_MAPPER, 0, 0, CALLBACK_NULL))
     {
         LOG("cannot open MIDI mapper device");
         return false;
     }
+
+#if PAL_EXTERNAL_TICK
+    unsigned period = min(max(tc.wPeriodMin, 5), tc.wPeriodMax);
+    if (TIMERR_NOERROR != timeBeginPeriod(period))
+    {
+        LOG("cannot request the multimedia timer period");
+        snd_device_close(dev);
+        return false;
+    }
+
+    _period = period;
+
+    if (0 == (_timer = timeSetEvent(_period, _period, _time_callback, 0,
+                                    TIME_PERIODIC)))
+    {
+        LOG("cannot start the multimedia timer");
+        snd_device_close(dev);
+        return false;
+    }
+#endif
 
     return true;
 }
@@ -46,6 +86,18 @@ static void ddcall
 mme_close(device *dev)
 {
     LOG("entry");
+
+#if PAL_EXTERNAL_TICK
+    if (_timer)
+    {
+        timeKillEvent(_timer);
+    }
+
+    if (_period)
+    {
+        timeEndPeriod(_period);
+    }
+#endif
 
     if (_out)
     {
