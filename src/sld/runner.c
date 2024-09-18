@@ -96,7 +96,9 @@ sld_handle(void)
         return;
     }
 
+#if !PAL_EXTERNAL_TICK
     snd_handle();
+#endif
 
     sld_context *ctx = __sld_ctx;
     if (NULL == __sld_ctx)

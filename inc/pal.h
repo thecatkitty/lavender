@@ -9,6 +9,12 @@ DEFINE_HANDLE(hasset);
 
 typedef bool (*pal_enum_assets_callback)(const char *, void *);
 
+#if defined(_WIN32)
+#define PAL_EXTERNAL_TICK 1
+#else
+#define PAL_EXTERNAL_TICK 0
+#endif
+
 #define PAL_MOUSE_LBUTTON 0x0001
 #define PAL_MOUSE_RBUTTON 0x0002
 
