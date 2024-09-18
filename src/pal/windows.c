@@ -50,6 +50,7 @@ static LARGE_INTEGER _start_pc, _pc_freq;
 #if !defined(CONFIG_SDL2)
 static HINSTANCE _instance = NULL;
 static int       _cmd_show;
+static bool      _no_stall = false;
 
 static WPARAM _keycode;
 
@@ -269,6 +270,7 @@ pal_initialize(int argc, char *argv[])
     gfx_get_glyph_dimensions(&_mouse_cell);
 
     ShowWindow(_wnd, _cmd_show);
+    pal_stall(-1);
 #endif
 
     hasset icon = pal_open_asset("windows.ico", O_RDONLY);
@@ -323,6 +325,11 @@ pal_cleanup(void)
 
 #if defined(CONFIG_SDL2)
     sdl2arch_cleanup();
+#else
+    if (_wnd)
+    {
+        KillTimer(_wnd, 0);
+    }
 #endif
     ziparch_cleanup();
 }
@@ -332,8 +339,18 @@ bool
 pal_handle(void)
 {
     MSG msg;
-    while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
+    do
     {
+        if (_no_stall && !PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
+        {
+            return true;
+        }
+
+        if (!_no_stall && !GetMessageW(&msg, NULL, 0, 0))
+        {
+            return false;
+        }
+
         if (WM_QUIT == msg.message)
         {
             return false;
@@ -344,7 +361,7 @@ pal_handle(void)
             TranslateMessage(&msg);
             DispatchMessageW(&msg);
         }
-    }
+    } while (_no_stall);
 
     return true;
 }
@@ -378,6 +395,20 @@ pal_sleep(unsigned ms)
     LOG("entry, ms: %u", ms);
 
     Sleep(ms);
+}
+
+void
+pal_stall(int ms)
+{
+    if (0 < ms)
+    {
+        _no_stall = false;
+        SetTimer(_wnd, 0, ms, NULL);
+        return;
+    }
+
+    _no_stall = (0 == ms);
+    SetTimer(_wnd, 0, 20, NULL);
 }
 
 static bool
@@ -694,6 +725,7 @@ windows_set_dialog(HWND dlg)
 
     if ((NULL == _dlg) || (NULL == dlg))
     {
+        _no_stall = false;
         _dlg = dlg;
         return true;
     }

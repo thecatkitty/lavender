@@ -81,6 +81,11 @@ pal_get_ticks(unsigned ms);
 extern void ddcall
 pal_sleep(unsigned ms);
 
+#if PAL_EXTERNAL_TICK
+extern void
+pal_stall(int ms);
+#endif
+
 extern int
 pal_enum_assets(pal_enum_assets_callback callback,
                 const char              *pattern,
