@@ -6,6 +6,10 @@
 static HFONT _font = NULL;
 static HWND  _wnd = NULL;
 static SIZE  _glyph;
+static SIZE  _screen;
+
+static HDC     _dc = NULL;
+static HBITMAP _fb = NULL;
 
 static const COLORREF COLORS[] = {[GFX_COLOR_BLACK] = RGB(0, 0, 0),
                                   [GFX_COLOR_NAVY] = RGB(0, 0, 128),
@@ -32,32 +36,49 @@ gfx_initialize(void)
                         ANTIALIASED_QUALITY, FIXED_PITCH | FF_MODERN, NULL);
     _wnd = windows_get_hwnd();
 
-    HDC dc = GetDC(_wnd);
-    SelectObject(dc, _font);
+    HDC wnd_dc = GetDC(_wnd);
+    _dc = CreateCompatibleDC(wnd_dc);
+    if (NULL == _dc)
+    {
+        ReleaseDC(_wnd, wnd_dc);
+        return false;
+    }
+
+    SelectObject(_dc, _font);
 
     TEXTMETRICW metric;
-    GetTextMetricsW(dc, &metric);
+    GetTextMetricsW(_dc, &metric);
     _glyph.cx = metric.tmAveCharWidth;
     _glyph.cy = metric.tmHeight;
-
-    ReleaseDC(_wnd, dc);
+    _screen.cx = 80 * _glyph.cx;
+    _screen.cy = 25 * _glyph.cy;
 
     RECT rect;
     GetClientRect(_wnd, &rect);
-    rect.right = rect.left + 80 * _glyph.cx;
-    rect.bottom = rect.top + 25 * _glyph.cy;
+    rect.right = rect.left + _screen.cx;
+    rect.bottom = rect.top + _screen.cy;
 
     AdjustWindowRect(&rect, GetWindowLong(_wnd, GWL_STYLE), FALSE);
     SetWindowPos(_wnd, 0, -1, -1, rect.right - rect.left,
                  rect.bottom - rect.top, SWP_NOMOVE | SWP_NOREDRAW);
+
+    _fb = CreateCompatibleBitmap(wnd_dc, _screen.cx, _screen.cy);
+    SelectObject(_dc, _fb);
+    ReleaseDC(_wnd, wnd_dc);
+
+    RECT screen_rect = {
+        .left = 0, .top = 0, .right = _screen.cx, .bottom = _screen.cy};
+    FillRect(_dc, &screen_rect, GetStockObject(BLACK_BRUSH));
+    InvalidateRect(_wnd, &screen_rect, FALSE);
+
     return true;
 }
 
 void
 gfx_get_screen_dimensions(gfx_dimensions *dim)
 {
-    dim->width = _glyph.cx * 80;
-    dim->height = _glyph.cy * 25;
+    dim->width = _screen.cx;
+    dim->height = _screen.cy;
 }
 
 void
@@ -108,7 +129,6 @@ gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
     bmi->bmiHeader.biBitCount = bm->bpp;
     bmi->bmiHeader.biCompression = BI_RGB;
 
-    HDC     dc = GetDC(_wnd);
     HDC     bmp_dc = NULL;
     HBITMAP bmp = NULL;
 
@@ -151,21 +171,24 @@ gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
         memcpy(bmi->bmiColors, COLORS, 16 * sizeof(COLORREF));
     }
 
-    bmp = CreateDIBitmap(dc, &bmi->bmiHeader, CBM_INIT, bits, bmi,
+    bmp = CreateDIBitmap(_dc, &bmi->bmiHeader, CBM_INIT, bits, bmi,
                          DIB_RGB_COLORS);
     if (NULL == bmp)
     {
         goto end;
     }
 
-    bmp_dc = CreateCompatibleDC(dc);
+    bmp_dc = CreateCompatibleDC(_dc);
     if (NULL == bmp_dc)
     {
         goto end;
     }
 
     SelectObject(bmp_dc, bmp);
-    BitBlt(dc, x, y, bm->width, abs(bm->height), bmp_dc, 0, 0, SRCCOPY);
+    BitBlt(_dc, x, y, bm->width, abs(bm->height), bmp_dc, 0, 0, SRCCOPY);
+
+    RECT rect = {x, y, x + bm->width, y + abs(bm->height)};
+    InvalidateRect(_wnd, &rect, FALSE);
 
 end:
     if (NULL != bmp_dc)
@@ -183,7 +206,6 @@ end:
         free((void *)bits);
     }
 
-    ReleaseDC(_wnd, dc);
     free(bmi);
     return true;
 }
@@ -191,12 +213,14 @@ end:
 bool
 gfx_draw_line(gfx_rect *rect, gfx_color color)
 {
-    HDC dc = GetDC(_wnd);
-    SetDCPenColor(dc, COLORS[color]);
-    SelectObject(dc, GetStockObject(DC_PEN));
-    MoveToEx(dc, rect->left, rect->top, NULL);
-    LineTo(dc, rect->left + rect->width - 1, rect->top + rect->height - 1);
-    ReleaseDC(_wnd, dc);
+    SetDCPenColor(_dc, COLORS[color]);
+    SelectObject(_dc, GetStockObject(DC_PEN));
+    MoveToEx(_dc, rect->left, rect->top, NULL);
+    LineTo(_dc, rect->left + rect->width - 1, rect->top + rect->height - 1);
+
+    RECT wrect;
+    _to_wrect(rect, &wrect);
+    InvalidateRect(_wnd, &wrect, FALSE);
     return true;
 }
 
@@ -210,10 +234,10 @@ gfx_draw_rectangle(gfx_rect *rect, gfx_color color)
     wrect.right++;
     wrect.bottom++;
 
-    HDC dc = GetDC(_wnd);
-    SetDCBrushColor(dc, COLORS[color]);
-    FrameRect(dc, &wrect, GetStockObject(DC_BRUSH));
-    ReleaseDC(_wnd, dc);
+    SetDCBrushColor(_dc, COLORS[color]);
+    FrameRect(_dc, &wrect, GetStockObject(DC_BRUSH));
+
+    InvalidateRect(_wnd, &wrect, FALSE);
     return true;
 }
 
@@ -223,10 +247,10 @@ gfx_fill_rectangle(gfx_rect *rect, gfx_color color)
     RECT wrect;
     _to_wrect(rect, &wrect);
 
-    HDC dc = GetDC(_wnd);
-    SetDCBrushColor(dc, COLORS[color]);
-    FillRect(dc, &wrect, GetStockObject(DC_BRUSH));
-    ReleaseDC(_wnd, dc);
+    SetDCBrushColor(_dc, COLORS[color]);
+    FillRect(_dc, &wrect, GetStockObject(DC_BRUSH));
+
+    InvalidateRect(_wnd, &wrect, FALSE);
     return true;
 }
 
@@ -242,15 +266,13 @@ gfx_draw_text(const char *str, uint16_t x, uint16_t y)
     rect.left += x * _glyph.cx;
     rect.top += y * _glyph.cy;
 
-    HDC dc = GetDC(_wnd);
-    SelectObject(dc, _font);
-
-    DrawTextW(dc, wstr, -1, &rect, DT_CALCRECT | DT_SINGLELINE);
+    SelectObject(_dc, _font);
+    DrawTextW(_dc, wstr, -1, &rect, DT_CALCRECT | DT_SINGLELINE);
     RECT txt_rect = {0, 0, rect.right - rect.left, rect.bottom - rect.top};
 
-    HDC     txt_dc = CreateCompatibleDC(dc);
+    HDC     txt_dc = CreateCompatibleDC(_dc);
     HBITMAP txt_bm =
-        CreateCompatibleBitmap(dc, txt_rect.right, txt_rect.bottom);
+        CreateCompatibleBitmap(_dc, txt_rect.right, txt_rect.bottom);
     SelectObject(txt_dc, txt_bm);
     SelectObject(txt_dc, _font);
     SetBkMode(txt_dc, OPAQUE);
@@ -258,17 +280,25 @@ gfx_draw_text(const char *str, uint16_t x, uint16_t y)
     SetTextColor(txt_dc, 0xFFFFFF);
     DrawTextW(txt_dc, wstr, -1, &txt_rect, DT_SINGLELINE);
 
-    BitBlt(dc, rect.left, rect.top, txt_rect.right, txt_rect.bottom, txt_dc, 0,
+    BitBlt(_dc, rect.left, rect.top, txt_rect.right, txt_rect.bottom, txt_dc, 0,
            0, SRCINVERT);
     DeleteObject(txt_bm);
     DeleteDC(txt_dc);
 
-    ReleaseDC(_wnd, dc);
+    InvalidateRect(_wnd, &rect, FALSE);
     return true;
 }
 
 void
 gfx_cleanup(void)
 {
+    DeleteObject(_fb);
+    DeleteDC(_dc);
     DeleteObject(_font);
+}
+
+HDC
+windows_get_dc(void)
+{
+    return _dc;
 }

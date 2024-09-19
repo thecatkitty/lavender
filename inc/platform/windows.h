@@ -17,6 +17,9 @@ windows_set_dialog(HWND dlg);
 #if !defined(CONFIG_SDL2)
 extern void
 windows_set_window_title(const char *title);
+
+extern HDC
+windows_get_dc(void);
 #endif
 
 #endif // _PLATFORM_WINDOWS_H_
