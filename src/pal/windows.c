@@ -9,6 +9,7 @@
 
 #include <fmt/utf8.h>
 #include <pal.h>
+#include <platform/windows.h>
 #include <snd.h>
 
 #if defined(CONFIG_SDL2)
@@ -167,11 +168,14 @@ _wnd_proc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
     case WM_PAINT: {
         PAINTSTRUCT ps;
-        HDC         hdc = BeginPaint(wnd, &ps);
+        HDC         dc = BeginPaint(wnd, &ps);
 
         // All painting occurs here, between BeginPaint and EndPaint.
-
-        FillRect(hdc, &ps.rcPaint, GetStockObject(BLACK_BRUSH));
+        HDC src_dc = windows_get_dc();
+        BitBlt(dc, ps.rcPaint.left, ps.rcPaint.top,
+               ps.rcPaint.right - ps.rcPaint.left,
+               ps.rcPaint.bottom - ps.rcPaint.top, src_dc, ps.rcPaint.left,
+               ps.rcPaint.top, SRCCOPY);
 
         EndPaint(wnd, &ps);
 
