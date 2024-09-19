@@ -35,13 +35,26 @@ _free_fonts(void)
     DeleteObject(_font_footer);
 }
 
-static void
-_draw_background(void)
+bool
+dlg_refresh(const gfx_rect *clip)
 {
+    if (NULL == _dlg)
+    {
+        return false;
+    }
+
     RECT rect;
     HWND wnd = windows_get_hwnd();
     HDC  dc = GetDC(wnd);
     GetClientRect(wnd, &rect);
+
+    HRGN region = NULL;
+    if (NULL != clip)
+    {
+        region = CreateRectRgn(clip->left, clip->top, clip->left + clip->width,
+                               clip->top + clip->height);
+        SelectClipRgn(dc, region);
+    }
 
     // Gradient background
     GRADIENT_RECT mesh = {0, 1};
@@ -90,14 +103,21 @@ _draw_background(void)
     rect.bottom -= 5;
     SelectObject(dc, _font_footer);
     DrawTextW(dc, L"© 2021-2024", -1, &rect, DT_SINGLELINE | DT_BOTTOM);
-    DrawTextW(dc, L"https://github.com/thecatkitty/lavender/", -1, &rect,
+    DrawTextW(dc, L"https://celones.pl/lavender/", -1, &rect,
               DT_SINGLELINE | DT_BOTTOM | DT_RIGHT);
 
     // Restore state
+    if (NULL != clip)
+    {
+        SelectClipRgn(dc, NULL);
+        DeleteObject(region);
+    }
+
     SetTextColor(dc, prev_color);
     SelectObject(dc, prev_font);
     SetBkMode(dc, prev_bkmode);
     ReleaseDC(wnd, dc);
+    return true;
 }
 
 static LRESULT CALLBACK
@@ -164,13 +184,15 @@ dlg_alert(const char *title, const char *message)
     MultiByteToWideChar(CP_UTF8, 0, message, -1, wmessage, message_length);
 
     pal_disable_mouse();
-    _draw_background();
+    dlg_refresh(NULL);
 
+    _dlg = HWND_MESSAGE;
     _hook = SetWindowsHookExW(WH_CALLWNDPROC, _hook_proc, NULL,
                               GetCurrentThreadId());
     MessageBoxW(windows_get_hwnd(), wmessage, wtitle,
                 MB_OK | MB_ICONEXCLAMATION);
     _value = DLG_OK;
+    _dlg = NULL;
 
     return true;
 }
@@ -486,7 +508,7 @@ dlg_prompt(const char   *title,
     windows_set_dialog(_dlg = _create_prompt(wtitle, wmessage));
 
     pal_disable_mouse();
-    _draw_background();
+    dlg_refresh(NULL);
 
     return true;
 }

@@ -1,7 +1,7 @@
 #ifndef _DLG_H_
 #define _DLG_H_
 
-#include <base.h>
+#include <gfx.h>
 
 enum dlg_result
 {
@@ -31,5 +31,10 @@ dlg_prompt(const char   *title,
 
 extern int
 dlg_handle(void);
+
+#if defined(_WIN32) && !defined(CONFIG_SDL2)
+extern bool
+dlg_refresh(const gfx_rect *clip);
+#endif
 
 #endif // _DLG_H_

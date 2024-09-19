@@ -25,6 +25,8 @@
 #if !defined(CONFIG_SDL2)
 #include <windowsx.h>
 
+#include <dlg.h>
+
 #include "evtmouse.h"
 #endif
 
@@ -171,11 +173,17 @@ _wnd_proc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
         HDC         dc = BeginPaint(wnd, &ps);
 
         // All painting occurs here, between BeginPaint and EndPaint.
-        HDC src_dc = windows_get_dc();
-        BitBlt(dc, ps.rcPaint.left, ps.rcPaint.top,
-               ps.rcPaint.right - ps.rcPaint.left,
-               ps.rcPaint.bottom - ps.rcPaint.top, src_dc, ps.rcPaint.left,
-               ps.rcPaint.top, SRCCOPY);
+        gfx_rect clip = {ps.rcPaint.left, ps.rcPaint.top,
+                         ps.rcPaint.right - ps.rcPaint.left,
+                         ps.rcPaint.bottom - ps.rcPaint.top};
+        if (!dlg_refresh(&clip))
+        {
+            HDC src_dc = windows_get_dc();
+            BitBlt(dc, ps.rcPaint.left, ps.rcPaint.top,
+                   ps.rcPaint.right - ps.rcPaint.left,
+                   ps.rcPaint.bottom - ps.rcPaint.top, src_dc, ps.rcPaint.left,
+                   ps.rcPaint.top, SRCCOPY);
+        }
 
         EndPaint(wnd, &ps);
 
