@@ -57,7 +57,7 @@ else()
     add_binary_object(version version.bin _binary_obj_version_txt)
     target_link_binary_object(lavender version)
 
-    add_win32_strings(strings resource.ENU.rc)
+    add_win32_strings(strings resource.${LAV_LANG}.rc)
     target_link_win32_strings(lavender strings)
 endif()
 
