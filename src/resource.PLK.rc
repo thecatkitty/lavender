@@ -35,6 +35,9 @@ LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
     IDS_UNKNOWNKEYSRC, "Nieznane źródło klucza"
 #endif
     IDS_BADSOUND, "Niepoprawny lub niewspierany plik dźwiękowy"
+
+    IDS_DESCRIPTION, "Odtwarzacz pokazu slajdów"
+    IDS_COPYRIGHT, "(C) 2021-2024 Mateusz Karcz.\nUdostępniono na zasadach Licencji MIT."
 }
 
 #ifndef STRINGS_ONLY

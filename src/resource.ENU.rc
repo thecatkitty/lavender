@@ -35,6 +35,9 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
     IDS_UNKNOWNKEYSRC, "Unknown key source"
 #endif
     IDS_BADSOUND, "Invalid or unsupported sound file" 
+
+    IDS_DESCRIPTION, "A slideshow player"
+    IDS_COPYRIGHT, "(C) 2021-2024 Mateusz Karcz.\nShared under the MIT License."
 }
 
 #ifndef STRINGS_ONLY

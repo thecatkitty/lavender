@@ -38,3 +38,6 @@
 #define IDS_UNKNOWNKEYSRC 0x3C
 #endif
 #define IDS_BADSOUND 0x3D
+
+#define IDS_DESCRIPTION 0x40
+#define IDS_COPYRIGHT   0x41
