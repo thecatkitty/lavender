@@ -38,6 +38,8 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
 
     IDS_DESCRIPTION, "Přehrávač prezentací"
     IDS_COPYRIGHT, "(C) 2021-2024 Mateusz Karcz.\nZpřístupněno pod Licencí MIT."
+    IDS_ABOUT, "O programu..."
+    IDS_ABOUT_LONG, "O programu Lavender"
 }
 
 #ifndef STRINGS_ONLY
