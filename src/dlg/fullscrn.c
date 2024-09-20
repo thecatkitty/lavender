@@ -55,7 +55,7 @@ _draw_background(void)
     bar.top = _screen.height - bar.height;
     gfx_fill_rectangle(&bar, GFX_COLOR_BLACK);
     gfx_draw_text("(C) 2021-2024", 1, 24);
-    gfx_draw_text("https://github.com/thecatkitty/lavender/", 39, 24);
+    gfx_draw_text("https://celones.pl/lavender", 52, 24);
 }
 
 static void

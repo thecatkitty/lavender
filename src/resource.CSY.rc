@@ -35,6 +35,9 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
     IDS_UNKNOWNKEYSRC, "Neznámý zdroj klíče"
 #endif
     IDS_BADSOUND, "Neplatný nebo nepodporovaný zvukový soubor"
+
+    IDS_DESCRIPTION, "Přehrávač prezentací"
+    IDS_COPYRIGHT, "(C) 2021-2024 Mateusz Karcz.\nZpřístupněno pod Licencí MIT."
 }
 
 #ifndef STRINGS_ONLY

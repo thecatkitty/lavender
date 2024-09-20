@@ -38,6 +38,9 @@ typedef int ddcall (*pf_drvinit)(void);
 typedef int ddcall (*pf_drvdeinit)(void);
 #endif
 
+extern int ddcall
+__cga_init(void);
+
 extern char __edata[], __sbss[], __ebss[];
 extern char _binary_obj_version_txt_start[];
 extern char __w32_rsrc_start[];
@@ -234,10 +237,28 @@ _show_help(const char *self)
         name++;
     }
 
+    __cga_init();
+    gfx_get_font_data(&_font);
+
+    char msgu[80], msga[80];
+    puts(pal_get_version_string());
+
+    pal_load_string(IDS_DESCRIPTION, msgu, sizeof(msgu));
+    utf8_encode(msgu, msga, pal_wctoa);
+    puts(msga);
+    puts("");
+
     fputs(name ? name : "LAVENDER", stdout);
     puts(" [/? | /S<dev>]");
     puts("\ndev:");
     snd_enum_devices(_snd_enum_callback, NULL);
+
+    puts("");
+    pal_load_string(IDS_COPYRIGHT, msgu, sizeof(msgu));
+    utf8_encode(msgu, msga, pal_wctoa);
+    puts(msga);
+
+    puts("\nhttps://celones.pl/lavender");
 
 #if defined(CONFIG_ANDREA)
     for (size_t i = 0; i < MAX_DRIVERS; i++)
@@ -303,7 +324,7 @@ pal_initialize(int argc, char *argv[])
 #endif
 
     const char *arg_snd = NULL;
-    for (int i = 1; i <= argc; i++)
+    for (int i = 1; i < argc; i++)
     {
         if ('/' != argv[i][0])
         {
