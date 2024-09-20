@@ -16,6 +16,7 @@
 #include <platform/sdl2arch.h>
 #include <snd.h>
 
+#include "../resource.h"
 #include "pal_impl.h"
 
 extern char _binary_obj_version_txt_start[];
@@ -28,6 +29,22 @@ static long  _start_msec;
 extern int
 __fluid_init(void);
 
+static void
+_show_help(const char *self)
+{
+    char msg[80];
+    puts(pal_get_version_string());
+
+    pal_load_string(IDS_DESCRIPTION, msg, sizeof(msg));
+    puts(msg);
+    puts("");
+
+    pal_load_string(IDS_COPYRIGHT, msg, sizeof(msg));
+    puts(msg);
+
+    puts("\n\nhttps://celones.pl/lavender");
+}
+
 void
 pal_initialize(int argc, char *argv[])
 {
@@ -36,6 +53,20 @@ pal_initialize(int argc, char *argv[])
     _start_msec = time.tv_sec * 1000 + time.tv_nsec / 1000000;
 
     LOG("entry");
+
+    for (int i = 1; i < argc; i++)
+    {
+        if ('-' != argv[i][0])
+        {
+            continue;
+        }
+
+        if ('v' == argv[i][1])
+        {
+            _show_help(argv[0]);
+            exit(0);
+        }
+    }
 
     if (!ziparch_initialize(argv[0]))
     {
