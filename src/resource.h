@@ -41,3 +41,5 @@
 
 #define IDS_DESCRIPTION 0x40
 #define IDS_COPYRIGHT   0x41
+#define IDS_ABOUT       0x42
+#define IDS_ABOUT_LONG  0x43

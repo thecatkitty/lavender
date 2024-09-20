@@ -36,6 +36,8 @@
 #define FMT_AS "%s"
 #endif
 
+#define ID_ABOUT 0x1000
+
 static LPVOID _ver_resource = NULL;
 static WORD  *_ver_vfi_translation = NULL;
 static char   _ver_string[MAX_PATH] = {0};
@@ -54,6 +56,9 @@ static LARGE_INTEGER _start_pc, _pc_freq;
 static HINSTANCE _instance = NULL;
 static int       _cmd_show;
 static bool      _no_stall = false;
+
+static HHOOK   _hook = NULL;
+static WNDPROC _prev_wnd_proc = NULL;
 
 static WPARAM _keycode;
 
@@ -83,11 +88,134 @@ wWinMain(HINSTANCE instance,
     return main(__argc, argv);
 }
 
+static BOOL CALLBACK
+_about_enum_child_proc(HWND wnd, LPARAM lparam)
+{
+    wchar_t wndc_name[256];
+    GetClassNameW(wnd, wndc_name, lengthof(wndc_name));
+    if (0 != wcsicmp(wndc_name, L"Static"))
+    {
+        return TRUE;
+    }
+
+    LONG_PTR style = GetWindowLongW(wnd, GWL_STYLE);
+    if (SS_ICON & style)
+    {
+        *(HWND *)lparam = wnd;
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+static LRESULT CALLBACK
+_about_hook_wnd_proc(HWND wnd, UINT message, WPARAM wparam, LPARAM lparam)
+{
+    LRESULT rc = CallWindowProc(_prev_wnd_proc, wnd, message, wparam, lparam);
+
+    if (message == WM_INITDIALOG)
+    {
+        RECT parent_rect;
+        GetWindowRect(windows_get_hwnd(), &parent_rect);
+        LONG parent_width = parent_rect.right - parent_rect.left;
+        LONG parent_height = parent_rect.bottom - parent_rect.top;
+
+        RECT msgbox_rect;
+        GetWindowRect(wnd, &msgbox_rect);
+        LONG msgbox_width = msgbox_rect.right - msgbox_rect.left;
+        LONG msgbox_height = msgbox_rect.bottom - msgbox_rect.top;
+
+        MoveWindow(wnd, parent_rect.left + (parent_width - msgbox_width) / 2,
+                   parent_rect.top + (parent_height - msgbox_height) / 2,
+                   msgbox_width, msgbox_height, FALSE);
+
+        HWND icon_wnd = NULL;
+        EnumChildWindows(wnd, _about_enum_child_proc, (LPARAM)&icon_wnd);
+        if (NULL != icon_wnd)
+        {
+            HICON icon = LoadIconW(_instance, MAKEINTRESOURCEW(1));
+            Static_SetIcon(icon_wnd, icon);
+        }
+
+        return rc;
+    }
+
+    if (message == WM_NCDESTROY)
+    {
+        UnhookWindowsHookEx(_hook);
+    }
+
+    return rc;
+}
+
+static LRESULT CALLBACK
+_about_hook_proc(int code, WPARAM wparam, LPARAM lparam)
+{
+    if (HC_ACTION == code)
+    {
+        LPCWPSTRUCT cwp = (LPCWPSTRUCT)lparam;
+        if (cwp->message == WM_INITDIALOG)
+        {
+            _prev_wnd_proc = (WNDPROC)SetWindowLongPtrW(
+                cwp->hwnd, GWLP_WNDPROC, (LONG_PTR)_about_hook_wnd_proc);
+        }
+    }
+
+    return CallNextHookEx(_hook, code, wparam, lparam);
+}
+
+static void
+_append(wchar_t *dst, const wchar_t *src, size_t size)
+{
+    wcsncat(dst, src, size - wcslen(dst));
+}
+
 static LRESULT CALLBACK
 _wnd_proc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     switch (msg)
     {
+    case WM_CREATE: {
+        HMENU sys_menu = GetSystemMenu(wnd, FALSE);
+        if (NULL != sys_menu)
+        {
+            wchar_t str[MAX_PATH];
+
+            AppendMenuW(sys_menu, MF_SEPARATOR, 0, NULL);
+
+            LoadStringW(_instance, IDS_ABOUT, str, lengthof(str));
+            AppendMenuW(sys_menu, MF_STRING, ID_ABOUT, str);
+        }
+        break;
+    }
+
+    case WM_SYSCOMMAND: {
+        if (ID_ABOUT == wparam)
+        {
+            const char *version = pal_get_version_string();
+            wchar_t     message[1024];
+            wchar_t     part[MAX_PATH];
+
+            MultiByteToWideChar(CP_UTF8, 0, version, -1, message,
+                                lengthof(message));
+            _append(message, L"\n", lengthof(message));
+            LoadStringW(_instance, IDS_DESCRIPTION, part, lengthof(part));
+            _append(message, part, lengthof(message));
+            _append(message, L"\n\n", lengthof(message));
+            LoadStringW(_instance, IDS_COPYRIGHT, part, lengthof(part));
+            _append(message, part, lengthof(message));
+            _append(message, L"\n\nhttps://celones.pl/lavender",
+                    lengthof(message));
+
+            _hook = SetWindowsHookExW(WH_CALLWNDPROC, _about_hook_proc, NULL,
+                                      GetCurrentThreadId());
+            LoadStringW(_instance, IDS_ABOUT_LONG, part, lengthof(part));
+            MessageBoxW(wnd, message, part, MB_ICONQUESTION);
+            return 0;
+        }
+        break;
+    }
+
     case WM_KEYDOWN: {
         switch (wparam)
         {

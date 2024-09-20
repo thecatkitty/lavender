@@ -103,7 +103,7 @@ dlg_refresh(const gfx_rect *clip)
     rect.bottom -= 5;
     SelectObject(dc, _font_footer);
     DrawTextW(dc, L"© 2021-2024", -1, &rect, DT_SINGLELINE | DT_BOTTOM);
-    DrawTextW(dc, L"https://celones.pl/lavender/", -1, &rect,
+    DrawTextW(dc, L"https://celones.pl/lavender", -1, &rect,
               DT_SINGLELINE | DT_BOTTOM | DT_RIGHT);
 
     // Restore state

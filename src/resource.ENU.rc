@@ -38,6 +38,8 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
     IDS_DESCRIPTION, "A slideshow player"
     IDS_COPYRIGHT, "(C) 2021-2024 Mateusz Karcz.\nShared under the MIT License."
+    IDS_ABOUT, "About..."
+    IDS_ABOUT_LONG, "About Lavender"
 }
 
 #ifndef STRINGS_ONLY
