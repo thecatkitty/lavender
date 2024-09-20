@@ -8,12 +8,12 @@ if(CONFIG_SOUND)
     target_sources(snd PRIVATE fspk.c)
 
     if(DOS)
-        target_sources(snd PRIVATE gm-opl2.c)
-        target_sources(snd PRIVATE dmpu401.c)
-        target_sources(snd PRIVATE dopl2.c)
         target_sources(snd PRIVATE dbeep.c)
-
-        if(NOT DOS_TARGET_COM)
+        if(DOS_TARGET_COM)
+            target_sources(snd PRIVATE dmpu401.c)
+            target_sources(snd PRIVATE gm-opl2.c)
+            target_sources(snd PRIVATE dopl2.c)
+        else()
             add_driver(sndmpu)
             target_sources(sndmpu PRIVATE dmpu401.c)
 
