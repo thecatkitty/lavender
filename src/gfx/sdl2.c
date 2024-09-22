@@ -100,9 +100,10 @@ gfx_initialize(void)
     LOG("font: '%s'", font_path);
     TTF_SizeText(_font, "WW", &_font_w, &_font_h);
     _font_w /= 2;
+    _font_h = TTF_FontHeight(_font);
 
     _screen_w = 80 * _font_w;
-    _screen_h = 25 * 16;
+    _screen_h = 25 * _font_h;
     _window = SDL_CreateWindow(pal_get_version_string(), SDL_WINDOWPOS_CENTERED,
                                SDL_WINDOWPOS_CENTERED, _screen_w, _screen_h,
                                SDL_WINDOW_SHOWN);
@@ -163,7 +164,7 @@ void
 gfx_get_glyph_dimensions(gfx_dimensions *dim)
 {
     dim->width = _font_w;
-    dim->height = 16;
+    dim->height = _font_h;
 }
 
 uint16_t
@@ -327,7 +328,7 @@ gfx_draw_text(const char *str, uint16_t x, uint16_t y)
 
     SDL_Surface *surface =
         TTF_RenderUTF8_Blended(_font, str, COLORS[GFX_COLOR_WHITE]);
-    SDL_Rect rect = {x * _font_w, y * 16, surface->w, surface->h};
+    SDL_Rect rect = {x * _font_w, y * _font_h, surface->w, surface->h};
 
     if (!_rendering_text)
     {
