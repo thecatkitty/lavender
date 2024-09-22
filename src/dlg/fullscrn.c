@@ -223,8 +223,13 @@ _is_pressed(const gfx_rect *rect)
         return false;
     }
 
+#if defined(__ia16__)
     msx *= 8;
     msy *= 8;
+#else
+    msx *= _glyph.width;
+    msy *= _glyph.height;
+#endif
 
     if ((rect->left > msx) || ((rect->left + rect->width) <= msx))
     {
