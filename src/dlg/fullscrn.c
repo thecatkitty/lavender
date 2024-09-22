@@ -80,13 +80,15 @@ _draw_frame(int columns, int lines, const char *title, int title_length)
                            window.width - 1, 1};
     gfx_draw_line(&title_line, GFX_COLOR_BLACK);
 
-    gfx_rect stripe = {window.left + window.width - 4, window.top + 1,
+    int      scale = (_glyph.width + 7) / 8;
+    gfx_rect stripe = {window.left + window.width - 4,
+                       window.top + (scale + 1) / 2,
                        (window.width - ((title_length + 6) * _glyph.width)), 1};
     stripe.left -= stripe.width;
-    for (int i = 0; i < _glyph.height; i += 2)
+    for (int i = 0; i < _glyph.height; i += 2 * scale)
     {
         gfx_draw_line(&stripe, GFX_COLOR_BLACK);
-        stripe.top += 2;
+        stripe.top += 2 * scale;
     }
 
 #ifdef UTF8_NATIVE
