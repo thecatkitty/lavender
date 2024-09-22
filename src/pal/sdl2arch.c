@@ -87,7 +87,7 @@ pal_handle(void)
     case SDL_MOUSEMOTION: {
         LOG("mouse x: %d, y: %d", e.motion.x, e.motion.y);
         _mouse_x = e.motion.x / _mouse_cell.width;
-        _mouse_y = e.motion.y / 16;
+        _mouse_y = e.motion.y / _mouse_cell.height;
         break;
     }
 
