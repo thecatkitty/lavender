@@ -16,6 +16,7 @@ static TTF_Font     *_font = NULL;
 static int           _font_w, _font_h;
 static int           _screen_w, _screen_h;
 static bool          _rendering_text = false;
+static int           _scale;
 
 static const SDL_Color COLORS[] = {
     [GFX_COLOR_BLACK] = {0, 0, 0},      [GFX_COLOR_NAVY] = {0, 0, 128},
@@ -90,7 +91,8 @@ gfx_initialize(void)
         return false;
     }
 
-    _font = TTF_OpenFont(font_path, 12);
+    _scale = 1;
+    _font = TTF_OpenFont(font_path, _scale * 12);
     if (NULL == _font)
     {
         LOG("cannot open font '%s'. %s", font_path, SDL_GetError());
@@ -279,10 +281,25 @@ gfx_draw_line(gfx_rect *rect, gfx_color color)
         rect->left, rect->top, color);
     _rendering_text = false;
 
+    SDL_Rect sdl_rect = {rect->left, rect->top,
+                         rect->width - ((1 == rect->height) ? 0 : 1),
+                         rect->height - ((1 == rect->width) ? 0 : 1)};
     _set_color(color);
-    SDL_RenderDrawLine(_renderer, rect->left, rect->top,
-                       rect->left + rect->width - ((1 == rect->height) ? 0 : 1),
-                       rect->top + rect->height - ((1 == rect->width) ? 0 : 1));
+
+    for (int i = 0; i < _scale; i++)
+    {
+        SDL_RenderDrawLine(_renderer, sdl_rect.x, sdl_rect.y,
+                           sdl_rect.x + sdl_rect.w, sdl_rect.y + sdl_rect.h);
+        if (sdl_rect.w > sdl_rect.h)
+        {
+            sdl_rect.y++;
+        }
+        else
+        {
+            sdl_rect.x++;
+        }
+    }
+
     sdl2arch_present(_renderer);
     return true;
 }
@@ -294,10 +311,18 @@ gfx_draw_rectangle(gfx_rect *rect, gfx_color color)
         rect->left, rect->top, color);
     _rendering_text = false;
 
-    SDL_Rect sdl_rect = {rect->left - 1, rect->top - 1, rect->width + 2,
-                         rect->height + 2};
+    SDL_Rect sdl_rect = {rect->left, rect->top, rect->width, rect->height};
     _set_color(color);
-    SDL_RenderDrawRect(_renderer, &sdl_rect);
+
+    for (int i = 0; i < _scale; i++)
+    {
+        sdl_rect.x--;
+        sdl_rect.y--;
+        sdl_rect.w += 2;
+        sdl_rect.h += 2;
+        SDL_RenderDrawRect(_renderer, &sdl_rect);
+    }
+
     sdl2arch_present(_renderer);
     return true;
 }
