@@ -7,6 +7,7 @@ static HFONT _font = NULL;
 static HWND  _wnd = NULL;
 static SIZE  _glyph;
 static SIZE  _screen;
+static float _scale;
 
 static HDC     _dc = NULL;
 static HBITMAP _fb = NULL;
@@ -31,7 +32,8 @@ static const COLORREF COLORS[] = {[GFX_COLOR_BLACK] = RGB(0, 0, 0),
 bool
 gfx_initialize(void)
 {
-    _font = CreateFontW(16, 0, 0, 0, FW_REGULAR, FALSE, FALSE, FALSE,
+    _scale = 1.0f;
+    _font = CreateFontW(_scale * 16, 0, 0, 0, FW_REGULAR, FALSE, FALSE, FALSE,
                         DEFAULT_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS,
                         ANTIALIASED_QUALITY, FIXED_PITCH | FF_MODERN, NULL);
     _wnd = windows_get_hwnd();
@@ -110,6 +112,15 @@ _to_wrect(const gfx_rect *rect, RECT *wrect)
     wrect->top = crect.top + rect->top;
     wrect->right = wrect->left + rect->width;
     wrect->bottom = wrect->top + rect->height;
+}
+
+static void
+_grow_wrect(RECT *wrect, int length)
+{
+    wrect->left -= length;
+    wrect->top -= length;
+    wrect->right += length;
+    wrect->bottom += length;
 }
 
 bool
@@ -210,16 +221,27 @@ end:
     return true;
 }
 
+static HPEN
+_get_pen(gfx_color color)
+{
+    LOGBRUSH logbrush = {BS_SOLID, COLORS[color]};
+    return ExtCreatePen(PS_GEOMETRIC | PS_ENDCAP_SQUARE | PS_JOIN_MITER, _scale,
+                        &logbrush, 0, NULL);
+}
+
 bool
 gfx_draw_line(gfx_rect *rect, gfx_color color)
 {
-    SetDCPenColor(_dc, COLORS[color]);
-    SelectObject(_dc, GetStockObject(DC_PEN));
+    HPEN pen = _get_pen(color);
+    HPEN old_pen = (HPEN)SelectObject(_dc, _get_pen(color));
     MoveToEx(_dc, rect->left, rect->top, NULL);
     LineTo(_dc, rect->left + rect->width - 1, rect->top + rect->height - 1);
+    SelectObject(_dc, old_pen);
+    DeleteObject(pen);
 
     RECT wrect;
     _to_wrect(rect, &wrect);
+    _grow_wrect(&wrect, _scale);
     InvalidateRect(_wnd, &wrect, FALSE);
     return true;
 }
@@ -229,14 +251,17 @@ gfx_draw_rectangle(gfx_rect *rect, gfx_color color)
 {
     RECT wrect;
     _to_wrect(rect, &wrect);
-    wrect.left--;
-    wrect.top--;
-    wrect.right++;
-    wrect.bottom++;
+    _grow_wrect(&wrect, 1);
 
-    SetDCBrushColor(_dc, COLORS[color]);
-    FrameRect(_dc, &wrect, GetStockObject(DC_BRUSH));
+    HPEN   pen = _get_pen(color);
+    HPEN   old_pen = (HPEN)SelectObject(_dc, _get_pen(color));
+    HBRUSH old_brush = (HBRUSH)SelectObject(_dc, GetStockObject(HOLLOW_BRUSH));
+    Rectangle(_dc, wrect.left, wrect.top, wrect.right, wrect.bottom);
+    SelectObject(_dc, old_brush);
+    SelectObject(_dc, old_pen);
+    DeleteObject(pen);
 
+    _grow_wrect(&wrect, _scale);
     InvalidateRect(_wnd, &wrect, FALSE);
     return true;
 }
