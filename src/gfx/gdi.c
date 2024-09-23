@@ -29,13 +29,38 @@ static const COLORREF COLORS[] = {[GFX_COLOR_BLACK] = RGB(0, 0, 0),
                                   [GFX_COLOR_YELLOW] = RGB(255, 255, 0),
                                   [GFX_COLOR_WHITE] = RGB(255, 255, 255)};
 
+static const wchar_t *FONT_NAMES[] = {
+    L"Cascadia Code",  // Windows 11
+    L"Consolas",       // Windows Vista
+    L"Lucida Console", // Windows 2000
+    NULL               // usually Courier New
+};
+
+static HFONT
+_get_font(void)
+{
+    HFONT font = NULL;
+
+    for (int i = 0; i < lengthof(FONT_NAMES); i++)
+    {
+        font = CreateFontW(_scale * 16, 0, 0, 0, FW_REGULAR, FALSE, FALSE,
+                           FALSE, DEFAULT_CHARSET, OUT_TT_PRECIS,
+                           CLIP_DEFAULT_PRECIS, ANTIALIASED_QUALITY,
+                           FIXED_PITCH | FF_MODERN, FONT_NAMES[i]);
+        if (NULL != font)
+        {
+            break;
+        }
+    }
+
+    return font;
+}
+
 bool
 gfx_initialize(void)
 {
     _scale = 1.0f;
-    _font = CreateFontW(_scale * 16, 0, 0, 0, FW_REGULAR, FALSE, FALSE, FALSE,
-                        DEFAULT_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS,
-                        ANTIALIASED_QUALITY, FIXED_PITCH | FF_MODERN, NULL);
+    _font = _get_font();
     _wnd = windows_get_hwnd();
 
     HDC wnd_dc = GetDC(_wnd);
