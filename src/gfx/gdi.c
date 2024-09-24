@@ -121,6 +121,12 @@ gfx_get_pixel_aspect(void)
     return 64 * 1;
 }
 
+float
+gfx_get_scale(void)
+{
+    return _scale;
+}
+
 unsigned
 gfx_get_color_depth(void)
 {
