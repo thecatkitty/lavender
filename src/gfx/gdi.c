@@ -7,6 +7,8 @@ static HFONT _font = NULL;
 static HWND  _wnd = NULL;
 static SIZE  _glyph;
 static SIZE  _screen;
+
+static float _min_scale;
 static float _scale;
 
 static HDC     _dc = NULL;
@@ -57,25 +59,31 @@ _get_font(void)
 }
 
 bool
-gfx_initialize(void)
+windows_set_scale(float scale)
 {
+    _scale = max(scale, _min_scale);
+
+    if (NULL != _font)
+    {
+        DeleteObject(_font);
+    }
     _font = _get_font();
-    _wnd = windows_get_hwnd();
 
     HDC wnd_dc = GetDC(_wnd);
-    _scale = (float)GetDeviceCaps(wnd_dc, LOGPIXELSX) / 96.f;
-
-    _dc = CreateCompatibleDC(wnd_dc);
-    if (NULL == _dc)
+    HDC new_dc = CreateCompatibleDC(wnd_dc);
+    if (NULL == new_dc)
     {
         ReleaseDC(_wnd, wnd_dc);
         return false;
     }
 
-    SelectObject(_dc, _font);
+    SelectObject(new_dc, _font);
+
+    SIZE old_screen;
+    memcpy(&old_screen, &_screen, sizeof(SIZE));
 
     TEXTMETRICW metric;
-    GetTextMetricsW(_dc, &metric);
+    GetTextMetricsW(new_dc, &metric);
     _glyph.cx = metric.tmAveCharWidth;
     _glyph.cy = metric.tmHeight;
     _screen.cx = 80 * _glyph.cx;
@@ -88,18 +96,44 @@ gfx_initialize(void)
 
     AdjustWindowRect(&rect, GetWindowLong(_wnd, GWL_STYLE), FALSE);
     SetWindowPos(_wnd, 0, -1, -1, rect.right - rect.left,
-                 rect.bottom - rect.top, SWP_NOMOVE | SWP_NOREDRAW);
+                 rect.bottom - rect.top,
+                 SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
 
-    _fb = CreateCompatibleBitmap(wnd_dc, _screen.cx, _screen.cy);
-    SelectObject(_dc, _fb);
+    HBITMAP new_fb = CreateCompatibleBitmap(wnd_dc, _screen.cx, _screen.cy);
+    SelectObject(new_dc, new_fb);
     ReleaseDC(_wnd, wnd_dc);
 
     RECT screen_rect = {
         .left = 0, .top = 0, .right = _screen.cx, .bottom = _screen.cy};
-    FillRect(_dc, &screen_rect, GetStockObject(BLACK_BRUSH));
-    InvalidateRect(_wnd, &screen_rect, FALSE);
+    if (NULL == _dc)
+    {
+        FillRect(new_dc, &screen_rect, GetStockObject(BLACK_BRUSH));
+    }
+    else
+    {
+        StretchBlt(new_dc, 0, 0, _screen.cx, _screen.cy, _dc, 0, 0,
+                   old_screen.cx, old_screen.cy, SRCCOPY);
+        DeleteObject(_fb);
+        DeleteDC(_dc);
+    }
+    _fb = new_fb;
+    _dc = new_dc;
+
+    RedrawWindow(_wnd, NULL, NULL, RDW_FRAME | RDW_INVALIDATE);
 
     return true;
+}
+
+bool
+gfx_initialize(void)
+{
+    _wnd = windows_get_hwnd();
+
+    HDC wnd_dc = GetDC(_wnd);
+    _min_scale = (float)GetDeviceCaps(wnd_dc, LOGPIXELSX) / 96.f;
+    ReleaseDC(_wnd, wnd_dc);
+
+    return windows_set_scale(_min_scale);
 }
 
 void
