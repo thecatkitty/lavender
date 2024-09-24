@@ -78,10 +78,10 @@ __sld_execute_bitmap(sld_entry *sld)
         x = screen.width - bm.width;
         break;
     default:
-        x = (int)((int32_t)sld->posx * __sld_screen.width / SLD_VIEWBOX_WIDTH);
+        x = (int)((int32_t)sld->posx * screen.width / SLD_VIEWBOX_WIDTH);
     }
 
-    y = (int)((int32_t)sld->posy * __sld_screen.height / SLD_VIEWBOX_HEIGHT);
+    y = (int)((int32_t)sld->posy * screen.height / SLD_VIEWBOX_HEIGHT);
 
     if (!gfx_draw_bitmap(&bm, x, y))
     {

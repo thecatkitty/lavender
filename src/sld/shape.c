@@ -10,12 +10,15 @@ typedef struct
 static void
 _translate(uint16_t *x, uint16_t *y, gfx_dimensions *dims)
 {
+    gfx_dimensions screen;
+    gfx_get_screen_dimensions(&screen);
+
     int32_t w = dims->width;
     int32_t h = dims->height;
-    int32_t xend = ((int32_t)*x + w) * __sld_screen.width / SLD_VIEWBOX_WIDTH;
-    int32_t yend = ((int32_t)*y + h) * __sld_screen.height / SLD_VIEWBOX_HEIGHT;
-    *x = (uint16_t)((int32_t)*x * __sld_screen.width / SLD_VIEWBOX_WIDTH);
-    *y = (uint16_t)((int32_t)*y * __sld_screen.height / SLD_VIEWBOX_HEIGHT);
+    int32_t xend = ((int32_t)*x + w) * screen.width / SLD_VIEWBOX_WIDTH;
+    int32_t yend = ((int32_t)*y + h) * screen.height / SLD_VIEWBOX_HEIGHT;
+    *x = (uint16_t)((int32_t)*x * screen.width / SLD_VIEWBOX_WIDTH);
+    *y = (uint16_t)((int32_t)*y * screen.height / SLD_VIEWBOX_HEIGHT);
     dims->width = xend - *x;
     dims->height = yend - *y;
 }
