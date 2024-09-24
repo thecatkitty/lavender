@@ -64,14 +64,15 @@ dlg_refresh(const gfx_rect *clip)
     };
     GradientFill(dc, vertex, lengthof(vertex), &mesh, 1, GRADIENT_FILL_RECT_V);
 
+    float scale = gfx_get_scale();
     if (NULL == _font_banner)
     {
         _font_banner =
-            CreateFontW(32, 0, 0, 0, FW_BOLD, TRUE, FALSE, FALSE,
+            CreateFontW(scale * 32, 0, 0, 0, FW_BOLD, TRUE, FALSE, FALSE,
                         DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
                         CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, FF_ROMAN, NULL);
         _font_footer =
-            CreateFontW(12, 0, 0, 0, FW_REGULAR, FALSE, FALSE, FALSE,
+            CreateFontW(scale * 12, 0, 0, 0, FW_REGULAR, FALSE, FALSE, FALSE,
                         DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
                         CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, FF_SWISS, NULL);
         atexit(_free_fonts);
@@ -94,8 +95,8 @@ dlg_refresh(const gfx_rect *clip)
     DrawTextW(dc, banner, -1, &rect, 0);
 
     SetTextColor(dc, 0xFFFFFF);
-    rect.left -= 2;
-    rect.top -= 2;
+    rect.left -= scale * 2;
+    rect.top -= scale * 2;
     DrawTextW(dc, banner, -1, &rect, DT_SINGLELINE);
 
     // Footer
@@ -344,6 +345,8 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
 static HWND
 _create_prompt(LPCWSTR title, LPCWSTR message)
 {
+    int dpi = GetDeviceCaps(windows_get_dc(), LOGPIXELSY);
+
     // Dialog box
     LPDLGTEMPLATEW dt = (LPDLGTEMPLATEW)GlobalLock(_hgbl);
     ZeroMemory(dt, 1024);
@@ -366,7 +369,7 @@ _create_prompt(LPCWSTR title, LPCWSTR message)
 
     // font size
     LPWORD font_size = (LPWORD)(caption + caption_length);
-    *font_size = _nclm.lfMessageFont.lfHeight;
+    *font_size = MulDiv(_nclm.lfMessageFont.lfHeight, 96, dpi);
 
     // font face
     LPWSTR font_face = (LPWSTR)(font_size + 1);

@@ -59,11 +59,12 @@ _get_font(void)
 bool
 gfx_initialize(void)
 {
-    _scale = 1.0f;
     _font = _get_font();
     _wnd = windows_get_hwnd();
 
     HDC wnd_dc = GetDC(_wnd);
+    _scale = (float)GetDeviceCaps(wnd_dc, LOGPIXELSX) / 96.f;
+
     _dc = CreateCompatibleDC(wnd_dc);
     if (NULL == _dc)
     {
