@@ -180,6 +180,12 @@ gfx_get_pixel_aspect(void)
     return ratio;
 }
 
+float
+gfx_get_scale(void)
+{
+    return 1.f;
+}
+
 unsigned
 gfx_get_color_depth(void)
 {
