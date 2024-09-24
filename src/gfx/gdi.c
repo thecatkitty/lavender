@@ -228,9 +228,10 @@ gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
     }
 
     SelectObject(bmp_dc, bmp);
-    BitBlt(_dc, x, y, bm->width, abs(bm->height), bmp_dc, 0, 0, SRCCOPY);
+    StretchBlt(_dc, x, y, _scale * bm->width, _scale * abs(bm->height), bmp_dc,
+               0, 0, bm->width, abs(bm->height), SRCCOPY);
 
-    RECT rect = {x, y, x + bm->width, y + abs(bm->height)};
+    RECT rect = {x, y, x + _scale * bm->width, y + _scale * abs(bm->height)};
     InvalidateRect(_wnd, &rect, FALSE);
 
 end:
