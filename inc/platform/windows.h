@@ -20,6 +20,9 @@ windows_set_window_title(const char *title);
 
 extern HDC
 windows_get_dc(void);
+
+extern bool
+windows_set_scale(float scale);
 #endif
 
 #endif // _PLATFORM_WINDOWS_H_

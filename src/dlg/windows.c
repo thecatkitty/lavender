@@ -1,5 +1,6 @@
 #include <windows.h>
 
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -14,6 +15,7 @@
 
 static HGLOBAL           _hgbl = NULL;
 static NONCLIENTMETRICSW _nclm = {0};
+static float             _scale = 1.f;
 
 static HHOOK   _hook = NULL;
 static WNDPROC _prev_wnd_proc = NULL;
@@ -65,6 +67,15 @@ dlg_refresh(const gfx_rect *clip)
     GradientFill(dc, vertex, lengthof(vertex), &mesh, 1, GRADIENT_FILL_RECT_V);
 
     float scale = gfx_get_scale();
+    if ((0.05 < fabsf(_scale - scale)) && (NULL != _font_banner))
+    {
+        DeleteObject(_font_banner);
+        DeleteObject(_font_footer);
+        _font_banner = NULL;
+        _font_footer = NULL;
+    }
+
+    _scale = scale;
     if (NULL == _font_banner)
     {
         _font_banner =
