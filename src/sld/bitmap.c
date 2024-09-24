@@ -66,12 +66,13 @@ __sld_execute_bitmap(sld_entry *sld)
 
     gfx_dimensions screen;
     gfx_get_screen_dimensions(&screen);
+    float scale = gfx_get_scale();
 
     int x, y;
     switch (sld->posx)
     {
     case SLD_ALIGN_CENTER:
-        x = (screen.width - bm.width) / 2;
+        x = ((float)screen.width / scale - bm.width) / 2 * scale;
         break;
     case SLD_ALIGN_RIGHT:
         x = screen.width - bm.width;
