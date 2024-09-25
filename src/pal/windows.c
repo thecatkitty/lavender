@@ -37,6 +37,7 @@
 #endif
 
 #define ID_ABOUT 0x1000
+#define ID_SCALE 0x2000
 
 // See DEVICE_SCALE_FACTOR in shtypes.h
 static const float SCALES[] = {1.00f, 1.20f, 1.25f, 1.40f, 1.50f, 1.60f,
@@ -64,10 +65,13 @@ static bool      _no_stall = false;
 
 static HHOOK   _hook = NULL;
 static WNDPROC _prev_wnd_proc = NULL;
+static HMENU   _sys_menu = NULL;
 
 static WPARAM _keycode;
 
 static gfx_dimensions _mouse_cell;
+
+static int _min_scale_id = 0;
 #endif
 
 extern int
@@ -175,12 +179,12 @@ _append(wchar_t *dst, const wchar_t *src, size_t size)
     wcsncat(dst, src, size - wcslen(dst));
 }
 
-static float
+static int
 _find_scale(float scale, int direction)
 {
     if (0 == direction)
     {
-        return scale;
+        return _min_scale_id;
     }
 
     for (int i = (0 > direction) ? (lengthof(SCALES) - 1) : 0;
@@ -188,16 +192,33 @@ _find_scale(float scale, int direction)
     {
         if ((0 < direction) && (0.01f < (SCALES[i] - scale)))
         {
-            return SCALES[i];
+            return i;
         }
 
         if ((0 > direction) && (0.01f < (scale - SCALES[i])))
         {
-            return SCALES[i];
+            return i;
         }
     }
 
-    return scale;
+    return (0 > direction) ? (_min_scale_id - ID_SCALE)
+                           : (lengthof(SCALES) - 1);
+}
+
+static bool
+_set_scale(int idx)
+{
+    idx = min(max(_min_scale_id - ID_SCALE, idx), lengthof(SCALES) - 1);
+    if (!windows_set_scale(SCALES[idx]))
+    {
+        return false;
+    }
+
+    gfx_get_glyph_dimensions(&_mouse_cell);
+    CheckMenuRadioItem(_sys_menu, _min_scale_id,
+                       ID_SCALE + lengthof(SCALES) - 1, ID_SCALE + idx,
+                       MF_BYCOMMAND);
+    return true;
 }
 
 static LRESULT CALLBACK
@@ -206,15 +227,43 @@ _wnd_proc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
     switch (msg)
     {
     case WM_CREATE: {
-        HMENU sys_menu = GetSystemMenu(wnd, FALSE);
-        if (NULL != sys_menu)
+        _sys_menu = GetSystemMenu(wnd, FALSE);
+        if (NULL != _sys_menu)
         {
             wchar_t str[MAX_PATH];
 
-            AppendMenuW(sys_menu, MF_SEPARATOR, 0, NULL);
+            AppendMenuW(_sys_menu, MF_SEPARATOR, 0, NULL);
+
+            HDC   wnd_dc = GetDC(_wnd);
+            float min_scale = (float)GetDeviceCaps(wnd_dc, LOGPIXELSX) / 96.f;
+            ReleaseDC(_wnd, wnd_dc);
+
+            for (size_t i = 0; i < lengthof(SCALES); i++)
+            {
+                if (min_scale > SCALES[i])
+                {
+                    continue;
+                }
+
+                if (0 == _min_scale_id)
+                {
+                    _min_scale_id = ID_SCALE + i;
+                }
+
+                int percent = (int)(SCALES[i] * 100.f / min_scale);
+                wsprintfW(str, L"%d%%", percent);
+                AppendMenuW(_sys_menu, MF_STRING | MFS_CHECKED, ID_SCALE + i,
+                            str);
+            }
+
+            CheckMenuRadioItem(_sys_menu, _min_scale_id,
+                               ID_SCALE + lengthof(SCALES) - 1, _min_scale_id,
+                               MF_BYCOMMAND);
+
+            AppendMenuW(_sys_menu, MF_SEPARATOR, 0, NULL);
 
             LoadStringW(_instance, IDS_ABOUT, str, lengthof(str));
-            AppendMenuW(sys_menu, MF_STRING, ID_ABOUT, str);
+            AppendMenuW(_sys_menu, MF_STRING, ID_ABOUT, str);
         }
         break;
     }
@@ -243,6 +292,13 @@ _wnd_proc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
             MessageBoxW(wnd, message, part, MB_ICONQUESTION);
             return 0;
         }
+
+        if ((ID_SCALE <= wparam) && ((ID_SCALE + lengthof(SCALES)) > wparam))
+        {
+            _set_scale(wparam - ID_SCALE);
+            return 0;
+        }
+
         break;
     }
 
@@ -255,9 +311,10 @@ _wnd_proc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
         case VK_SUBTRACT: {
             if (0x8000 & GetKeyState(VK_CONTROL))
             {
-                windows_set_scale(_find_scale(
+                int scale_idx = _find_scale(
                     gfx_get_scale(),
-                    ((VK_OEM_PLUS == wparam) || (VK_ADD == wparam)) ? +1 : -1));
+                    ((VK_OEM_PLUS == wparam) || (VK_ADD == wparam)) ? +1 : -1);
+                _set_scale(scale_idx);
                 return 0;
             }
 
