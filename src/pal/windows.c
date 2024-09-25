@@ -38,6 +38,11 @@
 
 #define ID_ABOUT 0x1000
 
+// See DEVICE_SCALE_FACTOR in shtypes.h
+static const float SCALES[] = {1.00f, 1.20f, 1.25f, 1.40f, 1.50f, 1.60f,
+                               1.75f, 1.80f, 2.00f, 2.25f, 2.50f, 3.00f,
+                               3.50f, 4.00f, 4.50f, 5.00f};
+
 static LPVOID _ver_resource = NULL;
 static WORD  *_ver_vfi_translation = NULL;
 static char   _ver_string[MAX_PATH] = {0};
@@ -170,6 +175,31 @@ _append(wchar_t *dst, const wchar_t *src, size_t size)
     wcsncat(dst, src, size - wcslen(dst));
 }
 
+static float
+_find_scale(float scale, int direction)
+{
+    if (0 == direction)
+    {
+        return scale;
+    }
+
+    for (int i = (0 > direction) ? (lengthof(SCALES) - 1) : 0;
+         (i >= 0) && (i < lengthof(SCALES)); i += direction)
+    {
+        if ((0 < direction) && (0.01f < (SCALES[i] - scale)))
+        {
+            return SCALES[i];
+        }
+
+        if ((0 > direction) && (0.01f < (scale - SCALES[i])))
+        {
+            return SCALES[i];
+        }
+    }
+
+    return scale;
+}
+
 static LRESULT CALLBACK
 _wnd_proc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -219,6 +249,21 @@ _wnd_proc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
     case WM_KEYDOWN: {
         switch (wparam)
         {
+        case VK_OEM_PLUS:
+        case VK_OEM_MINUS:
+        case VK_ADD:
+        case VK_SUBTRACT: {
+            if (0x8000 & GetKeyState(VK_CONTROL))
+            {
+                windows_set_scale(_find_scale(
+                    gfx_get_scale(),
+                    ((VK_OEM_PLUS == wparam) || (VK_ADD == wparam)) ? +1 : -1));
+                return 0;
+            }
+
+            // Fall through
+        }
+
         case VK_BACK:
         case VK_TAB:
         case VK_RETURN:
@@ -244,8 +289,7 @@ _wnd_proc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
         case VK_F9:
         case VK_F10:
         case VK_F11:
-        case VK_F12:
-        case VK_OEM_MINUS: {
+        case VK_F12: {
             _keycode = wparam;
             return 0;
         }
