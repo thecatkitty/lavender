@@ -66,6 +66,7 @@ static bool      _no_stall = false;
 static HHOOK   _hook = NULL;
 static WNDPROC _prev_wnd_proc = NULL;
 static HMENU   _sys_menu = NULL;
+static HMENU   _size_menu = NULL;
 
 static WPARAM _keycode;
 
@@ -232,7 +233,7 @@ _wnd_proc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
         {
             wchar_t str[MAX_PATH];
 
-            AppendMenuW(_sys_menu, MF_SEPARATOR, 0, NULL);
+            _size_menu = CreatePopupMenu();
 
             HDC   wnd_dc = GetDC(_wnd);
             float min_scale = (float)GetDeviceCaps(wnd_dc, LOGPIXELSX) / 96.f;
@@ -252,13 +253,18 @@ _wnd_proc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
                 int percent = (int)(SCALES[i] * 100.f / min_scale);
                 wsprintfW(str, L"%d%%", percent);
-                AppendMenuW(_sys_menu, MF_STRING | MFS_CHECKED, ID_SCALE + i,
+                AppendMenuW(_size_menu, MF_STRING | MFS_CHECKED, ID_SCALE + i,
                             str);
             }
 
-            CheckMenuRadioItem(_sys_menu, _min_scale_id,
+            CheckMenuRadioItem(_size_menu, _min_scale_id,
                                ID_SCALE + lengthof(SCALES) - 1, _min_scale_id,
                                MF_BYCOMMAND);
+
+            AppendMenuW(_sys_menu, MF_SEPARATOR, 0, NULL);
+
+            LoadStringW(_instance, IDS_SIZE, str, lengthof(str));
+            AppendMenuW(_sys_menu, MF_POPUP, (uintptr_t)_size_menu, str);
 
             AppendMenuW(_sys_menu, MF_SEPARATOR, 0, NULL);
 
@@ -268,6 +274,7 @@ _wnd_proc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
         break;
     }
 
+    case WM_COMMAND:
     case WM_SYSCOMMAND: {
         if (ID_ABOUT == wparam)
         {
@@ -293,13 +300,30 @@ _wnd_proc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
             return 0;
         }
 
-        if ((ID_SCALE <= wparam) && ((ID_SCALE + lengthof(SCALES)) > wparam))
+        if ((ID_SCALE <= LOWORD(wparam)) &&
+            ((ID_SCALE + lengthof(SCALES)) > LOWORD(wparam)))
         {
-            _set_scale(wparam - ID_SCALE);
+            _set_scale(LOWORD(wparam) - ID_SCALE);
             return 0;
         }
 
         break;
+    }
+
+    case WM_CONTEXTMENU: {
+        int      x = GET_X_LPARAM(lparam);
+        int      y = GET_Y_LPARAM(lparam);
+        unsigned flags = TPM_LEFTALIGN;
+        if ((-1 == x) || (-1 == y))
+        {
+            RECT wnd_rect;
+            GetWindowRect(_wnd, &wnd_rect);
+            x = (wnd_rect.left + wnd_rect.right) / 2;
+            y = (wnd_rect.top + wnd_rect.bottom) / 2;
+            flags = TPM_CENTERALIGN | TPM_VCENTERALIGN;
+        }
+        TrackPopupMenu(_size_menu, flags | TPM_RIGHTBUTTON, x, y, 0, wnd, NULL);
+        return 0;
     }
 
     case WM_KEYDOWN: {
@@ -374,26 +398,23 @@ _wnd_proc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
         return 0;
     }
 
-    case WM_LBUTTONDOWN:
-    case WM_RBUTTONDOWN: {
+    case WM_LBUTTONDOWN: {
         if (!_mouse_enabled)
         {
             return 0;
         }
 
-        _mouse_buttons |=
-            ((WM_LBUTTONDOWN == msg) ? PAL_MOUSE_LBUTTON : PAL_MOUSE_RBUTTON);
+        _mouse_buttons |= PAL_MOUSE_LBUTTON;
         return 0;
     }
 
-    case WM_LBUTTONUP:
-    case WM_RBUTTONUP: {
-        _mouse_buttons &=
-            ~((WM_LBUTTONUP == msg) ? PAL_MOUSE_LBUTTON : PAL_MOUSE_RBUTTON);
+    case WM_LBUTTONUP: {
+        _mouse_buttons &= ~PAL_MOUSE_LBUTTON;
         return 0;
     }
 
     case WM_DESTROY:
+        DestroyMenu(_size_menu);
         PostQuitMessage(0);
         return 0;
 

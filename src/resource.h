@@ -43,3 +43,7 @@
 #define IDS_COPYRIGHT   0x41
 #define IDS_ABOUT       0x42
 #define IDS_ABOUT_LONG  0x43
+
+#ifdef _WIN32
+#define IDS_SIZE 0x50
+#endif
