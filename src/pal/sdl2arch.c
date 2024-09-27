@@ -75,6 +75,25 @@ pal_handle(void)
 
     case SDL_KEYDOWN: {
         LOG("key '%s' down", SDL_GetKeyName(e.key.keysym.sym));
+        if (KMOD_CTRL & e.key.keysym.mod)
+        {
+            if ((SDLK_PLUS == e.key.keysym.sym) ||
+                (SDLK_KP_PLUS == e.key.keysym.sym))
+            {
+                sdl2arch_set_scale(gfx_get_scale() + 1);
+                gfx_get_glyph_dimensions(&_mouse_cell);
+                break;
+            }
+
+            if ((SDLK_MINUS == e.key.keysym.sym) ||
+                (SDLK_KP_MINUS == e.key.keysym.sym))
+            {
+                sdl2arch_set_scale(gfx_get_scale() - 1);
+                gfx_get_glyph_dimensions(&_mouse_cell);
+                break;
+            }
+        }
+
         _keycode = e.key.keysym.sym;
         break;
     }
