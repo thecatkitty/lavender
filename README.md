@@ -12,7 +12,8 @@ This is still work in progress, but I'm doing my best to separate working versio
 * graphics mode
   * CGA 640x200 monochrome under DOS
   * EGA 640x350 16-color under DOS using a loadable driver
-  * 24-bit RGB under Windows and Linux 
+  * 24-bit RGB under Windows and Linux with user-customizable content size
+  * Windows DPI awareness support
 * display delays (animations)
   * millisecond resolution
 * displaying text (with UTF-8 subset support)
