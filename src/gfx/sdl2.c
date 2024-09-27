@@ -14,7 +14,7 @@ SDL_Window *_window = NULL;
 static SDL_Renderer *_renderer = NULL;
 static TTF_Font     *_font = NULL;
 static int           _font_w, _font_h;
-static int           _screen_w, _screen_h;
+static int           _screen_w = 0, _screen_h = 0;
 static bool          _rendering_text = false;
 static int           _scale;
 
@@ -68,6 +68,58 @@ _blend_subtractive(SDL_Surface *surface, SDL_Rect *rect)
 }
 
 bool
+sdl2arch_set_scale(int scale)
+{
+    LOG("entry, scale: %d", scale);
+
+    _scale = (scale < 1) ? 1 : scale;
+
+    const char *font_path = sdl2arch_get_font();
+    if (NULL == font_path)
+    {
+        LOG("cannot determine font");
+        return false;
+    }
+
+    if (NULL != _font)
+    {
+        TTF_CloseFont(_font);
+    }
+
+    _font = TTF_OpenFont(font_path, _scale * 12);
+    if (NULL == _font)
+    {
+        LOG("cannot open font '%s'. %s", font_path, SDL_GetError());
+        return false;
+    }
+
+    LOG("font: '%s'", font_path);
+    TTF_SizeText(_font, "WW", &_font_w, &_font_h);
+    _font_w /= 2;
+    _font_h = TTF_FontHeight(_font);
+
+    SDL_Rect old = {0, 0}, new = {0, 0};
+
+    old.w = _screen_w;
+    old.h = _screen_h;
+    _screen_w = 80 * _font_w;
+    _screen_h = 25 * _font_h;
+    new.w = _screen_w;
+    new.h = _screen_h;
+
+    SDL_Surface *screen = SDL_GetWindowSurface(_window);
+    SDL_Surface *saved = SDL_CreateRGBSurface(0, old.w, old.h, 32, 0, 0, 0, 0);
+    SDL_BlitSurface(screen, &old, saved, &old);
+    SDL_SetWindowSize(_window, _screen_w, _screen_h);
+
+    screen = SDL_GetWindowSurface(_window);
+    SDL_BlitScaled(saved, &old, screen, &new);
+    SDL_FreeSurface(saved);
+    SDL_UpdateWindowSurface(_window);
+    return true;
+}
+
+bool
 gfx_initialize(void)
 {
     LOG("entry");
@@ -84,31 +136,9 @@ gfx_initialize(void)
         return false;
     }
 
-    const char *font_path = sdl2arch_get_font();
-    if (NULL == font_path)
-    {
-        LOG("cannot determine font");
-        return false;
-    }
-
-    _scale = 1;
-    _font = TTF_OpenFont(font_path, _scale * 12);
-    if (NULL == _font)
-    {
-        LOG("cannot open font '%s'. %s", font_path, SDL_GetError());
-        return false;
-    }
-
-    LOG("font: '%s'", font_path);
-    TTF_SizeText(_font, "WW", &_font_w, &_font_h);
-    _font_w /= 2;
-    _font_h = TTF_FontHeight(_font);
-
-    _screen_w = 80 * _font_w;
-    _screen_h = 25 * _font_h;
-    _window = SDL_CreateWindow(pal_get_version_string(), SDL_WINDOWPOS_CENTERED,
-                               SDL_WINDOWPOS_CENTERED, _screen_w, _screen_h,
-                               SDL_WINDOW_SHOWN);
+    _window =
+        SDL_CreateWindow(pal_get_version_string(), SDL_WINDOWPOS_CENTERED,
+                         SDL_WINDOWPOS_CENTERED, 640, 480, SDL_WINDOW_SHOWN);
     if (NULL == _window)
     {
         LOG("cannot create window. %s", SDL_GetError());
@@ -122,6 +152,7 @@ gfx_initialize(void)
         return false;
     }
 
+    sdl2arch_set_scale(1);
     SDL_RenderClear(_renderer);
     sdl2arch_present(_renderer);
     return true;
@@ -183,7 +214,7 @@ gfx_get_pixel_aspect(void)
 float
 gfx_get_scale(void)
 {
-    return 1.f;
+    return _scale;
 }
 
 unsigned
@@ -214,7 +245,7 @@ gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
     SDL_Surface *screen = SDL_GetWindowSurface(_window);
 
     SDL_Rect src_rect = {0, 0, bm->width, abs(bm->height)};
-    SDL_Rect dst_rect = {x, y, bm->width, abs(bm->height)};
+    SDL_Rect dst_rect = {x, y, _scale * bm->width, _scale * abs(bm->height)};
     uint32_t format = SDL_PIXELFORMAT_XRGB8888;
 
     SDL_Surface *surface = NULL;
