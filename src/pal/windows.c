@@ -1,4 +1,5 @@
 #include <malloc.h>
+#include <math.h>
 #include <stdio.h>
 #include <string.h>
 #include <wchar.h>
@@ -43,6 +44,13 @@
 static const float SCALES[] = {1.00f, 1.20f, 1.25f, 1.40f, 1.50f, 1.60f,
                                1.75f, 1.80f, 2.00f, 2.25f, 2.50f, 3.00f,
                                3.50f, 4.00f, 4.50f, 5.00f};
+
+static const wchar_t *FONT_NAMES[] = {
+    L"Cascadia Code",  // Windows 11
+    L"Consolas",       // Windows Vista
+    L"Lucida Console", // Windows 2000
+    NULL               // usually Courier New
+};
 
 static LPVOID _ver_resource = NULL;
 static WORD  *_ver_vfi_translation = NULL;
@@ -188,22 +196,86 @@ _find_scale(float scale, int direction)
         return _min_scale_id;
     }
 
-    for (int i = (0 > direction) ? (lengthof(SCALES) - 1) : 0;
-         (i >= 0) && (i < lengthof(SCALES)); i += direction)
+    int   scale_idx = 0;
+    float best_delta = INFINITY;
+    for (int i = 0; i < lengthof(SCALES); i++)
     {
-        if ((0 < direction) && (0.01f < (SCALES[i] - scale)))
+        float delta = fabsf(SCALES[i] - scale);
+        if (best_delta > delta)
         {
-            return i;
-        }
-
-        if ((0 > direction) && (0.01f < (scale - SCALES[i])))
-        {
-            return i;
+            best_delta = delta;
+            scale_idx = i;
         }
     }
 
-    return (0 > direction) ? (_min_scale_id - ID_SCALE)
-                           : (lengthof(SCALES) - 1);
+    return min(max(scale_idx + direction, _min_scale_id - ID_SCALE),
+               lengthof(SCALES) - 1);
+}
+
+HFONT
+windows_find_font(int max_width, int max_height)
+{
+    const wchar_t *family = NULL;
+    HFONT          font = NULL;
+
+    // Determine the font family
+    for (int i = 0; i < lengthof(FONT_NAMES); i++)
+    {
+        font = CreateFontW(max_height, 0, 0, 0, FW_REGULAR, FALSE, FALSE, FALSE,
+                           DEFAULT_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS,
+                           ANTIALIASED_QUALITY, FIXED_PITCH | FF_MODERN,
+                           FONT_NAMES[i]);
+        if (NULL != font)
+        {
+            family = FONT_NAMES[i];
+            break;
+        }
+    }
+
+    if (NULL == font)
+    {
+        return NULL;
+    }
+
+    HDC         dc = windows_get_dc();
+    TEXTMETRICW metric;
+
+    // Try the largest height
+    SelectObject(dc, font);
+    GetTextMetricsW(dc, &metric);
+    if ((0 > max_width) || (max_width >= metric.tmAveCharWidth))
+    {
+        return font;
+    }
+
+    // Continue with binary search, fit width
+    int min_height = 0;
+    while (1 < (max_height - min_height))
+    {
+        DeleteObject(font);
+
+        int height = (min_height + max_height) / 2;
+        font =
+            CreateFontW(height, 0, 0, 0, FW_REGULAR, FALSE, FALSE, FALSE,
+                        DEFAULT_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS,
+                        ANTIALIASED_QUALITY, FIXED_PITCH | FF_MODERN, family);
+        SelectObject(dc, font);
+        GetTextMetricsW(dc, &metric);
+        if (max_width < metric.tmAveCharWidth)
+        {
+            max_height = height;
+        }
+        else
+        {
+            min_height = height;
+        }
+    }
+
+    DeleteObject(font);
+    font = CreateFontW(min_height, 0, 0, 0, FW_REGULAR, FALSE, FALSE, FALSE,
+                       DEFAULT_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS,
+                       ANTIALIASED_QUALITY, FIXED_PITCH | FF_MODERN, family);
+    return font;
 }
 
 static bool

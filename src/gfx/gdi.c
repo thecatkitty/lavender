@@ -1,3 +1,4 @@
+#include <math.h>
 #include <windows.h>
 
 #include <gfx.h>
@@ -33,43 +34,14 @@ static const COLORREF COLORS[] = {[GFX_COLOR_BLACK] = RGB(0, 0, 0),
                                   [GFX_COLOR_YELLOW] = RGB(255, 255, 0),
                                   [GFX_COLOR_WHITE] = RGB(255, 255, 255)};
 
-static const wchar_t *FONT_NAMES[] = {
-    L"Cascadia Code",  // Windows 11
-    L"Consolas",       // Windows Vista
-    L"Lucida Console", // Windows 2000
-    NULL               // usually Courier New
-};
-
-static HFONT
-_get_font(void)
-{
-    HFONT font = NULL;
-
-    for (int i = 0; i < lengthof(FONT_NAMES); i++)
-    {
-        font = CreateFontW(_scale * 16, 0, 0, 0, FW_REGULAR, FALSE, FALSE,
-                           FALSE, DEFAULT_CHARSET, OUT_TT_PRECIS,
-                           CLIP_DEFAULT_PRECIS, ANTIALIASED_QUALITY,
-                           FIXED_PITCH | FF_MODERN, FONT_NAMES[i]);
-        if (NULL != font)
-        {
-            break;
-        }
-    }
-
-    return font;
-}
-
 bool
-windows_set_scale(float scale)
+windows_set_font(HFONT font)
 {
-    _scale = max(scale, _min_scale);
-
     if (NULL != _font)
     {
         DeleteObject(_font);
     }
-    _font = _get_font();
+    _font = font;
 
     HDC wnd_dc = GetDC(_wnd);
     HDC new_dc = CreateCompatibleDC(wnd_dc);
@@ -92,6 +64,7 @@ windows_set_scale(float scale)
     _screen.cy = 25 * _glyph.cy;
     _origin.x = 0;
     _origin.y = 0;
+    _scale = (float)metric.tmHeight / 16.f;
 
     RECT rect;
     GetClientRect(_wnd, &rect);
@@ -126,6 +99,12 @@ windows_set_scale(float scale)
     RedrawWindow(_wnd, NULL, NULL, RDW_FRAME | RDW_INVALIDATE);
 
     return true;
+}
+
+bool
+windows_set_scale(float scale)
+{
+    return windows_set_font(windows_find_font(-1, roundf(scale * 16.f)));
 }
 
 bool
