@@ -430,6 +430,11 @@ _wnd_proc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
         {
             HDC src_dc = windows_get_dc();
 
+            RECT wnd_rect;
+            GetClientRect(wnd, &wnd_rect);
+            SetDCBrushColor(dc, windows_get_bg());
+            FillRect(dc, &ps.rcPaint, GetStockObject(DC_BRUSH));
+
             POINT origin;
             windows_get_origin(&origin);
             BitBlt(dc, ps.rcPaint.left, ps.rcPaint.top,
