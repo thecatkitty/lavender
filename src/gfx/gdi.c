@@ -7,6 +7,7 @@ static HFONT _font = NULL;
 static HWND  _wnd = NULL;
 static SIZE  _glyph;
 static SIZE  _screen;
+static POINT _origin;
 
 static float _min_scale;
 static float _scale;
@@ -88,6 +89,8 @@ windows_set_scale(float scale)
     _glyph.cy = metric.tmHeight;
     _screen.cx = 80 * _glyph.cx;
     _screen.cy = 25 * _glyph.cy;
+    _origin.x = 0;
+    _origin.y = 0;
 
     RECT rect;
     GetClientRect(_wnd, &rect);
@@ -261,11 +264,14 @@ gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
         goto end;
     }
 
+    int width = _scale * bm->width;
+    int height = _scale * abs(bm->height);
     SelectObject(bmp_dc, bmp);
-    StretchBlt(_dc, x, y, _scale * bm->width, _scale * abs(bm->height), bmp_dc,
-               0, 0, bm->width, abs(bm->height), SRCCOPY);
+    StretchBlt(_dc, x, y, width, height, bmp_dc, 0, 0, bm->width,
+               abs(bm->height), SRCCOPY);
 
-    RECT rect = {x, y, x + _scale * bm->width, y + _scale * abs(bm->height)};
+    RECT rect = {x, y, x + width, y + height};
+    OffsetRect(&rect, _origin.x, _origin.y);
     InvalidateRect(_wnd, &rect, FALSE);
 
 end:
@@ -309,6 +315,7 @@ gfx_draw_line(gfx_rect *rect, gfx_color color)
     RECT wrect;
     _to_wrect(rect, &wrect);
     _grow_wrect(&wrect, _scale);
+    OffsetRect(&wrect, _origin.x, _origin.y);
     InvalidateRect(_wnd, &wrect, FALSE);
     return true;
 }
@@ -329,6 +336,7 @@ gfx_draw_rectangle(gfx_rect *rect, gfx_color color)
     DeleteObject(pen);
 
     _grow_wrect(&wrect, _scale);
+    OffsetRect(&wrect, _origin.x, _origin.y);
     InvalidateRect(_wnd, &wrect, FALSE);
     return true;
 }
@@ -342,6 +350,7 @@ gfx_fill_rectangle(gfx_rect *rect, gfx_color color)
     SetDCBrushColor(_dc, COLORS[color]);
     FillRect(_dc, &wrect, GetStockObject(DC_BRUSH));
 
+    OffsetRect(&wrect, _origin.x, _origin.y);
     InvalidateRect(_wnd, &wrect, FALSE);
     return true;
 }
@@ -377,6 +386,7 @@ gfx_draw_text(const char *str, uint16_t x, uint16_t y)
     DeleteObject(txt_bm);
     DeleteDC(txt_dc);
 
+    OffsetRect(&rect, _origin.x, _origin.y);
     InvalidateRect(_wnd, &rect, FALSE);
     return true;
 }
@@ -393,4 +403,17 @@ HDC
 windows_get_dc(void)
 {
     return _dc;
+}
+
+void
+windows_set_box(int width, int height)
+{
+    _origin.x = (width - _screen.cx) / 2;
+    _origin.y = (height - _screen.cy) / 2;
+}
+
+void
+windows_get_origin(POINT *origin)
+{
+    memcpy(origin, &_origin, sizeof(_origin));
 }

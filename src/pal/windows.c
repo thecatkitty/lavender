@@ -429,10 +429,14 @@ _wnd_proc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
         if (!dlg_refresh(&clip))
         {
             HDC src_dc = windows_get_dc();
+
+            POINT origin;
+            windows_get_origin(&origin);
             BitBlt(dc, ps.rcPaint.left, ps.rcPaint.top,
                    ps.rcPaint.right - ps.rcPaint.left,
-                   ps.rcPaint.bottom - ps.rcPaint.top, src_dc, ps.rcPaint.left,
-                   ps.rcPaint.top, SRCCOPY);
+                   ps.rcPaint.bottom - ps.rcPaint.top, src_dc,
+                   ps.rcPaint.left - origin.x, ps.rcPaint.top - origin.y,
+                   SRCCOPY);
         }
 
         EndPaint(wnd, &ps);
