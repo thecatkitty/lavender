@@ -81,6 +81,10 @@ static WPARAM _keycode;
 static gfx_dimensions _mouse_cell;
 
 static int _min_scale_id = 0;
+
+static bool            _fullscreen = false;
+static WINDOWPLACEMENT _placement = {sizeof(WINDOWPLACEMENT)};
+static float           _window_scale = 0.f;
 #endif
 
 extern int
@@ -294,6 +298,51 @@ _set_scale(int idx)
     return true;
 }
 
+static void
+_toggle_fullscreen(HWND wnd)
+{
+    DWORD style = GetWindowLongW(wnd, GWL_STYLE);
+    if (_fullscreen)
+    {
+        windows_set_scale(_window_scale);
+        SetWindowLongW(wnd, GWL_STYLE, style | WS_OVERLAPPEDWINDOW);
+        SetWindowPlacement(wnd, &_placement);
+        SetWindowPos(wnd, NULL, 0, 0, 0, 0,
+                     SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER |
+                         SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
+    }
+    else
+    {
+        MONITORINFO mi = {sizeof(mi)};
+        if (GetWindowPlacement(wnd, &_placement) &&
+            GetMonitorInfoW(MonitorFromWindow(wnd, MONITOR_DEFAULTTOPRIMARY),
+                            &mi))
+        {
+            _window_scale = gfx_get_scale();
+
+            int max_width = (mi.rcMonitor.right - mi.rcMonitor.left) / 80;
+            int max_height = (mi.rcMonitor.bottom - mi.rcMonitor.top) / 25;
+            windows_set_font(windows_find_font(max_width, max_height));
+            windows_set_box(mi.rcMonitor.right - mi.rcMonitor.left,
+                            mi.rcMonitor.bottom - mi.rcMonitor.top);
+            SetWindowLongW(wnd, GWL_STYLE, style & ~WS_OVERLAPPEDWINDOW);
+            SetWindowPos(wnd, HWND_TOP, mi.rcMonitor.left, mi.rcMonitor.top,
+                         mi.rcMonitor.right - mi.rcMonitor.left,
+                         mi.rcMonitor.bottom - mi.rcMonitor.top,
+                         SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
+        }
+    }
+
+    gfx_get_glyph_dimensions(&_mouse_cell);
+    _fullscreen = !_fullscreen;
+
+    for (int i = _min_scale_id - ID_SCALE; i < lengthof(SCALES); i++)
+    {
+        EnableMenuItem(_size_menu, ID_SCALE + i,
+                       MF_BYCOMMAND | (_fullscreen ? MF_GRAYED : MF_ENABLED));
+    }
+}
+
 static LRESULT CALLBACK
 _wnd_proc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -417,6 +466,11 @@ _wnd_proc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
             // Fall through
         }
 
+        case VK_F11: {
+            _toggle_fullscreen(_wnd);
+            return 0;
+        }
+
         case VK_BACK:
         case VK_TAB:
         case VK_RETURN:
@@ -441,7 +495,6 @@ _wnd_proc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
         case VK_F8:
         case VK_F9:
         case VK_F10:
-        case VK_F11:
         case VK_F12: {
             _keycode = wparam;
             return 0;
@@ -610,6 +663,7 @@ pal_initialize(int argc, char *argv[])
         _die(IDS_UNSUPPENV);
     }
 
+    _fullscreen = false;
     gfx_get_glyph_dimensions(&_mouse_cell);
 
     ShowWindow(_wnd, _cmd_show);
