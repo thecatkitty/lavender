@@ -21,6 +21,12 @@ windows_set_window_title(const char *title);
 extern HDC
 windows_get_dc(void);
 
+extern HFONT
+windows_find_font(int max_width, int max_height);
+
+extern bool
+windows_set_font(HFONT font);
+
 extern bool
 windows_set_scale(float scale);
 
