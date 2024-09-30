@@ -29,6 +29,9 @@ windows_set_box(int width, int height);
 
 extern void
 windows_get_origin(POINT *origin);
+
+extern COLORREF
+windows_get_bg(void);
 #endif
 
 #endif // _PLATFORM_WINDOWS_H_

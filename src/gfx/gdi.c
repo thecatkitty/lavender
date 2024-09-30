@@ -12,8 +12,9 @@ static POINT _origin;
 static float _min_scale;
 static float _scale;
 
-static HDC     _dc = NULL;
-static HBITMAP _fb = NULL;
+static HDC      _dc = NULL;
+static HBITMAP  _fb = NULL;
+static COLORREF _bg = RGB(0, 0, 0);
 
 static const COLORREF COLORS[] = {[GFX_COLOR_BLACK] = RGB(0, 0, 0),
                                   [GFX_COLOR_NAVY] = RGB(0, 0, 128),
@@ -350,8 +351,23 @@ gfx_fill_rectangle(gfx_rect *rect, gfx_color color)
     SetDCBrushColor(_dc, COLORS[color]);
     FillRect(_dc, &wrect, GetStockObject(DC_BRUSH));
 
-    OffsetRect(&wrect, _origin.x, _origin.y);
-    InvalidateRect(_wnd, &wrect, FALSE);
+    if ((_screen.cx == rect->width) && (_screen.cy == rect->height))
+    {
+        HDC  wnd_dc = GetDC(_wnd);
+        SetDCBrushColor(wnd_dc, COLORS[color]);
+
+        RECT wnd_rect;
+        GetClientRect(_wnd, &wnd_rect);
+        FillRect(wnd_dc, &wnd_rect, GetStockObject(DC_BRUSH));
+
+        ReleaseDC(_wnd, wnd_dc);
+        _bg = COLORS[color];
+    }
+    else
+    {
+        OffsetRect(&wrect, _origin.x, _origin.y);
+        InvalidateRect(_wnd, &wrect, FALSE);
+    }
     return true;
 }
 
@@ -416,4 +432,10 @@ void
 windows_get_origin(POINT *origin)
 {
     memcpy(origin, &_origin, sizeof(_origin));
+}
+
+COLORREF
+windows_get_bg(void)
+{
+    return _bg;
 }
