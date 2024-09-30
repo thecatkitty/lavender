@@ -43,6 +43,7 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
 
 #ifdef _WIN32
     IDS_SIZE, "Rozměr"
+    IDS_FULL, "&Celá obrazovka\tF11"
 #endif
 }
 

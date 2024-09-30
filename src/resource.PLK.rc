@@ -43,6 +43,7 @@ LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
 
 #ifdef _WIN32
     IDS_SIZE, "Rozmiar"
+    IDS_FULL, "&Pełny ekran\tF11"
 #endif
 }
 

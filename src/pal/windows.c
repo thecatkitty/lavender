@@ -39,6 +39,7 @@
 
 #define ID_ABOUT 0x1000
 #define ID_SCALE 0x2000
+#define ID_FULL  0x2100
 
 // See DEVICE_SCALE_FACTOR in shtypes.h
 static const float SCALES[] = {1.00f, 1.20f, 1.25f, 1.40f, 1.50f, 1.60f,
@@ -336,6 +337,8 @@ _toggle_fullscreen(HWND wnd)
     gfx_get_glyph_dimensions(&_mouse_cell);
     _fullscreen = !_fullscreen;
 
+    CheckMenuItem(_size_menu, ID_FULL,
+                  MF_BYCOMMAND | (_fullscreen ? MF_CHECKED : MF_UNCHECKED));
     for (int i = _min_scale_id - ID_SCALE; i < lengthof(SCALES); i++)
     {
         EnableMenuItem(_size_menu, ID_SCALE + i,
@@ -359,6 +362,11 @@ _wnd_proc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
             HDC   wnd_dc = GetDC(_wnd);
             float min_scale = (float)GetDeviceCaps(wnd_dc, LOGPIXELSX) / 96.f;
             ReleaseDC(_wnd, wnd_dc);
+
+            LoadStringW(_instance, IDS_FULL, str, lengthof(str));
+            AppendMenuW(_size_menu, MF_STRING, ID_FULL, str);
+
+            AppendMenuW(_size_menu, MF_SEPARATOR, 0, NULL);
 
             for (size_t i = 0; i < lengthof(SCALES); i++)
             {
@@ -425,6 +433,12 @@ _wnd_proc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
             ((ID_SCALE + lengthof(SCALES)) > LOWORD(wparam)))
         {
             _set_scale(LOWORD(wparam) - ID_SCALE);
+            return 0;
+        }
+
+        if (ID_FULL == LOWORD(wparam))
+        {
+            _toggle_fullscreen(wnd);
             return 0;
         }
 

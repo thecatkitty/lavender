@@ -46,4 +46,5 @@
 
 #ifdef _WIN32
 #define IDS_SIZE 0x50
+#define IDS_FULL 0x51
 #endif
