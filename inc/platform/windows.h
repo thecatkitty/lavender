@@ -23,6 +23,12 @@ windows_get_dc(void);
 
 extern bool
 windows_set_scale(float scale);
+
+extern void
+windows_set_box(int width, int height);
+
+extern void
+windows_get_origin(POINT *origin);
 #endif
 
 #endif // _PLATFORM_WINDOWS_H_
