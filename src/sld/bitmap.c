@@ -75,7 +75,7 @@ __sld_execute_bitmap(sld_entry *sld)
         x = ((float)screen.width / scale - bm.width) / 2 * scale;
         break;
     case SLD_ALIGN_RIGHT:
-        x = screen.width - bm.width;
+        x = ((float)screen.width / scale - bm.width) * scale;
         break;
     default:
         x = (int)((int32_t)sld->posx * screen.width / SLD_VIEWBOX_WIDTH);
