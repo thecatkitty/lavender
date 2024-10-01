@@ -104,10 +104,16 @@ wWinMain(HINSTANCE instance,
     _instance = instance;
     _cmd_show = cmd_show;
 
-    char  argv0[MAX_PATH];
-    char *argv[] = {argv0, NULL};
-    WideCharToMultiByte(CP_UTF8, 0, __wargv[0], -1, argv0, MAX_PATH, NULL,
-                        NULL);
+    char **argv = (char **)alloca((__argc + 2) * sizeof(char *));
+    for (int i = 0; i < __argc; i++)
+    {
+        int length = WideCharToMultiByte(CP_UTF8, 0, __wargv[i], -1, NULL, 0,
+                                         NULL, NULL);
+        argv[i] = (char *)alloca(length + 1);
+        WideCharToMultiByte(CP_UTF8, 0, __wargv[i], -1, argv[i], length + 1,
+                            NULL, NULL);
+    }
+    argv[__argc] = NULL;
     return main(__argc, argv);
 }
 
@@ -632,6 +638,20 @@ pal_initialize(int argc, char *argv[])
     SDL_GetWindowWMInfo(_window, &wminfo);
     _wnd = wminfo.info.win.window;
 #else
+    bool arg_kiosk = false;
+    for (int i = 1; i < argc; i++)
+    {
+        if ('/' != argv[i][0])
+        {
+            continue;
+        }
+
+        if ('k' == tolower(argv[i][1]))
+        {
+            arg_kiosk = true;
+        }
+    }
+
     INITCOMMONCONTROLSEX icc = {.dwSize = sizeof(INITCOMMONCONTROLSEX),
                                 .dwICC = ICC_STANDARD_CLASSES};
     InitCommonControlsEx(&icc);
@@ -682,6 +702,11 @@ pal_initialize(int argc, char *argv[])
 
     ShowWindow(_wnd, _cmd_show);
     pal_stall(-1);
+
+    if (arg_kiosk)
+    {
+        _toggle_fullscreen(_wnd);
+    }
 #endif
 
     hasset icon = pal_open_asset("windows.ico", O_RDONLY);
