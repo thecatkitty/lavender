@@ -538,8 +538,11 @@ _wnd_proc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
     }
 
     case WM_MOUSEMOVE: {
-        _mouse_x = GET_X_LPARAM(lparam) / _mouse_cell.width;
-        _mouse_y = GET_Y_LPARAM(lparam) / _mouse_cell.height;
+        POINT origin;
+        windows_get_origin(&origin);
+
+        _mouse_x = (GET_X_LPARAM(lparam) - origin.x) / _mouse_cell.width;
+        _mouse_y = (GET_Y_LPARAM(lparam) - origin.y) / _mouse_cell.height;
         return 0;
     }
 
