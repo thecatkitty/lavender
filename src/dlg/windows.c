@@ -15,13 +15,9 @@
 
 static HGLOBAL           _hgbl = NULL;
 static NONCLIENTMETRICSW _nclm = {0};
-static float             _scale = 1.f;
 
 static HHOOK   _hook = NULL;
 static WNDPROC _prev_wnd_proc = NULL;
-
-static HFONT _font_banner = NULL;
-static HFONT _font_footer = NULL;
 
 static char         *_buffer = NULL;
 static int           _size;
@@ -29,108 +25,6 @@ static dlg_validator _validator = NULL;
 
 static HWND _dlg;
 static int  _value;
-
-static void
-_free_fonts(void)
-{
-    DeleteObject(_font_banner);
-    DeleteObject(_font_footer);
-}
-
-bool
-dlg_refresh(const gfx_rect *clip)
-{
-    if (NULL == _dlg)
-    {
-        return false;
-    }
-
-    RECT rect;
-    HWND wnd = windows_get_hwnd();
-    HDC  dc = GetDC(wnd);
-    GetClientRect(wnd, &rect);
-
-    HRGN region = NULL;
-    if (NULL != clip)
-    {
-        region = CreateRectRgn(clip->left, clip->top, clip->left + clip->width,
-                               clip->top + clip->height);
-        SelectClipRgn(dc, region);
-    }
-
-    // Gradient background
-    GRADIENT_RECT mesh = {0, 1};
-    TRIVERTEX     vertex[2] = {
-        {rect.left - 1, rect.top - 1, 0xDC00, 0xAE00, 0xEE00, 0x0000},
-        {rect.right, rect.bottom, 0x0000, 0x0000, 0x0000, 0x0000},
-    };
-    GradientFill(dc, vertex, lengthof(vertex), &mesh, 1, GRADIENT_FILL_RECT_V);
-
-    float scale = gfx_get_scale();
-    if ((0.05 < fabsf(_scale - scale)) && (NULL != _font_banner))
-    {
-        DeleteObject(_font_banner);
-        DeleteObject(_font_footer);
-        _font_banner = NULL;
-        _font_footer = NULL;
-    }
-
-    _scale = scale;
-    if (NULL == _font_banner)
-    {
-        _font_banner =
-            CreateFontW(scale * 32, 0, 0, 0, FW_BOLD, TRUE, FALSE, FALSE,
-                        DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
-                        CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, FF_ROMAN, NULL);
-        _font_footer =
-            CreateFontW(scale * 12, 0, 0, 0, FW_REGULAR, FALSE, FALSE, FALSE,
-                        DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
-                        CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, FF_SWISS, NULL);
-        atexit(_free_fonts);
-    }
-
-    int prev_bkmode = SetBkMode(dc, TRANSPARENT);
-
-    // Banner with shadow
-    HFONT prev_font = SelectObject(dc, _font_banner);
-
-    int length =
-        MultiByteToWideChar(CP_UTF8, 0, pal_get_version_string(), -1, NULL, 0);
-    LPWSTR banner = (LPWSTR)alloca((length + 1) * sizeof(WCHAR));
-    MultiByteToWideChar(CP_UTF8, 0, pal_get_version_string(), -1, banner,
-                        length);
-
-    COLORREF prev_color = SetTextColor(dc, 0x000000);
-    rect.left += 7;
-    rect.top += 7;
-    DrawTextW(dc, banner, -1, &rect, 0);
-
-    SetTextColor(dc, 0xFFFFFF);
-    rect.left -= scale * 2;
-    rect.top -= scale * 2;
-    DrawTextW(dc, banner, -1, &rect, DT_SINGLELINE);
-
-    // Footer
-    rect.right -= 5;
-    rect.bottom -= 5;
-    SelectObject(dc, _font_footer);
-    DrawTextW(dc, L"© 2021-2024", -1, &rect, DT_SINGLELINE | DT_BOTTOM);
-    DrawTextW(dc, L"https://celones.pl/lavender", -1, &rect,
-              DT_SINGLELINE | DT_BOTTOM | DT_RIGHT);
-
-    // Restore state
-    if (NULL != clip)
-    {
-        SelectClipRgn(dc, NULL);
-        DeleteObject(region);
-    }
-
-    SetTextColor(dc, prev_color);
-    SelectObject(dc, prev_font);
-    SetBkMode(dc, prev_bkmode);
-    ReleaseDC(wnd, dc);
-    return true;
-}
 
 static LRESULT CALLBACK
 _hook_wnd_proc(HWND wnd, UINT message, WPARAM wparam, LPARAM lparam)
@@ -196,7 +90,6 @@ dlg_alert(const char *title, const char *message)
     MultiByteToWideChar(CP_UTF8, 0, message, -1, wmessage, message_length);
 
     pal_disable_mouse();
-    dlg_refresh(NULL);
 
     _dlg = HWND_MESSAGE;
     _hook = SetWindowsHookExW(WH_CALLWNDPROC, _hook_proc, NULL,
@@ -522,7 +415,6 @@ dlg_prompt(const char   *title,
     windows_set_dialog(_dlg = _create_prompt(wtitle, wmessage));
 
     pal_disable_mouse();
-    dlg_refresh(NULL);
 
     return true;
 }
