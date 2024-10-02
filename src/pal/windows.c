@@ -571,26 +571,19 @@ _wnd_proc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
         HDC         dc = BeginPaint(wnd, &ps);
 
         // All painting occurs here, between BeginPaint and EndPaint.
-        gfx_rect clip = {ps.rcPaint.left, ps.rcPaint.top,
-                         ps.rcPaint.right - ps.rcPaint.left,
-                         ps.rcPaint.bottom - ps.rcPaint.top};
-        if (!dlg_refresh(&clip))
-        {
-            HDC src_dc = windows_get_dc();
+        HDC src_dc = windows_get_dc();
 
-            RECT wnd_rect;
-            GetClientRect(wnd, &wnd_rect);
-            SetDCBrushColor(dc, windows_get_bg());
-            FillRect(dc, &ps.rcPaint, GetStockObject(DC_BRUSH));
+        RECT wnd_rect;
+        GetClientRect(wnd, &wnd_rect);
+        SetDCBrushColor(dc, windows_get_bg());
+        FillRect(dc, &ps.rcPaint, GetStockObject(DC_BRUSH));
 
-            POINT origin;
-            windows_get_origin(&origin);
-            BitBlt(dc, ps.rcPaint.left, ps.rcPaint.top,
-                   ps.rcPaint.right - ps.rcPaint.left,
-                   ps.rcPaint.bottom - ps.rcPaint.top, src_dc,
-                   ps.rcPaint.left - origin.x, ps.rcPaint.top - origin.y,
-                   SRCCOPY);
-        }
+        POINT origin;
+        windows_get_origin(&origin);
+        BitBlt(dc, ps.rcPaint.left, ps.rcPaint.top,
+               ps.rcPaint.right - ps.rcPaint.left,
+               ps.rcPaint.bottom - ps.rcPaint.top, src_dc,
+               ps.rcPaint.left - origin.x, ps.rcPaint.top - origin.y, SRCCOPY);
 
         EndPaint(wnd, &ps);
 
