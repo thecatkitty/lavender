@@ -1,4 +1,5 @@
 add_library(crg OBJECT)
+add_dependencies(crg config)
 
 target_sources(crg PRIVATE crg.c)
 target_sources(crg PRIVATE keyutils.c)

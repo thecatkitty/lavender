@@ -1,4 +1,5 @@
 add_library(pal OBJECT)
+add_dependencies(pal config)
 
 target_sources(pal PRIVATE ziparch.c)
 
