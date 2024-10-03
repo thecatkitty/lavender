@@ -75,7 +75,7 @@ _get_bundle_length(void)
 
     lseek(_fd, sizeof(exe_pe_file_header), SEEK_CUR);
 
-    exe_pe_optional_header optional_header;
+    exe_pe_optional_header optional_header = {0};
     read(_fd, &optional_header, sizeof(optional_header));
     if (EXE_PE_DIRECTORY_ENTRY_SECURITY >= optional_header.NumberOfRvaAndSizes)
     {
@@ -83,7 +83,7 @@ _get_bundle_length(void)
         return lseek(_fd, 0, SEEK_END);
     }
 
-    exe_pe_data_directory security;
+    exe_pe_data_directory security = {0};
     lseek(_fd, sizeof(exe_pe_data_directory) * EXE_PE_DIRECTORY_ENTRY_SECURITY,
           SEEK_CUR);
     read(_fd, &security, sizeof(security));

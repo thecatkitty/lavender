@@ -253,6 +253,11 @@ _create_prompt(LPCWSTR title, LPCWSTR message)
 
     // Dialog box
     LPDLGTEMPLATEW dt = (LPDLGTEMPLATEW)GlobalLock(_hgbl);
+    if (NULL == dt)
+    {
+        return NULL;
+    }
+
     ZeroMemory(dt, 1024);
     dt->style = WS_VISIBLE | WS_POPUP | WS_BORDER | WS_SYSMENU | DS_MODALFRAME |
                 WS_CAPTION | DS_SETFONT;

@@ -77,10 +77,10 @@ extern int
 main(int argc, char *argv[]);
 
 int WINAPI
-wWinMain(HINSTANCE instance,
-         HINSTANCE prev_instance,
-         PWSTR     cmd_line,
-         int       cmd_show)
+wWinMain(_In_ HINSTANCE     instance,
+         _In_opt_ HINSTANCE prev_instance,
+         _In_ PWSTR         cmd_line,
+         _In_ int           cmd_show)
 {
     _instance = instance;
     _cmd_show = cmd_show;
@@ -842,8 +842,8 @@ _load_version_info(void)
     CopyMemory(_ver_resource, resource, resource_size);
     FreeResource(resource_data);
 
-    WORD *translation;
-    UINT  translation_len;
+    WORD *translation = NULL;
+    UINT  translation_len = 0;
     if (!VerQueryValueW(_ver_resource, L"\\VarFileInfo\\Translation",
                         (LPVOID *)&translation, &translation_len))
     {
@@ -862,8 +862,8 @@ _load_string_file_info(const char *name)
     swprintf(path, MAX_PATH, L"\\StringFileInfo\\%04X%04X\\" FMT_AS,
              _ver_vfi_translation[0], _ver_vfi_translation[1], name);
 
-    WCHAR *string;
-    UINT   string_len;
+    WCHAR *string = NULL;
+    UINT   string_len = 0;
     if (!VerQueryValueW(_ver_resource, path, (LPVOID *)&string, &string_len))
     {
         LOG("cannot query %s", name);
@@ -971,6 +971,7 @@ pal_load_string(unsigned id, char *buffer, int max_length)
     {
         const char msg[] = "!!! string missing !!!";
         strncpy(buffer, msg, max_length);
+        buffer[max_length - 1] = 0;
 
         LOG("exit, string missing");
         return sizeof(msg) - 1;

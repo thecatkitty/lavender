@@ -28,7 +28,7 @@ _fmidi_start(void *music, uint16_t length)
         return false;
     }
 
-    midi_mthd mthd;
+    midi_mthd mthd = {0};
     iff_chunk mtrk_chunk = {0};
 
     iff_chunk it = {0};
@@ -109,7 +109,7 @@ _fmidi_step(void)
 
     while ((0 != length) && (0 == _event.delta) && (_track_end > _track))
     {
-        if ((MIDI_MSG_META == (uint8_t)_event.status) &&
+        if ((MIDI_MSG_META == (uint8_t)_event.status) && (NULL != _event.msg) &&
             (MIDI_META_TEMPO == (uint8_t)_event.msg[0]) &&
             (3 == (uint8_t)_event.msg[1]))
         {
