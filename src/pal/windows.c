@@ -88,8 +88,8 @@ wWinMain(_In_ HINSTANCE     instance,
     char **argv = (char **)alloca((__argc + 2) * sizeof(char *));
     for (int i = 0; i < __argc; i++)
     {
-        int length = WideCharToMultiByte(CP_UTF8, 0, __wargv[i], -1, NULL, 0,
-                                         NULL, NULL);
+        size_t length = WideCharToMultiByte(CP_UTF8, 0, __wargv[i], -1, NULL, 0,
+                                            NULL, NULL);
         argv[i] = (char *)alloca(length + 1);
         WideCharToMultiByte(CP_UTF8, 0, __wargv[i], -1, argv[i], length + 1,
                             NULL, NULL);

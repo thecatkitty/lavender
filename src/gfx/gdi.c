@@ -353,7 +353,7 @@ gfx_fill_rectangle(gfx_rect *rect, gfx_color color)
 bool
 gfx_draw_text(const char *str, uint16_t x, uint16_t y)
 {
-    int    length = MultiByteToWideChar(CP_UTF8, 0, str, -1, NULL, 0);
+    size_t length = MultiByteToWideChar(CP_UTF8, 0, str, -1, NULL, 0);
     LPWSTR wstr = (LPWSTR)alloca((length + 1) * sizeof(WCHAR));
     MultiByteToWideChar(CP_UTF8, 0, str, -1, wstr, length + 1);
 
