@@ -160,4 +160,7 @@ gfx_draw_text(const char *str, uint16_t x, uint16_t y);
 extern gfx_color
 gfx_get_color(const char *str);
 
+extern bool
+gfx_set_title(const char *title);
+
 #endif // _GFX_H_

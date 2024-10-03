@@ -146,3 +146,9 @@ gfx_cleanup(void)
 {
     return gfx_device_close(_dev);
 }
+
+bool
+gfx_set_title(const char *title)
+{
+    return false;
+}

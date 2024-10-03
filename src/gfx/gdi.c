@@ -394,6 +394,15 @@ gfx_cleanup(void)
     DeleteObject(_font);
 }
 
+bool
+gfx_set_title(const char *title)
+{
+    WCHAR wtitle[MAX_PATH];
+    MultiByteToWideChar(CP_UTF8, 0, title, -1, wtitle, MAX_PATH);
+    SetWindowTextW(_wnd, wtitle);
+    return true;
+}
+
 HDC
 windows_get_dc(void)
 {

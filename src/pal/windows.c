@@ -1024,11 +1024,3 @@ windows_set_dialog(HWND dlg)
 
     return false;
 }
-
-void
-windows_set_window_title(const char *title)
-{
-    WCHAR wtitle[MAX_PATH];
-    MultiByteToWideChar(CP_UTF8, 0, title, -1, wtitle, MAX_PATH);
-    SetWindowTextW(_wnd, wtitle);
-}
