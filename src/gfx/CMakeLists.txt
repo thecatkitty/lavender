@@ -20,6 +20,6 @@ if(CONFIG_SDL2)
     target_sources(gfx PRIVATE sdl2.c)
 endif()
 
-if(WIN32 AND NOT CONFIG_SDL2)
+if(WIN32)
     target_sources(gfx PRIVATE gdi.c)
 endif()

@@ -14,7 +14,6 @@ windows_get_hwnd(void);
 extern bool
 windows_set_dialog(HWND dlg);
 
-#if !defined(CONFIG_SDL2)
 extern void
 windows_set_window_title(const char *title);
 
@@ -38,6 +37,5 @@ windows_get_origin(POINT *origin);
 
 extern COLORREF
 windows_get_bg(void);
-#endif
 
 #endif // _PLATFORM_WINDOWS_H_
