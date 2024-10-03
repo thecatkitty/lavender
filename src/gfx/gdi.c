@@ -199,7 +199,7 @@ gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
         // Prepare a DWORD-aligned buffer for 1bpp bitmaps
         if (bm->opl % 4)
         {
-            size_t aligned_opl = align(bm->opl, sizeof(DWORD));
+            size_t aligned_opl = align(bm->opl, 4);
             size_t lines = abs(bm->height);
 
             char *aligned_bits = malloc(aligned_opl * lines);

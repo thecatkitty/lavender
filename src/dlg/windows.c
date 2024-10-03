@@ -288,8 +288,8 @@ _create_prompt(LPCWSTR title, LPCWSTR message)
     LPWORD creation_data;
 
     // OK button
-    LPDLGITEMTEMPLATEW ok_button = (LPDLGITEMTEMPLATEW)align(
-        font_face + wcslen(font_face) + 1, sizeof(DWORD));
+    LPDLGITEMTEMPLATEW ok_button =
+        (LPDLGITEMTEMPLATEW)align(font_face + wcslen(font_face) + 1, 4);
     ok_button->cx = 50;
     ok_button->cy = 14;
     ok_button->id = IDOK;
@@ -311,7 +311,7 @@ _create_prompt(LPCWSTR title, LPCWSTR message)
 
     // Edit box
     LPDLGITEMTEMPLATEW edit_box =
-        (LPDLGITEMTEMPLATEW)align(creation_data + 1, sizeof(DWORD));
+        (LPDLGITEMTEMPLATEW)align(creation_data + 1, 4);
     edit_box->cx = (_size + 2) * 4;
     edit_box->cy = 14;
     edit_box->id = ID_EDITBOX;
@@ -333,8 +333,7 @@ _create_prompt(LPCWSTR title, LPCWSTR message)
     *creation_data = 0;
 
     // Static text control
-    LPDLGITEMTEMPLATEW label =
-        (LPDLGITEMTEMPLATEW)align(creation_data + 1, sizeof(DWORD));
+    LPDLGITEMTEMPLATEW label = (LPDLGITEMTEMPLATEW)align(creation_data + 1, 4);
     label->x = 5;
     label->y = 5;
     label->id = ID_TEXT;
