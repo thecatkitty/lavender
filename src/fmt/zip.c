@@ -108,7 +108,7 @@ _get_bundle_length(void)
         if ((ZIP_PK_SIGN == cdirend->pk_signature) &&
             (ZIP_CDIR_END_SIGN == cdirend->header_signature))
         {
-            return security.VirtualAddress - 7 + offset;
+            return (off_t)security.VirtualAddress - 7 + (off_t)offset;
         }
     }
 #endif
@@ -190,8 +190,8 @@ zip_open(zip_archive archive)
 
     _cden = (const zip_cdir_end_header *)((char *)_cdir + cdirend->cdir_size);
 #ifndef ZIP_PIGGYBACK
-    _fbase = _flen - _cden->cdir_offset - _cden->cdir_size -
-             sizeof(zip_cdir_end_header);
+    _fbase = _flen - (off_t)(_cden->cdir_offset + _cden->cdir_size +
+                             (off_t)sizeof(zip_cdir_end_header));
 #endif
     return true;
 }
@@ -332,8 +332,8 @@ zip_get_data(off_t olfh)
     }
 
     if (!_seek_read(buffer,
-                    _fbase + olfh + sizeof(zip_local_file_header) +
-                        lfh->name_length + lfh->extra_length,
+                    _fbase + olfh + (off_t)sizeof(zip_local_file_header) +
+                        (off_t)lfh->name_length + (off_t)lfh->extra_length,
                     lfh->uncompressed_size))
     {
         free(buffer);
@@ -372,8 +372,8 @@ zip_get_size(off_t olfh)
     char *base = (char *)_cdir - _cden->cdir_offset;
     lfh = (zip_local_file_header *)(base + olfh);
 #else
-    off_t base = _flen - _cden->cdir_offset - _cden->cdir_size -
-                 sizeof(zip_cdir_end_header);
+    off_t base = _flen - (_cden->cdir_offset + _cden->cdir_size +
+                          (uint32_t)sizeof(zip_cdir_end_header));
     lfh = alloca(sizeof(zip_local_file_header));
     if (!_seek_read(lfh, base + olfh, sizeof(zip_local_file_header)))
     {

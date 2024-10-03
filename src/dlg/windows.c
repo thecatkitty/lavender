@@ -205,7 +205,7 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
             }
 
             HWND   edit_box = GetDlgItem(dlg, ID_EDITBOX);
-            int    length = GetWindowTextLengthW(edit_box);
+            size_t length = GetWindowTextLengthW(edit_box);
             LPWSTR text = (LPWSTR)alloca((length + 1) * sizeof(WCHAR));
             GetWindowTextW(edit_box, text, length + 1);
 
@@ -222,7 +222,7 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
         {
         case IDOK: {
             HWND   edit_box = GetDlgItem(dlg, ID_EDITBOX);
-            int    length = GetWindowTextLengthW(edit_box);
+            size_t length = GetWindowTextLengthW(edit_box);
             LPWSTR text = (LPWSTR)alloca((length + 1) * sizeof(WCHAR));
             GetWindowTextW(edit_box, text, length + 1);
             WideCharToMultiByte(CP_UTF8, 0, text, -1, _buffer, _size, NULL,

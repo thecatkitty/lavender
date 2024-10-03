@@ -115,8 +115,8 @@ _zip_enum_files_callback(zip_cdir_file_header *cfh, void *data)
 {
     pal_enum_assets_ctx *ctx = (pal_enum_assets_ctx *)data;
 
-    char *name = alloca(cfh->name_length + 1);
-    memcpy(name, cfh->name, cfh->name_length + 1);
+    char *name = alloca((size_t)cfh->name_length + 1);
+    memcpy(name, cfh->name, (size_t)cfh->name_length + 1);
     name[cfh->name_length] = 0;
 
     if (FastWildCompare((char *)ctx->pattern, name))
