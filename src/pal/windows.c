@@ -7,29 +7,17 @@
 #define UNICODE
 #include <shlobj.h>
 #include <windows.h>
+#include <windowsx.h>
 
+#include <dlg.h>
 #include <fmt/utf8.h>
 #include <pal.h>
 #include <platform/windows.h>
 #include <snd.h>
 
-#if defined(CONFIG_SDL2)
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_syswm.h>
-
-#include <platform/sdl2arch.h>
-#endif
-
 #include "../resource.h"
-#include "pal_impl.h"
-
-#if !defined(CONFIG_SDL2)
-#include <windowsx.h>
-
-#include <dlg.h>
-
 #include "evtmouse.h"
-#endif
+#include "pal_impl.h"
 
 #if defined(_MSC_VER) || (defined(__USE_MINGW_ANSI_STDIO) && !__USE_MINGW_ANSI_STDIO)
 #define FMT_AS "%S"
@@ -57,17 +45,12 @@ static LPVOID _ver_resource = NULL;
 static WORD  *_ver_vfi_translation = NULL;
 static char   _ver_string[MAX_PATH] = {0};
 
-#if defined(CONFIG_SDL2)
-extern SDL_Window *_window;
-#endif
-
 static HICON         _icon = NULL;
 static HWND          _wnd = NULL;
 static HWND          _dlg = NULL;
 static char         *_font = NULL;
 static LARGE_INTEGER _start_pc, _pc_freq;
 
-#if !defined(CONFIG_SDL2)
 static HINSTANCE _instance = NULL;
 static int       _cmd_show;
 static bool      _no_stall = false;
@@ -86,12 +69,10 @@ static int _min_scale_id = 0;
 static bool            _fullscreen = false;
 static WINDOWPLACEMENT _placement = {sizeof(WINDOWPLACEMENT)};
 static float           _window_scale = 0.f;
-#endif
 
 extern int
 __mme_init(void);
 
-#if !defined(CONFIG_SDL2)
 extern int
 main(int argc, char *argv[]);
 
@@ -592,7 +573,6 @@ _wnd_proc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
     }
     return DefWindowProc(wnd, msg, wparam, lparam);
 }
-#endif
 
 #if defined(_MSC_VER)
 __declspec(noreturn)
@@ -622,18 +602,6 @@ pal_initialize(int argc, char *argv[])
         _die(IDS_NOARCHIVE);
     }
 
-#if defined(CONFIG_SDL2)
-    if (!sdl2arch_initialize())
-    {
-        LOG("SDL2 architecture initialization failed");
-        _die(IDS_UNSUPPENV);
-    }
-
-    SDL_SysWMinfo wminfo;
-    SDL_VERSION(&wminfo.version);
-    SDL_GetWindowWMInfo(_window, &wminfo);
-    _wnd = wminfo.info.win.window;
-#else
     bool arg_kiosk = false;
     for (int i = 1; i < argc; i++)
     {
@@ -703,7 +671,6 @@ pal_initialize(int argc, char *argv[])
     {
         _toggle_fullscreen(_wnd);
     }
-#endif
 
     hasset icon = pal_open_asset("windows.ico", O_RDONLY);
     if (icon)
@@ -755,18 +722,14 @@ pal_cleanup(void)
         free(_font);
     }
 
-#if defined(CONFIG_SDL2)
-    sdl2arch_cleanup();
-#else
     if (_wnd)
     {
         KillTimer(_wnd, 0);
     }
-#endif
+
     ziparch_cleanup();
 }
 
-#if !defined(CONFIG_SDL2)
 bool
 pal_handle(void)
 {
@@ -805,7 +768,6 @@ pal_get_keystroke(void)
     _keycode = 0;
     return keycode;
 }
-#endif
 
 uint32_t
 pal_get_counter(void)
@@ -1022,108 +984,6 @@ pal_load_string(unsigned id, char *buffer, int max_length)
     return length;
 }
 
-#if defined(CONFIG_SDL2)
-static int CALLBACK
-enum_font_fam_proc(const LOGFONTW    *logfont,
-                   const TEXTMETRICW *metric,
-                   DWORD              type,
-                   LPARAM             lparam)
-{
-    if ((TRUETYPE_FONTTYPE != type) ||
-        (FIXED_PITCH != (logfont->lfPitchAndFamily & 0x3)) ||
-        (FW_NORMAL != logfont->lfWeight))
-    {
-        return 1;
-    }
-
-    *(bool *)lparam = true;
-    return 1;
-}
-
-const char *
-sdl2arch_get_font(void)
-{
-    if (_font)
-    {
-        return _font;
-    }
-
-    HKEY hkfonts;
-    if (ERROR_SUCCESS !=
-        RegOpenKeyW(HKEY_LOCAL_MACHINE,
-                    L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts",
-                    &hkfonts))
-    {
-        LOG("cannot retrive fonts registry key");
-        return NULL;
-    }
-
-    HDC   hdc = GetDC(NULL);
-    bool  found = false;
-    DWORD index = 0;
-    WCHAR value[MAX_PATH];
-    DWORD value_len = MAX_PATH;
-    DWORD type;
-    BYTE  data[MAX_PATH * sizeof(WCHAR)];
-    DWORD data_size = sizeof(data);
-    while (ERROR_SUCCESS == RegEnumValueW(hkfonts, index, value, &value_len,
-                                          NULL, &type, data, &data_size))
-    {
-        index++;
-        value_len = MAX_PATH;
-        data_size = sizeof(data);
-
-        if (REG_SZ != type)
-        {
-            continue;
-        }
-
-        LPWSTR ttf_suffix = wcsstr(value, L" (TrueType)");
-        if (ttf_suffix)
-        {
-            *ttf_suffix = 0;
-        }
-
-        EnumFontFamiliesW(hdc, value, enum_font_fam_proc, (LPARAM)&found);
-        if (found)
-        {
-            LOG("font: '%ls', file: '%ls'", value, data);
-            break;
-        }
-    }
-
-    RegCloseKey(hkfonts);
-
-    if (!found)
-    {
-        LOG("cannot match font");
-        return NULL;
-    }
-
-    WCHAR path[MAX_PATH];
-    if (!SUCCEEDED(SHGetFolderPathW(NULL, CSIDL_FONTS, NULL, SHGFP_TYPE_CURRENT,
-                                    path)))
-    {
-        LOG("cannot retrieve font directory path");
-        return NULL;
-    }
-
-    wcsncat(path, L"\\", MAX_PATH);
-    wcsncat(path, (LPWSTR)data, MAX_PATH);
-
-    int length = WideCharToMultiByte(CP_UTF8, 0, path, -1, NULL, 0, NULL, NULL);
-    _font = (char *)malloc(length + 1);
-    if (NULL == _font)
-    {
-        LOG("cannot allocate buffer");
-        return NULL;
-    }
-
-    WideCharToMultiByte(CP_UTF8, 0, path, -1, _font, length, NULL, NULL);
-    return _font;
-}
-#endif
-
 void
 pal_alert(const char *text, int error)
 {
@@ -1165,7 +1025,6 @@ windows_set_dialog(HWND dlg)
     return false;
 }
 
-#if !defined(CONFIG_SDL2)
 void
 windows_set_window_title(const char *title)
 {
@@ -1173,102 +1032,3 @@ windows_set_window_title(const char *title)
     MultiByteToWideChar(CP_UTF8, 0, title, -1, wtitle, MAX_PATH);
     SetWindowTextW(_wnd, wtitle);
 }
-#endif
-
-#if defined(CONFIG_SDL2)
-#define WINAPISHIM(dll, name, type, args, body)                                \
-    type __stdcall _imp__##name args                                           \
-    {                                                                          \
-        static type(__stdcall *_pfn) args = NULL;                              \
-        if (NULL == _pfn)                                                      \
-        {                                                                      \
-            HMODULE hmo = LoadLibraryW(L##dll);                                \
-            if (hmo)                                                           \
-            {                                                                  \
-                _pfn = (type(__stdcall *) args)GetProcAddress(hmo, #name);     \
-            }                                                                  \
-        }                                                                      \
-                                                                               \
-        body;                                                                  \
-    }
-
-#define WINAPICALL(...)                                                        \
-    if (_pfn)                                                                  \
-    {                                                                          \
-        return _pfn(__VA_ARGS__);                                              \
-    }
-
-WINAPISHIM("kernel32.dll", AttachConsole, BOOL, (DWORD dwProcessId), {
-    WINAPICALL(dwProcessId);
-
-    return FALSE;
-})
-
-WINAPISHIM("kernel32.dll",
-           GetModuleHandleExW,
-           BOOL,
-           (DWORD dwFlags, LPCWSTR lpModuleName, HMODULE *phModule),
-           {
-               WINAPICALL(dwFlags, lpModuleName, phModule);
-
-               if (GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS & dwFlags)
-               {
-                   *phModule = GetModuleHandleW(NULL);
-                   return TRUE;
-               }
-
-               if (GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT & dwFlags)
-               {
-                   *phModule = GetModuleHandleW(lpModuleName);
-                   return TRUE;
-               }
-
-               return FALSE;
-           })
-
-WINAPISHIM("user32.dll",
-           GetRawInputData,
-           UINT,
-           (HRAWINPUT hRawInput,
-            UINT      uiCommand,
-            LPVOID    pData,
-            PUINT     pcbSize,
-            UINT      cbSizeHeader),
-           {
-               WINAPICALL(hRawInput, uiCommand, pData, pcbSize, cbSizeHeader);
-
-               return -1;
-           })
-
-WINAPISHIM("user32.dll",
-           GetRawInputDeviceInfoA,
-           UINT,
-           (HANDLE hDevice, UINT uiCommand, LPVOID pData, PUINT pcbSize),
-           {
-               WINAPICALL(hDevice, uiCommand, pData, pcbSize);
-
-               return -1;
-           })
-
-WINAPISHIM("user32.dll",
-           GetRawInputDeviceList,
-           UINT,
-           (PRAWINPUTDEVICELIST pRawInputDeviceList,
-            PUINT               puiNumDevices,
-            UINT                cbSize),
-           {
-               WINAPICALL(pRawInputDeviceList, puiNumDevices, cbSize);
-
-               return -1;
-           })
-
-WINAPISHIM("user32.dll",
-           RegisterRawInputDevices,
-           BOOL,
-           (PCRAWINPUTDEVICE pRawInputDevices, UINT uiNumDevices, UINT cbSize),
-           {
-               WINAPICALL(pRawInputDevices, uiNumDevices, cbSize);
-
-               return FALSE;
-           })
-#endif
