@@ -406,8 +406,9 @@ gfx_draw_text(const char *str, uint16_t x, uint16_t y)
     return true;
 }
 
-void
-sdl2arch_set_window_title(const char *title)
+bool
+gfx_set_title(const char *title)
 {
     SDL_SetWindowTitle(_window, title);
+    return true;
 }
