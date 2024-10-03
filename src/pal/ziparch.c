@@ -53,7 +53,7 @@ _tmpnam(char *path)
         return NULL;
     }
 
-    if (0 == GetTempFileNameA(path, NULL, 0, path))
+    if (0 == GetTempFileNameA(path, "lav", 0, path))
     {
         return NULL;
     }

@@ -82,7 +82,7 @@ _goto_label(sld_context *ctx, const char *label)
         }
     }
 
-    char msg[sizeof(sld_entry)];
+    char msg[sizeof(sld_entry)] = {0};
     __sld_errmsgcpy(msg, IDS_NOLABEL);
     __sld_errmsgcat(msg, ": ");
     __sld_errmsgcat(msg, label);
@@ -161,7 +161,7 @@ sld_handle(void)
         int length = sld_load_entry(ctx, &ctx->entry);
         if (0 > length)
         {
-            char msg[sizeof(sld_entry)];
+            char msg[sizeof(sld_entry)] = {0};
             __sld_errmsgcpy(msg, IDS_LOADERROR);
             __sld_errmsgcat(msg, "\n");
             __sld_errmsgcat(msg, ctx->message);
@@ -207,7 +207,7 @@ sld_handle(void)
 
     if (0 > status)
     {
-        char msg[sizeof(sld_entry)];
+        char msg[sizeof(sld_entry)] = {0};
         __sld_errmsgcpy(msg, IDS_EXECERROR);
         __sld_errmsgcat(msg, "\n");
         __sld_errmsgcat(msg, ctx->message);
