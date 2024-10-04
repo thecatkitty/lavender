@@ -1,8 +1,3 @@
-#ifdef _WIN32
-#include <malloc.h>
-#else
-#include <alloca.h>
-#endif
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -148,7 +143,8 @@ zip_open(zip_archive archive)
         return false;
     }
 
-    cdirend = alloca(sizeof(zip_cdir_end_header));
+    zip_cdir_end_header cdirend_buff = {0};
+    cdirend = &cdirend_buff;
     if (!_seek_read(cdirend, _flen - sizeof(zip_cdir_end_header),
                     sizeof(zip_cdir_end_header)))
     {
@@ -299,7 +295,8 @@ zip_get_data(off_t olfh)
     char *base = (char *)_cdir - _cden->cdir_offset;
     lfh = (zip_local_file_header *)(base + olfh);
 #else
-    lfh = alloca(sizeof(zip_local_file_header));
+    zip_local_file_header lfh_buff = {0};
+    lfh = &lfh_buff;
     if (!_seek_read(lfh, _fbase + olfh, sizeof(zip_local_file_header)))
     {
         return false;
@@ -374,7 +371,9 @@ zip_get_size(off_t olfh)
 #else
     off_t base = _flen - (_cden->cdir_offset + _cden->cdir_size +
                           (uint32_t)sizeof(zip_cdir_end_header));
-    lfh = alloca(sizeof(zip_local_file_header));
+
+    zip_local_file_header lfh_buff = {0};
+    lfh = &lfh_buff;
     if (!_seek_read(lfh, base + olfh, sizeof(zip_local_file_header)))
     {
         return false;

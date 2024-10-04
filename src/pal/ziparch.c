@@ -1,8 +1,5 @@
 #ifdef _WIN32
 #include <windows.h>
-#include <malloc.h>
-#else
-#include <alloca.h>
 #endif
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,6 +12,14 @@
 
 #ifndef O_ACCMODE
 #define O_ACCMODE (_O_RDONLY | _O_WRONLY | _O_RDWR)
+#endif
+
+#ifndef PATH_MAX
+#ifdef _MAX_PATH
+#define PATH_MAX _MAX_PATH
+#else
+#define PATH_MAX MAX_PATH
+#endif
 #endif
 
 pal_asset __pal_assets[MAX_OPEN_ASSETS];
@@ -48,7 +53,7 @@ _tmpnam(char *path)
 static char *
 _tmpnam(char *path)
 {
-    if (0 == GetTempPathA(MAX_PATH, path))
+    if (0 == GetTempPathA(PATH_MAX, path))
     {
         return NULL;
     }
@@ -115,8 +120,14 @@ _zip_enum_files_callback(zip_cdir_file_header *cfh, void *data)
 {
     pal_enum_assets_ctx *ctx = (pal_enum_assets_ctx *)data;
 
-    char *name = alloca((size_t)cfh->name_length + 1);
-    memcpy(name, cfh->name, (size_t)cfh->name_length + 1);
+    char name[PATH_MAX] = {0};
+    if (sizeof(name) < ((size_t)cfh->name_length + 1))
+    {
+        errno = EINVAL;
+        return false;
+    }
+
+    strncpy(name, cfh->name, (size_t)cfh->name_length + 1);
     name[cfh->name_length] = 0;
 
     if (FastWildCompare((char *)ctx->pattern, name))
