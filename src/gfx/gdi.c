@@ -354,7 +354,12 @@ bool
 gfx_draw_text(const char *str, uint16_t x, uint16_t y)
 {
     size_t length = MultiByteToWideChar(CP_UTF8, 0, str, -1, NULL, 0);
-    LPWSTR wstr = (LPWSTR)alloca((length + 1) * sizeof(WCHAR));
+    LPWSTR wstr = (LPWSTR)malloc((length + 1) * sizeof(WCHAR));
+    if (NULL == wstr)
+    {
+        return false;
+    }
+
     MultiByteToWideChar(CP_UTF8, 0, str, -1, wstr, length + 1);
 
     RECT rect;
@@ -375,6 +380,7 @@ gfx_draw_text(const char *str, uint16_t x, uint16_t y)
     SetBkColor(txt_dc, 0x000000);
     SetTextColor(txt_dc, 0xFFFFFF);
     DrawTextW(txt_dc, wstr, -1, &txt_rect, DT_SINGLELINE);
+    free(wstr);
 
     BitBlt(_dc, rect.left, rect.top, txt_rect.right, txt_rect.bottom, txt_dc, 0,
            0, SRCINVERT);
