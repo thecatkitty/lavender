@@ -82,11 +82,20 @@ dlg_alert(const char *title, const char *message)
     }
 
     int    title_length = MultiByteToWideChar(CP_UTF8, 0, title, -1, NULL, 0);
-    LPWSTR wtitle = (LPWSTR)alloca(title_length * sizeof(WCHAR));
+    LPWSTR wtitle = (LPWSTR)malloc(title_length * sizeof(WCHAR));
+    if (NULL == wtitle)
+    {
+        return false;
+    }
     MultiByteToWideChar(CP_UTF8, 0, title, -1, wtitle, title_length);
 
     int message_length = MultiByteToWideChar(CP_UTF8, 0, message, -1, NULL, 0);
-    LPWSTR wmessage = (LPWSTR)alloca(message_length * sizeof(WCHAR));
+    LPWSTR wmessage = (LPWSTR)malloc(message_length * sizeof(WCHAR));
+    if (NULL == wmessage)
+    {
+        free(wtitle);
+        return false;
+    }
     MultiByteToWideChar(CP_UTF8, 0, message, -1, wmessage, message_length);
 
     pal_disable_mouse();
@@ -99,6 +108,8 @@ dlg_alert(const char *title, const char *message)
     _value = DLG_OK;
     _dlg = NULL;
 
+    free(wtitle);
+    free(wmessage);
     return true;
 }
 
@@ -206,15 +217,27 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
 
             HWND   edit_box = GetDlgItem(dlg, ID_EDITBOX);
             size_t length = GetWindowTextLengthW(edit_box);
-            LPWSTR text = (LPWSTR)alloca((length + 1) * sizeof(WCHAR));
+            LPWSTR text = (LPWSTR)malloc((length + 1) * sizeof(WCHAR));
+            if (NULL == text)
+            {
+                return TRUE;
+            }
             GetWindowTextW(edit_box, text, length + 1);
 
             length =
                 WideCharToMultiByte(CP_UTF8, 0, text, -1, NULL, 0, NULL, NULL);
-            LPSTR atext = (LPSTR)alloca(length);
+            LPSTR atext = (LPSTR)malloc(length);
+            if (NULL == atext)
+            {
+                free(text);
+                return TRUE;
+            }
             WideCharToMultiByte(CP_UTF8, 0, text, -1, atext, length, NULL,
                                 NULL);
             EnableWindow(GetDlgItem(dlg, IDOK), _validator(atext));
+
+            free(text);
+            free(atext);
             return TRUE;
         }
 
@@ -223,12 +246,17 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
         case IDOK: {
             HWND   edit_box = GetDlgItem(dlg, ID_EDITBOX);
             size_t length = GetWindowTextLengthW(edit_box);
-            LPWSTR text = (LPWSTR)alloca((length + 1) * sizeof(WCHAR));
+            LPWSTR text = (LPWSTR)malloc((length + 1) * sizeof(WCHAR));
+            if (NULL == text)
+            {
+                return TRUE;
+            }
             GetWindowTextW(edit_box, text, length + 1);
             WideCharToMultiByte(CP_UTF8, 0, text, -1, _buffer, _size, NULL,
                                 NULL);
             DestroyWindow(dlg);
             _value = length;
+            free(text);
             return TRUE;
         }
 
@@ -404,11 +432,20 @@ dlg_prompt(const char   *title,
     }
 
     int    title_length = MultiByteToWideChar(CP_UTF8, 0, title, -1, NULL, 0);
-    LPWSTR wtitle = (LPWSTR)alloca(title_length * sizeof(WCHAR));
+    LPWSTR wtitle = (LPWSTR)malloc(title_length * sizeof(WCHAR));
+    if (NULL == wtitle)
+    {
+        return false;
+    }
     MultiByteToWideChar(CP_UTF8, 0, title, -1, wtitle, title_length);
 
     int message_length = MultiByteToWideChar(CP_UTF8, 0, message, -1, NULL, 0);
-    LPWSTR wmessage = (LPWSTR)alloca(message_length * sizeof(WCHAR));
+    LPWSTR wmessage = (LPWSTR)malloc(message_length * sizeof(WCHAR));
+    if (NULL == wmessage)
+    {
+        free(wtitle);
+        return false;
+    }
     MultiByteToWideChar(CP_UTF8, 0, message, -1, wmessage, message_length);
 
     _buffer = buffer;
@@ -420,6 +457,8 @@ dlg_prompt(const char   *title,
 
     pal_disable_mouse();
 
+    free(wtitle);
+    free(wmessage);
     return true;
 }
 

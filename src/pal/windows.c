@@ -1,4 +1,3 @@
-#include <malloc.h>
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
@@ -85,17 +84,36 @@ wWinMain(_In_ HINSTANCE     instance,
     _instance = instance;
     _cmd_show = cmd_show;
 
-    char **argv = (char **)alloca((__argc + 2) * sizeof(char *));
-    for (int i = 0; i < __argc; i++)
+    int    argc = __argc;
+    char **argv = (char **)malloc(((size_t)argc + 2) * sizeof(char *));
+    if (NULL == argv)
+    {
+        return errno;
+    }
+
+    for (int i = 0; i < argc; i++)
     {
         size_t length = WideCharToMultiByte(CP_UTF8, 0, __wargv[i], -1, NULL, 0,
                                             NULL, NULL);
-        argv[i] = (char *)alloca(length + 1);
+        argv[i] = (char *)malloc(length + 1);
+        if (NULL == argv[i])
+        {
+            argc = i;
+            break;
+        }
         WideCharToMultiByte(CP_UTF8, 0, __wargv[i], -1, argv[i], length + 1,
                             NULL, NULL);
     }
-    argv[__argc] = NULL;
-    return main(__argc, argv);
+    argv[argc] = NULL;
+
+    int status = main(argc, argv);
+
+    for (int i = 0; i < argc; i++)
+    {
+        free(argv[i]);
+    }
+    free(argv);
+    return status;
 }
 
 static BOOL CALLBACK
@@ -965,8 +983,13 @@ pal_load_string(unsigned id, char *buffer, int max_length)
 {
     LOG("entry, id: %u, buffer: %p, max_length: %d", id, buffer, max_length);
 
-    LPWSTR wbuffer = (PWSTR)alloca(max_length * sizeof(WCHAR));
-    int    length = LoadStringW(NULL, id, wbuffer, max_length);
+    LPWSTR wbuffer = (PWSTR)malloc(max_length * sizeof(WCHAR));
+    if (NULL == wbuffer)
+    {
+        return -1;
+    }
+
+    int length = LoadStringW(NULL, id, wbuffer, max_length);
     if (0 > length)
     {
         const char msg[] = "!!! string missing !!!";
@@ -980,6 +1003,7 @@ pal_load_string(unsigned id, char *buffer, int max_length)
     int mb_length = WideCharToMultiByte(CP_UTF8, 0, wbuffer, length, buffer,
                                         max_length, NULL, NULL);
     buffer[mb_length] = 0;
+    free(wbuffer);
 
     LOG("exit, '%s'", buffer);
     return length;
