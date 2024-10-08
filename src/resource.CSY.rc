@@ -13,6 +13,8 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
     IDS_ENTERPASS, "Vložte heslo"
     IDS_ENTERPASS_DESC, "Tento obsah je zašifrován.\n\nZadejte přístupový klíč."
     IDS_INVALIDKEY, "Zadaný klíč je neplatný!"
+    IDS_OK, "OK"
+    IDS_CANCEL, "Storno"
 #endif
 
     IDS_LOADERROR, "Chyba načítání scénáře!"

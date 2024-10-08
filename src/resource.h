@@ -16,6 +16,8 @@
 #define IDS_ENTERPASS      0x12
 #define IDS_ENTERPASS_DESC 0x13
 #define IDS_INVALIDKEY     0x14
+#define IDS_OK             0x1E
+#define IDS_CANCEL         0x1F
 #endif
 
 #define IDS_LOADERROR 0x20

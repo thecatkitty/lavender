@@ -6,6 +6,8 @@
 #include <gfx.h>
 #include <pal.h>
 
+#include "../resource.h"
+
 enum
 {
     STATE_NONE,
@@ -37,68 +39,36 @@ static bool           _cursor_visible = true;
 
 static gfx_rect _screen = {0, 0, 0, 0};
 static gfx_rect _box;
-static gfx_rect _close;
+static gfx_rect _cancel;
 static gfx_rect _ok;
 
 static void
 _draw_background(void)
 {
-    gfx_fill_rectangle(&_screen, GFX_COLOR_GRAY);
+    gfx_fill_rectangle(&_screen, GFX_COLOR_WHITE);
 
     gfx_rect bar = {0, 0, _screen.width, _glyph.height + 1};
-    gfx_fill_rectangle(&bar, GFX_COLOR_WHITE);
+    gfx_fill_rectangle(&bar, GFX_COLOR_BLACK);
 
-    gfx_rect hline = {0, bar.height, _screen.width - 1, 1};
-    gfx_draw_line(&hline, GFX_COLOR_BLACK);
-    gfx_draw_text(pal_get_version_string(), 1, 0);
-
+    bar.height = 3 * _glyph.height + 1;
     bar.top = _screen.height - bar.height;
     gfx_fill_rectangle(&bar, GFX_COLOR_BLACK);
-    gfx_draw_text("(C) 2021-2024", 1, 24);
-    gfx_draw_text("https://celones.pl/lavender", 52, 24);
+
+    gfx_draw_text(pal_get_version_string(), 1, 22);
+    gfx_draw_text("https://celones.pl/lavender", 1, 23);
+    gfx_draw_text("(C) 2021-2024 Mateusz Karcz", 1, 24);
 }
 
 static void
-_draw_frame(int columns, int lines, const char *title, int title_length)
+_draw_title(const char *title)
 {
-    columns += 1 - (columns % 2);
-
-    gfx_rect window = {0, 0, _glyph.width * (columns + 3),
-                       _glyph.height * (lines + 6)};
-
-    window.left = (_screen.width - window.width) / 2;
-    window.top =
-        (_screen.height - window.height) / 2 / _glyph.height * _glyph.height;
-    gfx_fill_rectangle(&window, GFX_COLOR_WHITE);
-    gfx_draw_rectangle(&window, GFX_COLOR_BLACK);
-    window.left -= 1;
-    window.width += 2;
-    gfx_draw_rectangle(&window, GFX_COLOR_BLACK);
-    window.left += 1;
-
-    gfx_rect title_line = {window.left, window.top + _glyph.height + 1,
-                           window.width - 1, 1};
-    gfx_draw_line(&title_line, GFX_COLOR_BLACK);
-
-    int      scale = (_glyph.width + 7) / 8;
-    gfx_rect stripe = {window.left + window.width - 4,
-                       window.top + (scale + 1) / 2,
-                       (window.width - ((title_length + 6) * _glyph.width)), 1};
-    stripe.left -= stripe.width;
-    for (int i = 0; i < _glyph.height; i += 2 * scale)
-    {
-        gfx_draw_line(&stripe, GFX_COLOR_BLACK);
-        stripe.top += 2 * scale;
-    }
-
 #ifdef UTF8_NATIVE
     const char *title_l = title;
 #else
     char *title_l = alloca(strlen(title) + 1);
     utf8_encode(title, title_l, pal_wctob);
 #endif
-    gfx_draw_text(title_l, window.left / _glyph.width + 4,
-                  window.top / _glyph.height);
+    gfx_draw_text(title_l, 1, 0);
 }
 
 static int
@@ -159,14 +129,11 @@ _draw_text(int columns, int lines, const char *text)
     char *line_buff = alloca(columns + 1);
 #endif
 
-    int left = (_screen.width / _glyph.width - columns) / 2;
-    int top = (_screen.height / _glyph.height - 6 - lines) / 2 + 2;
-
     int line = 0;
     while (*fragment && (lines > line))
     {
         fragment += _strndcpy(line_buff, fragment, columns, '\n');
-        if (!gfx_draw_text(line_buff, left, top + line))
+        if (!gfx_draw_text(line_buff, 1, 2 + line))
         {
             return false;
         }
@@ -177,43 +144,18 @@ _draw_text(int columns, int lines, const char *text)
 }
 
 static void
-_draw_close(int columns, int lines)
+_draw_button(int x, int y, const char *text, gfx_rect *rect)
 {
-    columns += 1 - (columns % 2);
+    rect->width = _glyph.width * 9;
+    rect->height = _glyph.height * 3 / 2;
+    rect->left = x * _glyph.width - (_glyph.width / 2);
+    rect->top = y * _glyph.height - (_glyph.height / 4);
 
-    int left = (_screen.width / _glyph.width - columns) / 2 - 1;
-    int top = (_screen.height / _glyph.height - 3 - lines) / 2 - 1;
-
-    _close.width = _glyph.width * 3;
-    _close.height = _glyph.height * 1 + 1;
-    _close.left = left * _glyph.width;
-    _close.top = top * _glyph.height;
-
-    gfx_rect inner = {_close.left, _close.top, _close.width - 1, _close.height};
-    gfx_fill_rectangle(&_close, GFX_COLOR_WHITE);
-    gfx_draw_rectangle(&_close, GFX_COLOR_BLACK);
+    gfx_rect inner = {rect->left - 1, rect->top, rect->width + 2, rect->height};
+    gfx_fill_rectangle(rect, GFX_COLOR_WHITE);
+    gfx_draw_rectangle(rect, GFX_COLOR_BLACK);
     gfx_draw_rectangle(&inner, GFX_COLOR_BLACK);
-    gfx_draw_text("X", left + 1, top);
-}
-
-static void
-_draw_ok(int columns, int lines)
-{
-    columns += 1 - (columns % 2);
-
-    int left = (_screen.width / _glyph.width - columns) / 2;
-    int top = (_screen.height / _glyph.height - 3 - lines) / 2 + 2;
-
-    _ok.width = _glyph.width * 7;
-    _ok.height = _glyph.height * 3 / 2;
-    _ok.left = (left + columns - 7) * _glyph.width - (_glyph.width / 2);
-    _ok.top = (top + lines + 1) * _glyph.height - (_glyph.height / 4);
-
-    gfx_rect inner = {_ok.left - 1, _ok.top, _ok.width + 2, _ok.height};
-    gfx_fill_rectangle(&_ok, GFX_COLOR_WHITE);
-    gfx_draw_rectangle(&_ok, GFX_COLOR_BLACK);
-    gfx_draw_rectangle(&inner, GFX_COLOR_BLACK);
-    gfx_draw_text("Ok", left + columns - 5, top + lines + 1);
+    gfx_draw_text(text, x + (8 - strlen(text)) / 2, y);
 }
 
 static bool
@@ -329,7 +271,7 @@ _handle_alert(void)
     {
         scancode = VK_RETURN;
     }
-    else if (_is_pressed(&_close))
+    else if (_is_pressed(&_cancel))
     {
         scancode = VK_ESCAPE;
     }
@@ -370,10 +312,12 @@ dlg_alert(const char *title, const char *message)
     int title_length, columns, lines;
     _get_content_size(title, message, &title_length, &columns, &lines);
     _draw_background();
-    _draw_frame(columns, lines, title, title_length);
+    _draw_title(title);
     _draw_text(columns, lines, message);
-    _draw_close(columns, lines);
-    _draw_ok(columns, lines);
+
+    char caption[9];
+    pal_load_string(IDS_OK, caption, sizeof(caption));
+    _draw_button(80 - 10, 25 - 2, caption, &_ok);
 
     pal_enable_mouse();
     _state = STATE_ALERT;
@@ -449,7 +393,7 @@ _handle_prompt(void)
     {
         scancode = VK_RETURN;
     }
-    else if (_is_pressed(&_close))
+    else if (_is_pressed(&_cancel))
     {
         scancode = VK_ESCAPE;
     }
@@ -576,11 +520,14 @@ dlg_prompt(const char   *title,
 
     int title_length, columns, lines;
     _get_content_size(title, message, &title_length, &columns, &lines);
-    lines += 2;
 
-    int field_width = (columns > size) ? size : columns;
-    _field_left = (_screen.width / _glyph.width - field_width) / 2;
-    _field_top = (_screen.height / _glyph.height - 3 - lines) / 2 + 1 + lines;
+    int field_width = 39;
+    if (field_width < size)
+    {
+        field_width = size;
+    }
+    _field_left = 1;
+    _field_top = 2 + lines + 2;
 
     _box.width = field_width * _glyph.width + 2;
     _box.height = _glyph.height + 2;
@@ -588,7 +535,7 @@ dlg_prompt(const char   *title,
     _box.left = _field_left * _glyph.width - 1;
 
     _draw_background();
-    _draw_frame(columns, lines, title, title_length);
+    _draw_title(title);
     _draw_text(columns, lines, message);
 
     _state = STATE_PROMPT;
@@ -600,8 +547,12 @@ dlg_prompt(const char   *title,
 
     _buffer[0] = 0;
     _draw_text_box();
-    _draw_ok(columns, lines);
-    _draw_close(columns, lines);
+
+    char caption[9];
+    pal_load_string(IDS_OK, caption, sizeof(caption));
+    _draw_button(80 - 20, 25 - 2, caption, &_ok);
+    pal_load_string(IDS_CANCEL, caption, sizeof(caption));
+    _draw_button(80 - 10, 25 - 2, caption, &_cancel);
 
     pal_enable_mouse();
     return true;

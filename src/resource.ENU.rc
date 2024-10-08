@@ -13,6 +13,8 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
     IDS_ENTERPASS, "Enter Password"
     IDS_ENTERPASS_DESC, "This content is encrypted.\n\nPlease enter the access key."
     IDS_INVALIDKEY, "Provided key is invalid!"
+    IDS_OK, "OK"
+    IDS_CANCEL, "Cancel"
 #endif
 
     IDS_LOADERROR, "Script loading error!"
