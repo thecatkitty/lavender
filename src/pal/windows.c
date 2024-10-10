@@ -44,11 +44,11 @@ static LPVOID _ver_resource = NULL;
 static WORD  *_ver_vfi_translation = NULL;
 static char   _ver_string[MAX_PATH] = {0};
 
-static HICON         _icon = NULL;
-static HWND          _wnd = NULL;
-static HWND          _dlg = NULL;
-static char         *_font = NULL;
-static LARGE_INTEGER _start_pc, _pc_freq;
+static HICON _icon = NULL;
+static HWND  _wnd = NULL;
+static HWND  _dlg = NULL;
+static char *_font = NULL;
+static DWORD _start_time = 0;
 
 static HINSTANCE _instance = NULL;
 static int       _cmd_show;
@@ -609,8 +609,7 @@ _die(unsigned ids)
 void
 pal_initialize(int argc, char *argv[])
 {
-    QueryPerformanceFrequency(&_pc_freq);
-    QueryPerformanceCounter(&_start_pc);
+    _start_time = timeGetTime();
 
     LOG("entry");
 
@@ -790,9 +789,7 @@ pal_get_keystroke(void)
 uint32_t
 pal_get_counter(void)
 {
-    LARGE_INTEGER pc;
-    QueryPerformanceCounter(&pc);
-    return (pc.QuadPart - _start_pc.QuadPart) / (_pc_freq.QuadPart / 1000);
+    return timeGetTime() - _start_time;
 }
 
 uint32_t
