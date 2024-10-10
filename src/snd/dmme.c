@@ -60,7 +60,7 @@ mme_open(device *dev)
     }
 
 #if PAL_EXTERNAL_TICK
-    unsigned period = min(max(tc.wPeriodMin, 5), tc.wPeriodMax);
+    unsigned period = min(max(tc.wPeriodMin, 1), tc.wPeriodMax);
     if (TIMERR_NOERROR != timeBeginPeriod(period))
     {
         LOG("cannot request the multimedia timer period");
@@ -70,8 +70,8 @@ mme_open(device *dev)
 
     _period = period;
 
-    if (0 == (_timer = timeSetEvent(_period, _period, _time_callback, 0,
-                                    TIME_PERIODIC)))
+    if (0 ==
+        (_timer = timeSetEvent(_period, 0, _time_callback, 0, TIME_PERIODIC)))
     {
         LOG("cannot start the multimedia timer");
         snd_device_close(dev);

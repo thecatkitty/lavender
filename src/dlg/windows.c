@@ -119,7 +119,7 @@ dlg_alert(const char *title, const char *message)
     return true;
 }
 
-typedef HRESULT (*pfloadiconmetric)(HINSTANCE, PCWSTR, int, HICON *);
+typedef HRESULT(WINAPI *pfloadiconmetric)(HINSTANCE, PCWSTR, int, HICON *);
 
 static HICON
 _load_icon(void)
