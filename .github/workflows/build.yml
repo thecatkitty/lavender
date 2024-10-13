@@ -57,9 +57,9 @@ jobs:
       - name: Fetch Windows dependencies
         if: startsWith(matrix.platform.target, 'windows')
         run: |
-          wget -nv -P ext/ https://github.com/mstorsjo/llvm-mingw/releases/download/20240619/llvm-mingw-20240619-msvcrt-ubuntu-20.04-x86_64.tar.xz
-          tar -xf ext/llvm-mingw-20240619-msvcrt-ubuntu-20.04-x86_64.tar.xz -C ext/
-          echo "$PWD/ext/llvm-mingw-20240619-msvcrt-ubuntu-20.04-x86_64/bin" >> $GITHUB_PATH
+          wget -nv -P ext/ https://github.com/mstorsjo/llvm-mingw/releases/download/20241001/llvm-mingw-20241001-msvcrt-ubuntu-20.04-x86_64.tar.xz
+          tar -xf ext/llvm-mingw-20241001-msvcrt-ubuntu-20.04-x86_64.tar.xz -C ext/
+          echo "$PWD/ext/llvm-mingw-20241001-msvcrt-ubuntu-20.04-x86_64/bin" >> $GITHUB_PATH
 
       - name: Fetch DOS dependencies
         if: startsWith(matrix.platform.target, 'dos')
