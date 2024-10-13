@@ -7,6 +7,7 @@ else()
 endif()
 include(cmake/extensions.cmake)
 
+cmake_path(GET CMAKE_C_COMPILER FILENAME COMPILER_NAME)
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     set(LINUX 1)
 endif ()
@@ -64,6 +65,9 @@ endif()
 
 if(WIN32)
     add_compile_definitions(WINVER=0x0500)
+    if(${COMPILER_NAME} MATCHES "i686")
+        add_compile_options(-march=i586)
+    endif()
 endif()
 
 if(LINUX)

@@ -29,7 +29,7 @@ jobs:
           - name: Windows (IA32)
             target: windows-ia32
             cc: i686-w64-mingw32-gcc
-            flags: -DCMAKE_SYSTEM_NAME=Windows
+            flags: -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_EXE_LINKER_FLAGS=-L$GITHUB_WORKSPACE/ext/bulwa/i686-w64-mingw32/lib
           - name: Windows (x64)
             target: windows-x64
             cc: x86_64-w64-mingw32-gcc
@@ -70,6 +70,12 @@ jobs:
           wget -nv -P ext/nicetia16/cmake/ https://github.com/thecatkitty/nicetia16/raw/REL-20240425/cmake/DOS-GCC-IA16.cmake
           wget -nv -P ext/ https://github.com/thecatkitty/andrea/releases/download/0.1.1/andrea-0.1.1.zip
           unzip ext/andrea-0.1.1.zip -d ext/andrea
+
+      - name: Fetch Windows (IA32) dependencies
+        if: matrix.platform.target == 'windows-ia32'
+        run: |
+          wget -nv -P ext/ https://github.com/thecatkitty/bulwa/releases/download/REL-20241013/bulwa-REL-20241013.zip
+          unzip ext/bulwa-REL-20241013.zip -d ext/bulwa
 
       - name: Build for ${{ matrix.platform.name }}
         env:
