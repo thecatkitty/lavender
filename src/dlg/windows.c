@@ -16,12 +16,19 @@
 #include "../resource.h"
 #include "resource.h"
 
+#ifndef PSH_AEROWIZARD
+#define PSH_AEROWIZARD 0x00004000
+#endif
+
+#define WIZARD97_PADDING_LEFT 21
+#define WIZARD97_PADDING_TOP  0
+
 static NONCLIENTMETRICSW _nclm = {0};
+static bool              _is_vista = false;
 
 static HHOOK   _hook = NULL;
 static WNDPROC _prev_wnd_proc = NULL;
 
-static HICON   _icon = NULL;
 static LPCWSTR _title = NULL;
 static LPCWSTR _message = NULL;
 
@@ -29,8 +36,7 @@ static char         *_buffer = NULL;
 static int           _size;
 static dlg_validator _validator = NULL;
 
-static HWND _dlg;
-static int  _value;
+static int _value;
 
 static LRESULT CALLBACK
 _hook_wnd_proc(HWND wnd, UINT message, WPARAM wparam, LPARAM lparam)
@@ -82,11 +88,6 @@ _hook_proc(int code, WPARAM wparam, LPARAM lparam)
 bool
 dlg_alert(const char *title, const char *message)
 {
-    if (_dlg)
-    {
-        return false;
-    }
-
     int    title_length = MultiByteToWideChar(CP_UTF8, 0, title, -1, NULL, 0);
     LPWSTR wtitle = (LPWSTR)malloc(title_length * sizeof(WCHAR));
     if (NULL == wtitle)
@@ -106,148 +107,113 @@ dlg_alert(const char *title, const char *message)
 
     pal_disable_mouse();
 
-    _dlg = HWND_MESSAGE;
     _hook = SetWindowsHookExW(WH_CALLWNDPROC, _hook_proc, NULL,
                               GetCurrentThreadId());
     MessageBoxW(windows_get_hwnd(), wmessage, wtitle,
                 MB_OK | MB_ICONEXCLAMATION);
     _value = DLG_OK;
-    _dlg = NULL;
 
     free(wtitle);
     free(wmessage);
     return true;
 }
 
-typedef HRESULT(WINAPI *pfloadiconmetric)(HINSTANCE, PCWSTR, int, HICON *);
-
-static HICON
-_load_icon(void)
-{
-    HMODULE comctl = LoadLibraryW(L"comctl32.dll");
-    if (NULL == comctl)
-    {
-        return NULL;
-    }
-
-    pfloadiconmetric loadiconmetric =
-        (pfloadiconmetric)GetProcAddress(comctl, "LoadIconMetric");
-    if (NULL == loadiconmetric)
-    {
-        FreeLibrary(comctl);
-        return NULL;
-    }
-
-    HICON icon = NULL;
-    loadiconmetric(NULL, IDI_QUESTION, 1, &icon);
-    FreeLibrary(comctl);
-
-    return icon;
-}
-
-static BOOL CALLBACK
+static INT_PTR CALLBACK
 _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
 {
     switch (message)
     {
     case WM_INITDIALOG: {
-        // Get window and dialog client and non-client rects
-        RECT wnd_rect;
-        GetWindowRect(windows_get_hwnd(), &wnd_rect);
-        LONG window_width = wnd_rect.right - wnd_rect.left;
-        LONG window_height = wnd_rect.bottom - wnd_rect.top;
+        if (!_is_vista)
+        {
+            HWND ps = GetParent(dlg);
 
-        RECT dlg_rect;
-        GetWindowRect(dlg, &dlg_rect);
-        LONG border_height = dlg_rect.bottom - dlg_rect.top;
-        LONG border_width = dlg_rect.right - dlg_rect.left;
+            // Get window and dialog client and non-client rects
+            RECT wnd_rect;
+            GetWindowRect(windows_get_hwnd(), &wnd_rect);
+            LONG window_width = wnd_rect.right - wnd_rect.left;
+            LONG window_height = wnd_rect.bottom - wnd_rect.top;
 
-        RECT cl_rect;
-        GetClientRect(dlg, &cl_rect);
-        border_height -= cl_rect.bottom - cl_rect.top;
-        border_width -= cl_rect.right - cl_rect.left;
+            RECT ps_rect;
+            GetWindowRect(ps, &ps_rect);
+            LONG border_height = ps_rect.bottom - ps_rect.top;
+            LONG border_width = ps_rect.right - ps_rect.left;
 
-        LONG cl_width = cl_rect.right - cl_rect.left;
-        LONG cl_height = cl_rect.bottom - cl_rect.top;
+            RECT cl_rect;
+            GetClientRect(ps, &cl_rect);
+            border_height -= cl_rect.bottom - cl_rect.top;
+            border_width -= cl_rect.right - cl_rect.left;
 
-        SetWindowPos(
-            dlg, 0,
-            wnd_rect.left + (window_width - cl_width - border_width) / 2,
-            wnd_rect.top + (window_height - cl_height - border_height) / 2,
-            cl_width + border_width, cl_height + border_height,
-            SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOREDRAW);
+            LONG cl_width = cl_rect.right - cl_rect.left;
+            LONG cl_height = cl_rect.bottom - cl_rect.top;
+
+            // Center the dialog relative to the parent window
+            SetWindowPos(
+                ps, 0,
+                wnd_rect.left + (window_width - cl_width - border_width) / 2,
+                wnd_rect.top + (window_height - cl_height - border_height) / 2,
+                cl_width + border_width, cl_height + border_height,
+                SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOREDRAW);
+
+            // Apply padding
+            RECT padding = {WIZARD97_PADDING_LEFT, 0, WIZARD97_PADDING_TOP, 0};
+            MapDialogRect(dlg, &padding);
+            HWND ctl = GetWindow(dlg, GW_CHILD);
+            while (ctl)
+            {
+                RECT ctl_rect;
+                GetWindowRect(ctl, &ctl_rect);
+                MapWindowPoints(NULL, dlg, (LPPOINT)&ctl_rect, 2);
+
+                SetWindowPos(ctl, NULL, ctl_rect.left + padding.left,
+                             ctl_rect.top + padding.top, 0, 0,
+                             SWP_NOZORDER | SWP_NOSIZE);
+
+                ctl = GetWindow(ctl, GW_HWNDNEXT);
+            }
+        }
 
         // Set the prompt's content
         SetWindowTextW(dlg, _title);
-
-        HICON icon = _icon = _load_icon();
-        if (NULL == icon)
-        {
-            icon = LoadIconW(NULL, IDI_QUESTION);
-        }
-        Static_SetIcon(GetDlgItem(dlg, IDC_DLGICON), icon);
-
         SetWindowTextW(GetDlgItem(dlg, IDC_TEXT), _message);
 
-        WCHAR msg[10];
-        LoadStringW(GetModuleHandleW(NULL), IDS_OK, msg, lengthof(msg));
-        SetWindowTextW(GetDlgItem(dlg, IDOK), msg);
-        if (_validator)
-        {
-            EnableWindow(GetDlgItem(dlg, IDOK), FALSE);
-        }
-
-        LoadStringW(GetModuleHandleW(NULL), IDS_CANCEL, msg, lengthof(msg));
-        SetWindowTextW(GetDlgItem(dlg, IDCANCEL), msg);
-
         return TRUE;
     }
 
-    case WM_NCDESTROY: {
-        if (NULL != _icon)
+    case WM_NOTIFY: {
+        LPNMHDR notif = (LPNMHDR)lparam;
+        switch (notif->code)
         {
-            DestroyIcon(_icon);
-            _icon = NULL;
+        case PSN_SETACTIVE: {
+            PropSheet_SetWizButtons(notif->hwndFrom,
+                                    _validator ? 0 : PSBTN_NEXT);
+            return 0;
         }
 
-        break;
-    }
+        case PSN_WIZNEXT: {
+            HWND   edit_box = GetDlgItem(dlg, IDC_EDITBOX);
+            size_t length = GetWindowTextLengthW(edit_box);
+            LPWSTR text = (LPWSTR)malloc((length + 1) * sizeof(WCHAR));
+            if (NULL == text)
+            {
+                return FALSE;
+            }
+            GetWindowTextW(edit_box, text, length + 1);
+            WideCharToMultiByte(CP_UTF8, 0, text, -1, _buffer, _size, NULL,
+                                NULL);
+            _value = length;
+            free(text);
 
-    case WM_ERASEBKGND: {
-        if (6 > LOBYTE(GetVersion()))
-        {
-            break;
+            PropSheet_PressButton(GetParent(dlg), PSBTN_FINISH);
+            SetWindowLong(dlg, DWLP_MSGRESULT, _value);
+            return TRUE;
         }
 
-        // Vista-style content and action area
-        HDC dc = (HDC)wparam;
-
-        RECT cl_rect;
-        GetClientRect(dlg, &cl_rect);
-
-        RECT btn_rect;
-        GetWindowRect(GetDlgItem(dlg, IDOK), &btn_rect);
-
-        RECT content_rect = cl_rect;
-        content_rect.bottom -= 2 * (btn_rect.bottom - btn_rect.top);
-        FillRect(dc, &content_rect, GetSysColorBrush(COLOR_WINDOW));
-
-        RECT action_rect = cl_rect;
-        action_rect.top = content_rect.bottom;
-        FillRect(dc, &action_rect, GetSysColorBrush(COLOR_3DFACE));
-
-        return TRUE;
-    }
-
-    case WM_CTLCOLORSTATIC: {
-        if (6 > LOBYTE(GetVersion()))
-        {
-            break;
+        case PSN_QUERYCANCEL: {
+            _value = 0;
+            return FALSE;
         }
-
-        // Use Vista-style content area
-        SetBkColor((HDC)wparam, GetSysColor(COLOR_WINDOW));
-        return (INT_PTR)GetSysColorBrush(COLOR_WINDOW);
+        }
     }
 
     case WM_COMMAND: {
@@ -277,65 +243,17 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
             }
             WideCharToMultiByte(CP_UTF8, 0, text, -1, atext, length, NULL,
                                 NULL);
-            EnableWindow(GetDlgItem(dlg, IDOK), _validator(atext));
+            PropSheet_SetWizButtons(GetParent(dlg),
+                                    _validator(atext) ? PSWIZB_NEXT : 0);
 
             free(text);
             free(atext);
             return TRUE;
         }
-
-        switch (LOWORD(wparam))
-        {
-        case IDOK: {
-            HWND   edit_box = GetDlgItem(dlg, IDC_EDITBOX);
-            size_t length = GetWindowTextLengthW(edit_box);
-            LPWSTR text = (LPWSTR)malloc((length + 1) * sizeof(WCHAR));
-            if (NULL == text)
-            {
-                return TRUE;
-            }
-            GetWindowTextW(edit_box, text, length + 1);
-            WideCharToMultiByte(CP_UTF8, 0, text, -1, _buffer, _size, NULL,
-                                NULL);
-            DestroyWindow(dlg);
-            _value = length;
-            free(text);
-            return TRUE;
-        }
-
-        case IDCANCEL:
-            DestroyWindow(dlg);
-            _value = 0;
-            return TRUE;
-
-        default:
-            return FALSE;
-        }
     }
     }
 
     return FALSE;
-}
-
-static HWND
-_create_prompt(LPCWSTR title, LPCWSTR message)
-{
-    _title = title;
-    _message = message;
-
-    HWND wnd = CreateDialogParamW(
-        GetModuleHandleW(NULL), MAKEINTRESOURCEW(IDD_PROMPT),
-        windows_get_hwnd(), (DLGPROC)_dialog_proc, (LPARAM)NULL);
-
-    int   dpi = GetDeviceCaps(windows_get_dc(), LOGPIXELSY);
-    HFONT font =
-        CreateFontW(MulDiv(_nclm.lfMessageFont.lfHeight, 96, dpi), 0, 0, 0,
-                    FW_REGULAR, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
-                    OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
-                    FF_DONTCARE, _nclm.lfMessageFont.lfFaceName);
-    SendMessageW(wnd, WM_SETFONT, (WPARAM)font, TRUE);
-
-    return wnd;
 }
 
 bool
@@ -345,11 +263,6 @@ dlg_prompt(const char   *title,
            int           size,
            dlg_validator validator)
 {
-    if (_dlg)
-    {
-        return false;
-    }
-
     if (0 == _nclm.cbSize)
     {
         _nclm.cbSize = sizeof(_nclm);
@@ -359,6 +272,8 @@ dlg_prompt(const char   *title,
             _nclm.cbSize = 0;
             return false;
         }
+
+        _is_vista = 6 <= LOBYTE(GetVersion());
     }
 
     int    title_length = MultiByteToWideChar(CP_UTF8, 0, title, -1, NULL, 0);
@@ -378,12 +293,41 @@ dlg_prompt(const char   *title,
     }
     MultiByteToWideChar(CP_UTF8, 0, message, -1, wmessage, message_length);
 
+    WCHAR branding[MAX_PATH] = L"";
+    MultiByteToWideChar(CP_UTF8, 0, pal_get_version_string(), -1, branding,
+                        MAX_PATH);
+
+    PROPSHEETPAGEW   psp = {.dwSize = sizeof(PROPSHEETPAGEW),
+                            .hInstance = GetModuleHandleW(NULL),
+                            .dwFlags = PSP_USEHEADERTITLE | PSP_USETITLE,
+                            .lParam = (LPARAM)NULL,
+                            .pszHeaderTitle = wtitle,
+                            .pszTemplate = MAKEINTRESOURCEW(IDD_PROMPT),
+                            .pszTitle = branding,
+                            .pfnDlgProc = _dialog_proc};
+    HPROPSHEETPAGE   hpsp = CreatePropertySheetPageW((LPCPROPSHEETPAGEW)&psp);
+    PROPSHEETHEADERW psh = {.dwSize = sizeof(PROPSHEETHEADERW),
+                            .hInstance = GetModuleHandleW(NULL),
+                            .phpage = &hpsp,
+                            .hwndParent = windows_get_hwnd(),
+                            .dwFlags = _is_vista ? PSH_WIZARD | PSH_AEROWIZARD |
+                                                       PSH_USEICONID
+                                                 : PSH_WIZARD97 | PSH_HEADER,
+                            .pszCaption = branding,
+                            .pszIcon = MAKEINTRESOURCEW(1),
+                            .pszbmHeader = MAKEINTRESOURCEW(IDB_HEADER),
+                            .nStartPage = 0,
+                            .nPages = 1};
+
+    _title = wtitle;
+    _message = wmessage;
+
     _buffer = buffer;
     _size = size;
     _validator = validator;
 
     _value = DLG_INCOMPLETE;
-    windows_set_dialog(_dlg = _create_prompt(wtitle, wmessage));
+    PropertySheetW(&psh);
 
     pal_disable_mouse();
 
@@ -395,15 +339,7 @@ dlg_prompt(const char   *title,
 int
 dlg_handle(void)
 {
-    if (NULL == _dlg)
-    {
-        return 0;
-    }
-
-    if (DLG_INCOMPLETE != _value)
-    {
-        windows_set_dialog(_dlg = NULL);
-    }
-
-    return _value;
+    int value = _value;
+    _value = 0;
+    return value;
 }
