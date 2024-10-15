@@ -11,9 +11,6 @@
 extern HWND
 windows_get_hwnd(void);
 
-extern bool
-windows_set_dialog(HWND dlg);
-
 extern HDC
 windows_get_dc(void);
 
