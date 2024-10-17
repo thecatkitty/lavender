@@ -24,7 +24,7 @@
 #define WIZARD97_PADDING_TOP  0
 
 static NONCLIENTMETRICSW _nclm = {0};
-static bool              _is_vista = false;
+static bool              _is_vista = WINVER >= 0x0600;
 
 static HHOOK   _hook = NULL;
 static WNDPROC _prev_wnd_proc = NULL;
@@ -124,6 +124,7 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
     switch (message)
     {
     case WM_INITDIALOG: {
+#if WINVER < 0x0600
         if (!_is_vista)
         {
             HWND ps = GetParent(dlg);
@@ -172,6 +173,7 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
                 ctl = GetWindow(ctl, GW_HWNDNEXT);
             }
         }
+#endif // WINVER < 0x0600
 
         // Set the prompt's content
         SetWindowTextW(dlg, _title);
@@ -273,7 +275,9 @@ dlg_prompt(const char   *title,
             return false;
         }
 
+#if WINVER < 0x0600
         _is_vista = 6 <= LOBYTE(GetVersion());
+#endif
     }
 
     int    title_length = MultiByteToWideChar(CP_UTF8, 0, title, -1, NULL, 0);
