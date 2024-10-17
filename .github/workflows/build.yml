@@ -33,15 +33,15 @@ jobs:
           - name: Windows (x64)
             target: windows-x64
             cc: x86_64-w64-mingw32-gcc
-            flags: -DCMAKE_SYSTEM_NAME=Windows
+            flags: -DCMAKE_SYSTEM_NAME=Windows -DWINVER=0x0502
           - name: Windows (ARM)
             target: windows-arm
             cc: armv7-w64-mingw32-gcc
-            flags: -DCMAKE_SYSTEM_NAME=Windows
+            flags: -DCMAKE_SYSTEM_NAME=Windows -DWINVER=0x0602
           - name: Windows (ARM64)
             target: windows-arm64
             cc: aarch64-w64-mingw32-gcc
-            flags: -DCMAKE_SYSTEM_NAME=Windows
+            flags: -DCMAKE_SYSTEM_NAME=Windows -DWINVER=0x0A00
 
     steps:
       - uses: actions/checkout@v4
