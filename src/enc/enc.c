@@ -2,6 +2,12 @@
 
 #include "enc_impl.h"
 
+extern uint64_t
+__enc_le32b6d_decode(const void *src);
+
+extern uint64_t
+__enc_pkey25xor12_decode(const void *src);
+
 bool
 enc_prepare(enc_stream    *stream,
             enc_cipher     cipher,
@@ -70,4 +76,23 @@ bool
 enc_validate(enc_stream *stream, uint32_t crc)
 {
     return ((const enc_stream_impl *)stream->_impl)->validate(stream, crc);
+}
+
+uint64_t
+enc_decode_key(const void *src, enc_keysm sm)
+{
+    errno = 0;
+
+    if (sm == ENC_KEYSM_LE32B6D)
+    {
+        return __enc_le32b6d_decode(src);
+    }
+
+    if (sm == ENC_KEYSM_PKEY25XOR12)
+    {
+        return __enc_pkey25xor12_decode(src);
+    }
+
+    errno = EFTYPE;
+    return 0;
 }
