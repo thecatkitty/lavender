@@ -28,14 +28,6 @@ typedef struct
     void          *_context;
 } enc_stream;
 
-// PKEY25XOR12 definitios
-#define PKEY25XOR12_BASE         24
-#define PKEY25XOR12_UDATA_LENGTH 13
-#define PKEY25XOR12_EKEY_LENGTH  12
-#define PKEY25XOR12_LENGTH       (PKEY25XOR12_UDATA_LENGTH + PKEY25XOR12_EKEY_LENGTH)
-
-static const char PKEY25XOR12_ALPHABET[] = "2346789BCDFGHJKMPQRTVWXY";
-
 extern bool
 enc_prepare(enc_stream    *stream,
             enc_cipher     cipher,
@@ -58,6 +50,9 @@ enc_verify(enc_stream *stream, uint32_t crc);
 
 extern uint64_t
 enc_decode_key(const void *src, enc_keysm sm);
+
+extern bool
+enc_validate_key_format(const char *key, enc_keysm sm);
 #endif // CONFIG_ENCRYPTED_CONTENT
 
 #endif // _ENC_H_
