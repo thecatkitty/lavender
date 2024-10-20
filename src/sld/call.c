@@ -55,10 +55,10 @@ enum
     STATE_DECODE,
     STATE_KEY_ACQUIRE,
     STATE_KEY_COMBINE,
-    STATE_KEY_VALIDATE,
+    STATE_KEY_VERIFY,
     STATE_PASSCODE_PROMPT,
     STATE_PASSCODE_TYPE,
-    STATE_PASSCODE_VALIDATE,
+    STATE_PASSCODE_VERIFY,
     STATE_PASSCODE_INVALID,
     STATE_DSN_GET,
     STATE_DSN_PROMPT,
@@ -231,7 +231,7 @@ _handle_key_acquire_xor48(sld_entry *sld)
     {
         CONTENT(sld)->key.qw = rstrtoull(CONTENT(sld)->data, 16);
         CONTENT(sld)->crs.key = CONTENT(sld)->key.b;
-        CONTENT(sld)->state = STATE_KEY_VALIDATE;
+        CONTENT(sld)->state = STATE_KEY_VERIFY;
         return CONTINUE;
     }
 
@@ -271,7 +271,7 @@ _handle_key_acquire_des(sld_entry *sld)
         enc_prepare(&CONTENT(sld)->crs, ENC_DES, CONTENT(sld)->context->data,
                     CONTENT(sld)->context->size, CONTENT(sld)->key.b,
                     sizeof(uint64_t));
-        CONTENT(sld)->state = STATE_KEY_VALIDATE;
+        CONTENT(sld)->state = STATE_KEY_VERIFY;
         return CONTINUE;
     }
 
@@ -439,12 +439,12 @@ _handle_passcode_type(sld_entry *sld)
     {
         CONTENT(sld)->passcode = rstrtoull(CONTENT(sld)->buffer, base);
     }
-    CONTENT(sld)->state = STATE_PASSCODE_VALIDATE;
+    CONTENT(sld)->state = STATE_PASSCODE_VERIFY;
     return CONTINUE;
 }
 
 static void
-_handle_passcode_validate_xor48(sld_entry *sld)
+_handle_passcode_verify_xor48(sld_entry *sld)
 {
     if (SLD_PARAMETER_XOR48_PROMPT == CONTENT(sld)->parameter)
     {
@@ -465,7 +465,7 @@ _handle_passcode_validate_xor48(sld_entry *sld)
 }
 
 static void
-_handle_passcode_validate_des(sld_entry *sld)
+_handle_passcode_verify_des(sld_entry *sld)
 {
     if (SLD_PARAMETER_DES_PKEY != CONTENT(sld)->parameter)
     {
@@ -481,22 +481,21 @@ _handle_passcode_validate_des(sld_entry *sld)
 }
 
 static int
-_handle_passcode_validate(sld_entry *sld)
+_handle_passcode_verify(sld_entry *sld)
 {
     if (SLD_METHOD_XOR48 == CONTENT(sld)->method)
     {
-        _handle_passcode_validate_xor48(sld);
+        _handle_passcode_verify_xor48(sld);
     }
 
     if (SLD_METHOD_DES == CONTENT(sld)->method)
     {
-        _handle_passcode_validate_des(sld);
+        _handle_passcode_verify_des(sld);
     }
 
-    CONTENT(sld)->state =
-        (enc_validate(&CONTENT(sld)->crs, CONTENT(sld)->crc32))
-            ? STATE_KEY_VALIDATE
-            : STATE_PASSCODE_INVALID;
+    CONTENT(sld)->state = (enc_verify(&CONTENT(sld)->crs, CONTENT(sld)->crc32))
+                              ? STATE_KEY_VERIFY
+                              : STATE_PASSCODE_INVALID;
 
     if (STATE_PASSCODE_INVALID == CONTENT(sld)->state)
     {
@@ -529,9 +528,9 @@ _handle_passcode_invalid(sld_entry *sld)
 }
 
 static int
-_handle_key_validate(sld_entry *sld)
+_handle_key_verify(sld_entry *sld)
 {
-    if (!enc_validate(&CONTENT(sld)->crs, CONTENT(sld)->crc32))
+    if (!enc_verify(&CONTENT(sld)->crs, CONTENT(sld)->crc32))
     {
         __sld_accumulator = UINT16_MAX;
         return 0;
@@ -581,14 +580,14 @@ __sld_handle_script_call(sld_entry *sld)
         return _handle_decode(sld);
     case STATE_KEY_ACQUIRE:
         return _handle_key_acquire(sld);
-    case STATE_KEY_VALIDATE:
-        return _handle_key_validate(sld);
+    case STATE_KEY_VERIFY:
+        return _handle_key_verify(sld);
     case STATE_PASSCODE_PROMPT:
         return _handle_passcode_prompt(sld);
     case STATE_PASSCODE_TYPE:
         return _handle_passcode_type(sld);
-    case STATE_PASSCODE_VALIDATE:
-        return _handle_passcode_validate(sld);
+    case STATE_PASSCODE_VERIFY:
+        return _handle_passcode_verify(sld);
     case STATE_PASSCODE_INVALID:
         return _handle_passcode_invalid(sld);
     case STATE_DSN_GET:

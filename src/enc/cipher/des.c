@@ -217,7 +217,7 @@ des_decrypt(enc_stream *stream, uint8_t *dst)
 }
 
 static bool
-des_validate(enc_stream *stream, uint32_t crc)
+des_verify(enc_stream *stream, uint32_t crc)
 {
     size_t   position = stream->data_length - sizeof(uint64_t);
     uint64_t iv = _from_bytes(stream->data + position - sizeof(uint64_t));
@@ -241,4 +241,4 @@ enc_stream_impl __enc_des_impl = {.allocate = des_allocate,
                                   .free = des_free,
                                   .at = des_at,
                                   .decrypt = des_decrypt,
-                                  .validate = des_validate};
+                                  .verify = des_verify};
