@@ -4,7 +4,7 @@
 #include <enc.h>
 #include <fmt/zip.h>
 
-#include "enc_impl.h"
+#include "../enc_impl.h"
 #include "des.h"
 
 typedef struct

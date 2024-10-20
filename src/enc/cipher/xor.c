@@ -1,7 +1,7 @@
 #include <enc.h>
 #include <fmt/zip.h>
 
-#include "enc_impl.h"
+#include "../enc_impl.h"
 
 static uint8_t
 _xor_at(enc_stream *stream, size_t i)
