@@ -2,7 +2,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 
-#include <crg.h>
+#include <enc.h>
 #include <dlg.h>
 #include <fmt/zip.h>
 #include <pal.h>
@@ -30,7 +30,7 @@ typedef struct
     int16_t      state;
     sld_context *context;
 #if defined(CONFIG_ENCRYPTED_CONTENT)
-    crg_stream crs;
+    enc_stream crs;
     uquad      key;
     uint32_t   local_part;
     uint32_t   passcode;
@@ -224,7 +224,7 @@ _handle_prepare(sld_entry *sld)
 static int
 _handle_key_acquire_xor48(sld_entry *sld)
 {
-    crg_prepare(&CONTENT(sld)->crs, CRG_XOR, CONTENT(sld)->context->data,
+    enc_prepare(&CONTENT(sld)->crs, ENC_XOR, CONTENT(sld)->context->data,
                 CONTENT(sld)->context->size, CONTENT(sld)->key.b, 6);
 
     if (SLD_PARAMETER_XOR48_INLINE == CONTENT(sld)->parameter)
@@ -268,7 +268,7 @@ _handle_key_acquire_des(sld_entry *sld)
             CONTENT(sld)->key.b[i] = _axtob(CONTENT(sld)->data + (2 * i));
         }
 
-        crg_prepare(&CONTENT(sld)->crs, CRG_DES, CONTENT(sld)->context->data,
+        enc_prepare(&CONTENT(sld)->crs, ENC_DES, CONTENT(sld)->context->data,
                     CONTENT(sld)->context->size, CONTENT(sld)->key.b,
                     sizeof(uint64_t));
         CONTENT(sld)->state = STATE_KEY_VALIDATE;
@@ -433,7 +433,7 @@ _handle_passcode_type(sld_entry *sld)
             src++;
         }
         CONTENT(sld)->key.qw =
-            __builtin_bswap64(crg_decode_key(pkey, CRG_KEYSM_PKEY25XOR12));
+            __builtin_bswap64(enc_decode_key(pkey, ENC_KEYSM_PKEY25XOR12));
     }
     else
     {
@@ -458,7 +458,7 @@ _handle_passcode_validate_xor48(sld_entry *sld)
         // 48-bit split key
         uint32_t key_src[2] = {CONTENT(sld)->local_part,
                                CONTENT(sld)->passcode};
-        CONTENT(sld)->key.qw = crg_decode_key(key_src, CRG_KEYSM_LE32B6D);
+        CONTENT(sld)->key.qw = enc_decode_key(key_src, ENC_KEYSM_LE32B6D);
     }
 
     CONTENT(sld)->crs.key = CONTENT(sld)->key.b;
@@ -475,7 +475,7 @@ _handle_passcode_validate_des(sld_entry *sld)
         }
     }
 
-    crg_prepare(&CONTENT(sld)->crs, CRG_DES, CONTENT(sld)->context->data,
+    enc_prepare(&CONTENT(sld)->crs, ENC_DES, CONTENT(sld)->context->data,
                 CONTENT(sld)->context->size, CONTENT(sld)->key.b,
                 sizeof(uint64_t));
 }
@@ -494,7 +494,7 @@ _handle_passcode_validate(sld_entry *sld)
     }
 
     CONTENT(sld)->state =
-        (crg_validate(&CONTENT(sld)->crs, CONTENT(sld)->crc32))
+        (enc_validate(&CONTENT(sld)->crs, CONTENT(sld)->crc32))
             ? STATE_KEY_VALIDATE
             : STATE_PASSCODE_INVALID;
 
@@ -502,7 +502,7 @@ _handle_passcode_validate(sld_entry *sld)
     {
         if (SLD_METHOD_DES == CONTENT(sld)->method)
         {
-            crg_free(&CONTENT(sld)->crs);
+            enc_free(&CONTENT(sld)->crs);
         }
 
         char msg_enterpass[40], msg_invalidkey[40];
@@ -531,7 +531,7 @@ _handle_passcode_invalid(sld_entry *sld)
 static int
 _handle_key_validate(sld_entry *sld)
 {
-    if (!crg_validate(&CONTENT(sld)->crs, CONTENT(sld)->crc32))
+    if (!enc_validate(&CONTENT(sld)->crs, CONTENT(sld)->crc32))
     {
         __sld_accumulator = UINT16_MAX;
         return 0;
@@ -545,8 +545,8 @@ _handle_key_validate(sld_entry *sld)
 static int
 _handle_decode(sld_entry *sld)
 {
-    crg_decrypt(&CONTENT(sld)->crs, (uint8_t *)CONTENT(sld)->context->data);
-    crg_free(&CONTENT(sld)->crs);
+    enc_decrypt(&CONTENT(sld)->crs, (uint8_t *)CONTENT(sld)->context->data);
+    enc_free(&CONTENT(sld)->crs);
     if (SLD_METHOD_DES == CONTENT(sld)->method)
     {
         PT_SIZE(CONTENT(sld)->context) = CONTENT(sld)->crs.data_length;

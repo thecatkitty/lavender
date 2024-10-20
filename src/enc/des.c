@@ -1,10 +1,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <crg.h>
+#include <enc.h>
 #include <fmt/zip.h>
 
-#include "crg_impl.h"
+#include "enc_impl.h"
 #include "des.h"
 
 typedef struct
@@ -121,7 +121,7 @@ _des(const uint64_t subkeys[], uint64_t M)
 }
 
 static bool
-des_allocate(crg_stream *stream)
+des_allocate(enc_stream *stream)
 {
     if (sizeof(uint64_t) != stream->key_length)
     {
@@ -152,7 +152,7 @@ des_allocate(crg_stream *stream)
 }
 
 static bool
-des_free(crg_stream *stream)
+des_free(enc_stream *stream)
 {
     if (NULL == stream->_context)
     {
@@ -165,7 +165,7 @@ des_free(crg_stream *stream)
 }
 
 static uint8_t
-des_at(crg_stream *stream, size_t i)
+des_at(enc_stream *stream, size_t i)
 {
     size_t position = sizeof(uint64_t) + (i & ~7);
     if (CONTEXT(stream)->at_pos != position)
@@ -181,7 +181,7 @@ des_at(crg_stream *stream, size_t i)
 }
 
 static bool
-des_decrypt(crg_stream *stream, uint8_t *dst)
+des_decrypt(enc_stream *stream, uint8_t *dst)
 {
     size_t length = stream->data_length - sizeof(uint64_t);
 
@@ -217,7 +217,7 @@ des_decrypt(crg_stream *stream, uint8_t *dst)
 }
 
 static bool
-des_validate(crg_stream *stream, uint32_t crc)
+des_validate(enc_stream *stream, uint32_t crc)
 {
     size_t   position = stream->data_length - sizeof(uint64_t);
     uint64_t iv = _from_bytes(stream->data + position - sizeof(uint64_t));
@@ -237,7 +237,7 @@ des_validate(crg_stream *stream, uint32_t crc)
                                              stream, length);
 }
 
-crg_stream_impl __crg_des_impl = {.allocate = des_allocate,
+enc_stream_impl __enc_des_impl = {.allocate = des_allocate,
                                   .free = des_free,
                                   .at = des_at,
                                   .decrypt = des_decrypt,

@@ -1,6 +1,6 @@
 #include <string.h>
 
-#include <crg.h>
+#include <enc.h>
 
 #define UINTN_MAX(n) ((1UL << n) - 1)
 
@@ -99,16 +99,16 @@ _decode_pkey25xor12(const void *src)
 }
 
 uint64_t
-crg_decode_key(const void *src, crg_keysm sm)
+enc_decode_key(const void *src, enc_keysm sm)
 {
     errno = 0;
 
-    if (sm == CRG_KEYSM_LE32B6D)
+    if (sm == ENC_KEYSM_LE32B6D)
     {
         return _decode_le32b6d(src);
     }
 
-    if (sm == CRG_KEYSM_PKEY25XOR12)
+    if (sm == ENC_KEYSM_PKEY25XOR12)
     {
         return _decode_pkey25xor12(src);
     }
