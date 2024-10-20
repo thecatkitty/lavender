@@ -54,7 +54,7 @@ extern bool
 enc_decrypt(enc_stream *stream, uint8_t *dst);
 
 extern bool
-enc_validate(enc_stream *stream, uint32_t crc);
+enc_verify(enc_stream *stream, uint32_t crc);
 
 extern uint64_t
 enc_decode_key(const void *src, enc_keysm sm);

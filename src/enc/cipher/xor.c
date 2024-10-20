@@ -21,7 +21,7 @@ _xor_decrypt(enc_stream *stream, uint8_t *dst)
 }
 
 static bool
-_xor_validate(enc_stream *stream, uint32_t crc)
+_xor_verify(enc_stream *stream, uint32_t crc)
 {
     return crc ==
            zip_calculate_crc_indirect((uint8_t(*)(void *, size_t))_xor_at,
@@ -29,4 +29,4 @@ _xor_validate(enc_stream *stream, uint32_t crc)
 }
 
 enc_stream_impl __enc_xor_impl = {
-    .at = _xor_at, .decrypt = _xor_decrypt, .validate = _xor_validate};
+    .at = _xor_at, .decrypt = _xor_decrypt, .verify = _xor_verify};
