@@ -1,5 +1,5 @@
-#ifndef _CRG_H_
-#define _CRG_H_
+#ifndef _ENC_H_
+#define _ENC_H_
 
 #include <base.h>
 
@@ -8,15 +8,15 @@
 #if defined(CONFIG_ENCRYPTED_CONTENT)
 typedef enum
 {
-    CRG_XOR,
-    CRG_DES
-} crg_cipher;
+    ENC_XOR,
+    ENC_DES
+} enc_cipher;
 
 typedef enum
 {
-    CRG_KEYSM_LE32B6D,     // 32 local bits, 6 external decimals
-    CRG_KEYSM_PKEY25XOR12, // 25-character product key, XORed 12 characters
-} crg_keysm;
+    ENC_KEYSM_LE32B6D,     // 32 local bits, 6 external decimals
+    ENC_KEYSM_PKEY25XOR12, // 25-character product key, XORed 12 characters
+} enc_keysm;
 
 typedef struct
 {
@@ -26,7 +26,7 @@ typedef struct
     size_t         key_length;
     const void    *_impl;
     void          *_context;
-} crg_stream;
+} enc_stream;
 
 // PKEY25XOR12 definitios
 #define PKEY25XOR12_BASE         24
@@ -37,27 +37,27 @@ typedef struct
 static const char PKEY25XOR12_ALPHABET[] = "2346789BCDFGHJKMPQRTVWXY";
 
 extern bool
-crg_prepare(crg_stream    *stream,
-            crg_cipher     cipher,
+enc_prepare(enc_stream    *stream,
+            enc_cipher     cipher,
             const uint8_t *data,
             size_t         data_length,
             const uint8_t *key,
             size_t         key_length);
 
 extern bool
-crg_free(crg_stream *stream);
+enc_free(enc_stream *stream);
 
 extern uint8_t
-crg_at(crg_stream *stream, size_t i);
+enc_at(enc_stream *stream, size_t i);
 
 extern bool
-crg_decrypt(crg_stream *stream, uint8_t *dst);
+enc_decrypt(enc_stream *stream, uint8_t *dst);
 
 extern bool
-crg_validate(crg_stream *stream, uint32_t crc);
+enc_validate(enc_stream *stream, uint32_t crc);
 
 extern uint64_t
-crg_decode_key(const void *src, crg_keysm sm);
+enc_decode_key(const void *src, enc_keysm sm);
 #endif // CONFIG_ENCRYPTED_CONTENT
 
-#endif // _CRG_H_
+#endif // _ENC_H_
