@@ -73,9 +73,9 @@ enc_decrypt(enc_stream *stream, uint8_t *dst)
 }
 
 bool
-enc_validate(enc_stream *stream, uint32_t crc)
+enc_verify(enc_stream *stream, uint32_t crc)
 {
-    return ((const enc_stream_impl *)stream->_impl)->validate(stream, crc);
+    return ((const enc_stream_impl *)stream->_impl)->verify(stream, crc);
 }
 
 uint64_t
