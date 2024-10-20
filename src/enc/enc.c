@@ -8,6 +8,9 @@ __enc_le32b6d_decode(const void *src);
 extern uint64_t
 __enc_pkey25xor12_decode(const void *src);
 
+extern bool
+__enc_pkey25xor12_validate_format(const char *key);
+
 bool
 enc_prepare(enc_stream    *stream,
             enc_cipher     cipher,
@@ -95,4 +98,15 @@ enc_decode_key(const void *src, enc_keysm sm)
 
     errno = EFTYPE;
     return 0;
+}
+
+bool
+enc_validate_key_format(const char *key, enc_keysm sm)
+{
+    if (ENC_KEYSM_PKEY25XOR12 == sm)
+    {
+        return __enc_pkey25xor12_validate_format(key);
+    }
+
+    return false;
 }

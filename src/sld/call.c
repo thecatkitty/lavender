@@ -103,24 +103,7 @@ _isxdigitstr(const char *str)
 static bool
 _ispkey(const char *str)
 {
-    size_t i;
-    for (i = 0; i < PKEY25XOR12_LENGTH + 4; i++)
-    {
-        if (5 == (i % 6))
-        {
-            if ('-' != str[i])
-            {
-                return false;
-            }
-        }
-        else if ((0 == str[i]) ||
-                 (NULL == strchr(PKEY25XOR12_ALPHABET, str[i])))
-        {
-            return false;
-        }
-    }
-
-    return PKEY25XOR12_LENGTH + 4 == i;
+    return enc_validate_key_format(str, ENC_KEYSM_PKEY25XOR12);
 }
 
 static uint8_t
@@ -384,7 +367,7 @@ _handle_passcode_prompt(sld_entry *sld)
              (SLD_PARAMETER_DES_PKEY == CONTENT(sld)->parameter))
     {
         precheck = _ispkey;
-        code_len = PKEY25XOR12_LENGTH + 4;
+        code_len = 5 * 5 + 4;
     }
 
     dlg_prompt(msg_enterpass, msg_enterpass_desc, CONTENT(sld)->buffer,
@@ -420,20 +403,8 @@ _handle_passcode_type(sld_entry *sld)
     if ((SLD_METHOD_DES == CONTENT(sld)->method) &&
         (SLD_PARAMETER_DES_PKEY == CONTENT(sld)->parameter))
     {
-        char        pkey[PKEY25XOR12_LENGTH];
-        const char *src = CONTENT(sld)->buffer;
-        char       *dst = pkey;
-        while (dst < pkey + PKEY25XOR12_LENGTH)
-        {
-            if ('-' != *src)
-            {
-                *dst = *src;
-                dst++;
-            }
-            src++;
-        }
-        CONTENT(sld)->key.qw =
-            __builtin_bswap64(enc_decode_key(pkey, ENC_KEYSM_PKEY25XOR12));
+        CONTENT(sld)->key.qw = __builtin_bswap64(
+            enc_decode_key(CONTENT(sld)->buffer, ENC_KEYSM_PKEY25XOR12));
     }
     else
     {
