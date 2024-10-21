@@ -475,7 +475,7 @@ static const uint32_t _CRC_TABLE[] = {
     return ~crc;
 
 uint32_t
-zip_calculate_crc(uint8_t *buffer, size_t length)
+zip_calculate_crc(const uint8_t *buffer, size_t length)
 {
     _calculate_crc(*buffer++);
 }

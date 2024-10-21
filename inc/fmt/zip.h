@@ -202,7 +202,7 @@ zip_get_size(off_t olfh);
 // Calculate ZIP-compatible CRC-32 checksum of a buffer
 // Returns checksum value
 extern uint32_t
-zip_calculate_crc(uint8_t *buffer, size_t length);
+zip_calculate_crc(const uint8_t *buffer, size_t length);
 
 // Calculate ZIP-compatible CRC-32 checksum of a data stream
 // Returns checksum value
