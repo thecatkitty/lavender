@@ -3,19 +3,8 @@
 #include <stdlib.h>
 
 #include <enc.h>
-#include <dlg.h>
-#include <fmt/zip.h>
-#include <pal.h>
 
 #include "sld_impl.h"
-
-#if defined(CONFIG_ENCRYPTED_CONTENT)
-#define XOR48_KEY_SIZE      6
-#define XOR48_PROMPT_BASE   16
-#define XOR48_PASSCODE_SIZE 3
-#define XOR48_PASSCODE_BASE 10
-#define XOR48_DSN_LENGTH    9
-#endif // CONFIG_ENCRYPTED_CONTENT
 
 typedef struct
 {
@@ -24,18 +13,13 @@ typedef struct
     uint16_t method;
     uint32_t crc32;
     uint16_t parameter;
-    char     data[88];
+    char     data[52];
 
     // Execution state
     int16_t      state;
     sld_context *context;
 #if defined(CONFIG_ENCRYPTED_CONTENT)
-    enc_stream crs;
-    uquad      key;
-    uint32_t   local_part;
-    uint32_t   passcode;
-    char       dsn[16];
-    char       buffer[24];
+    enc_context enc;
 #endif // CONFIG_ENCRYPTED_CONTENT
 } script_call_content;
 
@@ -43,114 +27,14 @@ typedef struct
 static_assert(sizeof(script_call_content) <= sizeofm(sld_entry, content),
               "Script call context larger than available space");
 
-// Size of the plaintext stored at the end of the data buffer
-#define PT_SIZE(ctx)                                                           \
-    (*(uint32_t *)((char *)(ctx)->data + (ctx)->size - sizeof(uint32_t)))
-
 enum
 {
     STATE_PREPARE,
     STATE_ENTER,
 #if defined(CONFIG_ENCRYPTED_CONTENT)
     STATE_DECODE,
-    STATE_KEY_ACQUIRE,
-    STATE_KEY_COMBINE,
-    STATE_KEY_VERIFY,
-    STATE_PASSCODE_PROMPT,
-    STATE_PASSCODE_TYPE,
-    STATE_PASSCODE_VERIFY,
-    STATE_PASSCODE_INVALID,
-    STATE_DSN_GET,
-    STATE_DSN_PROMPT,
-    STATE_DSN_TYPE
 #endif // CONFIG_ENCRYPTED_CONTENT
 };
-
-#if defined(CONFIG_ENCRYPTED_CONTENT)
-typedef bool (*prompt_predicate)(const char *);
-
-#define _isctypestr(predicate)                                                 \
-    {                                                                          \
-        if (!*str)                                                             \
-        {                                                                      \
-            return false;                                                      \
-        }                                                                      \
-                                                                               \
-        while (*str)                                                           \
-        {                                                                      \
-            if (!predicate(*str))                                              \
-            {                                                                  \
-                return false;                                                  \
-            }                                                                  \
-            str++;                                                             \
-        }                                                                      \
-                                                                               \
-        return true;                                                           \
-    }
-
-static bool
-_isdigitstr(const char *str)
-{
-    _isctypestr(isdigit);
-}
-
-static bool
-_isxdigitstr(const char *str)
-{
-    _isctypestr(isxdigit);
-}
-
-static bool
-_ispkey(const char *str)
-{
-    return enc_validate_key_format(str, ENC_KEYSM_PKEY25XOR12);
-}
-
-static uint8_t
-_axtob(const char *str)
-{
-    if (!isxdigit(str[0]) || !isxdigit(str[1]))
-    {
-        return 0;
-    }
-
-    uint8_t ret =
-        isdigit(str[1]) ? (str[1] - '0') : (toupper(str[1]) - 'A' + 10);
-    ret |= (isdigit(str[0]) ? (str[0] - '0') : (toupper(str[0]) - 'A' + 10))
-           << 4;
-
-    return ret;
-}
-
-static bool
-_validate_dsn(const char *dsn)
-{
-    if (9 != strlen(dsn))
-    {
-        return false;
-    }
-
-    for (int i = 0; i < 9; i++)
-    {
-        if (4 == i)
-        {
-            if ('-' != dsn[i])
-            {
-                return false;
-            }
-        }
-        else
-        {
-            if (!isxdigit(dsn[i]))
-            {
-                return false;
-            }
-        }
-    }
-
-    return true;
-}
-#endif // CONFIG_ENCRYPTED_CONTENT
 
 static int
 _handle_prepare(sld_entry *sld)
@@ -175,27 +59,70 @@ _handle_prepare(sld_entry *sld)
     }
 
 #if defined(CONFIG_ENCRYPTED_CONTENT)
-    if ((SLD_METHOD_XOR48 == CONTENT(sld)->method) &&
-        (zip_calculate_crc(script->data, script->size) == CONTENT(sld)->crc32))
+    enc_cipher cipher = 0;
+    int        provider = 0;
+    void      *parameter = NULL;
+
+    switch (CONTENT(sld)->parameter)
     {
-        CONTENT(sld)->state = STATE_ENTER;
-        return CONTINUE;
+    case SLD_PARAMETER_XOR48_INLINE: {
+        provider = ENC_PROVIDER_CALLER;
+        parameter = CONTENT(sld)->data;
+        break;
+    }
+
+    case SLD_PARAMETER_XOR48_PROMPT: {
+        provider = ENC_PROVIDER_PROMPT;
+        break;
+    }
+    }
+
+    if (SLD_METHOD_XOR48 == CONTENT(sld)->method)
+    {
+        cipher = ENC_XOR;
+
+        switch (CONTENT(sld)->parameter)
+        {
+        case SLD_PARAMETER_XOR48_SPLIT: {
+            provider = ENC_PROVIDER_SPLIT;
+            parameter = CONTENT(sld)->data;
+            break;
+        }
+
+        case SLD_PARAMETER_XOR48_DISKID: {
+            provider = ENC_PROVIDER_DISKID;
+            parameter = CONTENT(sld)->data;
+            break;
+        }
+        }
     }
 
     if (SLD_METHOD_DES == CONTENT(sld)->method)
     {
-        uint32_t pt_size = PT_SIZE(script);
-        if ((script->size > pt_size) &&
-            zip_calculate_crc(script->data, pt_size) == CONTENT(sld)->crc32)
+        cipher = ENC_DES;
+
+        switch (CONTENT(sld)->parameter)
         {
-            script->size = pt_size;
-            CONTENT(sld)->state = STATE_ENTER;
-            return CONTINUE;
+        case SLD_PARAMETER_DES_PKEY: {
+            provider = ENC_KEYSRC(ENC_PROVIDER_PROMPT, ENC_KEYSM_PKEY25XOR12);
+            break;
+        }
         }
     }
 
-    // Go to key acquisition if encrypted
-    CONTENT(sld)->state = STATE_KEY_ACQUIRE;
+    if (0 == enc_access_content(&CONTENT(sld)->enc, cipher, provider, parameter,
+                                (uint8_t *)CONTENT(sld)->context->data,
+                                CONTENT(sld)->context->size,
+                                CONTENT(sld)->crc32))
+    {
+        // Already decrypted
+        CONTENT(sld)->state = STATE_ENTER;
+        CONTENT(sld)->context->size = CONTENT(sld)->enc.size;
+        return CONTINUE;
+    }
+
+    // Go to decryption if applicable
+    CONTENT(sld)->state = STATE_DECODE;
     return CONTINUE;
 #else
     __sld_errmsgcpy(sld, IDS_UNSUPPORTED);
@@ -205,325 +132,34 @@ _handle_prepare(sld_entry *sld)
 
 #if defined(CONFIG_ENCRYPTED_CONTENT)
 static int
-_handle_key_acquire_xor48(sld_entry *sld)
-{
-    enc_prepare(&CONTENT(sld)->crs, ENC_XOR, CONTENT(sld)->context->data,
-                CONTENT(sld)->context->size, CONTENT(sld)->key.b, 6);
-
-    if (SLD_PARAMETER_XOR48_INLINE == CONTENT(sld)->parameter)
-    {
-        CONTENT(sld)->key.qw = rstrtoull(CONTENT(sld)->data, 16);
-        CONTENT(sld)->crs.key = CONTENT(sld)->key.b;
-        CONTENT(sld)->state = STATE_KEY_VERIFY;
-        return CONTINUE;
-    }
-
-    if (SLD_PARAMETER_XOR48_DISKID == CONTENT(sld)->parameter)
-    {
-        CONTENT(sld)->state = STATE_DSN_GET;
-        return CONTINUE;
-    }
-
-    if (SLD_PARAMETER_XOR48_PROMPT == CONTENT(sld)->parameter)
-    {
-        CONTENT(sld)->state = STATE_PASSCODE_PROMPT;
-        return CONTINUE;
-    }
-
-    if (SLD_PARAMETER_XOR48_SPLIT == CONTENT(sld)->parameter)
-    {
-        CONTENT(sld)->local_part = strtoul(CONTENT(sld)->data, NULL, 16);
-        CONTENT(sld)->state = STATE_PASSCODE_PROMPT;
-        return CONTINUE;
-    }
-
-    __sld_errmsgcpy(sld, IDS_UNKNOWNKEYSRC);
-    return SLD_SYSERR;
-}
-
-static int
-_handle_key_acquire_des(sld_entry *sld)
-{
-    if (SLD_PARAMETER_DES_INLINE == CONTENT(sld)->parameter)
-    {
-        for (int i = 0; i < sizeof(uint64_t); i++)
-        {
-            CONTENT(sld)->key.b[i] = _axtob(CONTENT(sld)->data + (2 * i));
-        }
-
-        enc_prepare(&CONTENT(sld)->crs, ENC_DES, CONTENT(sld)->context->data,
-                    CONTENT(sld)->context->size, CONTENT(sld)->key.b,
-                    sizeof(uint64_t));
-        CONTENT(sld)->state = STATE_KEY_VERIFY;
-        return CONTINUE;
-    }
-
-    if ((SLD_PARAMETER_DES_PROMPT == CONTENT(sld)->parameter) ||
-        (SLD_PARAMETER_DES_PKEY == CONTENT(sld)->parameter))
-    {
-        CONTENT(sld)->crs.key_length = sizeof(uint64_t);
-        CONTENT(sld)->state = STATE_PASSCODE_PROMPT;
-        return CONTINUE;
-    }
-
-    __sld_errmsgcpy(sld, IDS_UNKNOWNKEYSRC);
-    return SLD_SYSERR;
-}
-
-static int
-_handle_key_acquire(sld_entry *sld)
-{
-    if (SLD_METHOD_XOR48 == CONTENT(sld)->method)
-    {
-        return _handle_key_acquire_xor48(sld);
-    }
-
-    if (SLD_METHOD_DES == CONTENT(sld)->method)
-    {
-        return _handle_key_acquire_des(sld);
-    }
-
-    __sld_errmsgcpy(sld, IDS_UNKNOWNKEYSRC);
-    return SLD_SYSERR;
-}
-
-static int
-_handle_dsn_get(sld_entry *sld)
-{
-    uint32_t medium_id = pal_get_medium_id(CONTENT(sld)->data);
-    if (0 != medium_id)
-    {
-        CONTENT(sld)->local_part = medium_id;
-        CONTENT(sld)->state = STATE_PASSCODE_PROMPT;
-        return CONTINUE;
-    }
-
-    CONTENT(sld)->state = STATE_DSN_PROMPT;
-    return CONTINUE;
-}
-
-static int
-_handle_dsn_prompt(sld_entry *sld)
-{
-    char msg_enterdsn[40], msg_enterdsn_desc[80];
-    pal_load_string(IDS_ENTERDSN, msg_enterdsn, sizeof(msg_enterdsn));
-    pal_load_string(IDS_ENTERDSN_DESC, msg_enterdsn_desc,
-                    sizeof(msg_enterdsn_desc));
-
-    dlg_prompt(msg_enterdsn, msg_enterdsn_desc, CONTENT(sld)->dsn,
-               XOR48_DSN_LENGTH, _validate_dsn);
-
-    CONTENT(sld)->state = STATE_DSN_TYPE;
-    return CONTINUE;
-}
-
-static int
-_handle_dsn_type(sld_entry *sld)
-{
-    int status = dlg_handle();
-    if (DLG_INCOMPLETE == status)
-    {
-        return CONTINUE;
-    }
-
-    if (0 == status)
-    {
-        // Aborted typing of Disk Serial Number
-        sld_close_context(CONTENT(sld)->context);
-        CONTENT(sld)->context = 0;
-        __sld_accumulator = UINT16_MAX;
-        return 0;
-    }
-
-    uint32_t high = strtoul(CONTENT(sld)->dsn, NULL, 16);
-    uint32_t low = strtoul(CONTENT(sld)->dsn + 5, NULL, 16);
-    CONTENT(sld)->local_part = (high << 16) | low;
-    CONTENT(sld)->state = STATE_PASSCODE_PROMPT;
-    return CONTINUE;
-}
-
-static int
-_handle_passcode_prompt(sld_entry *sld)
-{
-    char msg_enterpass[40], msg_enterpass_desc[80];
-    pal_load_string(IDS_ENTERPASS, msg_enterpass, sizeof(msg_enterpass));
-    pal_load_string(IDS_ENTERPASS_DESC, msg_enterpass_desc,
-                    sizeof(msg_enterpass_desc));
-
-    prompt_predicate precheck = NULL;
-    int              code_len = sizeofm(script_call_content, buffer) - 1;
-
-    if (SLD_KEYSOURCE_PROMPT == CONTENT(sld)->parameter)
-    {
-        precheck = _isxdigitstr;
-        code_len = CONTENT(sld)->crs.key_length * 2;
-    }
-    else if (SLD_METHOD_XOR48 == CONTENT(sld)->method)
-    {
-        precheck = _isdigitstr;
-        code_len = XOR48_PASSCODE_SIZE * 2;
-    }
-    else if ((SLD_METHOD_DES == CONTENT(sld)->method) &&
-             (SLD_PARAMETER_DES_PKEY == CONTENT(sld)->parameter))
-    {
-        precheck = _ispkey;
-        code_len = 5 * 5 + 4;
-    }
-
-    dlg_prompt(msg_enterpass, msg_enterpass_desc, CONTENT(sld)->buffer,
-               code_len, precheck);
-    CONTENT(sld)->state = STATE_PASSCODE_TYPE;
-    return CONTINUE;
-}
-
-static int
-_handle_passcode_type(sld_entry *sld)
-{
-    int status = dlg_handle();
-    if (DLG_INCOMPLETE == status)
-    {
-        return CONTINUE;
-    }
-
-    if (0 == status)
-    {
-        // Aborted typing of Passcode
-        sld_close_context(CONTENT(sld)->context);
-        CONTENT(sld)->context = 0;
-        __sld_accumulator = UINT16_MAX;
-        return 0;
-    }
-
-    int base = 10;
-    if (SLD_KEYSOURCE_PROMPT == CONTENT(sld)->parameter)
-    {
-        base = 16;
-    }
-
-    if ((SLD_METHOD_DES == CONTENT(sld)->method) &&
-        (SLD_PARAMETER_DES_PKEY == CONTENT(sld)->parameter))
-    {
-        CONTENT(sld)->key.qw = __builtin_bswap64(
-            enc_decode_key(CONTENT(sld)->buffer, ENC_KEYSM_PKEY25XOR12));
-    }
-    else
-    {
-        CONTENT(sld)->passcode = rstrtoull(CONTENT(sld)->buffer, base);
-    }
-    CONTENT(sld)->state = STATE_PASSCODE_VERIFY;
-    return CONTINUE;
-}
-
-static void
-_handle_passcode_verify_xor48(sld_entry *sld)
-{
-    if (SLD_PARAMETER_XOR48_PROMPT == CONTENT(sld)->parameter)
-    {
-        for (int i = 0; i < 6; i++)
-        {
-            CONTENT(sld)->key.b[i] = _axtob(CONTENT(sld)->buffer + i * 2);
-        }
-    }
-    else
-    {
-        // 48-bit split key
-        uint32_t key_src[2] = {CONTENT(sld)->local_part,
-                               CONTENT(sld)->passcode};
-        CONTENT(sld)->key.qw = enc_decode_key(key_src, ENC_KEYSM_LE32B6D);
-    }
-
-    CONTENT(sld)->crs.key = CONTENT(sld)->key.b;
-}
-
-static void
-_handle_passcode_verify_des(sld_entry *sld)
-{
-    if (SLD_PARAMETER_DES_PKEY != CONTENT(sld)->parameter)
-    {
-        for (int i = 0; i < sizeof(uint64_t); i++)
-        {
-            CONTENT(sld)->key.b[i] = _axtob(CONTENT(sld)->buffer + (2 * i));
-        }
-    }
-
-    enc_prepare(&CONTENT(sld)->crs, ENC_DES, CONTENT(sld)->context->data,
-                CONTENT(sld)->context->size, CONTENT(sld)->key.b,
-                sizeof(uint64_t));
-}
-
-static int
-_handle_passcode_verify(sld_entry *sld)
-{
-    if (SLD_METHOD_XOR48 == CONTENT(sld)->method)
-    {
-        _handle_passcode_verify_xor48(sld);
-    }
-
-    if (SLD_METHOD_DES == CONTENT(sld)->method)
-    {
-        _handle_passcode_verify_des(sld);
-    }
-
-    CONTENT(sld)->state = (enc_verify(&CONTENT(sld)->crs, CONTENT(sld)->crc32))
-                              ? STATE_KEY_VERIFY
-                              : STATE_PASSCODE_INVALID;
-
-    if (STATE_PASSCODE_INVALID == CONTENT(sld)->state)
-    {
-        if (SLD_METHOD_DES == CONTENT(sld)->method)
-        {
-            enc_free(&CONTENT(sld)->crs);
-        }
-
-        char msg_enterpass[40], msg_invalidkey[40];
-        pal_load_string(IDS_ENTERPASS, msg_enterpass, sizeof(msg_enterpass));
-        pal_load_string(IDS_INVALIDKEY, msg_invalidkey, sizeof(msg_invalidkey));
-
-        dlg_alert(msg_enterpass, msg_invalidkey);
-    }
-
-    return CONTINUE;
-}
-
-static int
-_handle_passcode_invalid(sld_entry *sld)
-{
-    int status = dlg_handle();
-    if (DLG_INCOMPLETE == status)
-    {
-        return CONTINUE;
-    }
-
-    CONTENT(sld)->state = STATE_PASSCODE_PROMPT;
-    return CONTINUE;
-}
-
-static int
-_handle_key_verify(sld_entry *sld)
-{
-    if (!enc_verify(&CONTENT(sld)->crs, CONTENT(sld)->crc32))
-    {
-        __sld_accumulator = UINT16_MAX;
-        return 0;
-    }
-
-    __sld_accumulator = 0;
-    CONTENT(sld)->state = STATE_DECODE;
-    return CONTINUE;
-}
-
-static int
 _handle_decode(sld_entry *sld)
 {
-    enc_decrypt(&CONTENT(sld)->crs, (uint8_t *)CONTENT(sld)->context->data);
-    enc_free(&CONTENT(sld)->crs);
-    if (SLD_METHOD_DES == CONTENT(sld)->method)
+    int status = enc_handle(&CONTENT(sld)->enc);
+    if (0 == status)
     {
-        PT_SIZE(CONTENT(sld)->context) = CONTENT(sld)->crs.data_length;
-        CONTENT(sld)->context->size = CONTENT(sld)->crs.data_length;
+        CONTENT(sld)->context->size = CONTENT(sld)->enc.size;
+        CONTENT(sld)->state = STATE_ENTER;
     }
 
-    CONTENT(sld)->state = STATE_ENTER;
+    if (-EACCES == status)
+    {
+        sld_close_context(CONTENT(sld)->context);
+        CONTENT(sld)->context = 0;
+        __sld_accumulator = UINT16_MAX;
+        return 0;
+    }
+
+    if (-EINVAL == status)
+    {
+        __sld_errmsgcpy(sld, IDS_UNKNOWNKEYSRC);
+    }
+
+    if (0 > status)
+    {
+        // errmsg
+        return status;
+    }
+
     return CONTINUE;
 }
 #endif // CONFIG_ENCRYPTED_CONTENT
@@ -549,24 +185,6 @@ __sld_handle_script_call(sld_entry *sld)
 #if defined(CONFIG_ENCRYPTED_CONTENT)
     case STATE_DECODE:
         return _handle_decode(sld);
-    case STATE_KEY_ACQUIRE:
-        return _handle_key_acquire(sld);
-    case STATE_KEY_VERIFY:
-        return _handle_key_verify(sld);
-    case STATE_PASSCODE_PROMPT:
-        return _handle_passcode_prompt(sld);
-    case STATE_PASSCODE_TYPE:
-        return _handle_passcode_type(sld);
-    case STATE_PASSCODE_VERIFY:
-        return _handle_passcode_verify(sld);
-    case STATE_PASSCODE_INVALID:
-        return _handle_passcode_invalid(sld);
-    case STATE_DSN_GET:
-        return _handle_dsn_get(sld);
-    case STATE_DSN_PROMPT:
-        return _handle_dsn_prompt(sld);
-    case STATE_DSN_TYPE:
-        return _handle_dsn_type(sld);
 #endif // CONFIG_ENCRYPTED_CONTENT
     }
 
