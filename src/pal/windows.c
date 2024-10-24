@@ -961,12 +961,14 @@ pal_get_medium_id(const char *tag)
     if (0 == MultiByteToWideChar(CP_OEMCP, 0, tag, -1, wide_tag, 12))
     {
         LOG("cannot widen tag '%s'!", tag);
+        volume_sn = 0;
         goto end;
     }
 
     if (0 != wcscmp(wide_tag, volume_name))
     {
         LOG("volume name '%ls' not matching '%ls'!", volume_name, wide_tag);
+        volume_sn = 0;
         goto end;
     }
 
