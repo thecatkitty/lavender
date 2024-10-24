@@ -1,0 +1,8 @@
+add_library(enc OBJECT)
+add_dependencies(enc config)
+
+target_sources(enc PRIVATE enc.c)
+target_sources(enc PRIVATE access.c)
+
+add_subdirectory(cipher)
+add_subdirectory(keyfmt)

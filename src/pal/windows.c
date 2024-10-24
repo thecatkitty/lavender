@@ -46,7 +46,6 @@ static char   _ver_string[MAX_PATH] = {0};
 
 static HICON _icon = NULL;
 static HWND  _wnd = NULL;
-static HWND  _dlg = NULL;
 static char *_font = NULL;
 static DWORD _start_time = 0;
 
@@ -768,11 +767,8 @@ pal_handle(void)
             return false;
         }
 
-        if ((NULL == _dlg) || !IsDialogMessageW(_dlg, &msg))
-        {
-            TranslateMessage(&msg);
-            DispatchMessageW(&msg);
-        }
+        TranslateMessage(&msg);
+        DispatchMessageW(&msg);
     } while (_no_stall);
 
     return true;
@@ -961,12 +957,14 @@ pal_get_medium_id(const char *tag)
     if (0 == MultiByteToWideChar(CP_OEMCP, 0, tag, -1, wide_tag, 12))
     {
         LOG("cannot widen tag '%s'!", tag);
+        volume_sn = 0;
         goto end;
     }
 
     if (0 != wcscmp(wide_tag, volume_name))
     {
         LOG("volume name '%ls' not matching '%ls'!", volume_name, wide_tag);
+        volume_sn = 0;
         goto end;
     }
 
@@ -1027,22 +1025,4 @@ HWND
 windows_get_hwnd(void)
 {
     return _wnd;
-}
-
-bool
-windows_set_dialog(HWND dlg)
-{
-    if (_dlg == dlg)
-    {
-        return true;
-    }
-
-    if ((NULL == _dlg) || (NULL == dlg))
-    {
-        _no_stall = false;
-        _dlg = dlg;
-        return true;
-    }
-
-    return false;
 }
