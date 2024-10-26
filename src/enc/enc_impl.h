@@ -18,7 +18,32 @@ typedef struct
     enc_stream_verify   verify;
 } enc_stream_impl;
 
+typedef int (*enc_provider_acquire)(enc_context *enc);
+typedef int (*enc_provider_handle)(enc_context *enc);
+
+typedef struct
+{
+    enc_provider_acquire acquire;
+    enc_provider_handle  handle;
+} enc_provider_impl;
+
 extern enc_stream_impl __enc_des_impl;
 extern enc_stream_impl __enc_xor_impl;
+
+extern enc_provider_impl __enc_caller_impl;
+extern enc_provider_impl __enc_diskid_impl;
+extern enc_provider_impl __enc_split_impl;
+extern enc_provider_impl __enc_prompt_impl;
+
+#define CONTINUE 1
+
+enum
+{
+    ENCS_ACQUIRE,
+    ENCS_VERIFY,
+    ENCS_INVALID,
+    ENCS_COMPLETE,
+    ENCS_PROVIDER_START = 0x40
+};
 
 #endif // _ENC_IMPL_H_
