@@ -1,6 +1,21 @@
+#include <dlg.h>
 #include <enc.h>
+#include <fmt/zip.h>
+#include <pal.h>
 
+#include "../resource.h"
 #include "enc_impl.h"
+
+// Size of the plaintext stored at the end of the data buffer
+#define PT_SIZE(data, size)                                                    \
+    (*(uint32_t *)((char *)(data) + (size) - sizeof(uint32_t)))
+
+const enc_provider_impl *PROVIDER[] = {
+    [ENC_PROVIDER_CALLER] = &__enc_caller_impl,
+    [ENC_PROVIDER_PROMPT] = &__enc_prompt_impl,
+    [ENC_PROVIDER_SPLIT] = &__enc_split_impl,
+    [ENC_PROVIDER_DISKID] = &__enc_diskid_impl,
+};
 
 extern uint64_t
 __enc_le32b6d_decode(const void *src);
@@ -109,4 +124,115 @@ enc_validate_key_format(const char *key, enc_keysm sm)
     }
 
     return false;
+}
+
+int
+enc_handle(enc_context *enc)
+{
+    switch (enc->state)
+    {
+    case ENCS_ACQUIRE: {
+        int status = PROVIDER[enc->provider & 0xFF]->acquire(enc);
+        if (0 > status)
+        {
+            return status;
+        }
+
+        if (0 == status)
+        {
+            enc->state = ENCS_VERIFY;
+        }
+
+        return CONTINUE;
+    }
+
+    case ENCS_VERIFY: {
+        if (!enc_prepare(&enc->stream, enc->cipher, enc->content, enc->size,
+                         enc->key.b,
+                         (ENC_XOR == enc->cipher) ? 6 : sizeof(uint64_t)))
+        {
+            return -EINVAL;
+        }
+
+        if (!enc_verify(&enc->stream, enc->crc32))
+        {
+            enc->state = ENCS_INVALID;
+            enc_free(&enc->stream);
+
+            char msg_enterpass[40], msg_invalidkey[40];
+            pal_load_string(IDS_ENTERPASS, msg_enterpass,
+                            sizeof(msg_enterpass));
+            pal_load_string(IDS_INVALIDKEY, msg_invalidkey,
+                            sizeof(msg_invalidkey));
+
+            dlg_alert(msg_enterpass, msg_invalidkey);
+            return CONTINUE;
+        }
+
+        enc_decrypt(&enc->stream, (uint8_t *)enc->content);
+        enc_free(&enc->stream);
+        if (ENC_DES == enc->cipher)
+        {
+            PT_SIZE(enc->content, enc->size) = enc->stream.data_length;
+            enc->size = enc->stream.data_length;
+        }
+
+        enc->state = ENCS_COMPLETE;
+        return CONTINUE;
+    }
+
+    case ENCS_INVALID: {
+        int status = dlg_handle();
+        if (DLG_INCOMPLETE == status)
+        {
+            return CONTINUE;
+        }
+
+        enc->state = ENCS_ACQUIRE;
+        return CONTINUE;
+    }
+
+    case ENCS_COMPLETE:
+        return 0;
+    }
+
+    return PROVIDER[enc->provider & 0xFF]->handle(enc);
+}
+
+int
+enc_access_content(enc_context *enc,
+                   enc_cipher   cipher,
+                   int          provider,
+                   const void  *parameter,
+                   uint8_t     *content,
+                   size_t       length,
+                   uint32_t     crc32)
+{
+    memset(enc, 0, sizeof(*enc));
+    enc->cipher = cipher;
+    enc->provider = provider;
+    enc->parameter = parameter;
+    enc->content = content;
+    enc->size = length;
+    enc->crc32 = crc32;
+
+    if ((ENC_XOR == cipher) && (zip_calculate_crc(content, length) == crc32))
+    {
+        enc->state = ENCS_COMPLETE;
+        return 0;
+    }
+
+    if (ENC_DES == cipher)
+    {
+        uint32_t pt_size = PT_SIZE(content, length);
+        if ((length > pt_size) && zip_calculate_crc(content, pt_size) == crc32)
+        {
+            enc->size = pt_size;
+            enc->state = ENCS_COMPLETE;
+            return 0;
+        }
+    }
+
+    enc->state = ENCS_ACQUIRE;
+    return CONTINUE;
 }

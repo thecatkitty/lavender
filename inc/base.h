@@ -74,6 +74,15 @@ extern char *
 itoa(int value, char *str, int base);
 #endif
 
+extern bool
+isdigstr(const char *str);
+
+extern bool
+isxdigstr(const char *str);
+
+extern uint8_t
+xtob(const char *str);
+
 #ifndef EFTYPE
 #define EFTYPE 0x11e
 #endif

@@ -77,3 +77,50 @@ itoa(int value, char *str, int base)
     return str;
 }
 #endif
+
+#define ISCTYPESTR(predicate)                                                  \
+    {                                                                          \
+        if (!*str)                                                             \
+        {                                                                      \
+            return false;                                                      \
+        }                                                                      \
+                                                                               \
+        while (*str)                                                           \
+        {                                                                      \
+            if (!predicate(*str))                                              \
+            {                                                                  \
+                return false;                                                  \
+            }                                                                  \
+            str++;                                                             \
+        }                                                                      \
+                                                                               \
+        return true;                                                           \
+    }
+
+bool
+isdigstr(const char *str)
+{
+    ISCTYPESTR(isdigit);
+}
+
+bool
+isxdigstr(const char *str)
+{
+    ISCTYPESTR(isxdigit);
+}
+
+uint8_t
+xtob(const char *str)
+{
+    if (!isxdigit(str[0]) || !isxdigit(str[1]))
+    {
+        return 0;
+    }
+
+    uint8_t ret =
+        isdigit(str[1]) ? (str[1] - '0') : (toupper(str[1]) - 'A' + 10);
+    ret |= (isdigit(str[0]) ? (str[0] - '0') : (toupper(str[0]) - 'A' + 10))
+           << 4;
+
+    return ret;
+}
