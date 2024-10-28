@@ -21,13 +21,13 @@ static int
 _handle_passcode_prompt(enc_context *enc)
 {
     char msg_enterpass[40], msg_enterpass_desc[80];
-    pal_load_string(IDS_ENTERPASS, msg_enterpass, sizeof(msg_enterpass));
-    pal_load_string(IDS_ENTERPASS_DESC, msg_enterpass_desc,
-                    sizeof(msg_enterpass_desc));
 
     if (ENC_KEYSM_RAW == (enc->provider >> 8))
     {
         // Raw key - hexadecimal string
+        pal_load_string(IDS_ENTERPASS, msg_enterpass, sizeof(msg_enterpass));
+        pal_load_string(IDS_ENTERPASS_DESC, msg_enterpass_desc,
+                        sizeof(msg_enterpass_desc));
         dlg_prompt(msg_enterpass, msg_enterpass_desc, enc->buffer,
                    enc->stream.key_length * 2, isxdigstr);
         enc->state = STATE_PASSCODE_TYPE;
@@ -36,6 +36,10 @@ _handle_passcode_prompt(enc_context *enc)
 
     if (ENC_KEYSM_PKEY25XOR12 == (enc->provider >> 8))
     {
+        // Raw key - hexadecimal string
+        pal_load_string(IDS_ENTERPKEY, msg_enterpass, sizeof(msg_enterpass));
+        pal_load_string(IDS_ENTERPKEY_DESC, msg_enterpass_desc,
+                        sizeof(msg_enterpass_desc));
         dlg_prompt(msg_enterpass, msg_enterpass_desc, enc->buffer, 5 * 5 + 4,
                    _ispkey);
         enc->state = STATE_PASSCODE_TYPE;
@@ -97,9 +101,12 @@ _handle_passcode_type(enc_context *enc)
 static int
 _handle_invalid(enc_context *enc)
 {
-    char msg_enterpass[40], msg_invalidkey[40];
+    char msg_enterpass[80], msg_invalidkey[80];
     pal_load_string(IDS_ENTERPASS, msg_enterpass, sizeof(msg_enterpass));
-    pal_load_string(IDS_INVALIDKEY, msg_invalidkey, sizeof(msg_invalidkey));
+    pal_load_string((ENC_KEYSM_PKEY25XOR12 == (enc->provider >> 8))
+                        ? IDS_INVALIDPKEY
+                        : IDS_INVALIDPASS,
+                    msg_invalidkey, sizeof(msg_invalidkey));
 
     dlg_alert(msg_enterpass, msg_invalidkey);
     enc->state = STATE_ALERT;
