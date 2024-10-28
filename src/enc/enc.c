@@ -1,9 +1,6 @@
-#include <dlg.h>
 #include <enc.h>
 #include <fmt/zip.h>
-#include <pal.h>
 
-#include "../resource.h"
 #include "enc_impl.h"
 
 // Size of the plaintext stored at the end of the data buffer
@@ -158,14 +155,6 @@ enc_handle(enc_context *enc)
         {
             enc->state = ENCS_INVALID;
             enc_free(&enc->stream);
-
-            char msg_enterpass[40], msg_invalidkey[40];
-            pal_load_string(IDS_ENTERPASS, msg_enterpass,
-                            sizeof(msg_enterpass));
-            pal_load_string(IDS_INVALIDKEY, msg_invalidkey,
-                            sizeof(msg_invalidkey));
-
-            dlg_alert(msg_enterpass, msg_invalidkey);
             return CONTINUE;
         }
 
@@ -178,17 +167,6 @@ enc_handle(enc_context *enc)
         }
 
         enc->state = ENCS_COMPLETE;
-        return CONTINUE;
-    }
-
-    case ENCS_INVALID: {
-        int status = dlg_handle();
-        if (DLG_INCOMPLETE == status)
-        {
-            return CONTINUE;
-        }
-
-        enc->state = ENCS_ACQUIRE;
         return CONTINUE;
     }
 
