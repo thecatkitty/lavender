@@ -22,4 +22,16 @@ __enc_caller_acquire(enc_context *enc)
     return -EINVAL;
 }
 
-enc_provider_impl __enc_caller_impl = {&__enc_caller_acquire, NULL};
+int
+__enc_caller_handle(enc_context *enc)
+{
+    if (ENCS_INVALID == enc->state)
+    {
+        return -EACCES;
+    }
+
+    return -ENOSYS;
+}
+
+enc_provider_impl __enc_caller_impl = {&__enc_caller_acquire,
+                                       &__enc_caller_handle};

@@ -8,6 +8,7 @@ enum
 {
     STATE_PASSCODE_PROMPT = ENCS_PROVIDER_START,
     STATE_PASSCODE_TYPE,
+    STATE_ALERT,
 };
 
 static bool
@@ -93,6 +94,31 @@ _handle_passcode_type(enc_context *enc)
     return -EINVAL;
 }
 
+static int
+_handle_invalid(enc_context *enc)
+{
+    char msg_enterpass[40], msg_invalidkey[40];
+    pal_load_string(IDS_ENTERPASS, msg_enterpass, sizeof(msg_enterpass));
+    pal_load_string(IDS_INVALIDKEY, msg_invalidkey, sizeof(msg_invalidkey));
+
+    dlg_alert(msg_enterpass, msg_invalidkey);
+    enc->state = STATE_ALERT;
+    return CONTINUE;
+}
+
+static int
+_handle_alert(enc_context *enc)
+{
+    int status = dlg_handle();
+    if (DLG_INCOMPLETE == status)
+    {
+        return CONTINUE;
+    }
+
+    enc->state = ENCS_ACQUIRE;
+    return CONTINUE;
+}
+
 int
 __enc_prompt_acquire(enc_context *enc)
 {
@@ -122,6 +148,10 @@ __enc_prompt_handle(enc_context *enc)
         return _handle_passcode_prompt(enc);
     case STATE_PASSCODE_TYPE:
         return _handle_passcode_type(enc);
+    case ENCS_INVALID:
+        return _handle_invalid(enc);
+    case STATE_ALERT:
+        return _handle_alert(enc);
     }
 
     return -ENOSYS;
