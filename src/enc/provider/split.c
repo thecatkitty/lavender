@@ -55,9 +55,9 @@ _handle_passcode_type(enc_context *enc)
 static int
 _handle_invalid(enc_context *enc)
 {
-    char msg_enterpass[40], msg_invalidkey[40];
+    char msg_enterpass[80], msg_invalidkey[80];
     pal_load_string(IDS_ENTERPASS, msg_enterpass, sizeof(msg_enterpass));
-    pal_load_string(IDS_INVALIDKEY, msg_invalidkey, sizeof(msg_invalidkey));
+    pal_load_string(IDS_INVALIDPASS, msg_invalidkey, sizeof(msg_invalidkey));
 
     dlg_alert(msg_enterpass, msg_invalidkey);
     enc->state = STATE_ALERT;
