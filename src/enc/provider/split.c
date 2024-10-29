@@ -18,7 +18,7 @@ enum
 static int
 _handle_passcode_prompt(enc_context *enc)
 {
-    char msg_enterpass[40], msg_enterpass_desc[80];
+    char msg_enterpass[GFX_COLUMNS / 2], msg_enterpass_desc[GFX_COLUMNS];
     pal_load_string(IDS_ENTERPASS, msg_enterpass, sizeof(msg_enterpass));
     pal_load_string(IDS_ENTERPASS_DESC, msg_enterpass_desc,
                     sizeof(msg_enterpass_desc));
@@ -55,7 +55,7 @@ _handle_passcode_type(enc_context *enc)
 static int
 _handle_invalid(enc_context *enc)
 {
-    char msg_enterpass[80], msg_invalidkey[80];
+    char msg_enterpass[GFX_COLUMNS], msg_invalidkey[GFX_COLUMNS];
     pal_load_string(IDS_ENTERPASS, msg_enterpass, sizeof(msg_enterpass));
     pal_load_string(IDS_INVALIDPASS, msg_invalidkey, sizeof(msg_invalidkey));
 

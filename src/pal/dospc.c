@@ -28,9 +28,6 @@
 #include "dospc.h"
 #include "pal_impl.h"
 
-#define TEXT_COLUMNS 80
-#define TEXT_LINES   25
-
 #ifdef CONFIG_ANDREA
 #define MAX_DRIVERS 4
 
@@ -98,7 +95,7 @@ _pit_init_channel(unsigned channel, unsigned mode, unsigned divisor)
 static void
 _die_incompatible(void)
 {
-    char msg[TEXT_COLUMNS];
+    char msg[GFX_COLUMNS];
     pal_load_string(IDS_UNSUPPENV, msg, sizeof(msg));
     msg[strlen(msg)] = '$';
     dos_puts(msg);
@@ -240,7 +237,7 @@ _show_help(const char *self)
     __cga_init();
     gfx_get_font_data(&_font);
 
-    char msgu[80], msga[80];
+    char msgu[GFX_COLUMNS], msga[GFX_COLUMNS];
     puts(pal_get_version_string());
 
     pal_load_string(IDS_DESCRIPTION, msgu, sizeof(msgu));
@@ -284,7 +281,7 @@ pal_initialize(int argc, char *argv[])
     zip_cdir_end_header *cdir = _locate_cdir(__edata, __sbss);
     if (NULL == cdir)
     {
-        char msg[TEXT_COLUMNS];
+        char msg[GFX_COLUMNS];
         pal_load_string(IDS_ERROR, msg, sizeof(msg));
         pal_load_string(IDS_NOARCHIVE, msg + strlen(msg),
                         sizeof(msg) - strlen(msg));
@@ -304,7 +301,7 @@ pal_initialize(int argc, char *argv[])
     if (!zip_open(argv[0]))
 #endif
     {
-        char msg[TEXT_COLUMNS];
+        char msg[GFX_COLUMNS];
         pal_load_string(IDS_ERROR, msg, sizeof(msg));
         pal_load_string(IDS_NOARCHIVE, msg + strlen(msg),
                         sizeof(msg) - strlen(msg));
@@ -732,8 +729,8 @@ pal_get_mouse(uint16_t *x, uint16_t *y)
     uint16_t lowx, lowy, status;
 
     status = msmouse_get_status(&lowx, &lowy);
-    *x = lowx / (MSMOUSE_AREA_WIDTH / TEXT_COLUMNS);
-    *y = lowy / (MSMOUSE_AREA_HEIGHT / TEXT_LINES);
+    *x = lowx / (MSMOUSE_AREA_WIDTH / GFX_COLUMNS);
+    *y = lowy / (MSMOUSE_AREA_HEIGHT / GFX_LINES);
 
     return status;
 }
@@ -762,7 +759,7 @@ pal_alert(const char *text, int error)
     puts(texta);
     if (0 != error)
     {
-        char msg[80] = "errno ";
+        char msg[GFX_COLUMNS] = "errno ";
         itoa(error, msg + strlen(msg), 10);
         puts(msg);
     }

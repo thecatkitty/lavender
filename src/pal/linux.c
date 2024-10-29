@@ -12,6 +12,7 @@
 #include <fontconfig/fontconfig.h>
 
 #include <fmt/exe.h>
+#include <gfx.h>
 #include <pal.h>
 #include <platform/sdl2arch.h>
 #include <snd.h>
@@ -32,7 +33,7 @@ __fluid_init(void);
 static void
 _show_help(const char *self)
 {
-    char msg[80];
+    char msg[GFX_COLUMNS];
     puts(pal_get_version_string());
 
     pal_load_string(IDS_DESCRIPTION, msg, sizeof(msg));

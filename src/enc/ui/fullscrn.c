@@ -317,7 +317,7 @@ encui_alert(const char *title, const char *message)
 
     char caption[9];
     pal_load_string(IDS_OK, caption, sizeof(caption));
-    _draw_button(80 - 10, 25 - 2, caption, &_ok);
+    _draw_button(GFX_COLUMNS - 10, GFX_LINES - 2, caption, &_ok);
 
     pal_enable_mouse();
     _state = STATE_ALERT;
@@ -550,9 +550,9 @@ encui_prompt(const char     *title,
 
     char caption[9];
     pal_load_string(IDS_OK, caption, sizeof(caption));
-    _draw_button(80 - 20, 25 - 2, caption, &_ok);
+    _draw_button(GFX_COLUMNS - 20, GFX_LINES - 2, caption, &_ok);
     pal_load_string(IDS_CANCEL, caption, sizeof(caption));
-    _draw_button(80 - 10, 25 - 2, caption, &_cancel);
+    _draw_button(GFX_COLUMNS - 10, GFX_LINES - 2, caption, &_cancel);
 
     pal_enable_mouse();
     return true;

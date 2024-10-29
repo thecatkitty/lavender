@@ -56,6 +56,9 @@ typedef enum
     GFX_PROPERTY_COLOR_DEPTH = 4,
 } gfx_property;
 
+#define GFX_COLUMNS 80
+#define GFX_LINES   25
+
 typedef struct
 {
     bool ddcall (*open)(device *dev);

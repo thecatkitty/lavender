@@ -9,8 +9,6 @@
 
 #include "../resource.h"
 
-#define LINE_WIDTH 80
-
 #define CONTINUE 1
 
 #define __sld_try_load(stage, str, out)                                        \

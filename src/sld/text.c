@@ -25,10 +25,10 @@ __sld_execute_text(sld_entry *sld)
     switch (sld->posx)
     {
     case SLD_ALIGN_CENTER:
-        x = (LINE_WIDTH - sld->length) / 2;
+        x = (GFX_COLUMNS - sld->length) / 2;
         break;
     case SLD_ALIGN_RIGHT:
-        x = LINE_WIDTH - sld->length;
+        x = GFX_COLUMNS - sld->length;
         break;
     default:
         x = sld->posx;
