@@ -1,12 +1,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <dlg.h>
 #include <fmt/utf8.h>
 #include <gfx.h>
 #include <pal.h>
 
-#include "../resource.h"
+#include "../../resource.h"
+#include "../ui/encui.h"
 
 enum
 {
@@ -23,19 +23,19 @@ enum
     STATE_PROMPT_INVALID3 = STATE_PROMPT | (3 << 8)
 };
 
-static gfx_dimensions _glyph = {0, 0};
-static int            _state = STATE_NONE;
-static uint32_t       _blink_start;
-static char          *_buffer;
-static dlg_validator  _validator;
-static int            _field_left;
-static int            _field_top;
-static int            _cursor;
-static int            _input_end;
-static int            _size;
-static uint32_t       _cursor_period = 0;
-static uint32_t       _cursor_counter;
-static bool           _cursor_visible = true;
+static gfx_dimensions  _glyph = {0, 0};
+static int             _state = STATE_NONE;
+static uint32_t        _blink_start;
+static char           *_buffer;
+static encui_validator _validator;
+static int             _field_left;
+static int             _field_top;
+static int             _cursor;
+static int             _input_end;
+static int             _size;
+static uint32_t        _cursor_period = 0;
+static uint32_t        _cursor_counter;
+static bool            _cursor_visible = true;
 
 static gfx_rect _screen = {0, 0, 0, 0};
 static gfx_rect _box;
@@ -283,26 +283,26 @@ _handle_alert(void)
 
     if (0 == scancode)
     {
-        return DLG_INCOMPLETE;
+        return ENCUI_INCOMPLETE;
     }
 
     if (VK_ESCAPE == scancode)
     {
         _reset();
-        return DLG_CANCEL;
+        return ENCUI_CANCEL;
     }
 
     if (VK_RETURN == scancode)
     {
         _reset();
-        return DLG_OK;
+        return ENCUI_OK;
     }
 
-    return DLG_INCOMPLETE;
+    return ENCUI_INCOMPLETE;
 }
 
 bool
-dlg_alert(const char *title, const char *message)
+encui_alert(const char *title, const char *message)
 {
     if (STATE_NONE != _state)
     {
@@ -351,7 +351,7 @@ _handle_prompt(void)
             _state = STATE_PROMPT_INVALID2;
         }
 
-        return DLG_INCOMPLETE;
+        return ENCUI_INCOMPLETE;
     }
 
     if (STATE_PROMPT_INVALID2 == _state)
@@ -362,7 +362,7 @@ _handle_prompt(void)
             _state = STATE_PROMPT_INVALID3;
         }
 
-        return DLG_INCOMPLETE;
+        return ENCUI_INCOMPLETE;
     }
 
     if (STATE_PROMPT_INVALID3 == _state)
@@ -375,7 +375,7 @@ _handle_prompt(void)
             pal_enable_mouse();
         }
 
-        return DLG_INCOMPLETE;
+        return ENCUI_INCOMPLETE;
     }
 
     gfx_rect cur = {(_field_left + _cursor) * _glyph.width, _box.top + 1, 1,
@@ -425,7 +425,7 @@ _handle_prompt(void)
 
     if (0 == scancode)
     {
-        return DLG_INCOMPLETE;
+        return ENCUI_INCOMPLETE;
     }
 
     if (VK_ESCAPE == scancode)
@@ -452,7 +452,7 @@ _handle_prompt(void)
         gfx_draw_rectangle(&_box, GFX_COLOR_BLACK);
         _blink_start = pal_get_counter();
         _state = STATE_PROMPT_INVALID1;
-        return DLG_INCOMPLETE;
+        return ENCUI_INCOMPLETE;
     }
 
     pal_disable_mouse();
@@ -503,15 +503,15 @@ _handle_prompt(void)
     cur.left = (_field_left + _cursor) * _glyph.width;
     gfx_draw_line(&cur, GFX_COLOR_BLACK);
     pal_enable_mouse();
-    return DLG_INCOMPLETE;
+    return ENCUI_INCOMPLETE;
 }
 
 bool
-dlg_prompt(const char   *title,
-           const char   *message,
-           char         *buffer,
-           int           size,
-           dlg_validator validator)
+encui_prompt(const char     *title,
+             const char     *message,
+             char           *buffer,
+             int             size,
+             encui_validator validator)
 {
     if (STATE_NONE != _state)
     {
@@ -559,7 +559,7 @@ dlg_prompt(const char   *title,
 }
 
 int
-dlg_handle(void)
+encui_handle(void)
 {
     if (0 == _cursor_period)
     {

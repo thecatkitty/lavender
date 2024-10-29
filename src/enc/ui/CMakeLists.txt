@@ -1,0 +1,6 @@
+if(WIN32)
+    target_sources(enc PRIVATE windows.c)
+    target_sources(enc PRIVATE prompt.rc)
+else()
+    target_sources(enc PRIVATE fullscrn.c)
+endif()

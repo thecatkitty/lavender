@@ -13,7 +13,6 @@ if(LINUX)
 endif()
 
 if(CONFIG_ENCRYPTED_CONTENT)
-    add_subdirectory(dlg)
     add_subdirectory(enc)
 endif()
 add_subdirectory(fmt)
@@ -31,7 +30,7 @@ include_directories(lavender ${CMAKE_CURRENT_BINARY_DIR})
 
 target_sources(lavender PRIVATE main.c rstd.c)
 if(CONFIG_ENCRYPTED_CONTENT)
-    target_link_libraries(lavender dlg enc)
+    target_link_libraries(lavender enc)
 endif()
 target_link_libraries(lavender fmt gfx pal sld snd)
 
