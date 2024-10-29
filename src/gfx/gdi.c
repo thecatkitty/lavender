@@ -60,8 +60,8 @@ windows_set_font(HFONT font)
     GetTextMetricsW(new_dc, &metric);
     _glyph.cx = metric.tmAveCharWidth;
     _glyph.cy = metric.tmHeight;
-    _screen.cx = 80 * _glyph.cx;
-    _screen.cy = 25 * _glyph.cy;
+    _screen.cx = GFX_COLUMNS * _glyph.cx;
+    _screen.cy = GFX_LINES * _glyph.cy;
     _origin.x = 0;
     _origin.y = 0;
     _scale = (float)metric.tmHeight / 16.f;

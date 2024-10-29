@@ -324,8 +324,10 @@ _toggle_fullscreen(HWND wnd)
         {
             _window_scale = gfx_get_scale();
 
-            int max_width = (mi.rcMonitor.right - mi.rcMonitor.left) / 80;
-            int max_height = (mi.rcMonitor.bottom - mi.rcMonitor.top) / 25;
+            int max_width =
+                (mi.rcMonitor.right - mi.rcMonitor.left) / GFX_COLUMNS;
+            int max_height =
+                (mi.rcMonitor.bottom - mi.rcMonitor.top) / GFX_LINES;
             windows_set_font(windows_find_font(max_width, max_height));
             windows_set_box(mi.rcMonitor.right - mi.rcMonitor.left,
                             mi.rcMonitor.bottom - mi.rcMonitor.top);

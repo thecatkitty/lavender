@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <gfx.h>
 #include <pal.h>
 #include <sld.h>
 
@@ -17,7 +18,7 @@ main(int argc, char *argv[])
     sld_context *script = sld_create_context("slides.txt", O_RDONLY);
     if (NULL == script)
     {
-        char msg[80];
+        char msg[GFX_COLUMNS];
         pal_load_string(IDS_NOEXECCTX, msg, sizeof(msg));
         pal_alert(msg, errno);
         status = EXIT_FAILURE;

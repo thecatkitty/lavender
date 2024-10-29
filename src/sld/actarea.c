@@ -63,10 +63,10 @@ __sld_execute_active_area(sld_entry *sld)
     switch (sld->posx)
     {
     case SLD_ALIGN_CENTER:
-        x = (LINE_WIDTH - CONTENT(sld)->dimensions.width) / 2;
+        x = (GFX_COLUMNS - CONTENT(sld)->dimensions.width) / 2;
         break;
     case SLD_ALIGN_RIGHT:
-        x = LINE_WIDTH - CONTENT(sld)->dimensions.width;
+        x = GFX_COLUMNS - CONTENT(sld)->dimensions.width;
         break;
     default:
         x = sld->posx;

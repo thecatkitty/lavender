@@ -102,8 +102,8 @@ sdl2arch_set_scale(int scale)
 
     old.w = _screen_w;
     old.h = _screen_h;
-    _screen_w = 80 * _font_w;
-    _screen_h = 25 * _font_h;
+    _screen_w = GFX_COLUMNS * _font_w;
+    _screen_h = GFX_LINES * _font_h;
     new.w = _screen_w;
     new.h = _screen_h;
 
