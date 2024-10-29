@@ -1,10 +1,10 @@
 #include <stdlib.h>
 
-#include <dlg.h>
 #include <pal.h>
 
 #include "../../resource.h"
 #include "../enc_impl.h"
+#include "../ui/encui.h"
 
 enum
 {
@@ -23,8 +23,8 @@ _handle_passcode_prompt(enc_context *enc)
     pal_load_string(IDS_ENTERPASS_DESC, msg_enterpass_desc,
                     sizeof(msg_enterpass_desc));
 
-    dlg_prompt(msg_enterpass, msg_enterpass_desc, enc->buffer,
-               XOR48_PASSCODE_SIZE * 2, isdigstr);
+    encui_prompt(msg_enterpass, msg_enterpass_desc, enc->buffer,
+                 XOR48_PASSCODE_SIZE * 2, isdigstr);
     enc->state = STATE_PASSCODE_TYPE;
     return CONTINUE;
 }
@@ -32,8 +32,8 @@ _handle_passcode_prompt(enc_context *enc)
 static int
 _handle_passcode_type(enc_context *enc)
 {
-    int status = dlg_handle();
-    if (DLG_INCOMPLETE == status)
+    int status = encui_handle();
+    if (ENCUI_INCOMPLETE == status)
     {
         return CONTINUE;
     }
@@ -59,7 +59,7 @@ _handle_invalid(enc_context *enc)
     pal_load_string(IDS_ENTERPASS, msg_enterpass, sizeof(msg_enterpass));
     pal_load_string(IDS_INVALIDPASS, msg_invalidkey, sizeof(msg_invalidkey));
 
-    dlg_alert(msg_enterpass, msg_invalidkey);
+    encui_alert(msg_enterpass, msg_invalidkey);
     enc->state = STATE_ALERT;
     return CONTINUE;
 }
@@ -67,8 +67,8 @@ _handle_invalid(enc_context *enc)
 static int
 _handle_alert(enc_context *enc)
 {
-    int status = dlg_handle();
-    if (DLG_INCOMPLETE == status)
+    int status = encui_handle();
+    if (ENCUI_INCOMPLETE == status)
     {
         return CONTINUE;
     }

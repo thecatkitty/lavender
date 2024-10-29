@@ -8,7 +8,6 @@
 #include <windows.h>
 #include <windowsx.h>
 
-#include <dlg.h>
 #include <fmt/utf8.h>
 #include <pal.h>
 #include <platform/windows.h>

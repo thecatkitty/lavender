@@ -7,13 +7,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <dlg.h>
 #include <fmt/utf8.h>
 #include <pal.h>
 #include <platform/sdl2arch.h>
 #include <platform/windows.h>
 
-#include "../resource.h"
+#include "../../resource.h"
+#include "../ui/encui.h"
 #include "resource.h"
 
 #ifndef PSH_AEROWIZARD
@@ -32,9 +32,9 @@ static WNDPROC _prev_wnd_proc = NULL;
 static LPCWSTR _title = NULL;
 static LPCWSTR _message = NULL;
 
-static char         *_buffer = NULL;
-static int           _size;
-static dlg_validator _validator = NULL;
+static char           *_buffer = NULL;
+static int             _size;
+static encui_validator _validator = NULL;
 
 static int _value;
 
@@ -86,7 +86,7 @@ _hook_proc(int code, WPARAM wparam, LPARAM lparam)
 }
 
 bool
-dlg_alert(const char *title, const char *message)
+encui_alert(const char *title, const char *message)
 {
     int    title_length = MultiByteToWideChar(CP_UTF8, 0, title, -1, NULL, 0);
     LPWSTR wtitle = (LPWSTR)malloc(title_length * sizeof(WCHAR));
@@ -111,7 +111,7 @@ dlg_alert(const char *title, const char *message)
                               GetCurrentThreadId());
     MessageBoxW(windows_get_hwnd(), wmessage, wtitle,
                 MB_OK | MB_ICONEXCLAMATION);
-    _value = DLG_OK;
+    _value = ENCUI_OK;
 
     free(wtitle);
     free(wmessage);
@@ -259,11 +259,11 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
 }
 
 bool
-dlg_prompt(const char   *title,
-           const char   *message,
-           char         *buffer,
-           int           size,
-           dlg_validator validator)
+encui_prompt(const char     *title,
+             const char     *message,
+             char           *buffer,
+             int             size,
+             encui_validator validator)
 {
     if (0 == _nclm.cbSize)
     {
@@ -330,7 +330,7 @@ dlg_prompt(const char   *title,
     _size = size;
     _validator = validator;
 
-    _value = DLG_INCOMPLETE;
+    _value = ENCUI_INCOMPLETE;
     PropertySheetW(&psh);
 
     pal_disable_mouse();
@@ -341,7 +341,7 @@ dlg_prompt(const char   *title,
 }
 
 int
-dlg_handle(void)
+encui_handle(void)
 {
     int value = _value;
     _value = 0;
