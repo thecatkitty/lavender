@@ -23,6 +23,8 @@ enum
     STATE_PROMPT_INVALID3 = STATE_PROMPT | (3 << 8)
 };
 
+#define TEXT_WIDTH (GFX_COLUMNS - 2)
+
 static gfx_dimensions  _glyph = {0, 0};
 static int             _state = STATE_NONE;
 static uint32_t        _blink_start;
@@ -45,6 +47,16 @@ static gfx_rect _ok;
 static void
 _draw_background(void)
 {
+    if (!_screen.width)
+    {
+        gfx_dimensions dim;
+        gfx_get_screen_dimensions(&dim);
+        gfx_get_glyph_dimensions(&_glyph);
+
+        _screen.width = dim.width;
+        _screen.height = dim.height;
+    }
+
     gfx_fill_rectangle(&_screen, GFX_COLOR_WHITE);
 
     gfx_rect bar = {0, 0, _screen.width, _glyph.height + 1};
@@ -110,11 +122,9 @@ _strndcpy(char *dst, const char *src, size_t count, char delimiter)
     return i;
 }
 
-static bool
-_draw_text(int columns, int lines, const char *text)
+static int
+_draw_text(const char *text)
 {
-    columns += 1 - (columns % 2);
-
 #ifdef UTF8_NATIVE
     const char *text_l = text;
 #else
@@ -124,23 +134,23 @@ _draw_text(int columns, int lines, const char *text)
 
     const char *fragment = text_l;
 #ifdef UTF8_NATIVE
-    char *line_buff = alloca(columns * 2 + 1);
+    char line_buff[2 * TEXT_WIDTH + 1];
 #else
-    char *line_buff = alloca(columns + 1);
+    char line_buff[TEXT_WIDTH + 1];
 #endif
 
     int line = 0;
-    while (*fragment && (lines > line))
+    while (*fragment)
     {
-        fragment += _strndcpy(line_buff, fragment, columns, '\n');
+        fragment += _strndcpy(line_buff, fragment, TEXT_WIDTH, '\n');
         if (!gfx_draw_text(line_buff, 1, 2 + line))
         {
-            return false;
+            return -1;
         }
         line++;
     }
 
-    return true;
+    return line;
 }
 
 static void
@@ -186,74 +196,6 @@ _is_pressed(const gfx_rect *rect)
     }
 
     return true;
-}
-
-static int
-_get_content_width(const char *text, int limit)
-{
-    int max = 0, current = 0;
-    while (*text)
-    {
-        int seq_length;
-        if (L'\n' == utf8_get_codepoint(text, &seq_length))
-        {
-            if (max < current)
-            {
-                max = current;
-            }
-
-            current = 0;
-        }
-
-        text += (0 == seq_length) ? 1 : seq_length;
-        current++;
-    }
-
-    if (max < current)
-    {
-        max = current;
-    }
-
-    if (limit && (limit < max))
-    {
-        return limit;
-    }
-
-    return max;
-}
-
-static int
-_get_content_height(const char *text)
-{
-    int count = 1;
-    while (*text)
-    {
-        if ('\n' == *text)
-        {
-            count++;
-        }
-        text++;
-    }
-    return count;
-}
-
-static void
-_get_content_size(
-    const char *title, const char *message, int *head, int *columns, int *lines)
-{
-    if (!_screen.width)
-    {
-        gfx_dimensions dim;
-        gfx_get_screen_dimensions(&dim);
-        gfx_get_glyph_dimensions(&_glyph);
-
-        _screen.width = dim.width;
-        _screen.height = dim.height;
-    }
-
-    *head = _get_content_width(title, _screen.width / 10);
-    *columns = _get_content_width(message, _screen.width / 10);
-    *lines = _get_content_height(message);
 }
 
 static void
@@ -309,11 +251,9 @@ encui_alert(const char *title, const char *message)
         return false;
     }
 
-    int title_length, columns, lines;
-    _get_content_size(title, message, &title_length, &columns, &lines);
     _draw_background();
     _draw_title(title);
-    _draw_text(columns, lines, message);
+    _draw_text(message);
 
     char caption[9];
     pal_load_string(IDS_OK, caption, sizeof(caption));
@@ -518,8 +458,9 @@ encui_prompt(const char     *title,
         return false;
     }
 
-    int title_length, columns, lines;
-    _get_content_size(title, message, &title_length, &columns, &lines);
+    _draw_background();
+    _draw_title(title);
+    int lines = _draw_text(message);
 
     int field_width = 39;
     if (field_width < size)
@@ -533,10 +474,6 @@ encui_prompt(const char     *title,
     _box.height = _glyph.height + 2;
     _box.top = _field_top * _glyph.height - 1;
     _box.left = _field_left * _glyph.width - 1;
-
-    _draw_background();
-    _draw_title(title);
-    _draw_text(columns, lines, message);
 
     _state = STATE_PROMPT;
     _buffer = buffer;
