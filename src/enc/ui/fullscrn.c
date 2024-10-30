@@ -84,12 +84,54 @@ _draw_title(const char *title)
 }
 
 static int
-_strndcpy(char *dst, const char *src, size_t count, char delimiter)
+_measure_span(const char *str, size_t span)
+{
+#ifdef UTF8_NATIVE
+    const char *end = str + span;
+    int         length;
+
+    for (length = 0; str < end; length++)
+    {
+        int seq;
+        utf8_get_codepoint(str, &seq);
+        str += seq;
+    }
+
+    return length;
+#else
+    return span;
+#endif
+}
+
+static int
+_copy_text(char *dst, const char *src, size_t length)
+{
+#ifdef UTF8_NATIVE
+    int size = 0;
+
+    for (int i = 0; i < length; i++)
+    {
+        int seq;
+        utf8_get_codepoint(src + size, &seq);
+        memcpy(dst + size, src + size, seq);
+        size += seq;
+    }
+
+    dst[size] = 0;
+    return size;
+#else
+    memcpy(dst, src, length);
+    dst[length] = 0;
+    return length;
+#endif
+}
+
+static int
+_wrap(char *dst, const char *src, size_t width, char delimiter)
 {
     int i = 0;
-#ifdef UTF8_NATIVE
     int chars = 0;
-#endif
+
     while (src[i])
     {
         if (delimiter == src[i])
@@ -98,24 +140,28 @@ _strndcpy(char *dst, const char *src, size_t count, char delimiter)
             return i + 1;
         }
 
-#ifdef UTF8_NATIVE
-        if (count == chars)
-#else
-        if (count == i)
-#endif
+        size_t word_span = strcspn(src + i, " \n");
+        int    word_length = _measure_span(src + i, word_span);
+        if (width < chars + word_length)
         {
+            if (0 == i)
+            {
+                return _copy_text(dst, src, width);
+            }
+
             break;
         }
 
-        dst[i] = src[i];
-#ifdef UTF8_NATIVE
-        if ((0x80 > (uint8_t)src[i]) || (0xBF < (uint8_t)src[i]))
-        {
-            ++chars;
-        }
-#endif
+        memcpy(dst + i, src + i, word_span);
+        i += word_span;
+        chars += word_length;
 
-        ++i;
+        while (' ' == src[i])
+        {
+            dst[i] = src[i];
+            i++;
+            chars++;
+        }
     }
 
     dst[i] = 0;
@@ -142,7 +188,7 @@ _draw_text(const char *text)
     int line = 0;
     while (*fragment)
     {
-        fragment += _strndcpy(line_buff, fragment, TEXT_WIDTH, '\n');
+        fragment += _wrap(line_buff, fragment, TEXT_WIDTH, '\n');
         if (!gfx_draw_text(line_buff, 1, 2 + line))
         {
             return -1;
