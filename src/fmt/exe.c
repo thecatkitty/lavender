@@ -83,12 +83,12 @@ exe_pe_load_string(void *rsrc, unsigned id, char *buffer, int max_length)
 
     // Convert WSTR to UTF-8
     char *buffptr = buffer;
-    while ((wstr < end) && (buffer + max_length > buffptr))
+    while ((wstr < end) && (buffer + max_length - 1 > buffptr))
     {
         char mb[3];
 
         int seqlen = utf8_get_sequence(*wstr, mb);
-        if (buffer + max_length < buffptr + seqlen)
+        if (buffer + max_length - 1 < buffptr + seqlen)
         {
             break;
         }
