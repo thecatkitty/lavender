@@ -5,15 +5,8 @@
 
 enum encui_result
 {
-    ENCUI_OK = 1,
-    ENCUI_CANCEL = 2,
-    ENCUI_ABORT = 3,
-    ENCUI_RETRY = 4,
-    ENCUI_IGNORE = 5,
-    ENCUI_YES = 6,
-    ENCUI_NO = 7,
-    ENCUI_TRY_AGAIN = 10,
-    ENCUI_CONTINUE = 11,
+    ENCUI_OK = 1 << 0,
+    ENCUI_CANCEL = 1 << 1,
     ENCUI_INCOMPLETE = -1
 };
 

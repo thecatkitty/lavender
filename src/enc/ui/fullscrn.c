@@ -25,22 +25,30 @@ enum
 
 #define TEXT_WIDTH (GFX_COLUMNS - 2)
 
-static gfx_dimensions  _glyph = {0, 0};
+// User interface state
 static int             _state = STATE_NONE;
-static uint32_t        _blink_start;
 static char           *_buffer;
+static int             _position;
+static int             _length;
+static int             _capacity;
 static encui_validator _validator;
-static int             _field_left;
-static int             _field_top;
-static int             _cursor;
-static int             _input_end;
-static int             _size;
-static uint32_t        _cursor_period = 0;
-static uint32_t        _cursor_counter;
-static bool            _cursor_visible = true;
 
-static gfx_rect _screen = {0, 0, 0, 0};
-static gfx_rect _box;
+// Screen metrics
+static gfx_dimensions _glyph = {0, 0};
+static gfx_rect       _screen = {0, 0, 0, 0};
+
+// Text box frame
+static gfx_rect _tbox;
+static int      _tbox_left;
+static int      _tbox_top;
+static uint32_t _tbox_blink_start;
+
+// Caret animation
+static uint32_t _caret_period = 0;
+static uint32_t _caret_counter;
+static bool     _caret_visible = true;
+
+// Buttons
 static gfx_rect _cancel;
 static gfx_rect _ok;
 
@@ -59,10 +67,7 @@ _draw_background(void)
 
     gfx_fill_rectangle(&_screen, GFX_COLOR_WHITE);
 
-    gfx_rect bar = {0, 0, _screen.width, _glyph.height + 1};
-    gfx_fill_rectangle(&bar, GFX_COLOR_BLACK);
-
-    bar.height = 3 * _glyph.height + 1;
+    gfx_rect bar = {0, 0, _screen.width, 3 * _glyph.height + 1};
     bar.top = _screen.height - bar.height;
     gfx_fill_rectangle(&bar, GFX_COLOR_BLACK);
 
@@ -74,6 +79,9 @@ _draw_background(void)
 static void
 _draw_title(const char *title)
 {
+    gfx_rect bar = {0, 0, _screen.width, _glyph.height + 1};
+    gfx_fill_rectangle(&bar, GFX_COLOR_BLACK);
+
 #ifdef UTF8_NATIVE
     const char *title_l = title;
 #else
@@ -315,15 +323,15 @@ _draw_text_box(void)
 {
     if (_validator && !_validator(_buffer))
     {
-        gfx_draw_rectangle(&_box, GFX_COLOR_GRAY);
+        gfx_draw_rectangle(&_tbox, GFX_COLOR_GRAY);
     }
     else
     {
-        gfx_draw_rectangle(&_box, GFX_COLOR_BLACK);
+        gfx_draw_rectangle(&_tbox, GFX_COLOR_BLACK);
     }
 
-    gfx_fill_rectangle(&_box, GFX_COLOR_WHITE);
-    gfx_draw_text(_buffer, _field_left, _field_top);
+    gfx_fill_rectangle(&_tbox, GFX_COLOR_WHITE);
+    gfx_draw_text(_buffer, _tbox_left, _tbox_top);
 }
 
 static int
@@ -331,9 +339,9 @@ _handle_prompt(void)
 {
     if (STATE_PROMPT_INVALID1 == _state)
     {
-        if (pal_get_counter() > _blink_start + pal_get_ticks(63))
+        if (pal_get_counter() > _tbox_blink_start + pal_get_ticks(63))
         {
-            gfx_draw_rectangle(&_box, GFX_COLOR_GRAY);
+            gfx_draw_rectangle(&_tbox, GFX_COLOR_GRAY);
             _state = STATE_PROMPT_INVALID2;
         }
 
@@ -342,9 +350,9 @@ _handle_prompt(void)
 
     if (STATE_PROMPT_INVALID2 == _state)
     {
-        if (pal_get_counter() > _blink_start + pal_get_ticks(126))
+        if (pal_get_counter() > _tbox_blink_start + pal_get_ticks(126))
         {
-            gfx_draw_rectangle(&_box, GFX_COLOR_BLACK);
+            gfx_draw_rectangle(&_tbox, GFX_COLOR_BLACK);
             _state = STATE_PROMPT_INVALID3;
         }
 
@@ -353,9 +361,9 @@ _handle_prompt(void)
 
     if (STATE_PROMPT_INVALID3 == _state)
     {
-        if (pal_get_counter() > _blink_start + pal_get_ticks(189))
+        if (pal_get_counter() > _tbox_blink_start + pal_get_ticks(189))
         {
-            gfx_draw_rectangle(&_box, GFX_COLOR_GRAY);
+            gfx_draw_rectangle(&_tbox, GFX_COLOR_GRAY);
             _draw_text_box();
             _state = STATE_PROMPT;
             pal_enable_mouse();
@@ -364,14 +372,14 @@ _handle_prompt(void)
         return ENCUI_INCOMPLETE;
     }
 
-    gfx_rect cur = {(_field_left + _cursor) * _glyph.width, _box.top + 1, 1,
-                    _glyph.height};
-    if (pal_get_counter() > _cursor_counter + _cursor_period)
+    gfx_rect caret = {(_tbox_left + _position) * _glyph.width, _tbox.top + 1, 1,
+                      _glyph.height};
+    if (pal_get_counter() > _caret_counter + _caret_period)
     {
-        gfx_draw_line(&cur,
-                      _cursor_visible ? GFX_COLOR_BLACK : GFX_COLOR_WHITE);
-        _cursor_counter = pal_get_counter();
-        _cursor_visible = !_cursor_visible;
+        gfx_draw_line(&caret,
+                      _caret_visible ? GFX_COLOR_BLACK : GFX_COLOR_WHITE);
+        _caret_counter = pal_get_counter();
+        _caret_visible = !_caret_visible;
     }
 
     uint16_t scancode = 0;
@@ -383,21 +391,21 @@ _handle_prompt(void)
     {
         scancode = VK_ESCAPE;
     }
-    else if (_is_pressed(&_box))
+    else if (_is_pressed(&_tbox))
     {
         uint16_t x, y;
         pal_get_mouse(&x, &y);
 
-        int cursor = x - _field_left;
-        if (_input_end < cursor)
+        int cursor = x - _tbox_left;
+        if (_length < cursor)
         {
-            cursor = _input_end;
+            cursor = _length;
         }
 
-        if (_cursor != cursor)
+        if (_position != cursor)
         {
-            _cursor = cursor;
-            cur.left = (_field_left + _cursor) * _glyph.width;
+            _position = cursor;
+            caret.left = (_tbox_left + _position) * _glyph.width;
             pal_disable_mouse();
             _draw_text_box();
             pal_enable_mouse();
@@ -425,69 +433,72 @@ _handle_prompt(void)
         if (_validator && _validator(_buffer))
         {
             _reset();
-            return _input_end;
+            return _length;
         }
 
         if (!_validator)
         {
             _reset();
-            return _input_end;
+            return _length;
         }
 
         pal_disable_mouse();
-        gfx_draw_rectangle(&_box, GFX_COLOR_BLACK);
-        _blink_start = pal_get_counter();
+        gfx_draw_rectangle(&_tbox, GFX_COLOR_BLACK);
+        _tbox_blink_start = pal_get_counter();
         _state = STATE_PROMPT_INVALID1;
         return ENCUI_INCOMPLETE;
     }
 
     pal_disable_mouse();
-    gfx_draw_line(&cur, GFX_COLOR_WHITE);
+    gfx_draw_line(&caret, GFX_COLOR_WHITE);
 
-    if ((VK_LEFT == scancode) && (0 < _cursor))
+    if ((VK_LEFT == scancode) && (0 < _position))
     {
-        _cursor--;
+        _position--;
         _draw_text_box();
     }
 
-    if ((VK_RIGHT == scancode) && (_input_end > _cursor))
+    if ((VK_RIGHT == scancode) && (_length > _position))
     {
-        _cursor++;
+        _position++;
         _draw_text_box();
     }
 
-    if ((VK_BACK == scancode) && (0 < _cursor))
+    if ((VK_BACK == scancode) && (0 < _position))
     {
-        memmove(_buffer + _cursor - 1, _buffer + _cursor, _input_end - _cursor);
-        _cursor--;
-        _input_end--;
-        _buffer[_input_end] = 0;
+        memmove(_buffer + _position - 1, _buffer + _position,
+                _length - _position);
+        _position--;
+        _length--;
+        _buffer[_length] = 0;
         _draw_text_box();
     }
 
-    if ((VK_DELETE == scancode) && (_input_end > _cursor))
+    if ((VK_DELETE == scancode) && (_length > _position))
     {
-        memmove(_buffer + _cursor, _buffer + _cursor + 1,
-                _input_end - _cursor - 1);
-        _input_end--;
-        _buffer[_input_end] = 0;
+        memmove(_buffer + _position, _buffer + _position + 1,
+                _length - _position - 1);
+        _length--;
+        _buffer[_length] = 0;
         _draw_text_box();
     }
 
     if (((' ' == scancode) || (VK_OEM_MINUS == scancode) ||
          ((VK_DELETE < scancode) && (VK_F1 > scancode))) &&
-        (_input_end < _size))
+        (_length < _capacity))
     {
-        memmove(_buffer + _cursor + 1, _buffer + _cursor, _input_end - _cursor);
-        _buffer[_cursor] = (VK_OEM_MINUS == scancode) ? '-' : (scancode & 0xFF);
-        _cursor++;
-        _input_end++;
-        _buffer[_input_end] = 0;
+        memmove(_buffer + _position + 1, _buffer + _position,
+                _length - _position);
+        _buffer[_position] =
+            (VK_OEM_MINUS == scancode) ? '-' : (scancode & 0xFF);
+        _position++;
+        _length++;
+        _buffer[_length] = 0;
         _draw_text_box();
     }
 
-    cur.left = (_field_left + _cursor) * _glyph.width;
-    gfx_draw_line(&cur, GFX_COLOR_BLACK);
+    caret.left = (_tbox_left + _position) * _glyph.width;
+    gfx_draw_line(&caret, GFX_COLOR_BLACK);
     pal_enable_mouse();
     return ENCUI_INCOMPLETE;
 }
@@ -513,20 +524,21 @@ encui_prompt(const char     *title,
     {
         field_width = size;
     }
-    _field_left = 1;
-    _field_top = 2 + lines + 2;
+    _tbox_left = 1;
+    _tbox_top = 2 + lines + 2;
 
-    _box.width = field_width * _glyph.width + 2;
-    _box.height = _glyph.height + 2;
-    _box.top = _field_top * _glyph.height - 1;
-    _box.left = _field_left * _glyph.width - 1;
+    _tbox.width = field_width * _glyph.width + 2;
+    _tbox.height = _glyph.height + 2;
+    _tbox.top = _tbox_top * _glyph.height - 1;
+    _tbox.left = _tbox_left * _glyph.width - 1;
 
     _state = STATE_PROMPT;
     _buffer = buffer;
-    _size = size;
+    _position = _length = 0;
+    _capacity = size;
     _validator = validator;
-    _cursor = _input_end = 0;
-    _cursor_counter = pal_get_counter();
+    _caret_counter = pal_get_counter();
+    _caret_period = pal_get_ticks(500);
 
     _buffer[0] = 0;
     _draw_text_box();
@@ -544,11 +556,6 @@ encui_prompt(const char     *title,
 int
 encui_handle(void)
 {
-    if (0 == _cursor_period)
-    {
-        _cursor_period = pal_get_ticks(500);
-    }
-
     switch (_state & 0xFF)
     {
     case STATE_ALERT:
