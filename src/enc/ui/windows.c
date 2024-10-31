@@ -38,6 +38,29 @@ static encui_validator _validator = NULL;
 
 static int _value;
 
+bool
+encui_enter(void)
+{
+    _nclm.cbSize = sizeof(_nclm);
+    if (!SystemParametersInfoW(SPI_GETNONCLIENTMETRICS, sizeof(_nclm), &_nclm,
+                               0))
+    {
+        _nclm.cbSize = 0;
+        return false;
+    }
+
+#if WINVER < 0x0600
+    _is_vista = 6 <= LOBYTE(GetVersion());
+#endif
+    return true;
+}
+
+bool
+encui_exit(void)
+{
+    return true;
+}
+
 static LRESULT CALLBACK
 _hook_wnd_proc(HWND wnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
@@ -265,21 +288,6 @@ encui_prompt(const char     *title,
              int             size,
              encui_validator validator)
 {
-    if (0 == _nclm.cbSize)
-    {
-        _nclm.cbSize = sizeof(_nclm);
-        if (!SystemParametersInfoW(SPI_GETNONCLIENTMETRICS, sizeof(_nclm),
-                                   &_nclm, 0))
-        {
-            _nclm.cbSize = 0;
-            return false;
-        }
-
-#if WINVER < 0x0600
-        _is_vista = 6 <= LOBYTE(GetVersion());
-#endif
-    }
-
     int    title_length = MultiByteToWideChar(CP_UTF8, 0, title, -1, NULL, 0);
     LPWSTR wtitle = (LPWSTR)malloc(title_length * sizeof(WCHAR));
     if (NULL == wtitle)

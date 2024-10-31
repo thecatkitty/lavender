@@ -168,6 +168,7 @@ __enc_diskid_acquire(enc_context *enc)
 {
     if (ENC_XOR == enc->cipher)
     {
+        encui_enter();
         enc->state = STATE_DSN_GET;
         return CONTINUE;
     }

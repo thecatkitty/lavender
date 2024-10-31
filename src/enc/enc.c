@@ -2,6 +2,7 @@
 #include <fmt/zip.h>
 
 #include "enc_impl.h"
+#include "ui/encui.h"
 
 // Size of the plaintext stored at the end of the data buffer
 #define PT_SIZE(data, size)                                                    \
@@ -132,6 +133,7 @@ enc_handle(enc_context *enc)
         int status = PROVIDER[enc->provider & 0xFF]->acquire(enc);
         if (0 > status)
         {
+            encui_exit();
             return status;
         }
 
@@ -171,6 +173,7 @@ enc_handle(enc_context *enc)
     }
 
     case ENCS_COMPLETE:
+        encui_exit();
         return 0;
     }
 
