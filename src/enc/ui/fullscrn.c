@@ -52,20 +52,20 @@ static bool     _caret_visible = true;
 static gfx_rect _cancel;
 static gfx_rect _ok;
 
-static void
-_draw_background(void)
+bool
+encui_enter(void)
 {
-    if (!_screen.width)
+    if (STATE_NONE != _state)
     {
-        gfx_dimensions dim;
-        gfx_get_screen_dimensions(&dim);
-        gfx_get_glyph_dimensions(&_glyph);
-
-        _screen.width = dim.width;
-        _screen.height = dim.height;
+        return false;
     }
 
-    gfx_fill_rectangle(&_screen, GFX_COLOR_WHITE);
+    gfx_dimensions dim;
+    gfx_get_screen_dimensions(&dim);
+    gfx_get_glyph_dimensions(&_glyph);
+
+    _screen.width = dim.width;
+    _screen.height = dim.height;
 
     gfx_rect bar = {0, 0, _screen.width, 3 * _glyph.height + 1};
     bar.top = _screen.height - bar.height;
@@ -74,6 +74,15 @@ _draw_background(void)
     gfx_draw_text(pal_get_version_string(), 1, 22);
     gfx_draw_text("https://celones.pl/lavender", 1, 23);
     gfx_draw_text("(C) 2021-2024 Mateusz Karcz", 1, 24);
+
+    return true;
+}
+
+bool
+encui_exit(void)
+{
+    _state = STATE_NONE;
+    return true;
 }
 
 static void
@@ -89,6 +98,19 @@ _draw_title(const char *title)
     utf8_encode(title, title_l, pal_wctob);
 #endif
     gfx_draw_text(title_l, 1, 0);
+}
+
+static void
+_draw_background(void)
+{
+    gfx_rect bg = {0, _glyph.height, _screen.width,
+                   (GFX_LINES - 4) * _glyph.height};
+    gfx_fill_rectangle(&bg, GFX_COLOR_WHITE);
+
+    gfx_rect footer = {0, 0, _screen.width / 2, 3 * _glyph.height};
+    footer.left = footer.width;
+    footer.top = _screen.height - footer.height;
+    gfx_fill_rectangle(&footer, GFX_COLOR_BLACK);
 }
 
 static int

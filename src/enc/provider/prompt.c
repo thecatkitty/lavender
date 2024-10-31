@@ -131,6 +131,7 @@ __enc_prompt_acquire(enc_context *enc)
 {
     if (ENC_XOR == enc->cipher)
     {
+        encui_enter();
         enc->stream.key_length = 6;
         enc->state = STATE_PASSCODE_PROMPT;
         return CONTINUE;
@@ -138,6 +139,7 @@ __enc_prompt_acquire(enc_context *enc)
 
     if (ENC_DES == enc->cipher)
     {
+        encui_enter();
         enc->stream.key_length = sizeof(uint64_t);
         enc->state = STATE_PASSCODE_PROMPT;
         return CONTINUE;

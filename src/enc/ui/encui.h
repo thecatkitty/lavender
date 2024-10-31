@@ -13,6 +13,12 @@ enum encui_result
 typedef bool (*encui_validator)(const char *);
 
 extern bool
+encui_enter(void);
+
+extern bool
+encui_exit(void);
+
+extern bool
 encui_alert(const char *title, const char *message);
 
 extern bool

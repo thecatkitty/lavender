@@ -82,6 +82,7 @@ __enc_split_acquire(enc_context *enc)
 {
     if (ENC_XOR == enc->cipher)
     {
+        encui_enter();
         enc->data.split.local_part = strtoul(enc->parameter, NULL, 16);
         enc->state = STATE_PASSCODE_PROMPT;
         return CONTINUE;
