@@ -3,6 +3,8 @@
 
 #include <gfx.h>
 
+#include "../enc_impl.h"
+
 enum encui_result
 {
     ENCUI_OK = 1 << 0,
@@ -19,14 +21,12 @@ extern bool
 encui_exit(void);
 
 extern bool
-encui_alert(const char *title, const char *message);
-
-extern bool
 encui_prompt(const char     *title,
              const char     *message,
              char           *buffer,
              int             size,
-             encui_validator validator);
+             encui_validator validator,
+             enc_context    *enc);
 
 extern int
 encui_handle(void);

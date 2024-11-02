@@ -11,16 +11,11 @@
 enum
 {
     STATE_NONE,
-    STATE_ALERT,
-    STATE_PROMPT
-};
-
-enum
-{
-    STATE_PROMPT_NONE = STATE_PROMPT | (0 << 8),
-    STATE_PROMPT_INVALID1 = STATE_PROMPT | (1 << 8),
-    STATE_PROMPT_INVALID2 = STATE_PROMPT | (2 << 8),
-    STATE_PROMPT_INVALID3 = STATE_PROMPT | (3 << 8)
+    STATE_PROMPT,
+    STATE_PROMPT_INVALID1,
+    STATE_PROMPT_INVALID2,
+    STATE_PROMPT_INVALID3,
+    STATE_VERIFY,
 };
 
 #define TEXT_WIDTH (GFX_COLUMNS - 2)
@@ -32,6 +27,7 @@ static int             _position;
 static int             _length;
 static int             _capacity;
 static encui_validator _validator;
+static enc_context    *_enc;
 
 // Screen metrics
 static gfx_dimensions _glyph = {0, 0};
@@ -199,7 +195,7 @@ _wrap(char *dst, const char *src, size_t width, char delimiter)
 }
 
 static int
-_draw_text(const char *text)
+_draw_text(int top, const char *text)
 {
 #ifdef UTF8_NATIVE
     const char *text_l = text;
@@ -219,7 +215,7 @@ _draw_text(const char *text)
     while (*fragment)
     {
         fragment += _wrap(line_buff, fragment, TEXT_WIDTH, '\n');
-        if (!gfx_draw_text(line_buff, 1, 2 + line))
+        if (!gfx_draw_text(line_buff, 1, top + line))
         {
             return -1;
         }
@@ -281,62 +277,19 @@ _reset(void)
     _state = STATE_NONE;
 }
 
-static int
-_handle_alert(void)
+static bool
+_alert(int ids)
 {
-    uint16_t scancode = 0;
-    if (_is_pressed(&_ok))
-    {
-        scancode = VK_RETURN;
-    }
-    else if (_is_pressed(&_cancel))
-    {
-        scancode = VK_ESCAPE;
-    }
+    gfx_rect bg = {0, (_tbox_top + 2) * _glyph.height, _screen.width, 0};
+    bg.height = (GFX_LINES - 3) * _glyph.height - bg.top;
+    gfx_fill_rectangle(&bg, GFX_COLOR_WHITE);
 
-    if (0 == scancode)
-    {
-        scancode = pal_get_keystroke();
-    }
-
-    if (0 == scancode)
-    {
-        return ENCUI_INCOMPLETE;
-    }
-
-    if (VK_ESCAPE == scancode)
-    {
-        _reset();
-        return ENCUI_CANCEL;
-    }
-
-    if (VK_RETURN == scancode)
-    {
-        _reset();
-        return ENCUI_OK;
-    }
-
-    return ENCUI_INCOMPLETE;
-}
-
-bool
-encui_alert(const char *title, const char *message)
-{
-    if (STATE_NONE != _state)
-    {
-        return false;
-    }
-
-    _draw_background();
-    _draw_title(title);
-    _draw_text(message);
-
-    char caption[9];
-    pal_load_string(IDS_OK, caption, sizeof(caption));
-    _draw_button(GFX_COLUMNS - 10, GFX_LINES - 2, caption, &_ok);
+    char message[GFX_COLUMNS];
+    pal_load_string(ids, message, sizeof(message));
+    _draw_text(_tbox_top + 2, message);
 
     pal_enable_mouse();
-    _state = STATE_ALERT;
+    _state = STATE_PROMPT;
     return true;
 }
 
@@ -356,9 +309,14 @@ _draw_text_box(void)
     gfx_draw_text(_buffer, _tbox_left, _tbox_top);
 }
 
-static int
-_handle_prompt(void)
+int
+encui_handle(void)
 {
+    if (STATE_NONE == _state)
+    {
+        return 0;
+    }
+
     if (STATE_PROMPT_INVALID1 == _state)
     {
         if (pal_get_counter() > _tbox_blink_start + pal_get_ticks(63))
@@ -391,6 +349,44 @@ _handle_prompt(void)
             pal_enable_mouse();
         }
 
+        return ENCUI_INCOMPLETE;
+    }
+
+    if (STATE_VERIFY == _state)
+    {
+        if (!_enc)
+        {
+            _reset();
+            return _length;
+        }
+
+        int enc_state = _enc->state;
+        _enc->state = ENCS_TRANSFORM;
+        int status = enc_handle(_enc);
+        if (0 > status)
+        {
+            return status;
+        }
+
+        if (ENCS_VERIFY != _enc->state)
+        {
+            return -EINVAL;
+        }
+
+        status = enc_handle(_enc);
+        if (ENCS_COMPLETE == _enc->state)
+        {
+            _reset();
+            return _length;
+        }
+
+        // ENCS_INVALID returns a string identifier
+        status = enc_handle(_enc);
+        _alert(status);
+
+        _enc->state = enc_state;
+        _state = STATE_PROMPT;
+        pal_enable_mouse();
         return ENCUI_INCOMPLETE;
     }
 
@@ -454,14 +450,14 @@ _handle_prompt(void)
     {
         if (_validator && _validator(_buffer))
         {
-            _reset();
-            return _length;
+            _state = STATE_VERIFY;
+            return ENCUI_INCOMPLETE;
         }
 
         if (!_validator)
         {
-            _reset();
-            return _length;
+            _state = STATE_VERIFY;
+            return ENCUI_INCOMPLETE;
         }
 
         pal_disable_mouse();
@@ -530,7 +526,8 @@ encui_prompt(const char     *title,
              const char     *message,
              char           *buffer,
              int             size,
-             encui_validator validator)
+             encui_validator validator,
+             enc_context    *enc)
 {
     if (STATE_NONE != _state)
     {
@@ -539,7 +536,7 @@ encui_prompt(const char     *title,
 
     _draw_background();
     _draw_title(title);
-    int lines = _draw_text(message);
+    int lines = _draw_text(2, message);
 
     int field_width = 39;
     if (field_width < size)
@@ -559,6 +556,7 @@ encui_prompt(const char     *title,
     _position = _length = 0;
     _capacity = size;
     _validator = validator;
+    _enc = enc;
     _caret_counter = pal_get_counter();
     _caret_period = pal_get_ticks(500);
 
@@ -573,20 +571,4 @@ encui_prompt(const char     *title,
 
     pal_enable_mouse();
     return true;
-}
-
-int
-encui_handle(void)
-{
-    switch (_state & 0xFF)
-    {
-    case STATE_ALERT:
-        return _handle_alert();
-
-    case STATE_PROMPT:
-        return _handle_prompt();
-
-    default:
-        return 0;
-    }
 }

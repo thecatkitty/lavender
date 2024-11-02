@@ -15,7 +15,6 @@ enum
     STATE_PASSCODE_PROMPT,
     STATE_PASSCODE_TYPE,
     STATE_PASSCODE_VERIFY,
-    STATE_ALERT,
 };
 
 #define XOR48_PASSCODE_SIZE 3
@@ -74,7 +73,7 @@ _handle_dsn_prompt(enc_context *enc)
                     sizeof(msg_enterdsn_desc));
 
     encui_prompt(msg_enterdsn, msg_enterdsn_desc, enc->data.diskid.dsn,
-                 XOR48_DSN_LENGTH, _validate_dsn);
+                 XOR48_DSN_LENGTH, _validate_dsn, NULL);
 
     enc->state = STATE_DSN_TYPE;
     return CONTINUE;
@@ -110,7 +109,7 @@ _handle_passcode_prompt(enc_context *enc)
                     sizeof(msg_enterpass_desc));
 
     encui_prompt(msg_enterpass, msg_enterpass_desc, enc->buffer,
-                 XOR48_PASSCODE_SIZE * 2, isdigstr);
+                 XOR48_PASSCODE_SIZE * 2, isdigstr, enc);
     enc->state = STATE_PASSCODE_TYPE;
     return CONTINUE;
 }
@@ -130,36 +129,18 @@ _handle_passcode_type(enc_context *enc)
         return -EACCES;
     }
 
+    enc->state = ENCS_COMPLETE;
+    return CONTINUE;
+}
+
+static int
+_handle_transform(enc_context *enc)
+{
     enc->data.split.passcode = rstrtoull(enc->buffer, 10);
     uint32_t key_src[2] = {enc->data.split.local_part,
                            enc->data.split.passcode};
     enc->key.qw = enc_decode_key(key_src, ENC_KEYSM_LE32B6D);
     enc->state = ENCS_VERIFY;
-    return CONTINUE;
-}
-
-static int
-_handle_invalid(enc_context *enc)
-{
-    char msg_enterpass[GFX_COLUMNS], msg_invalidkey[GFX_COLUMNS];
-    pal_load_string(IDS_ENTERPASS, msg_enterpass, sizeof(msg_enterpass));
-    pal_load_string(IDS_INVALIDDSNPASS, msg_invalidkey, sizeof(msg_invalidkey));
-
-    encui_alert(msg_enterpass, msg_invalidkey);
-    enc->state = STATE_ALERT;
-    return CONTINUE;
-}
-
-static int
-_handle_alert(enc_context *enc)
-{
-    int status = encui_handle();
-    if (ENCUI_INCOMPLETE == status)
-    {
-        return CONTINUE;
-    }
-
-    enc->state = ENCS_ACQUIRE;
     return CONTINUE;
 }
 
@@ -191,10 +172,10 @@ __enc_diskid_handle(enc_context *enc)
         return _handle_dsn_prompt(enc);
     case STATE_DSN_TYPE:
         return _handle_dsn_type(enc);
+    case ENCS_TRANSFORM:
+        return _handle_transform(enc);
     case ENCS_INVALID:
-        return _handle_invalid(enc);
-    case STATE_ALERT:
-        return _handle_alert(enc);
+        return IDS_INVALIDDSNPASS;
     }
 
     return -ENOSYS;

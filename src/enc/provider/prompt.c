@@ -8,7 +8,6 @@ enum
 {
     STATE_PASSCODE_PROMPT = ENCS_PROVIDER_START,
     STATE_PASSCODE_TYPE,
-    STATE_ALERT,
 };
 
 static bool
@@ -29,7 +28,7 @@ _handle_passcode_prompt(enc_context *enc)
         pal_load_string(IDS_ENTERPASS_DESC, msg_enterpass_desc,
                         sizeof(msg_enterpass_desc));
         encui_prompt(msg_enterpass, msg_enterpass_desc, enc->buffer,
-                     enc->stream.key_length * 2, isxdigstr);
+                     enc->stream.key_length * 2, isxdigstr, enc);
         enc->state = STATE_PASSCODE_TYPE;
         return CONTINUE;
     }
@@ -41,7 +40,7 @@ _handle_passcode_prompt(enc_context *enc)
         pal_load_string(IDS_ENTERPKEY_DESC, msg_enterpass_desc,
                         sizeof(msg_enterpass_desc));
         encui_prompt(msg_enterpass, msg_enterpass_desc, enc->buffer, 5 * 5 + 4,
-                     _ispkey);
+                     _ispkey, enc);
         enc->state = STATE_PASSCODE_TYPE;
         return CONTINUE;
     }
@@ -64,6 +63,13 @@ _handle_passcode_type(enc_context *enc)
         return -EACCES;
     }
 
+    enc->state = ENCS_COMPLETE;
+    return CONTINUE;
+}
+
+static int
+_handle_transform(enc_context *enc)
+{
     if (ENC_KEYSM_RAW == (enc->provider >> 8))
     {
         if (ENC_XOR == enc->cipher)
@@ -98,34 +104,6 @@ _handle_passcode_type(enc_context *enc)
     return -EINVAL;
 }
 
-static int
-_handle_invalid(enc_context *enc)
-{
-    char msg_enterpass[GFX_COLUMNS], msg_invalidkey[GFX_COLUMNS];
-    pal_load_string(IDS_ENTERPASS, msg_enterpass, sizeof(msg_enterpass));
-    pal_load_string((ENC_KEYSM_PKEY25XOR12 == (enc->provider >> 8))
-                        ? IDS_INVALIDPKEY
-                        : IDS_INVALIDPASS,
-                    msg_invalidkey, sizeof(msg_invalidkey));
-
-    encui_alert(msg_enterpass, msg_invalidkey);
-    enc->state = STATE_ALERT;
-    return CONTINUE;
-}
-
-static int
-_handle_alert(enc_context *enc)
-{
-    int status = encui_handle();
-    if (ENCUI_INCOMPLETE == status)
-    {
-        return CONTINUE;
-    }
-
-    enc->state = ENCS_ACQUIRE;
-    return CONTINUE;
-}
-
 int
 __enc_prompt_acquire(enc_context *enc)
 {
@@ -157,10 +135,12 @@ __enc_prompt_handle(enc_context *enc)
         return _handle_passcode_prompt(enc);
     case STATE_PASSCODE_TYPE:
         return _handle_passcode_type(enc);
+    case ENCS_TRANSFORM:
+        return _handle_transform(enc);
     case ENCS_INVALID:
-        return _handle_invalid(enc);
-    case STATE_ALERT:
-        return _handle_alert(enc);
+        return (ENC_KEYSM_PKEY25XOR12 == (enc->provider >> 8))
+                   ? IDS_INVALIDPKEY
+                   : IDS_INVALIDPASS;
     }
 
     return -ENOSYS;
