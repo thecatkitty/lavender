@@ -25,9 +25,7 @@
 
 static NONCLIENTMETRICSW _nclm = {0};
 static bool              _is_vista = WINVER >= 0x0600;
-
-static HHOOK   _hook = NULL;
-static WNDPROC _prev_wnd_proc = NULL;
+static HICON             _bang = NULL;
 
 static LPCWSTR _title = NULL;
 static LPCWSTR _message = NULL;
@@ -53,92 +51,21 @@ encui_enter(void)
 #if WINVER < 0x0600
     _is_vista = 6 <= LOBYTE(GetVersion());
 #endif
+
+    _bang = (HICON)LoadImageW(GetModuleHandleW(L"user32.dll"),
+                              MAKEINTRESOURCEW(101), IMAGE_ICON,
+                              GetSystemMetrics(SM_CXSMICON),
+                              GetSystemMetrics(SM_CYSMICON), LR_DEFAULTCOLOR);
     return true;
 }
 
 bool
 encui_exit(void)
 {
-    return true;
-}
-
-static LRESULT CALLBACK
-_hook_wnd_proc(HWND wnd, UINT message, WPARAM wparam, LPARAM lparam)
-{
-    LRESULT rc = CallWindowProc(_prev_wnd_proc, wnd, message, wparam, lparam);
-
-    if (message == WM_INITDIALOG)
+    if (_bang)
     {
-        RECT parent_rect;
-        GetWindowRect(windows_get_hwnd(), &parent_rect);
-        LONG parent_width = parent_rect.right - parent_rect.left;
-        LONG parent_height = parent_rect.bottom - parent_rect.top;
-
-        RECT msgbox_rect;
-        GetWindowRect(wnd, &msgbox_rect);
-        LONG msgbox_width = msgbox_rect.right - msgbox_rect.left;
-        LONG msgbox_height = msgbox_rect.bottom - msgbox_rect.top;
-
-        MoveWindow(wnd, parent_rect.left + (parent_width - msgbox_width) / 2,
-                   parent_rect.top + (parent_height - msgbox_height) / 2,
-                   msgbox_width, msgbox_height, FALSE);
-        return rc;
+        DestroyIcon(_bang);
     }
-
-    if (message == WM_NCDESTROY)
-    {
-        UnhookWindowsHookEx(_hook);
-    }
-
-    return rc;
-}
-
-static LRESULT CALLBACK
-_hook_proc(int code, WPARAM wparam, LPARAM lparam)
-{
-    if (HC_ACTION == code)
-    {
-        LPCWPSTRUCT cwp = (LPCWPSTRUCT)lparam;
-        if (cwp->message == WM_INITDIALOG)
-        {
-            _prev_wnd_proc = (WNDPROC)SetWindowLongPtrW(
-                cwp->hwnd, GWLP_WNDPROC, (LONG_PTR)_hook_wnd_proc);
-        }
-    }
-
-    return CallNextHookEx(_hook, code, wparam, lparam);
-}
-
-static bool
-_alert(const char *title, const char *message)
-{
-    int    title_length = MultiByteToWideChar(CP_UTF8, 0, title, -1, NULL, 0);
-    LPWSTR wtitle = (LPWSTR)malloc(title_length * sizeof(WCHAR));
-    if (NULL == wtitle)
-    {
-        return false;
-    }
-    MultiByteToWideChar(CP_UTF8, 0, title, -1, wtitle, title_length);
-
-    int message_length = MultiByteToWideChar(CP_UTF8, 0, message, -1, NULL, 0);
-    LPWSTR wmessage = (LPWSTR)malloc(message_length * sizeof(WCHAR));
-    if (NULL == wmessage)
-    {
-        free(wtitle);
-        return false;
-    }
-    MultiByteToWideChar(CP_UTF8, 0, message, -1, wmessage, message_length);
-
-    pal_disable_mouse();
-
-    _hook = SetWindowsHookExW(WH_CALLWNDPROC, _hook_proc, NULL,
-                              GetCurrentThreadId());
-    MessageBoxW(windows_get_hwnd(), wmessage, wtitle,
-                MB_OK | MB_ICONEXCLAMATION);
-    _value = ENCUI_OK;
-
-    free(wtitle);
-    free(wmessage);
     return true;
 }
 
@@ -202,6 +129,7 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
         // Set the prompt's content
         SetWindowTextW(dlg, _title);
         SetWindowTextW(GetDlgItem(dlg, IDC_TEXT), _message);
+        SetWindowTextW(GetDlgItem(dlg, IDC_ALERT), L"");
 
         return TRUE;
     }
@@ -246,10 +174,13 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
                     // ENCS_INVALID returns a string identifier
                     status = enc_handle(_enc);
 
-                    char title[GFX_COLUMNS], message[GFX_COLUMNS];
-                    pal_load_string(IDS_ENTERPASS, title, sizeof(title));
-                    pal_load_string(status, message, sizeof(message));
-                    _alert(title, message);
+                    WCHAR message[GFX_COLUMNS];
+                    LoadStringW(GetModuleHandleW(NULL), status, message,
+                                lengthof(message));
+                    SetWindowTextW(GetDlgItem(dlg, IDC_ALERT), message);
+
+                    Static_SetIcon(GetDlgItem(dlg, IDC_BANG), _bang);
+                    MessageBeep(MB_ICONEXCLAMATION);
 
                     SetFocus(edit_box);
                     _enc->state = enc_state;
