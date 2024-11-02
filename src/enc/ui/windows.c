@@ -35,6 +35,7 @@ static LPCWSTR _message = NULL;
 static char           *_buffer = NULL;
 static int             _size;
 static encui_validator _validator = NULL;
+static enc_context    *_enc;
 
 static int _value;
 
@@ -108,8 +109,8 @@ _hook_proc(int code, WPARAM wparam, LPARAM lparam)
     return CallNextHookEx(_hook, code, wparam, lparam);
 }
 
-bool
-encui_alert(const char *title, const char *message)
+static bool
+_alert(const char *title, const char *message)
 {
     int    title_length = MultiByteToWideChar(CP_UTF8, 0, title, -1, NULL, 0);
     LPWSTR wtitle = (LPWSTR)malloc(title_length * sizeof(WCHAR));
@@ -221,7 +222,7 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
             LPWSTR text = (LPWSTR)malloc((length + 1) * sizeof(WCHAR));
             if (NULL == text)
             {
-                return FALSE;
+                return -1;
             }
             GetWindowTextW(edit_box, text, length + 1);
             WideCharToMultiByte(CP_UTF8, 0, text, -1, _buffer, _size, NULL,
@@ -229,9 +230,38 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
             _value = length;
             free(text);
 
+            if (_enc)
+            {
+                int enc_state = _enc->state;
+                _enc->state = ENCS_TRANSFORM;
+                int status = enc_handle(_enc);
+                if ((0 > status) || (ENCS_VERIFY != _enc->state))
+                {
+                    return -1;
+                }
+
+                status = enc_handle(_enc);
+                if (ENCS_INVALID == _enc->state)
+                {
+                    // ENCS_INVALID returns a string identifier
+                    status = enc_handle(_enc);
+
+                    char title[GFX_COLUMNS], message[GFX_COLUMNS];
+                    pal_load_string(IDS_ENTERPASS, title, sizeof(title));
+                    pal_load_string(status, message, sizeof(message));
+                    _alert(title, message);
+
+                    SetFocus(edit_box);
+                    _enc->state = enc_state;
+                    return -1;
+                }
+
+                _enc->state = enc_state;
+            }
+
             PropSheet_PressButton(GetParent(dlg), PSBTN_FINISH);
             SetWindowLong(dlg, DWLP_MSGRESULT, _value);
-            return TRUE;
+            return 0;
         }
 
         case PSN_QUERYCANCEL: {
@@ -286,7 +316,8 @@ encui_prompt(const char     *title,
              const char     *message,
              char           *buffer,
              int             size,
-             encui_validator validator)
+             encui_validator validator,
+             enc_context    *enc)
 {
     int    title_length = MultiByteToWideChar(CP_UTF8, 0, title, -1, NULL, 0);
     LPWSTR wtitle = (LPWSTR)malloc(title_length * sizeof(WCHAR));
@@ -337,6 +368,7 @@ encui_prompt(const char     *title,
     _buffer = buffer;
     _size = size;
     _validator = validator;
+    _enc = enc;
 
     _value = ENCUI_INCOMPLETE;
     PropertySheetW(&psh);

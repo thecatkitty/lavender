@@ -40,6 +40,7 @@ extern enc_provider_impl __enc_prompt_impl;
 enum
 {
     ENCS_ACQUIRE,
+    ENCS_TRANSFORM,
     ENCS_VERIFY,
     ENCS_INVALID,
     ENCS_COMPLETE,
