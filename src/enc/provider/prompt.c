@@ -4,12 +4,6 @@
 #include "../enc_impl.h"
 #include "../ui/encui.h"
 
-enum
-{
-    STATE_PASSCODE_PROMPT = ENCS_PROVIDER_START,
-    STATE_PASSCODE_TYPE,
-};
-
 static bool
 _ispkey(const char *str)
 {
@@ -29,7 +23,7 @@ _handle_passcode_prompt(enc_context *enc)
                         sizeof(msg_enterpass_desc));
         encui_prompt(msg_enterpass, msg_enterpass_desc, enc->buffer,
                      enc->stream.key_length * 2, isxdigstr, enc);
-        enc->state = STATE_PASSCODE_TYPE;
+        enc->state = ENCS_READ;
         return CONTINUE;
     }
 
@@ -41,30 +35,11 @@ _handle_passcode_prompt(enc_context *enc)
                         sizeof(msg_enterpass_desc));
         encui_prompt(msg_enterpass, msg_enterpass_desc, enc->buffer, 5 * 5 + 4,
                      _ispkey, enc);
-        enc->state = STATE_PASSCODE_TYPE;
+        enc->state = ENCS_READ;
         return CONTINUE;
     }
 
     return -EINVAL;
-}
-
-static int
-_handle_passcode_type(enc_context *enc)
-{
-    int status = encui_handle();
-    if (ENCUI_INCOMPLETE == status)
-    {
-        return CONTINUE;
-    }
-
-    if (0 == status)
-    {
-        // Aborted typing of Passcode
-        return -EACCES;
-    }
-
-    enc->state = ENCS_COMPLETE;
-    return CONTINUE;
 }
 
 static int
@@ -111,7 +86,7 @@ __enc_prompt_acquire(enc_context *enc)
     {
         encui_enter();
         enc->stream.key_length = 6;
-        enc->state = STATE_PASSCODE_PROMPT;
+        enc->state = ENCS_PROVIDER_START;
         return CONTINUE;
     }
 
@@ -119,7 +94,7 @@ __enc_prompt_acquire(enc_context *enc)
     {
         encui_enter();
         enc->stream.key_length = sizeof(uint64_t);
-        enc->state = STATE_PASSCODE_PROMPT;
+        enc->state = ENCS_PROVIDER_START;
         return CONTINUE;
     }
 
@@ -131,10 +106,8 @@ __enc_prompt_handle(enc_context *enc)
 {
     switch (enc->state)
     {
-    case STATE_PASSCODE_PROMPT:
+    case ENCS_PROVIDER_START:
         return _handle_passcode_prompt(enc);
-    case STATE_PASSCODE_TYPE:
-        return _handle_passcode_type(enc);
     case ENCS_TRANSFORM:
         return _handle_transform(enc);
     case ENCS_INVALID:

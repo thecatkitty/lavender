@@ -145,6 +145,23 @@ enc_handle(enc_context *enc)
         return CONTINUE;
     }
 
+    case ENCS_READ: {
+        int status = encui_handle();
+        if (ENCUI_INCOMPLETE == status)
+        {
+            return CONTINUE;
+        }
+
+        if (0 == status)
+        {
+            // Operation aborted by the user
+            return -EACCES;
+        }
+
+        enc->state = ENCS_COMPLETE;
+        return CONTINUE;
+    }
+
     case ENCS_VERIFY: {
         if (!enc_prepare(&enc->stream, enc->cipher, enc->content, enc->size,
                          enc->key.b,
