@@ -10,114 +10,97 @@ _ispkey(const char *str)
     return enc_validate_key_format(str, ENC_KEYSM_PKEY25XOR12);
 }
 
-static int
-_handle_passcode_prompt(enc_context *enc)
+int
+__enc_prompt_proc(int msg, enc_context *enc)
 {
-    char msg_enterpass[GFX_COLUMNS / 2], msg_enterpass_desc[GFX_COLUMNS];
-
-    if (ENC_KEYSM_RAW == (enc->provider >> 8))
+    switch (msg)
     {
-        // Raw key - hexadecimal string
-        pal_load_string(IDS_ENTERPASS, msg_enterpass, sizeof(msg_enterpass));
-        pal_load_string(IDS_ENTERPASS_DESC, msg_enterpass_desc,
-                        sizeof(msg_enterpass_desc));
-        encui_prompt(msg_enterpass, msg_enterpass_desc, enc->buffer,
-                     enc->stream.key_length * 2, isxdigstr, enc);
-        enc->state = ENCS_READ;
-        return CONTINUE;
-    }
-
-    if (ENC_KEYSM_PKEY25XOR12 == (enc->provider >> 8))
-    {
-        // Raw key - hexadecimal string
-        pal_load_string(IDS_ENTERPKEY, msg_enterpass, sizeof(msg_enterpass));
-        pal_load_string(IDS_ENTERPKEY_DESC, msg_enterpass_desc,
-                        sizeof(msg_enterpass_desc));
-        encui_prompt(msg_enterpass, msg_enterpass_desc, enc->buffer, 5 * 5 + 4,
-                     _ispkey, enc);
-        enc->state = ENCS_READ;
-        return CONTINUE;
-    }
-
-    return -EINVAL;
-}
-
-static int
-_handle_transform(enc_context *enc)
-{
-    if (ENC_KEYSM_RAW == (enc->provider >> 8))
-    {
+    case ENCM_INITIALIZE: {
         if (ENC_XOR == enc->cipher)
         {
-            enc->key.qw = rstrtoull(enc->buffer, 16);
-            enc->state = ENCS_VERIFY;
+            encui_enter();
+            enc->stream.key_length = 6;
             return CONTINUE;
         }
 
         if (ENC_DES == enc->cipher)
         {
-            for (int i = 0; i < sizeof(uint64_t); i++)
-            {
-                enc->key.b[i] = xtob((const char *)enc->buffer + (2 * i));
-            }
-
-            enc->state = ENCS_VERIFY;
+            encui_enter();
+            enc->stream.key_length = sizeof(uint64_t);
             return CONTINUE;
         }
 
         return -EINVAL;
     }
 
-    if (ENC_KEYSM_PKEY25XOR12 == (enc->provider >> 8))
-    {
-        enc->key.qw = __builtin_bswap64(
-            enc_decode_key(enc->buffer, ENC_KEYSM_PKEY25XOR12));
-        enc->state = ENCS_VERIFY;
-        return CONTINUE;
+    case ENCM_ACQUIRE: {
+        char msg_enterpass[GFX_COLUMNS / 2], msg_enterpass_desc[GFX_COLUMNS];
+
+        if (ENC_KEYSM_RAW == (enc->provider >> 8))
+        {
+            // Raw key - hexadecimal string
+            pal_load_string(IDS_ENTERPASS, msg_enterpass,
+                            sizeof(msg_enterpass));
+            pal_load_string(IDS_ENTERPASS_DESC, msg_enterpass_desc,
+                            sizeof(msg_enterpass_desc));
+            encui_prompt(msg_enterpass, msg_enterpass_desc, enc->buffer,
+                         enc->stream.key_length * 2, isxdigstr, enc);
+            return CONTINUE;
+        }
+
+        if (ENC_KEYSM_PKEY25XOR12 == (enc->provider >> 8))
+        {
+            // Raw key - hexadecimal string
+            pal_load_string(IDS_ENTERPKEY, msg_enterpass,
+                            sizeof(msg_enterpass));
+            pal_load_string(IDS_ENTERPKEY_DESC, msg_enterpass_desc,
+                            sizeof(msg_enterpass_desc));
+            encui_prompt(msg_enterpass, msg_enterpass_desc, enc->buffer,
+                         5 * 5 + 4, _ispkey, enc);
+            return CONTINUE;
+        }
+
+        return -EINVAL;
     }
 
-    return -EINVAL;
-}
+    case ENCM_TRANSFORM: {
+        if (ENC_KEYSM_RAW == (enc->provider >> 8))
+        {
+            if (ENC_XOR == enc->cipher)
+            {
+                enc->key.qw = rstrtoull(enc->buffer, 16);
+                return 0;
+            }
 
-int
-__enc_prompt_acquire(enc_context *enc)
-{
-    if (ENC_XOR == enc->cipher)
-    {
-        encui_enter();
-        enc->stream.key_length = 6;
-        enc->state = ENCS_PROVIDER_START;
-        return CONTINUE;
+            if (ENC_DES == enc->cipher)
+            {
+                for (int i = 0; i < sizeof(uint64_t); i++)
+                {
+                    enc->key.b[i] = xtob((const char *)enc->buffer + (2 * i));
+                }
+
+                return 0;
+            }
+
+            return -EINVAL;
+        }
+
+        if (ENC_KEYSM_PKEY25XOR12 == (enc->provider >> 8))
+        {
+            enc->key.qw = __builtin_bswap64(
+                enc_decode_key(enc->buffer, ENC_KEYSM_PKEY25XOR12));
+            return 0;
+        }
+
+        return -EINVAL;
     }
 
-    if (ENC_DES == enc->cipher)
-    {
-        encui_enter();
-        enc->stream.key_length = sizeof(uint64_t);
-        enc->state = ENCS_PROVIDER_START;
-        return CONTINUE;
-    }
-
-    return -EINVAL;
-}
-
-int
-__enc_prompt_handle(enc_context *enc)
-{
-    switch (enc->state)
-    {
-    case ENCS_PROVIDER_START:
-        return _handle_passcode_prompt(enc);
-    case ENCS_TRANSFORM:
-        return _handle_transform(enc);
-    case ENCS_INVALID:
+    case ENCM_GET_ERROR_STRING: {
         return (ENC_KEYSM_PKEY25XOR12 == (enc->provider >> 8))
                    ? IDS_INVALIDPKEY
                    : IDS_INVALIDPASS;
     }
+    }
 
     return -ENOSYS;
 }
-
-enc_provider_impl __enc_prompt_impl = {&__enc_prompt_acquire,
-                                       &__enc_prompt_handle};

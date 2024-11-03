@@ -160,34 +160,27 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
 
             if (_enc)
             {
-                int enc_state = _enc->state;
-                _enc->state = ENCS_TRANSFORM;
-                int status = enc_handle(_enc);
-                if ((0 > status) || (ENCS_VERIFY != _enc->state))
+                int status = __enc_decrypt_content(_enc);
+                if ((0 > status) && (-EACCES != status))
                 {
                     return -1;
                 }
 
-                status = enc_handle(_enc);
-                if (ENCS_INVALID == _enc->state)
+                if (-EACCES == status)
                 {
-                    // ENCS_INVALID returns a string identifier
-                    status = enc_handle(_enc);
-
                     WCHAR message[GFX_COLUMNS];
-                    LoadStringW(GetModuleHandleW(NULL), status, message,
-                                lengthof(message));
+                    LoadStringW(
+                        GetModuleHandleW(NULL),
+                        __enc_get_provider(_enc)(ENCM_GET_ERROR_STRING, _enc),
+                        message, lengthof(message));
                     SetWindowTextW(GetDlgItem(dlg, IDC_ALERT), message);
 
                     Static_SetIcon(GetDlgItem(dlg, IDC_BANG), _bang);
                     MessageBeep(MB_ICONEXCLAMATION);
 
                     SetFocus(edit_box);
-                    _enc->state = enc_state;
                     return -1;
                 }
-
-                _enc->state = enc_state;
             }
 
             PropSheet_PressButton(GetParent(dlg), PSBTN_FINISH);

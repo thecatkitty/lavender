@@ -8,60 +8,44 @@
 
 #define XOR48_PASSCODE_SIZE 3
 
-static int
-_handle_passcode_prompt(enc_context *enc)
-{
-    char msg_enterpass[GFX_COLUMNS / 2], msg_enterpass_desc[GFX_COLUMNS];
-    pal_load_string(IDS_ENTERPASS, msg_enterpass, sizeof(msg_enterpass));
-    pal_load_string(IDS_ENTERPASS_DESC, msg_enterpass_desc,
-                    sizeof(msg_enterpass_desc));
-
-    encui_prompt(msg_enterpass, msg_enterpass_desc, enc->buffer,
-                 XOR48_PASSCODE_SIZE * 2, isdigstr, enc);
-    enc->state = ENCS_READ;
-    return CONTINUE;
-}
-
-static int
-_handle_transform(enc_context *enc)
-{
-    enc->data.split.passcode = rstrtoull(enc->buffer, 10);
-    uint32_t key_src[2] = {enc->data.split.local_part,
-                           enc->data.split.passcode};
-    enc->key.qw = enc_decode_key(key_src, ENC_KEYSM_LE32B6D);
-    enc->state = ENCS_VERIFY;
-    return CONTINUE;
-}
-
 int
-__enc_split_acquire(enc_context *enc)
+__enc_split_proc(int msg, enc_context *enc)
 {
-    if (ENC_XOR == enc->cipher)
+    switch (msg)
     {
-        encui_enter();
-        enc->data.split.local_part = strtoul(enc->parameter, NULL, 16);
-        enc->state = ENCS_PROVIDER_START;
+    case ENCM_INITIALIZE: {
+        if (ENC_XOR == enc->cipher)
+        {
+            encui_enter();
+            enc->data.split.local_part = strtoul(enc->parameter, NULL, 16);
+            return CONTINUE;
+        }
+
+        return -EINVAL;
+    }
+
+    case ENCM_ACQUIRE: {
+        char msg_enterpass[GFX_COLUMNS / 2], msg_enterpass_desc[GFX_COLUMNS];
+        pal_load_string(IDS_ENTERPASS, msg_enterpass, sizeof(msg_enterpass));
+        pal_load_string(IDS_ENTERPASS_DESC, msg_enterpass_desc,
+                        sizeof(msg_enterpass_desc));
+        encui_prompt(msg_enterpass, msg_enterpass_desc, enc->buffer,
+                     XOR48_PASSCODE_SIZE * 2, isdigstr, enc);
         return CONTINUE;
     }
 
-    return -EINVAL;
-}
+    case ENCM_TRANSFORM: {
+        enc->data.split.passcode = rstrtoull(enc->buffer, 10);
+        uint32_t key_src[2] = {enc->data.split.local_part,
+                               enc->data.split.passcode};
+        enc->key.qw = enc_decode_key(key_src, ENC_KEYSM_LE32B6D);
+        return 0;
+    }
 
-int
-__enc_split_handle(enc_context *enc)
-{
-    switch (enc->state)
-    {
-    case ENCS_PROVIDER_START:
-        return _handle_passcode_prompt(enc);
-    case ENCS_TRANSFORM:
-        return _handle_transform(enc);
-    case ENCS_INVALID:
+    case ENCM_GET_ERROR_STRING: {
         return IDS_INVALIDPASS;
+    }
     }
 
     return -ENOSYS;
 }
-
-enc_provider_impl __enc_split_impl = {&__enc_split_acquire,
-                                      &__enc_split_handle};

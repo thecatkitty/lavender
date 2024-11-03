@@ -360,31 +360,20 @@ encui_handle(void)
             return _length;
         }
 
-        int enc_state = _enc->state;
-        _enc->state = ENCS_TRANSFORM;
-        int status = enc_handle(_enc);
-        if (0 > status)
-        {
-            return status;
-        }
-
-        if (ENCS_VERIFY != _enc->state)
-        {
-            return -EINVAL;
-        }
-
-        status = enc_handle(_enc);
-        if (ENCS_COMPLETE == _enc->state)
+        int status = __enc_decrypt_content(_enc);
+        if (0 == status)
         {
             _reset();
             return _length;
         }
 
-        // ENCS_INVALID returns a string identifier
-        status = enc_handle(_enc);
-        _alert(status);
+        if (-EACCES != status)
+        {
+            return status;
+        }
 
-        _enc->state = enc_state;
+        _alert(__enc_get_provider(_enc)(ENCM_GET_ERROR_STRING, _enc));
+
         _state = STATE_PROMPT;
         pal_enable_mouse();
         return ENCUI_INCOMPLETE;
