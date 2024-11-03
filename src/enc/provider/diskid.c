@@ -13,8 +13,6 @@ enum
     STATE_DSN_PROMPT,
     STATE_DSN_TYPE,
     STATE_PASSCODE_PROMPT,
-    STATE_PASSCODE_TYPE,
-    STATE_PASSCODE_VERIFY,
 };
 
 #define XOR48_PASSCODE_SIZE 3
@@ -110,26 +108,7 @@ _handle_passcode_prompt(enc_context *enc)
 
     encui_prompt(msg_enterpass, msg_enterpass_desc, enc->buffer,
                  XOR48_PASSCODE_SIZE * 2, isdigstr, enc);
-    enc->state = STATE_PASSCODE_TYPE;
-    return CONTINUE;
-}
-
-static int
-_handle_passcode_type(enc_context *enc)
-{
-    int status = encui_handle();
-    if (ENCUI_INCOMPLETE == status)
-    {
-        return CONTINUE;
-    }
-
-    if (0 == status)
-    {
-        // Aborted typing of Passcode
-        return -EACCES;
-    }
-
-    enc->state = ENCS_COMPLETE;
+    enc->state = ENCS_READ;
     return CONTINUE;
 }
 
@@ -164,8 +143,6 @@ __enc_diskid_handle(enc_context *enc)
     {
     case STATE_PASSCODE_PROMPT:
         return _handle_passcode_prompt(enc);
-    case STATE_PASSCODE_TYPE:
-        return _handle_passcode_type(enc);
     case STATE_DSN_GET:
         return _handle_dsn_get(enc);
     case STATE_DSN_PROMPT:

@@ -6,12 +6,6 @@
 #include "../enc_impl.h"
 #include "../ui/encui.h"
 
-enum
-{
-    STATE_PASSCODE_PROMPT = ENCS_PROVIDER_START,
-    STATE_PASSCODE_TYPE,
-};
-
 #define XOR48_PASSCODE_SIZE 3
 
 static int
@@ -24,26 +18,7 @@ _handle_passcode_prompt(enc_context *enc)
 
     encui_prompt(msg_enterpass, msg_enterpass_desc, enc->buffer,
                  XOR48_PASSCODE_SIZE * 2, isdigstr, enc);
-    enc->state = STATE_PASSCODE_TYPE;
-    return CONTINUE;
-}
-
-static int
-_handle_passcode_type(enc_context *enc)
-{
-    int status = encui_handle();
-    if (ENCUI_INCOMPLETE == status)
-    {
-        return CONTINUE;
-    }
-
-    if (0 == status)
-    {
-        // Aborted typing of Passcode
-        return -EACCES;
-    }
-
-    enc->state = ENCS_COMPLETE;
+    enc->state = ENCS_READ;
     return CONTINUE;
 }
 
@@ -65,7 +40,7 @@ __enc_split_acquire(enc_context *enc)
     {
         encui_enter();
         enc->data.split.local_part = strtoul(enc->parameter, NULL, 16);
-        enc->state = STATE_PASSCODE_PROMPT;
+        enc->state = ENCS_PROVIDER_START;
         return CONTINUE;
     }
 
@@ -77,10 +52,8 @@ __enc_split_handle(enc_context *enc)
 {
     switch (enc->state)
     {
-    case STATE_PASSCODE_PROMPT:
+    case ENCS_PROVIDER_START:
         return _handle_passcode_prompt(enc);
-    case STATE_PASSCODE_TYPE:
-        return _handle_passcode_type(enc);
     case ENCS_TRANSFORM:
         return _handle_transform(enc);
     case ENCS_INVALID:
