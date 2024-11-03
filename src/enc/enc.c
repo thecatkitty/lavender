@@ -8,12 +8,14 @@
 #define PT_SIZE(data, size)                                                    \
     (*(uint32_t *)((char *)(data) + (size) - sizeof(uint32_t)))
 
-const enc_provider_impl *PROVIDER[] = {
-    [ENC_PROVIDER_CALLER] = &__enc_caller_impl,
-    [ENC_PROVIDER_PROMPT] = &__enc_prompt_impl,
-    [ENC_PROVIDER_SPLIT] = &__enc_split_impl,
-    [ENC_PROVIDER_DISKID] = &__enc_diskid_impl,
+static enc_provider_proc * const PROVIDER[] = {
+    [ENC_PROVIDER_CALLER] = &__enc_caller_proc,
+    [ENC_PROVIDER_PROMPT] = &__enc_prompt_proc,
+    [ENC_PROVIDER_SPLIT] = &__enc_split_proc,
+    [ENC_PROVIDER_DISKID] = &__enc_diskid_proc,
 };
+
+#define ENC_PROV(enc) (*(PROVIDER[(enc)->provider & 0xFF]))
 
 extern uint64_t
 __enc_le32b6d_decode(const void *src);
@@ -124,24 +126,62 @@ enc_validate_key_format(const char *key, enc_keysm sm)
     return false;
 }
 
+#define REQUIRE_SUCCESS(status)                                                \
+    {                                                                          \
+        int __status = (status);                                               \
+        if (0 > __status)                                                      \
+        {                                                                      \
+            encui_exit();                                                      \
+            return __status;                                                   \
+        }                                                                      \
+    }
+
 int
 enc_handle(enc_context *enc)
 {
+    int status = 0;
+
     switch (enc->state)
     {
-    case ENCS_ACQUIRE: {
-        int status = PROVIDER[enc->provider & 0xFF]->acquire(enc);
-        if (0 > status)
-        {
-            encui_exit();
-            return status;
-        }
-
+    case ENCS_INITIALIZE: {
+        REQUIRE_SUCCESS(status = ENC_PROV(enc)(ENCM_INITIALIZE, enc));
         if (0 == status)
         {
             enc->state = ENCS_VERIFY;
+            return CONTINUE;
         }
 
+        if (CUSTOM == status)
+        {
+            enc->state = ENCS_CUSTOM;
+            return CONTINUE;
+        }
+
+        enc->state = ENCS_ACQUIRE;
+        return CONTINUE;
+    }
+
+    case ENCS_CUSTOM: {
+        REQUIRE_SUCCESS(status = ENC_PROV(enc)(ENCM_CUSTOM, enc));
+        if (CUSTOM == status)
+        {
+            enc->state = ENCS_CUSTOM;
+            return CONTINUE;
+        }
+
+        enc->state = ENCS_ACQUIRE;
+        return CONTINUE;
+    }
+
+    case ENCS_ACQUIRE: {
+        REQUIRE_SUCCESS(status = ENC_PROV(enc)(ENCM_ACQUIRE, enc));
+        if (CONTINUE == status)
+        {
+            enc->state = ENCS_READ;
+            return CONTINUE;
+        }
+
+        enc->state = ENCS_VERIFY;
         return CONTINUE;
     }
 
@@ -163,28 +203,7 @@ enc_handle(enc_context *enc)
     }
 
     case ENCS_VERIFY: {
-        if (!enc_prepare(&enc->stream, enc->cipher, enc->content, enc->size,
-                         enc->key.b,
-                         (ENC_XOR == enc->cipher) ? 6 : sizeof(uint64_t)))
-        {
-            return -EINVAL;
-        }
-
-        if (!enc_verify(&enc->stream, enc->crc32))
-        {
-            enc->state = ENCS_INVALID;
-            enc_free(&enc->stream);
-            return CONTINUE;
-        }
-
-        enc_decrypt(&enc->stream, (uint8_t *)enc->content);
-        enc_free(&enc->stream);
-        if (ENC_DES == enc->cipher)
-        {
-            PT_SIZE(enc->content, enc->size) = enc->stream.data_length;
-            enc->size = enc->stream.data_length;
-        }
-
+        REQUIRE_SUCCESS(__enc_decrypt_content(enc));
         enc->state = ENCS_COMPLETE;
         return CONTINUE;
     }
@@ -194,7 +213,41 @@ enc_handle(enc_context *enc)
         return 0;
     }
 
-    return PROVIDER[enc->provider & 0xFF]->handle(enc);
+    return -ENOSYS;
+}
+
+int
+__enc_decrypt_content(enc_context *enc)
+{
+    REQUIRE_SUCCESS(ENC_PROV(enc)(ENCM_TRANSFORM, enc));
+    if (!enc_prepare(&enc->stream, enc->cipher, enc->content, enc->size,
+                     enc->key.b,
+                     (ENC_XOR == enc->cipher) ? 6 : sizeof(uint64_t)))
+    {
+        return -EINVAL;
+    }
+
+    if (!enc_verify(&enc->stream, enc->crc32))
+    {
+        enc_free(&enc->stream);
+        return -EACCES;
+    }
+
+    enc_decrypt(&enc->stream, (uint8_t *)enc->content);
+    enc_free(&enc->stream);
+    if (ENC_DES == enc->cipher)
+    {
+        PT_SIZE(enc->content, enc->size) = enc->stream.data_length;
+        enc->size = enc->stream.data_length;
+    }
+
+    return 0;
+}
+
+enc_provider_proc *
+__enc_get_provider(enc_context *enc)
+{
+    return ENC_PROV(enc);
 }
 
 int
@@ -231,6 +284,6 @@ enc_access_content(enc_context *enc,
         }
     }
 
-    enc->state = ENCS_ACQUIRE;
+    enc->state = ENCS_INITIALIZE;
     return CONTINUE;
 }
