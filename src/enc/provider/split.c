@@ -8,6 +8,29 @@
 
 #define XOR48_PASSCODE_SIZE 3
 
+static int
+_passcode_page_proc(int msg, void *param, void *data)
+{
+    switch (msg)
+    {
+    case ENCUIM_CHECK: {
+        const char *passcode = (const char *)param;
+        if (NULL == passcode)
+        {
+            return 1;
+        }
+
+        return isdigstr(passcode) ? 0 : 1;
+    }
+
+    case ENCUIM_NEXT: {
+        return __enc_decrypt_content((enc_context *)data);
+    }
+    }
+
+    return -ENOSYS;
+}
+
 int
 __enc_split_proc(int msg, enc_context *enc)
 {
@@ -25,12 +48,10 @@ __enc_split_proc(int msg, enc_context *enc)
     }
 
     case ENCM_ACQUIRE: {
-        char msg_enterpass[GFX_COLUMNS / 2], msg_enterpass_desc[GFX_COLUMNS];
-        pal_load_string(IDS_ENTERPASS, msg_enterpass, sizeof(msg_enterpass));
-        pal_load_string(IDS_ENTERPASS_DESC, msg_enterpass_desc,
-                        sizeof(msg_enterpass_desc));
-        encui_prompt(msg_enterpass, msg_enterpass_desc, enc->buffer,
-                     XOR48_PASSCODE_SIZE * 2, isdigstr, enc);
+        encui_page page = {IDS_ENTERPASS,       IDS_ENTERPASS_DESC,
+                           enc->buffer,         XOR48_PASSCODE_SIZE * 2,
+                           _passcode_page_proc, enc};
+        encui_prompt(&page);
         return CONTINUE;
     }
 

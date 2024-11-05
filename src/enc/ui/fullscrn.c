@@ -21,13 +21,13 @@ enum
 #define TEXT_WIDTH (GFX_COLUMNS - 2)
 
 // User interface state
-static int             _state = STATE_NONE;
-static char           *_buffer;
-static int             _position;
-static int             _length;
-static int             _capacity;
-static encui_validator _validator;
-static enc_context    *_enc;
+static int              _state = STATE_NONE;
+static char            *_buffer;
+static int              _position;
+static int              _length;
+static int              _capacity;
+static encui_page_proc *_proc = NULL;
+static void            *_data = NULL;
 
 // Screen metrics
 static gfx_dimensions _glyph = {0, 0};
@@ -277,26 +277,10 @@ _reset(void)
     _state = STATE_NONE;
 }
 
-static bool
-_alert(int ids)
-{
-    gfx_rect bg = {0, (_tbox_top + 2) * _glyph.height, _screen.width, 0};
-    bg.height = (GFX_LINES - 3) * _glyph.height - bg.top;
-    gfx_fill_rectangle(&bg, GFX_COLOR_WHITE);
-
-    char message[GFX_COLUMNS];
-    pal_load_string(ids, message, sizeof(message));
-    _draw_text(_tbox_top + 2, message);
-
-    pal_enable_mouse();
-    _state = STATE_PROMPT;
-    return true;
-}
-
 static void
 _draw_text_box(void)
 {
-    if (_validator && !_validator(_buffer))
+    if (0 < _proc(ENCUIM_CHECK, _buffer, _data))
     {
         gfx_draw_rectangle(&_tbox, GFX_COLOR_GRAY);
     }
@@ -354,25 +338,25 @@ encui_handle(void)
 
     if (STATE_VERIFY == _state)
     {
-        if (!_enc)
+        int status = _proc(ENCUIM_NEXT, _buffer, _data);
+        if ((0 == status) || (-ENOSYS == status))
         {
             _reset();
             return _length;
         }
 
-        int status = __enc_decrypt_content(_enc);
-        if (0 == status)
-        {
-            _reset();
-            return _length;
-        }
-
-        if (-EACCES != status)
+        if (0 > status)
         {
             return status;
         }
 
-        _alert(__enc_get_provider(_enc)(ENCM_GET_ERROR_STRING, _enc));
+        gfx_rect bg = {0, (_tbox_top + 2) * _glyph.height, _screen.width, 0};
+        bg.height = (GFX_LINES - 3) * _glyph.height - bg.top;
+        gfx_fill_rectangle(&bg, GFX_COLOR_WHITE);
+
+        char message[GFX_COLUMNS];
+        pal_load_string(status, message, sizeof(message));
+        _draw_text(_tbox_top + 2, message);
 
         _state = STATE_PROMPT;
         pal_enable_mouse();
@@ -437,13 +421,7 @@ encui_handle(void)
 
     if (VK_RETURN == scancode)
     {
-        if (_validator && _validator(_buffer))
-        {
-            _state = STATE_VERIFY;
-            return ENCUI_INCOMPLETE;
-        }
-
-        if (!_validator)
+        if (0 >= _proc(ENCUIM_CHECK, _buffer, _data))
         {
             _state = STATE_VERIFY;
             return ENCUI_INCOMPLETE;
@@ -511,26 +489,24 @@ encui_handle(void)
 }
 
 bool
-encui_prompt(const char     *title,
-             const char     *message,
-             char           *buffer,
-             int             size,
-             encui_validator validator,
-             enc_context    *enc)
+encui_prompt(encui_page *page)
 {
     if (STATE_NONE != _state)
     {
         return false;
     }
 
+    char buffer[GFX_COLUMNS * 2];
     _draw_background();
-    _draw_title(title);
-    int lines = _draw_text(2, message);
+    pal_load_string(page->title, buffer, sizeof(buffer));
+    _draw_title(buffer);
+    pal_load_string(page->message, buffer, sizeof(buffer));
+    int lines = _draw_text(2, buffer);
 
-    int field_width = 39;
-    if (field_width < size)
+    int field_width = GFX_COLUMNS / 2 - 1;
+    if (field_width < page->capacity)
     {
-        field_width = size;
+        field_width = page->capacity;
     }
     _tbox_left = 1;
     _tbox_top = 2 + lines + 2;
@@ -541,11 +517,11 @@ encui_prompt(const char     *title,
     _tbox.left = _tbox_left * _glyph.width - 1;
 
     _state = STATE_PROMPT;
-    _buffer = buffer;
+    _buffer = page->buffer;
     _position = _length = 0;
-    _capacity = size;
-    _validator = validator;
-    _enc = enc;
+    _capacity = page->capacity;
+    _proc = page->proc;
+    _data = page->data;
     _caret_counter = pal_get_counter();
     _caret_period = pal_get_ticks(500);
 

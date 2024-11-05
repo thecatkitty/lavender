@@ -30,10 +30,10 @@ static HICON             _bang = NULL;
 static LPCWSTR _title = NULL;
 static LPCWSTR _message = NULL;
 
-static char           *_buffer = NULL;
-static int             _size;
-static encui_validator _validator = NULL;
-static enc_context    *_enc;
+static char            *_buffer = NULL;
+static int              _size;
+static encui_page_proc *_proc = NULL;
+static void            *_data = NULL;
 
 static int _value;
 
@@ -139,8 +139,9 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
         switch (notif->code)
         {
         case PSN_SETACTIVE: {
-            PropSheet_SetWizButtons(notif->hwndFrom,
-                                    _validator ? 0 : PSBTN_NEXT);
+            PropSheet_SetWizButtons(
+                notif->hwndFrom,
+                (-ENOSYS == _proc(ENCUIM_CHECK, NULL, _data)) ? PSBTN_NEXT : 0);
             return 0;
         }
 
@@ -158,29 +159,23 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
             _value = length;
             free(text);
 
-            if (_enc)
+            int status = _proc(ENCUIM_NEXT, _buffer, _data);
+            if (0 < status)
             {
-                int status = __enc_decrypt_content(_enc);
-                if ((0 > status) && (-EACCES != status))
-                {
-                    return -1;
-                }
+                WCHAR message[GFX_COLUMNS];
+                LoadStringW(NULL, status, message, lengthof(message));
+                SetWindowTextW(GetDlgItem(dlg, IDC_ALERT), message);
 
-                if (-EACCES == status)
-                {
-                    WCHAR message[GFX_COLUMNS];
-                    LoadStringW(
-                        GetModuleHandleW(NULL),
-                        __enc_get_provider(_enc)(ENCM_GET_ERROR_STRING, _enc),
-                        message, lengthof(message));
-                    SetWindowTextW(GetDlgItem(dlg, IDC_ALERT), message);
+                Static_SetIcon(GetDlgItem(dlg, IDC_BANG), _bang);
+                MessageBeep(MB_ICONEXCLAMATION);
 
-                    Static_SetIcon(GetDlgItem(dlg, IDC_BANG), _bang);
-                    MessageBeep(MB_ICONEXCLAMATION);
+                SetFocus(edit_box);
+                return -1;
+            }
 
-                    SetFocus(edit_box);
-                    return -1;
-                }
+            if ((0 > status) && (-ENOSYS != status))
+            {
+                return -1;
             }
 
             PropSheet_PressButton(GetParent(dlg), PSBTN_FINISH);
@@ -198,7 +193,7 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
     case WM_COMMAND: {
         if ((EN_CHANGE == HIWORD(wparam)) && (IDC_EDITBOX == LOWORD(wparam)))
         {
-            if (!_validator)
+            if (-ENOSYS == _proc(ENCUIM_CHECK, NULL, _data))
             {
                 return TRUE;
             }
@@ -222,8 +217,9 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
             }
             WideCharToMultiByte(CP_UTF8, 0, text, -1, atext, length, NULL,
                                 NULL);
-            PropSheet_SetWizButtons(GetParent(dlg),
-                                    _validator(atext) ? PSWIZB_NEXT : 0);
+            PropSheet_SetWizButtons(
+                GetParent(dlg),
+                (0 == _proc(ENCUIM_CHECK, atext, _data)) ? PSWIZB_NEXT : 0);
 
             free(text);
             free(atext);
@@ -236,29 +232,25 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
 }
 
 bool
-encui_prompt(const char     *title,
-             const char     *message,
-             char           *buffer,
-             int             size,
-             encui_validator validator,
-             enc_context    *enc)
+encui_prompt(encui_page *page)
 {
-    int    title_length = MultiByteToWideChar(CP_UTF8, 0, title, -1, NULL, 0);
-    LPWSTR wtitle = (LPWSTR)malloc(title_length * sizeof(WCHAR));
+    LPWSTR wtitle = NULL;
+    int    title_length = LoadStringW(NULL, page->title, (LPWSTR)&wtitle, 0);
+    wtitle = (LPWSTR)malloc((title_length + 1) * sizeof(WCHAR));
     if (NULL == wtitle)
     {
         return false;
     }
-    MultiByteToWideChar(CP_UTF8, 0, title, -1, wtitle, title_length);
+    LoadStringW(NULL, page->title, wtitle, title_length + 1);
 
-    int message_length = MultiByteToWideChar(CP_UTF8, 0, message, -1, NULL, 0);
-    LPWSTR wmessage = (LPWSTR)malloc(message_length * sizeof(WCHAR));
+    LPWSTR wmessage = NULL;
+    int message_length = LoadStringW(NULL, page->message, (LPWSTR)&wmessage, 0);
+    wmessage = (LPWSTR)malloc((message_length + 1) * sizeof(WCHAR));
     if (NULL == wmessage)
     {
-        free(wtitle);
         return false;
     }
-    MultiByteToWideChar(CP_UTF8, 0, message, -1, wmessage, message_length);
+    LoadStringW(NULL, page->message, wmessage, message_length + 1);
 
     WCHAR branding[MAX_PATH] = L"";
     MultiByteToWideChar(CP_UTF8, 0, pal_get_version_string(), -1, branding,
@@ -289,10 +281,10 @@ encui_prompt(const char     *title,
     _title = wtitle;
     _message = wmessage;
 
-    _buffer = buffer;
-    _size = size;
-    _validator = validator;
-    _enc = enc;
+    _buffer = page->buffer;
+    _size = page->capacity;
+    _proc = page->proc;
+    _data = page->data;
 
     _value = ENCUI_INCOMPLETE;
     PropertySheetW(&psh);

@@ -4,10 +4,34 @@
 #include "../enc_impl.h"
 #include "../ui/encui.h"
 
-static bool
-_ispkey(const char *str)
+static int
+_passcode_page_proc(int msg, void *param, void *data)
 {
-    return enc_validate_key_format(str, ENC_KEYSM_PKEY25XOR12);
+    switch (msg)
+    {
+    case ENCUIM_CHECK: {
+        const char *passcode = (const char *)param;
+        if (NULL == passcode)
+        {
+            return 1;
+        }
+
+        const enc_context *enc = (const enc_context *)data;
+        if (ENC_KEYSM_PKEY25XOR12 == (enc->provider >> 8))
+        {
+            return enc_validate_key_format(passcode, ENC_KEYSM_PKEY25XOR12) ? 0
+                                                                            : 1;
+        }
+
+        return isxdigstr(passcode) ? 0 : 1;
+    }
+
+    case ENCUIM_NEXT: {
+        return __enc_decrypt_content((enc_context *)data);
+    }
+    }
+
+    return -ENOSYS;
 }
 
 int
@@ -34,33 +58,18 @@ __enc_prompt_proc(int msg, enc_context *enc)
     }
 
     case ENCM_ACQUIRE: {
-        char msg_enterpass[GFX_COLUMNS / 2], msg_enterpass_desc[GFX_COLUMNS];
-
-        if (ENC_KEYSM_RAW == (enc->provider >> 8))
-        {
-            // Raw key - hexadecimal string
-            pal_load_string(IDS_ENTERPASS, msg_enterpass,
-                            sizeof(msg_enterpass));
-            pal_load_string(IDS_ENTERPASS_DESC, msg_enterpass_desc,
-                            sizeof(msg_enterpass_desc));
-            encui_prompt(msg_enterpass, msg_enterpass_desc, enc->buffer,
-                         enc->stream.key_length * 2, isxdigstr, enc);
-            return CONTINUE;
-        }
-
+        encui_page page = {IDS_ENTERPASS,       IDS_ENTERPASS_DESC,
+                           enc->buffer,         enc->stream.key_length * 2,
+                           _passcode_page_proc, enc};
         if (ENC_KEYSM_PKEY25XOR12 == (enc->provider >> 8))
         {
-            // Raw key - hexadecimal string
-            pal_load_string(IDS_ENTERPKEY, msg_enterpass,
-                            sizeof(msg_enterpass));
-            pal_load_string(IDS_ENTERPKEY_DESC, msg_enterpass_desc,
-                            sizeof(msg_enterpass_desc));
-            encui_prompt(msg_enterpass, msg_enterpass_desc, enc->buffer,
-                         5 * 5 + 4, _ispkey, enc);
-            return CONTINUE;
+            page.title = IDS_ENTERPKEY;
+            page.message = IDS_ENTERPKEY_DESC;
+            page.capacity = 5 * 5 + 4;
         }
 
-        return -EINVAL;
+        encui_prompt(&page);
+        return CONTINUE;
     }
 
     case ENCM_TRANSFORM: {

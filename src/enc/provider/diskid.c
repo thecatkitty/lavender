@@ -10,12 +10,23 @@
 #define XOR48_PASSCODE_SIZE 3
 #define XOR48_DSN_LENGTH    9
 
-static bool
-_validate_dsn(const char *dsn)
+static int
+_dsn_page_proc(int msg, void *param, void *data)
 {
+    if (ENCUIM_CHECK != msg)
+    {
+        return -ENOSYS;
+    }
+
+    const char *dsn = (const char *)param;
+    if (NULL == dsn)
+    {
+        return 1;
+    }
+
     if (9 != strlen(dsn))
     {
-        return false;
+        return 1;
     }
 
     for (int i = 0; i < 9; i++)
@@ -24,19 +35,42 @@ _validate_dsn(const char *dsn)
         {
             if ('-' != dsn[i])
             {
-                return false;
+                return 1;
             }
         }
         else
         {
             if (!isxdigit(dsn[i]))
             {
-                return false;
+                return 1;
             }
         }
     }
 
-    return true;
+    return 0;
+}
+
+static int
+_passcode_page_proc(int msg, void *param, void *data)
+{
+    switch (msg)
+    {
+    case ENCUIM_CHECK: {
+        const char *passcode = (const char *)param;
+        if (NULL == passcode)
+        {
+            return 1;
+        }
+
+        return isdigstr(passcode) ? 0 : 1;
+    }
+
+    case ENCUIM_NEXT: {
+        return __enc_decrypt_content((enc_context *)data);
+    }
+    }
+
+    return -ENOSYS;
 }
 
 int
@@ -56,13 +90,10 @@ __enc_diskid_proc(int msg, enc_context *enc)
                 return CONTINUE;
             }
 
-            char msg_enterdsn[GFX_COLUMNS / 2], msg_enterdsn_desc[GFX_COLUMNS];
-            pal_load_string(IDS_ENTERDSN, msg_enterdsn, sizeof(msg_enterdsn));
-            pal_load_string(IDS_ENTERDSN_DESC, msg_enterdsn_desc,
-                            sizeof(msg_enterdsn_desc));
-
-            encui_prompt(msg_enterdsn, msg_enterdsn_desc, enc->data.diskid.dsn,
-                         XOR48_DSN_LENGTH, _validate_dsn, NULL);
+            encui_page page = {IDS_ENTERDSN, IDS_ENTERDSN_DESC,
+                               enc->data.diskid.dsn, XOR48_DSN_LENGTH,
+                               _dsn_page_proc};
+            encui_prompt(&page);
             return CUSTOM;
         }
 
@@ -88,13 +119,10 @@ __enc_diskid_proc(int msg, enc_context *enc)
     }
 
     case ENCM_ACQUIRE: {
-        char msg_enterpass[GFX_COLUMNS / 2], msg_enterpass_desc[GFX_COLUMNS];
-        pal_load_string(IDS_ENTERPASS, msg_enterpass, sizeof(msg_enterpass));
-        pal_load_string(IDS_ENTERPASS_DESC, msg_enterpass_desc,
-                        sizeof(msg_enterpass_desc));
-
-        encui_prompt(msg_enterpass, msg_enterpass_desc, enc->buffer,
-                     XOR48_PASSCODE_SIZE * 2, isdigstr, enc);
+        encui_page page = {IDS_ENTERPASS,       IDS_ENTERPASS_DESC,
+                           enc->buffer,         XOR48_PASSCODE_SIZE * 2,
+                           _passcode_page_proc, enc};
+        encui_prompt(&page);
         return CONTINUE;
     }
 

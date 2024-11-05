@@ -12,7 +12,23 @@ enum encui_result
     ENCUI_INCOMPLETE = -1
 };
 
-typedef bool (*encui_validator)(const char *);
+enum
+{
+    ENCUIM_CHECK,
+    ENCUIM_NEXT,
+};
+
+typedef int(encui_page_proc)(int msg, void *param, void *data);
+
+typedef struct
+{
+    int              title;
+    int              message;
+    char            *buffer;
+    size_t           capacity;
+    encui_page_proc *proc;
+    void            *data;
+} encui_page;
 
 extern bool
 encui_enter(void);
@@ -21,12 +37,7 @@ extern bool
 encui_exit(void);
 
 extern bool
-encui_prompt(const char     *title,
-             const char     *message,
-             char           *buffer,
-             int             size,
-             encui_validator validator,
-             enc_context    *enc);
+encui_prompt(encui_page *page);
 
 extern int
 encui_handle(void);
