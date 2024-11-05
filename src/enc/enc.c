@@ -26,6 +26,9 @@ __enc_pkey25xor12_decode(const void *src);
 extern bool
 __enc_pkey25xor12_validate_format(const char *key);
 
+static int
+_decrypt_content(enc_context *enc);
+
 bool
 enc_prepare(enc_stream    *stream,
             enc_cipher     cipher,
@@ -203,7 +206,7 @@ enc_handle(enc_context *enc)
     }
 
     case ENCS_VERIFY: {
-        REQUIRE_SUCCESS(__enc_decrypt_content(enc));
+        REQUIRE_SUCCESS(_decrypt_content(enc));
         enc->state = ENCS_COMPLETE;
         return CONTINUE;
     }
@@ -216,8 +219,8 @@ enc_handle(enc_context *enc)
     return -ENOSYS;
 }
 
-int
-__enc_decrypt_content(enc_context *enc)
+static int
+_decrypt_content(enc_context *enc)
 {
     REQUIRE_SUCCESS(ENC_PROV(enc)(ENCM_TRANSFORM, enc));
     if (!enc_prepare(&enc->stream, enc->cipher, enc->content, enc->size,
@@ -244,10 +247,21 @@ __enc_decrypt_content(enc_context *enc)
     return 0;
 }
 
-enc_provider_proc *
-__enc_get_provider(enc_context *enc)
+int
+__enc_decrypt_content(enc_context *enc)
 {
-    return ENC_PROV(enc);
+    int status = _decrypt_content(enc);
+    if ((0 > status) && (-EACCES != status))
+    {
+        return status;
+    }
+
+    if (-EACCES == status)
+    {
+        return ENC_PROV(enc)(ENCM_GET_ERROR_STRING, enc);
+    }
+
+    return 0;
 }
 
 int

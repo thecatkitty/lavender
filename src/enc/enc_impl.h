@@ -50,10 +50,9 @@ enum
     ENCM_GET_ERROR_STRING,
 };
 
+// Decrypt content described by the encryption context
+// @returns Zero on success, positive error message ID, or negative on other error
 extern int
 __enc_decrypt_content(enc_context *enc);
-
-extern enc_provider_proc *
-__enc_get_provider(enc_context *enc);
 
 #endif // _ENC_IMPL_H_
