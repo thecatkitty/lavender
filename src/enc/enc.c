@@ -154,37 +154,7 @@ enc_handle(enc_context *enc)
             return CONTINUE;
         }
 
-        if (CUSTOM == status)
-        {
-            enc->state = ENCS_CUSTOM;
-            return CONTINUE;
-        }
-
-        enc->state = ENCS_ACQUIRE;
-        return CONTINUE;
-    }
-
-    case ENCS_CUSTOM: {
-        REQUIRE_SUCCESS(status = ENC_PROV(enc)(ENCM_CUSTOM, enc));
-        if (CUSTOM == status)
-        {
-            enc->state = ENCS_CUSTOM;
-            return CONTINUE;
-        }
-
-        enc->state = ENCS_ACQUIRE;
-        return CONTINUE;
-    }
-
-    case ENCS_ACQUIRE: {
-        REQUIRE_SUCCESS(status = ENC_PROV(enc)(ENCM_ACQUIRE, enc));
-        if (CONTINUE == status)
-        {
-            enc->state = ENCS_READ;
-            return CONTINUE;
-        }
-
-        enc->state = ENCS_VERIFY;
+        enc->state = ENCS_READ;
         return CONTINUE;
     }
 
@@ -201,7 +171,12 @@ enc_handle(enc_context *enc)
             return -EACCES;
         }
 
-        enc->state = ENCS_COMPLETE;
+        encui_set_page(encui_get_page() + 1);
+        if (-1 == encui_get_page())
+        {
+            enc->state = ENCS_COMPLETE;
+        }
+
         return CONTINUE;
     }
 

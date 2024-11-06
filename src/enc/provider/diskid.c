@@ -13,6 +13,15 @@
 static int
 _dsn_page_proc(int msg, void *param, void *data)
 {
+    if (ENCUIM_NEXT == msg)
+    {
+        enc_context *enc = (enc_context *)data;
+        uint32_t     high = strtoul(enc->data.diskid.dsn, NULL, 16);
+        uint32_t     low = strtoul(enc->data.diskid.dsn + 5, NULL, 16);
+        enc->data.diskid.split.local_part = (high << 16) | low;
+        return 0;
+    }
+
     if (ENCUIM_CHECK != msg)
     {
         return -ENOSYS;
@@ -73,6 +82,12 @@ _passcode_page_proc(int msg, void *param, void *data)
     return -ENOSYS;
 }
 
+static encui_page _pages[] = {
+    {IDS_ENTERDSN, IDS_ENTERDSN_DESC, NULL, XOR48_DSN_LENGTH, _dsn_page_proc},
+    {IDS_ENTERPASS, IDS_ENTERPASS_DESC, NULL, XOR48_PASSCODE_SIZE * 2,
+     _passcode_page_proc},
+    {0}};
+
 int
 __enc_diskid_proc(int msg, enc_context *enc)
 {
@@ -81,49 +96,25 @@ __enc_diskid_proc(int msg, enc_context *enc)
     case ENCM_INITIALIZE: {
         if (ENC_XOR == enc->cipher)
         {
-            encui_enter();
+            _pages[0].buffer = enc->data.diskid.dsn;
+            _pages[0].data = enc;
+            _pages[1].buffer = enc->buffer;
+            _pages[1].data = enc;
+            encui_enter(_pages, 2);
 
             uint32_t medium_id = pal_get_medium_id(enc->parameter);
             if (0 != medium_id)
             {
                 enc->data.diskid.split.local_part = medium_id;
+                encui_set_page(1);
                 return CONTINUE;
             }
 
-            encui_page page = {IDS_ENTERDSN, IDS_ENTERDSN_DESC,
-                               enc->data.diskid.dsn, XOR48_DSN_LENGTH,
-                               _dsn_page_proc};
-            encui_prompt(&page);
-            return CUSTOM;
+            encui_set_page(0);
+            return CONTINUE;
         }
 
         return -EINVAL;
-    }
-
-    case ENCM_CUSTOM: {
-        int status = encui_handle();
-        if (ENCUI_INCOMPLETE == status)
-        {
-            return CUSTOM;
-        }
-
-        if (0 == status)
-        {
-            return -EACCES;
-        }
-
-        uint32_t high = strtoul(enc->data.diskid.dsn, NULL, 16);
-        uint32_t low = strtoul(enc->data.diskid.dsn + 5, NULL, 16);
-        enc->data.diskid.split.local_part = (high << 16) | low;
-        return 0;
-    }
-
-    case ENCM_ACQUIRE: {
-        encui_page page = {IDS_ENTERPASS,       IDS_ENTERPASS_DESC,
-                           enc->buffer,         XOR48_PASSCODE_SIZE * 2,
-                           _passcode_page_proc, enc};
-        encui_prompt(&page);
-        return CONTINUE;
     }
 
     case ENCM_TRANSFORM: {

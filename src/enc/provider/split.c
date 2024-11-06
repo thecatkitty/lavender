@@ -31,27 +31,27 @@ _passcode_page_proc(int msg, void *param, void *data)
     return -ENOSYS;
 }
 
+static encui_page _pages[] = {{IDS_ENTERPASS, IDS_ENTERPASS_DESC, NULL,
+                               XOR48_PASSCODE_SIZE * 2, _passcode_page_proc},
+                              {0}};
+
 int
 __enc_split_proc(int msg, enc_context *enc)
 {
     switch (msg)
     {
     case ENCM_INITIALIZE: {
+        encui_enter(_pages, 1);
+
         if (ENC_XOR == enc->cipher)
         {
-            encui_enter();
             enc->data.split.local_part = strtoul(enc->parameter, NULL, 16);
             return CONTINUE;
         }
 
-        return -EINVAL;
-    }
-
-    case ENCM_ACQUIRE: {
-        encui_page page = {IDS_ENTERPASS,       IDS_ENTERPASS_DESC,
-                           enc->buffer,         XOR48_PASSCODE_SIZE * 2,
-                           _passcode_page_proc, enc};
-        encui_prompt(&page);
+        _pages[0].buffer = enc->buffer;
+        _pages[0].data = enc;
+        encui_set_page(0);
         return CONTINUE;
     }
 
