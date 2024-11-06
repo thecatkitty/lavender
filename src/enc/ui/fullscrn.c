@@ -43,6 +43,7 @@ static bool     _caret_visible = true;
 
 // Buttons
 static gfx_rect _cancel;
+static gfx_rect _back;
 static gfx_rect _next;
 
 bool
@@ -255,6 +256,11 @@ _is_pressed(const gfx_rect *rect)
         return false;
     }
 
+    if (0 == rect->width)
+    {
+        return false;
+    }
+
 #if defined(__ia16__)
     msx *= 8;
     msy *= 8;
@@ -382,7 +388,11 @@ encui_handle(void)
     }
 
     uint16_t scancode = 0;
-    if (_is_pressed(&_next))
+    if (_is_pressed(&_back))
+    {
+        scancode = VK_PRIOR;
+    }
+    else if (_is_pressed(&_next))
     {
         scancode = VK_RETURN;
     }
@@ -439,6 +449,13 @@ encui_handle(void)
         gfx_draw_rectangle(&_tbox, GFX_COLOR_BLACK);
         _tbox_blink_start = pal_get_counter();
         _state = STATE_PROMPT_INVALID1;
+        return ENCUI_INCOMPLETE;
+    }
+
+    if (VK_PRIOR == scancode)
+    {
+        _reset();
+        encui_set_page(_id - 1);
         return ENCUI_INCOMPLETE;
     }
 
@@ -558,8 +575,17 @@ encui_set_page(int id)
     _draw_text_box();
 
     char caption[9];
+    if ((0 < id) && (0 != _pages[id - 1].title))
+    {
+        pal_load_string(IDS_BACK, caption, sizeof(caption));
+        _draw_button(GFX_COLUMNS - 31, GFX_LINES - 2, caption, &_back);
+    }
+    else
+    {
+        _back.width = 0;
+    }
     pal_load_string(IDS_NEXT, caption, sizeof(caption));
-    _draw_button(GFX_COLUMNS - 20, GFX_LINES - 2, caption, &_next);
+    _draw_button(GFX_COLUMNS - 21, GFX_LINES - 2, caption, &_next);
     pal_load_string(IDS_CANCEL, caption, sizeof(caption));
     _draw_button(GFX_COLUMNS - 10, GFX_LINES - 2, caption, &_cancel);
 

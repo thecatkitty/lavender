@@ -17,6 +17,7 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
     IDS_INVALIDDSNPASS, "Nesprávné heslo pro vybranou disketu!"
     IDS_INVALIDPASS, "Nesprávné heslo!"
     IDS_INVALIDPKEY, "Nesprávný produktový klíč!"
+    IDS_BACK, "Zpět"
     IDS_NEXT, "Další"
     IDS_CANCEL, "Storno"
 #endif

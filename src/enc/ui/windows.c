@@ -132,11 +132,12 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
         switch (notif->code)
         {
         case PSN_SETACTIVE: {
-            PropSheet_SetWizButtons(
-                notif->hwndFrom, (-ENOSYS == _pages[id].proc(ENCUIM_CHECK, NULL,
-                                                             _pages[id].data))
-                                     ? PSBTN_NEXT
-                                     : 0);
+            bool has_previous = (0 != id) && (0 != _pages[id - 1].title);
+            bool has_validator =
+                -ENOSYS == _pages[id].proc(ENCUIM_CHECK, NULL, _pages[id].data);
+            PropSheet_SetWizButtons(GetParent(dlg),
+                                    (has_previous ? PSWIZB_BACK : 0) |
+                                        (!has_validator ? PSWIZB_NEXT : 0));
             return 0;
         }
 
@@ -221,11 +222,13 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
             }
             WideCharToMultiByte(CP_UTF8, 0, text, -1, atext, length, NULL,
                                 NULL);
-            PropSheet_SetWizButtons(
-                GetParent(dlg),
-                (0 == _pages[id].proc(ENCUIM_CHECK, atext, _pages[id].data))
-                    ? PSWIZB_NEXT
-                    : 0);
+
+            bool has_previous = (0 != id) && (0 != _pages[id - 1].title);
+            bool is_valid =
+                0 >= _pages[id].proc(ENCUIM_CHECK, atext, _pages[id].data);
+            PropSheet_SetWizButtons(GetParent(dlg),
+                                    (has_previous ? PSWIZB_BACK : 0) |
+                                        (is_valid ? PSWIZB_NEXT : 0));
 
             free(text);
             free(atext);

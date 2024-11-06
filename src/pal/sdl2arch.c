@@ -176,6 +176,9 @@ pal_get_keystroke(void)
     case SDLK_UP:
         c = VK_UP;
         break;
+    case SDLK_PAGEUP:
+        c = VK_PRIOR;
+        break;
     }
     
     if (255 < c)
