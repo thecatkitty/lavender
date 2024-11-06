@@ -17,6 +17,7 @@ LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
     IDS_INVALIDDSNPASS, "Hasło niewłaściwe dla wybranej dyskietki!"
     IDS_INVALIDPASS, "Niepoprawne hasło!"
     IDS_INVALIDPKEY, "Niepoprawny klucz produktu!"
+    IDS_BACK, "Wstecz"
     IDS_NEXT, "Dalej"
     IDS_CANCEL, "Anuluj"
 #endif
