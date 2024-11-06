@@ -17,7 +17,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
     IDS_INVALIDDSNPASS, "Incorrect password for the selected diskette!"
     IDS_INVALIDPASS, "Incorrect password!"
     IDS_INVALIDPKEY, "Incorrect product key!"
-    IDS_OK, "OK"
+    IDS_NEXT, "Next"
     IDS_CANCEL, "Cancel"
 #endif
 

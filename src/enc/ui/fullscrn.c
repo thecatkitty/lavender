@@ -43,7 +43,7 @@ static bool     _caret_visible = true;
 
 // Buttons
 static gfx_rect _cancel;
-static gfx_rect _ok;
+static gfx_rect _next;
 
 bool
 encui_enter(encui_page *pages, int count)
@@ -232,11 +232,18 @@ _draw_button(int x, int y, const char *text, gfx_rect *rect)
     rect->left = x * _glyph.width - (_glyph.width / 2);
     rect->top = y * _glyph.height - (_glyph.height / 4);
 
+#ifdef UTF8_NATIVE
+    const char *buff = text;
+#else
+    char buff[9];
+    utf8_encode(text, buff, pal_wctob);
+#endif
+
     gfx_rect inner = {rect->left - 1, rect->top, rect->width + 2, rect->height};
     gfx_fill_rectangle(rect, GFX_COLOR_WHITE);
     gfx_draw_rectangle(rect, GFX_COLOR_BLACK);
     gfx_draw_rectangle(&inner, GFX_COLOR_BLACK);
-    gfx_draw_text(text, x + (8 - strlen(text)) / 2, y);
+    gfx_draw_text(buff, x + (8 - strlen(buff)) / 2, y);
 }
 
 static bool
@@ -375,7 +382,7 @@ encui_handle(void)
     }
 
     uint16_t scancode = 0;
-    if (_is_pressed(&_ok))
+    if (_is_pressed(&_next))
     {
         scancode = VK_RETURN;
     }
@@ -551,8 +558,8 @@ encui_set_page(int id)
     _draw_text_box();
 
     char caption[9];
-    pal_load_string(IDS_OK, caption, sizeof(caption));
-    _draw_button(GFX_COLUMNS - 20, GFX_LINES - 2, caption, &_ok);
+    pal_load_string(IDS_NEXT, caption, sizeof(caption));
+    _draw_button(GFX_COLUMNS - 20, GFX_LINES - 2, caption, &_next);
     pal_load_string(IDS_CANCEL, caption, sizeof(caption));
     _draw_button(GFX_COLUMNS - 10, GFX_LINES - 2, caption, &_cancel);
 

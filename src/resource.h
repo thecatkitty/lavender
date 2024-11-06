@@ -20,7 +20,7 @@
 #define IDS_INVALIDDSNPASS 0x16
 #define IDS_INVALIDPASS    0x17
 #define IDS_INVALIDPKEY    0x18
-#define IDS_OK             0x1E
+#define IDS_NEXT           0x1E
 #define IDS_CANCEL         0x1F
 #endif
 
