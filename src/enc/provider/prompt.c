@@ -34,41 +34,39 @@ _passcode_page_proc(int msg, void *param, void *data)
     return -ENOSYS;
 }
 
+static encui_page _pages[] = {
+    {IDS_ENTERPASS, IDS_ENTERPASS_DESC, NULL, 0, _passcode_page_proc}, {0}};
+
 int
 __enc_prompt_proc(int msg, enc_context *enc)
 {
     switch (msg)
     {
     case ENCM_INITIALIZE: {
+        encui_enter(_pages, 1);
+
         if (ENC_XOR == enc->cipher)
         {
-            encui_enter();
             enc->stream.key_length = 6;
-            return CONTINUE;
         }
 
         if (ENC_DES == enc->cipher)
         {
-            encui_enter();
             enc->stream.key_length = sizeof(uint64_t);
-            return CONTINUE;
         }
 
-        return -EINVAL;
-    }
+        _pages[0].buffer = enc->buffer;
+        _pages[0].capacity = enc->stream.key_length * 2;
+        _pages[0].data = enc;
 
-    case ENCM_ACQUIRE: {
-        encui_page page = {IDS_ENTERPASS,       IDS_ENTERPASS_DESC,
-                           enc->buffer,         enc->stream.key_length * 2,
-                           _passcode_page_proc, enc};
         if (ENC_KEYSM_PKEY25XOR12 == (enc->provider >> 8))
         {
-            page.title = IDS_ENTERPKEY;
-            page.message = IDS_ENTERPKEY_DESC;
-            page.capacity = 5 * 5 + 4;
+            _pages[0].title = IDS_ENTERPKEY;
+            _pages[0].message = IDS_ENTERPKEY_DESC;
+            _pages[0].capacity = 5 * 5 + 4;
         }
 
-        encui_prompt(&page);
+        encui_set_page(0);
         return CONTINUE;
     }
 

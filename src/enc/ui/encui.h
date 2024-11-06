@@ -28,16 +28,20 @@ typedef struct
     size_t           capacity;
     encui_page_proc *proc;
     void            *data;
+    size_t           length;
 } encui_page;
 
 extern bool
-encui_enter(void);
+encui_enter(encui_page *pages, int count);
 
 extern bool
 encui_exit(void);
 
+extern int
+encui_get_page(void);
+
 extern bool
-encui_prompt(encui_page *page);
+encui_set_page(int id);
 
 extern int
 encui_handle(void);

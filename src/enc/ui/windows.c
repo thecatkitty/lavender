@@ -27,47 +27,15 @@ static NONCLIENTMETRICSW _nclm = {0};
 static bool              _is_vista = WINVER >= 0x0600;
 static HICON             _bang = NULL;
 
-static LPCWSTR _title = NULL;
-static LPCWSTR _message = NULL;
+static encui_page *_pages = NULL;
+static int         _id;
 
-static char            *_buffer = NULL;
-static int              _size;
-static encui_page_proc *_proc = NULL;
-static void            *_data = NULL;
+static WCHAR            _brand[MAX_PATH] = L"";
+static PROPSHEETPAGEW  *_psps = NULL;
+static HPROPSHEETPAGE  *_hpsps = NULL;
+static PROPSHEETHEADERW _psh = {.dwSize = sizeof(PROPSHEETHEADERW)};
 
 static int _value;
-
-bool
-encui_enter(void)
-{
-    _nclm.cbSize = sizeof(_nclm);
-    if (!SystemParametersInfoW(SPI_GETNONCLIENTMETRICS, sizeof(_nclm), &_nclm,
-                               0))
-    {
-        _nclm.cbSize = 0;
-        return false;
-    }
-
-#if WINVER < 0x0600
-    _is_vista = 6 <= LOBYTE(GetVersion());
-#endif
-
-    _bang = (HICON)LoadImageW(GetModuleHandleW(L"user32.dll"),
-                              MAKEINTRESOURCEW(101), IMAGE_ICON,
-                              GetSystemMetrics(SM_CXSMICON),
-                              GetSystemMetrics(SM_CYSMICON), LR_DEFAULTCOLOR);
-    return true;
-}
-
-bool
-encui_exit(void)
-{
-    if (_bang)
-    {
-        DestroyIcon(_bang);
-    }
-    return true;
-}
 
 static INT_PTR CALLBACK
 _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
@@ -75,6 +43,9 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
     switch (message)
     {
     case WM_INITDIALOG: {
+        PROPSHEETPAGEW *template = (PROPSHEETPAGEW *)lparam;
+        encui_page *page = _pages + template->lParam;
+
 #if WINVER < 0x0600
         if (!_is_vista)
         {
@@ -127,21 +98,45 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
 #endif // WINVER < 0x0600
 
         // Set the prompt's content
-        SetWindowTextW(dlg, _title);
-        SetWindowTextW(GetDlgItem(dlg, IDC_TEXT), _message);
+        LPWSTR title = NULL;
+        int    title_length = LoadStringW(NULL, page->title, (LPWSTR)&title, 0);
+        title = (LPWSTR)malloc((title_length + 1) * sizeof(WCHAR));
+        if (NULL == title)
+        {
+            return false;
+        }
+        LoadStringW(NULL, page->title, title, title_length + 1);
+        SetWindowTextW(dlg, title);
+        free(title);
+
+        LPWSTR message = NULL;
+        int    message_length =
+            LoadStringW(NULL, page->message, (LPWSTR)&message, 0);
+        message = (LPWSTR)malloc((message_length + 1) * sizeof(WCHAR));
+        if (NULL == message)
+        {
+            return false;
+        }
+        LoadStringW(NULL, page->message, message, message_length + 1);
+        SetWindowTextW(GetDlgItem(dlg, IDC_TEXT), message);
+        free(message);
+
         SetWindowTextW(GetDlgItem(dlg, IDC_ALERT), L"");
 
         return TRUE;
     }
 
     case WM_NOTIFY: {
+        int     id = PropSheet_HwndToIndex(GetParent(dlg), dlg);
         LPNMHDR notif = (LPNMHDR)lparam;
         switch (notif->code)
         {
         case PSN_SETACTIVE: {
             PropSheet_SetWizButtons(
-                notif->hwndFrom,
-                (-ENOSYS == _proc(ENCUIM_CHECK, NULL, _data)) ? PSBTN_NEXT : 0);
+                notif->hwndFrom, (-ENOSYS == _pages[id].proc(ENCUIM_CHECK, NULL,
+                                                             _pages[id].data))
+                                     ? PSBTN_NEXT
+                                     : 0);
             return 0;
         }
 
@@ -154,12 +149,13 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
                 return -1;
             }
             GetWindowTextW(edit_box, text, length + 1);
-            WideCharToMultiByte(CP_UTF8, 0, text, -1, _buffer, _size, NULL,
-                                NULL);
+            WideCharToMultiByte(CP_UTF8, 0, text, -1, _pages[id].buffer,
+                                _pages[id].capacity, NULL, NULL);
             _value = length;
             free(text);
 
-            int status = _proc(ENCUIM_NEXT, _buffer, _data);
+            int status = _pages[id].proc(ENCUIM_NEXT, _pages[id].buffer,
+                                         _pages[id].data);
             if (0 < status)
             {
                 WCHAR message[GFX_COLUMNS];
@@ -178,6 +174,12 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
                 return -1;
             }
 
+            if (0 != _pages[id + 1].title)
+            {
+                _id = id + 1;
+                return 0;
+            }
+
             PropSheet_PressButton(GetParent(dlg), PSBTN_FINISH);
             SetWindowLong(dlg, DWLP_MSGRESULT, _value);
             return 0;
@@ -191,9 +193,11 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
     }
 
     case WM_COMMAND: {
+        int id = PropSheet_HwndToIndex(GetParent(dlg), dlg);
+
         if ((EN_CHANGE == HIWORD(wparam)) && (IDC_EDITBOX == LOWORD(wparam)))
         {
-            if (-ENOSYS == _proc(ENCUIM_CHECK, NULL, _data))
+            if (-ENOSYS == _pages[id].proc(ENCUIM_CHECK, NULL, _pages[id].data))
             {
                 return TRUE;
             }
@@ -219,7 +223,9 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
                                 NULL);
             PropSheet_SetWizButtons(
                 GetParent(dlg),
-                (0 == _proc(ENCUIM_CHECK, atext, _data)) ? PSWIZB_NEXT : 0);
+                (0 == _pages[id].proc(ENCUIM_CHECK, atext, _pages[id].data))
+                    ? PSWIZB_NEXT
+                    : 0);
 
             free(text);
             free(atext);
@@ -232,67 +238,124 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
 }
 
 bool
-encui_prompt(encui_page *page)
+encui_enter(encui_page *pages, int count)
 {
-    LPWSTR wtitle = NULL;
-    int    title_length = LoadStringW(NULL, page->title, (LPWSTR)&wtitle, 0);
-    wtitle = (LPWSTR)malloc((title_length + 1) * sizeof(WCHAR));
-    if (NULL == wtitle)
+    _nclm.cbSize = sizeof(_nclm);
+    if (!SystemParametersInfoW(SPI_GETNONCLIENTMETRICS, sizeof(_nclm), &_nclm,
+                               0))
+    {
+        _nclm.cbSize = 0;
+        return false;
+    }
+
+#if WINVER < 0x0600
+    _is_vista = 6 <= LOBYTE(GetVersion());
+#endif
+
+    _psps = (PROPSHEETPAGEW *)malloc(sizeof(PROPSHEETPAGEW) * count);
+    if (NULL == _psps)
     {
         return false;
     }
-    LoadStringW(NULL, page->title, wtitle, title_length + 1);
 
-    LPWSTR wmessage = NULL;
-    int message_length = LoadStringW(NULL, page->message, (LPWSTR)&wmessage, 0);
-    wmessage = (LPWSTR)malloc((message_length + 1) * sizeof(WCHAR));
-    if (NULL == wmessage)
+    _hpsps = (HPROPSHEETPAGE *)malloc(sizeof(PROPSHEETPAGEW) * count);
+    if (NULL == _hpsps)
     {
+        free(_psps);
         return false;
     }
-    LoadStringW(NULL, page->message, wmessage, message_length + 1);
 
-    WCHAR branding[MAX_PATH] = L"";
-    MultiByteToWideChar(CP_UTF8, 0, pal_get_version_string(), -1, branding,
-                        MAX_PATH);
+    if (0 == _brand[0])
+    {
+        MultiByteToWideChar(CP_UTF8, 0, pal_get_version_string(), -1, _brand,
+                            lengthof(_brand));
+    }
 
-    PROPSHEETPAGEW   psp = {.dwSize = sizeof(PROPSHEETPAGEW),
-                            .hInstance = GetModuleHandleW(NULL),
-                            .dwFlags = PSP_USEHEADERTITLE | PSP_USETITLE,
-                            .lParam = (LPARAM)NULL,
-                            .pszHeaderTitle = wtitle,
-                            .pszTemplate = MAKEINTRESOURCEW(IDD_PROMPT),
-                            .pszTitle = branding,
-                            .pfnDlgProc = _dialog_proc};
-    HPROPSHEETPAGE   hpsp = CreatePropertySheetPageW((LPCPROPSHEETPAGEW)&psp);
-    PROPSHEETHEADERW psh = {.dwSize = sizeof(PROPSHEETHEADERW),
-                            .hInstance = GetModuleHandleW(NULL),
-                            .phpage = &hpsp,
-                            .hwndParent = windows_get_hwnd(),
-                            .dwFlags = _is_vista ? PSH_WIZARD | PSH_AEROWIZARD |
-                                                       PSH_USEICONID
-                                                 : PSH_WIZARD97 | PSH_HEADER,
-                            .pszCaption = branding,
-                            .pszIcon = MAKEINTRESOURCEW(1),
-                            .pszbmHeader = MAKEINTRESOURCEW(IDB_HEADER),
-                            .nStartPage = 0,
-                            .nPages = 1};
+    for (int i = 0; i < count; i++)
+    {
+        if (0 == pages[i].title)
+        {
+            _psps[i].dwSize = 0;
+            _hpsps[i] = NULL;
+            continue;
+        }
 
-    _title = wtitle;
-    _message = wmessage;
+        _psps[i].dwSize = sizeof(PROPSHEETPAGEW);
+        _psps[i].hInstance = GetModuleHandleW(NULL);
+        _psps[i].dwFlags = PSP_USEHEADERTITLE | PSP_USETITLE;
+        _psps[i].lParam = (LPARAM)i;
+        _psps[i].pszHeaderTitle = MAKEINTRESOURCEW(pages[i].title);
+        _psps[i].pszTemplate = MAKEINTRESOURCEW(IDD_PROMPT);
+        _psps[i].pszTitle = _brand;
+        _psps[i].pfnDlgProc = _dialog_proc;
+        _hpsps[i] = CreatePropertySheetPageW((LPCPROPSHEETPAGEW)&_psps[i]);
+    }
 
-    _buffer = page->buffer;
-    _size = page->capacity;
-    _proc = page->proc;
-    _data = page->data;
+    _psh.hInstance = GetModuleHandleW(NULL);
+    _psh.phpage = _hpsps;
+    _psh.hwndParent = windows_get_hwnd();
+    _psh.dwFlags = _is_vista ? PSH_WIZARD | PSH_AEROWIZARD | PSH_USEICONID
+                             : PSH_WIZARD97 | PSH_HEADER;
+    _psh.pszCaption = _brand;
+    _psh.pszIcon = MAKEINTRESOURCEW(1);
+    _psh.pszbmHeader = MAKEINTRESOURCEW(IDB_HEADER);
+    _psh.nStartPage = 0;
+    _psh.nPages = count;
+
+    _pages = pages;
+    _id = -1;
+
+    _bang = (HICON)LoadImageW(GetModuleHandleW(L"user32.dll"),
+                              MAKEINTRESOURCEW(101), IMAGE_ICON,
+                              GetSystemMetrics(SM_CXSMICON),
+                              GetSystemMetrics(SM_CYSMICON), LR_DEFAULTCOLOR);
+    return true;
+}
+
+bool
+encui_exit(void)
+{
+    if (NULL != _psps)
+    {
+        free(_psps);
+        _psps = NULL;
+    }
+
+    if (NULL != _hpsps)
+    {
+        free(_hpsps);
+        _hpsps = NULL;
+    }
+
+    if (NULL != _bang)
+    {
+        DestroyIcon(_bang);
+        _bang = NULL;
+    }
+
+    return true;
+}
+
+int
+encui_get_page(void)
+{
+    return _id;
+}
+
+bool
+encui_set_page(int id)
+{
+    if (0 == _pages[id].title)
+    {
+        _id = -1;
+        return true;
+    }
 
     _value = ENCUI_INCOMPLETE;
-    PropertySheetW(&psh);
+    _psh.nStartPage = _id = id;
+    PropertySheetW(&_psh);
 
     pal_disable_mouse();
-
-    free(wtitle);
-    free(wmessage);
     return true;
 }
 

@@ -21,13 +21,10 @@ enum
 #define TEXT_WIDTH (GFX_COLUMNS - 2)
 
 // User interface state
-static int              _state = STATE_NONE;
-static char            *_buffer;
-static int              _position;
-static int              _length;
-static int              _capacity;
-static encui_page_proc *_proc = NULL;
-static void            *_data = NULL;
+static int         _state = STATE_NONE;
+static int         _position;
+static encui_page *_pages = NULL;
+static int         _id;
 
 // Screen metrics
 static gfx_dimensions _glyph = {0, 0};
@@ -49,7 +46,7 @@ static gfx_rect _cancel;
 static gfx_rect _ok;
 
 bool
-encui_enter(void)
+encui_enter(encui_page *pages, int count)
 {
     if (STATE_NONE != _state)
     {
@@ -71,6 +68,8 @@ encui_enter(void)
     gfx_draw_text("https://celones.pl/lavender", 1, 23);
     gfx_draw_text("(C) 2021-2024 Mateusz Karcz", 1, 24);
 
+    _pages = pages;
+    _id = -1;
     return true;
 }
 
@@ -280,7 +279,8 @@ _reset(void)
 static void
 _draw_text_box(void)
 {
-    if (0 < _proc(ENCUIM_CHECK, _buffer, _data))
+    if (0 <
+        _pages[_id].proc(ENCUIM_CHECK, _pages[_id].buffer, _pages[_id].data))
     {
         gfx_draw_rectangle(&_tbox, GFX_COLOR_GRAY);
     }
@@ -290,12 +290,13 @@ _draw_text_box(void)
     }
 
     gfx_fill_rectangle(&_tbox, GFX_COLOR_WHITE);
-    gfx_draw_text(_buffer, _tbox_left, _tbox_top);
+    gfx_draw_text(_pages[_id].buffer, _tbox_left, _tbox_top);
 }
 
 int
 encui_handle(void)
 {
+    encui_page *page = _pages + _id;
     if (STATE_NONE == _state)
     {
         return 0;
@@ -338,11 +339,11 @@ encui_handle(void)
 
     if (STATE_VERIFY == _state)
     {
-        int status = _proc(ENCUIM_NEXT, _buffer, _data);
+        int status = page->proc(ENCUIM_NEXT, page->buffer, page->data);
         if ((0 == status) || (-ENOSYS == status))
         {
             _reset();
-            return _length;
+            return page->length;
         }
 
         if (0 > status)
@@ -388,9 +389,9 @@ encui_handle(void)
         pal_get_mouse(&x, &y);
 
         int cursor = x - _tbox_left;
-        if (_length < cursor)
+        if (page->length < cursor)
         {
-            cursor = _length;
+            cursor = page->length;
         }
 
         if (_position != cursor)
@@ -421,7 +422,7 @@ encui_handle(void)
 
     if (VK_RETURN == scancode)
     {
-        if (0 >= _proc(ENCUIM_CHECK, _buffer, _data))
+        if (0 >= page->proc(ENCUIM_CHECK, page->buffer, page->data))
         {
             _state = STATE_VERIFY;
             return ENCUI_INCOMPLETE;
@@ -443,7 +444,7 @@ encui_handle(void)
         _draw_text_box();
     }
 
-    if ((VK_RIGHT == scancode) && (_length > _position))
+    if ((VK_RIGHT == scancode) && (page->length > _position))
     {
         _position++;
         _draw_text_box();
@@ -451,34 +452,34 @@ encui_handle(void)
 
     if ((VK_BACK == scancode) && (0 < _position))
     {
-        memmove(_buffer + _position - 1, _buffer + _position,
-                _length - _position);
+        memmove(page->buffer + _position - 1, page->buffer + _position,
+                page->length - _position);
         _position--;
-        _length--;
-        _buffer[_length] = 0;
+        page->length--;
+        page->buffer[page->length] = 0;
         _draw_text_box();
     }
 
-    if ((VK_DELETE == scancode) && (_length > _position))
+    if ((VK_DELETE == scancode) && (page->length > _position))
     {
-        memmove(_buffer + _position, _buffer + _position + 1,
-                _length - _position - 1);
-        _length--;
-        _buffer[_length] = 0;
+        memmove(page->buffer + _position, page->buffer + _position + 1,
+                page->length - _position - 1);
+        page->length--;
+        page->buffer[page->length] = 0;
         _draw_text_box();
     }
 
     if (((' ' == scancode) || (VK_OEM_MINUS == scancode) ||
          ((VK_DELETE < scancode) && (VK_F1 > scancode))) &&
-        (_length < _capacity))
+        (page->length < page->capacity))
     {
-        memmove(_buffer + _position + 1, _buffer + _position,
-                _length - _position);
-        _buffer[_position] =
+        memmove(page->buffer + _position + 1, page->buffer + _position,
+                page->length - _position);
+        page->buffer[_position] =
             (VK_OEM_MINUS == scancode) ? '-' : (scancode & 0xFF);
         _position++;
-        _length++;
-        _buffer[_length] = 0;
+        page->length++;
+        page->buffer[page->length] = 0;
         _draw_text_box();
     }
 
@@ -488,12 +489,38 @@ encui_handle(void)
     return ENCUI_INCOMPLETE;
 }
 
-bool
-encui_prompt(encui_page *page)
+int
+encui_get_page(void)
 {
+    return _id;
+}
+
+bool
+encui_set_page(int id)
+{
+    if (_id == id)
+    {
+        return true;
+    }
+
     if (STATE_NONE != _state)
     {
         return false;
+    }
+
+    encui_page *page = _pages + id;
+    _id = id;
+
+    if (0 == page->title)
+    {
+        _id = -1;
+        _state = STATE_NONE;
+        return true;
+    }
+
+    if (0 == page->length)
+    {
+        page->buffer[0] = 0;
     }
 
     char buffer[GFX_COLUMNS * 2];
@@ -517,15 +544,10 @@ encui_prompt(encui_page *page)
     _tbox.left = _tbox_left * _glyph.width - 1;
 
     _state = STATE_PROMPT;
-    _buffer = page->buffer;
-    _position = _length = 0;
-    _capacity = page->capacity;
-    _proc = page->proc;
-    _data = page->data;
+    _position = page->length;
     _caret_counter = pal_get_counter();
     _caret_period = pal_get_ticks(500);
 
-    _buffer[0] = 0;
     _draw_text_box();
 
     char caption[9];

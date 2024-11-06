@@ -29,13 +29,10 @@ extern enc_provider_proc __enc_split_proc;
 extern enc_provider_proc __enc_prompt_proc;
 
 #define CONTINUE 1
-#define CUSTOM   2
 
 enum
 {
     ENCS_INITIALIZE,
-    ENCS_CUSTOM,
-    ENCS_ACQUIRE,
     ENCS_READ,
     ENCS_VERIFY,
     ENCS_COMPLETE,
@@ -44,9 +41,7 @@ enum
 enum
 {
     ENCM_INITIALIZE,
-    ENCM_ACQUIRE,
     ENCM_TRANSFORM,
-    ENCM_CUSTOM,
     ENCM_GET_ERROR_STRING,
 };
 
