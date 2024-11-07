@@ -547,7 +547,7 @@ encui_set_page(int id)
         page->buffer[0] = 0;
     }
 
-    char buffer[GFX_COLUMNS * 2];
+    char buffer[GFX_COLUMNS * 4];
     _draw_background();
     pal_load_string(page->title, buffer, sizeof(buffer));
     _draw_title(buffer);
