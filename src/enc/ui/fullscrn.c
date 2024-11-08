@@ -452,7 +452,7 @@ encui_handle(void)
         return ENCUI_INCOMPLETE;
     }
 
-    if (VK_PRIOR == scancode)
+    if ((VK_PRIOR == scancode) && (0 < _id))
     {
         _reset();
         encui_set_page(_id - 1);
