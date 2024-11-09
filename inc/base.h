@@ -29,10 +29,6 @@
 #define __builtin_parity(x) (__popcnt(x) % 2)
 
 #define strcasecmp _stricmp
-
-#ifndef alloca
-#define alloca _alloca
-#endif
 #endif
 
 #ifndef far
