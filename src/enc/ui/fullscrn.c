@@ -155,22 +155,23 @@ _copy_text(char *dst, const char *src, size_t length)
 static int
 _wrap(char *dst, const char *src, size_t width, char delimiter)
 {
-    int i = 0;
     int chars = 0;
 
-    while (src[i])
+    const char *psrc = src;
+    char       *pdst = dst;
+    while (*psrc && (chars <= width))
     {
-        if (delimiter == src[i])
+        if (delimiter == *psrc)
         {
-            dst[i] = 0;
-            return i + 1;
+            *pdst = 0;
+            return psrc - src + 1;
         }
 
-        size_t word_span = strcspn(src + i, " \n");
-        int    word_length = _measure_span(src + i, word_span);
+        size_t word_span = strcspn(psrc, " \n");
+        int    word_length = _measure_span(psrc, word_span);
         if (width < chars + word_length)
         {
-            if (0 == i)
+            if (src == psrc)
             {
                 return _copy_text(dst, src, width);
             }
@@ -178,20 +179,30 @@ _wrap(char *dst, const char *src, size_t width, char delimiter)
             break;
         }
 
-        memcpy(dst + i, src + i, word_span);
-        i += word_span;
+        memcpy(pdst, psrc, word_span);
+        psrc += word_span;
+        pdst += word_span;
         chars += word_length;
 
-        while (' ' == src[i])
+        while ((' ' == *psrc) && (chars < width))
         {
-            dst[i] = src[i];
-            i++;
+            *pdst = *psrc;
+            psrc++;
+            pdst++;
             chars++;
+        }
+
+        if (chars == width)
+        {
+            while (' ' == *psrc)
+            {
+                psrc++;
+            }
         }
     }
 
-    dst[i] = 0;
-    return i;
+    *pdst = 0;
+    return psrc - src;
 }
 
 static int
