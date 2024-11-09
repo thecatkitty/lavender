@@ -179,6 +179,36 @@ pal_get_keystroke(void)
     case SDLK_PAGEUP:
         c = VK_PRIOR;
         break;
+    case SDLK_KP_0:
+        c = '0';
+        break;
+    case SDLK_KP_1:
+        c = '1';
+        break;
+    case SDLK_KP_2:
+        c = '2';
+        break;
+    case SDLK_KP_3:
+        c = '3';
+        break;
+    case SDLK_KP_4:
+        c = '4';
+        break;
+    case SDLK_KP_5:
+        c = '5';
+        break;
+    case SDLK_KP_6:
+        c = '6';
+        break;
+    case SDLK_KP_7:
+        c = '7';
+        break;
+    case SDLK_KP_8:
+        c = '8';
+        break;
+    case SDLK_KP_9:
+        c = '9';
+        break;
     }
     
     if (255 < c)
