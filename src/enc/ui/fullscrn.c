@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <string.h>
 
 #include <fmt/utf8.h>
@@ -82,18 +81,15 @@ encui_exit(void)
 }
 
 static void
-_draw_title(const char *title)
+_draw_title(char *title)
 {
     gfx_rect bar = {0, 0, _screen.width, _glyph.height + 1};
     gfx_fill_rectangle(&bar, GFX_COLOR_BLACK);
 
-#ifdef UTF8_NATIVE
-    const char *title_l = title;
-#else
-    char *title_l = alloca(strlen(title) + 1);
-    utf8_encode(title, title_l, pal_wctob);
+#ifndef UTF8_NATIVE
+    utf8_encode(title, title, pal_wctob);
 #endif
-    gfx_draw_text(title_l, 1, 0);
+    gfx_draw_text(title, 1, 0);
 }
 
 static void
@@ -206,16 +202,13 @@ _wrap(char *dst, const char *src, size_t width, char delimiter)
 }
 
 static int
-_draw_text(int top, const char *text)
+_draw_text(int top, char *text)
 {
-#ifdef UTF8_NATIVE
-    const char *text_l = text;
-#else
-    char *text_l = alloca(strlen(text) + 1);
-    utf8_encode(text, text_l, pal_wctob);
+#ifndef UTF8_NATIVE
+    utf8_encode(text, text, pal_wctob);
 #endif
 
-    const char *fragment = text_l;
+    const char *fragment = text;
 #ifdef UTF8_NATIVE
     char line_buff[2 * TEXT_WIDTH + 1];
 #else
