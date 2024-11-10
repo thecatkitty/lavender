@@ -3,10 +3,17 @@
 
 #include <errno.h>
 #include <limits.h>
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <sys/types.h>
+
+#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
+#include <stdbool.h>
+#else
+typedef int bool;
+#define false 0
+#define true 1
+#endif
 
 #if defined(__ia16__)
 #include <libi86/malloc.h>
