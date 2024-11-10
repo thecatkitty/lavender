@@ -22,7 +22,9 @@ _permute(const char *table,
          uint8_t     input_len)
 {
     uint64_t ret = 0;
-    for (uint8_t i = 0; i < table_len; i++)
+
+    uint8_t i;
+    for (i = 0; i < table_len; i++)
     {
         ret |= ((input >> (input_len - table[i])) & 1) << (table_len - i - 1);
     }
@@ -57,12 +59,15 @@ _generate_subkeys(uint64_t key, uint64_t subkeys[])
     uint32_t C_28 = (uint32_t)((K_56 >> 28) & 0xFFFFFFF);
     uint32_t D_28 = (uint32_t)(K_56 & 0xFFFFFFF);
 
-    for (uint8_t round = 0; round < DES_ROUNDS; round++)
+    uint8_t round;
+    for (round = 0; round < DES_ROUNDS; round++)
     {
+        uint64_t CD_56;
+
         C_28 = _rotl28(C_28, ROTATIONS[round]);
         D_28 = _rotl28(D_28, ROTATIONS[round]);
 
-        uint64_t CD_56 = ((uint64_t)C_28 << 28) | (uint64_t)D_28;
+        CD_56 = ((uint64_t)C_28 << 28) | (uint64_t)D_28;
         subkeys[round] = _permute(PC2, lengthof(PC2), CD_56, 56);
     }
 }
@@ -83,7 +88,8 @@ _F(uint64_t K, uint32_t R)
 
     // Apply substitution boxes, compress to 32 bits
     uint32_t output = 0;
-    for (int i = 0; i < 8; i++)
+    int      i;
+    for (i = 0; i < 8; i++)
     {
         output <<= 4;
         output |= (uint32_t)_S(i, (uint8_t)((e & 0xFC0000000000) >> 42));
@@ -97,15 +103,18 @@ _F(uint64_t K, uint32_t R)
 static uint64_t
 _des(const uint64_t subkeys[], uint64_t M)
 {
+    uint32_t L, R;
+    int      i;
+
     // Initial permutation of data
     M = _permute(IP, lengthof(IP), M, 64);
 
     // Split into two 32-bit halves
-    uint32_t L = (uint32_t)(M >> 32) & 0xFFFFFFFF;
-    uint32_t R = (uint32_t)(M & 0xFFFFFFFF);
+    L = (uint32_t)(M >> 32) & 0xFFFFFFFF;
+    R = (uint32_t)(M & 0xFFFFFFFF);
 
     // Substitute
-    for (int i = 0; i < DES_ROUNDS; i++)
+    for (i = 0; i < DES_ROUNDS; i++)
     {
         uint32_t L_old = L;
         uint64_t subkey = subkeys[DES_ROUNDS - i - 1];
@@ -167,6 +176,8 @@ des_free(enc_stream *stream)
 static uint8_t
 des_at(enc_stream *stream, size_t i)
 {
+    const uint8_t *bytes;
+
     size_t position = sizeof(uint64_t) + (i & ~7);
     if (CONTEXT(stream)->at_pos != position)
     {
@@ -176,7 +187,7 @@ des_at(enc_stream *stream, size_t i)
         CONTEXT(stream)->at_pt = _des(CONTEXT(stream)->subkeys, ct) ^ iv;
     }
 
-    const uint8_t *bytes = (const uint8_t *)&CONTEXT(stream)->at_pt;
+    bytes = (const uint8_t *)&CONTEXT(stream)->at_pt;
     return bytes[7 - (i & 7)];
 }
 
@@ -189,6 +200,10 @@ des_decrypt(enc_stream *stream, uint8_t *dst)
     uint64_t       ct_previous = _from_bytes(stream->data);
     const uint8_t *ct_ptr = stream->data + sizeof(uint64_t);
     const uint8_t *ct_padding = stream->data + length;
+
+    uint64_t ct, pt;
+    uint8_t  pt_bytes[sizeof(uint64_t)];
+    uint8_t  padding;
 
     // Process the unpadded part of the ciphertext
     while (ct_ptr < ct_padding)
@@ -203,12 +218,11 @@ des_decrypt(enc_stream *stream, uint8_t *dst)
     }
 
     // Process the padded part of the ciphertext
-    uint64_t ct = _from_bytes(ct_ptr);
-    uint64_t pt = _des(CONTEXT(stream)->subkeys, ct) ^ ct_previous;
+    ct = _from_bytes(ct_ptr);
+    pt = _des(CONTEXT(stream)->subkeys, ct) ^ ct_previous;
 
-    uint8_t pt_bytes[sizeof(uint64_t)];
     _to_bytes(pt, pt_bytes);
-    uint8_t padding = pt_bytes[7];
+    padding = pt_bytes[7];
     memcpy(dst, pt_bytes, 8 - padding);
 
     // Store the real data length
@@ -225,20 +239,20 @@ des_verify(enc_stream *stream, uint32_t crc)
     uint64_t pt = _des(CONTEXT(stream)->subkeys, ct) ^ iv;
 
     uint8_t pt_bytes[sizeof(uint64_t)];
+    uint8_t padding;
+    size_t  length;
+
     _to_bytes(pt, pt_bytes);
-    uint8_t padding = pt_bytes[7];
+    padding = pt_bytes[7];
     if (8 < padding)
     {
         return false;
     }
 
-    size_t length = stream->data_length - sizeof(uint64_t) - padding;
+    length = stream->data_length - sizeof(uint64_t) - padding;
     return crc == zip_calculate_crc_indirect((uint8_t(*)(void *, size_t))des_at,
                                              stream, length);
 }
 
-enc_stream_impl __enc_des_impl = {.allocate = des_allocate,
-                                  .free = des_free,
-                                  .at = des_at,
-                                  .decrypt = des_decrypt,
-                                  .verify = des_verify};
+enc_stream_impl __enc_des_impl = {des_allocate, des_free, des_at, des_decrypt,
+                                  des_verify};

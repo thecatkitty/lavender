@@ -33,9 +33,26 @@ static int         _id;
 static WCHAR            _brand[MAX_PATH] = L"";
 static PROPSHEETPAGEW  *_psps = NULL;
 static HPROPSHEETPAGE  *_hpsps = NULL;
-static PROPSHEETHEADERW _psh = {.dwSize = sizeof(PROPSHEETHEADERW)};
+static PROPSHEETHEADERW _psh = {sizeof(PROPSHEETHEADERW)};
 
 static int _value;
+
+static bool
+_set_text(HWND wnd, int ids)
+{
+    LPWSTR text = NULL;
+    int    length = LoadStringW(NULL, ids, (LPWSTR)&text, 0);
+    text = (LPWSTR)malloc((length + 1) * sizeof(WCHAR));
+    if (NULL == text)
+    {
+        return false;
+    }
+
+    LoadStringW(NULL, ids, text, length + 1);
+    SetWindowTextW(wnd, text);
+    free(text);
+    return true;
+}
 
 static INT_PTR CALLBACK
 _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
@@ -49,26 +66,28 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
 #if WINVER < 0x0600
         if (!_is_vista)
         {
-            HWND ps = GetParent(dlg);
+            HWND ps = GetParent(dlg), ctl;
+            RECT padding = {WIZARD97_PADDING_LEFT, 0, WIZARD97_PADDING_TOP, 0};
+
+            RECT wnd_rect, ps_rect, cl_rect;
+            LONG window_width, window_height, border_width, border_height,
+                cl_width, cl_height;
 
             // Get window and dialog client and non-client rects
-            RECT wnd_rect;
             GetWindowRect(windows_get_hwnd(), &wnd_rect);
-            LONG window_width = wnd_rect.right - wnd_rect.left;
-            LONG window_height = wnd_rect.bottom - wnd_rect.top;
+            window_width = wnd_rect.right - wnd_rect.left;
+            window_height = wnd_rect.bottom - wnd_rect.top;
 
-            RECT ps_rect;
             GetWindowRect(ps, &ps_rect);
-            LONG border_height = ps_rect.bottom - ps_rect.top;
-            LONG border_width = ps_rect.right - ps_rect.left;
+            border_height = ps_rect.bottom - ps_rect.top;
+            border_width = ps_rect.right - ps_rect.left;
 
-            RECT cl_rect;
             GetClientRect(ps, &cl_rect);
             border_height -= cl_rect.bottom - cl_rect.top;
             border_width -= cl_rect.right - cl_rect.left;
 
-            LONG cl_width = cl_rect.right - cl_rect.left;
-            LONG cl_height = cl_rect.bottom - cl_rect.top;
+            cl_width = cl_rect.right - cl_rect.left;
+            cl_height = cl_rect.bottom - cl_rect.top;
 
             // Center the dialog relative to the parent window
             SetWindowPos(
@@ -79,9 +98,8 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOREDRAW);
 
             // Apply padding
-            RECT padding = {WIZARD97_PADDING_LEFT, 0, WIZARD97_PADDING_TOP, 0};
             MapDialogRect(dlg, &padding);
-            HWND ctl = GetWindow(dlg, GW_CHILD);
+            ctl = GetWindow(dlg, GW_CHILD);
             while (ctl)
             {
                 RECT ctl_rect;
@@ -98,29 +116,8 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
 #endif // WINVER < 0x0600
 
         // Set the prompt's content
-        LPWSTR title = NULL;
-        int    title_length = LoadStringW(NULL, page->title, (LPWSTR)&title, 0);
-        title = (LPWSTR)malloc((title_length + 1) * sizeof(WCHAR));
-        if (NULL == title)
-        {
-            return false;
-        }
-        LoadStringW(NULL, page->title, title, title_length + 1);
-        SetWindowTextW(dlg, title);
-        free(title);
-
-        LPWSTR message = NULL;
-        int    message_length =
-            LoadStringW(NULL, page->message, (LPWSTR)&message, 0);
-        message = (LPWSTR)malloc((message_length + 1) * sizeof(WCHAR));
-        if (NULL == message)
-        {
-            return false;
-        }
-        LoadStringW(NULL, page->message, message, message_length + 1);
-        SetWindowTextW(GetDlgItem(dlg, IDC_TEXT), message);
-        free(message);
-
+        _set_text(dlg, page->title);
+        _set_text(GetDlgItem(dlg, IDC_TEXT), page->message);
         SetWindowTextW(GetDlgItem(dlg, IDC_ALERT), L"");
 
         return TRUE;
@@ -142,6 +139,7 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
         }
 
         case PSN_WIZNEXT: {
+            int    status;
             HWND   edit_box = GetDlgItem(dlg, IDC_EDITBOX);
             size_t length = GetWindowTextLengthW(edit_box);
             LPWSTR text = (LPWSTR)malloc((length + 1) * sizeof(WCHAR));
@@ -155,8 +153,8 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
             _value = length;
             free(text);
 
-            int status = _pages[id].proc(ENCUIM_NEXT, _pages[id].buffer,
-                                         _pages[id].data);
+            status = _pages[id].proc(ENCUIM_NEXT, _pages[id].buffer,
+                                     _pages[id].data);
             if (0 < status)
             {
                 WCHAR message[GFX_COLUMNS];
@@ -198,14 +196,19 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
 
         if ((EN_CHANGE == HIWORD(wparam)) && (IDC_EDITBOX == LOWORD(wparam)))
         {
+            HWND   edit_box;
+            size_t length;
+            LPWSTR text;
+            LPSTR  atext;
+
             if (-ENOSYS == _pages[id].proc(ENCUIM_CHECK, NULL, _pages[id].data))
             {
                 return TRUE;
             }
 
-            HWND   edit_box = GetDlgItem(dlg, IDC_EDITBOX);
-            size_t length = GetWindowTextLengthW(edit_box);
-            LPWSTR text = (LPWSTR)malloc((length + 1) * sizeof(WCHAR));
+            edit_box = GetDlgItem(dlg, IDC_EDITBOX);
+            length = GetWindowTextLengthW(edit_box);
+            text = (LPWSTR)malloc((length + 1) * sizeof(WCHAR));
             if (NULL == text)
             {
                 return TRUE;
@@ -214,7 +217,7 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
 
             length =
                 WideCharToMultiByte(CP_UTF8, 0, text, -1, NULL, 0, NULL, NULL);
-            LPSTR atext = (LPSTR)malloc(length);
+            atext = (LPSTR)malloc(length);
             if (NULL == atext)
             {
                 free(text);
@@ -223,12 +226,14 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
             WideCharToMultiByte(CP_UTF8, 0, text, -1, atext, length, NULL,
                                 NULL);
 
-            bool has_previous = (0 != id) && (0 != _pages[id - 1].title);
-            bool is_valid =
-                0 >= _pages[id].proc(ENCUIM_CHECK, atext, _pages[id].data);
-            PropSheet_SetWizButtons(GetParent(dlg),
-                                    (has_previous ? PSWIZB_BACK : 0) |
-                                        (is_valid ? PSWIZB_NEXT : 0));
+            {
+                bool has_previous = (0 != id) && (0 != _pages[id - 1].title);
+                bool is_valid =
+                    0 >= _pages[id].proc(ENCUIM_CHECK, atext, _pages[id].data);
+                PropSheet_SetWizButtons(GetParent(dlg),
+                                        (has_previous ? PSWIZB_BACK : 0) |
+                                            (is_valid ? PSWIZB_NEXT : 0));
+            }
 
             free(text);
             free(atext);
@@ -243,6 +248,8 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
 bool
 encui_enter(encui_page *pages, int count)
 {
+    int i;
+
     _nclm.cbSize = sizeof(_nclm);
     if (!SystemParametersInfoW(SPI_GETNONCLIENTMETRICS, sizeof(_nclm), &_nclm,
                                0))
@@ -274,7 +281,7 @@ encui_enter(encui_page *pages, int count)
                             lengthof(_brand));
     }
 
-    for (int i = 0; i < count; i++)
+    for (i = 0; i < count; i++)
     {
         if (0 == pages[i].title)
         {

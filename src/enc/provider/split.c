@@ -56,9 +56,10 @@ __enc_split_proc(int msg, enc_context *enc)
     }
 
     case ENCM_TRANSFORM: {
+        uint32_t key_src[2];
         enc->data.split.passcode = rstrtoull(enc->buffer, 10);
-        uint32_t key_src[2] = {enc->data.split.local_part,
-                               enc->data.split.passcode};
+        key_src[0] = enc->data.split.local_part;
+        key_src[1] = enc->data.split.passcode;
         enc->key.qw = enc_decode_key(key_src, ENC_KEYSM_LE32B6D);
         return 0;
     }

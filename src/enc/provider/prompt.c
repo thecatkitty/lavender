@@ -10,13 +10,14 @@ _passcode_page_proc(int msg, void *param, void *data)
     switch (msg)
     {
     case ENCUIM_CHECK: {
-        const char *passcode = (const char *)param;
+        const char        *passcode = (const char *)param;
+        const enc_context *enc = (const enc_context *)data;
+
         if (NULL == passcode)
         {
             return 1;
         }
 
-        const enc_context *enc = (const enc_context *)data;
         if (ENC_KEYSM_PKEY25XOR12 == (enc->provider >> 8))
         {
             return enc_validate_key_format(passcode, ENC_KEYSM_PKEY25XOR12) ? 0
@@ -81,7 +82,8 @@ __enc_prompt_proc(int msg, enc_context *enc)
 
             if (ENC_DES == enc->cipher)
             {
-                for (int i = 0; i < sizeof(uint64_t); i++)
+                int i;
+                for (i = 0; i < sizeof(uint64_t); i++)
                 {
                     enc->key.b[i] = xtob((const char *)enc->buffer + (2 * i));
                 }
