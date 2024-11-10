@@ -17,34 +17,40 @@ static HDC      _dc = NULL;
 static HBITMAP  _fb = NULL;
 static COLORREF _bg = RGB(0, 0, 0);
 
-static const COLORREF COLORS[] = {[GFX_COLOR_BLACK] = RGB(0, 0, 0),
-                                  [GFX_COLOR_NAVY] = RGB(0, 0, 128),
-                                  [GFX_COLOR_GREEN] = RGB(0, 128, 0),
-                                  [GFX_COLOR_TEAL] = RGB(0, 128, 128),
-                                  [GFX_COLOR_MAROON] = RGB(128, 0, 0),
-                                  [GFX_COLOR_PURPLE] = RGB(128, 0, 128),
-                                  [GFX_COLOR_OLIVE] = RGB(128, 128, 0),
-                                  [GFX_COLOR_SILVER] = RGB(192, 192, 192),
-                                  [GFX_COLOR_GRAY] = RGB(128, 128, 128),
-                                  [GFX_COLOR_BLUE] = RGB(0, 0, 255),
-                                  [GFX_COLOR_LIME] = RGB(0, 255, 0),
-                                  [GFX_COLOR_CYAN] = RGB(0, 255, 255),
-                                  [GFX_COLOR_RED] = RGB(255, 0, 0),
-                                  [GFX_COLOR_FUCHSIA] = RGB(255, 0, 255),
-                                  [GFX_COLOR_YELLOW] = RGB(255, 255, 0),
-                                  [GFX_COLOR_WHITE] = RGB(255, 255, 255)};
+static const COLORREF COLORS[] = {/* BLACK */ RGB(0, 0, 0),
+                                  /* NAVY */ RGB(0, 0, 128),
+                                  /* GREEN */ RGB(0, 128, 0),
+                                  /* TEAL */ RGB(0, 128, 128),
+                                  /* MAROON */ RGB(128, 0, 0),
+                                  /* PURPLE */ RGB(128, 0, 128),
+                                  /* OLIVE */ RGB(128, 128, 0),
+                                  /* SILVER */ RGB(192, 192, 192),
+                                  /* GRAY */ RGB(128, 128, 128),
+                                  /* BLUE */ RGB(0, 0, 255),
+                                  /* LIME */ RGB(0, 255, 0),
+                                  /* CYAN */ RGB(0, 255, 255),
+                                  /* RED */ RGB(255, 0, 0),
+                                  /* FUCHSIA */ RGB(255, 0, 255),
+                                  /* YELLOW */ RGB(255, 255, 0),
+                                  /* WHITE */ RGB(255, 255, 255)};
 
 bool
 windows_set_font(HFONT font)
 {
+    HBITMAP     new_fb;
+    HDC         wnd_dc, new_dc;
+    RECT        rect, screen_rect = {0, 0};
+    SIZE        old_screen;
+    TEXTMETRICW metric;
+
     if (NULL != _font)
     {
         DeleteObject(_font);
     }
     _font = font;
 
-    HDC wnd_dc = GetDC(_wnd);
-    HDC new_dc = CreateCompatibleDC(wnd_dc);
+    wnd_dc = GetDC(_wnd);
+    new_dc = CreateCompatibleDC(wnd_dc);
     if (NULL == new_dc)
     {
         ReleaseDC(_wnd, wnd_dc);
@@ -53,10 +59,8 @@ windows_set_font(HFONT font)
 
     SelectObject(new_dc, _font);
 
-    SIZE old_screen;
     memcpy(&old_screen, &_screen, sizeof(SIZE));
 
-    TEXTMETRICW metric;
     GetTextMetricsW(new_dc, &metric);
     _glyph.cx = metric.tmAveCharWidth;
     _glyph.cy = metric.tmHeight;
@@ -66,7 +70,6 @@ windows_set_font(HFONT font)
     _origin.y = 0;
     _scale = (float)metric.tmHeight / 16.f;
 
-    RECT rect;
     GetClientRect(_wnd, &rect);
     rect.right = rect.left + _screen.cx;
     rect.bottom = rect.top + _screen.cy;
@@ -76,12 +79,12 @@ windows_set_font(HFONT font)
                  rect.bottom - rect.top,
                  SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
 
-    HBITMAP new_fb = CreateCompatibleBitmap(wnd_dc, _screen.cx, _screen.cy);
+    new_fb = CreateCompatibleBitmap(wnd_dc, _screen.cx, _screen.cy);
     SelectObject(new_dc, new_fb);
     ReleaseDC(_wnd, wnd_dc);
 
-    RECT screen_rect = {
-        .left = 0, .top = 0, .right = _screen.cx, .bottom = _screen.cy};
+    screen_rect.right = _screen.cx;
+    screen_rect.bottom = _screen.cy;
     if (NULL == _dc)
     {
         FillRect(new_dc, &screen_rect, GetStockObject(BLACK_BRUSH));
@@ -110,9 +113,10 @@ windows_set_scale(float scale)
 bool
 gfx_initialize(void)
 {
+    HDC wnd_dc;
     _wnd = windows_get_hwnd();
 
-    HDC wnd_dc = GetDC(_wnd);
+    wnd_dc = GetDC(_wnd);
     _min_scale = (float)GetDeviceCaps(wnd_dc, LOGPIXELSX) / 96.f;
     ReleaseDC(_wnd, wnd_dc);
 
@@ -175,6 +179,12 @@ _grow_wrect(RECT *wrect, int length)
 bool
 gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
 {
+    HDC     bmp_dc = NULL;
+    HBITMAP bmp = NULL;
+    RECT    rect;
+    int     width, height;
+
+    const void *bits = bm->bits;
     BITMAPINFO *bmi = (BITMAPINFO *)calloc(1, sizeof(BITMAPINFOHEADER) +
                                                   16 * sizeof(COLORREF));
     if (NULL == bmi)
@@ -189,11 +199,7 @@ gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
     bmi->bmiHeader.biBitCount = bm->bpp;
     bmi->bmiHeader.biCompression = BI_RGB;
 
-    HDC     bmp_dc = NULL;
-    HBITMAP bmp = NULL;
-
     // Prepare pixel data
-    const void *bits = bm->bits;
     if (1 == bm->bpp)
     {
         // Prepare a DWORD-aligned buffer for 1bpp bitmaps
@@ -201,6 +207,10 @@ gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
         {
             size_t aligned_opl = align(bm->opl, 4);
             size_t lines = abs(bm->height);
+            size_t i;
+
+            const char *src;
+            char       *dst;
 
             char *aligned_bits = malloc(aligned_opl * lines);
             if (NULL == aligned_bits)
@@ -208,9 +218,9 @@ gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
                 goto end;
             }
 
-            const char *src = bm->bits;
-            char       *dst = aligned_bits;
-            for (size_t i = 0; i < lines; i++)
+            src = bm->bits;
+            dst = aligned_bits;
+            for (i = 0; i < lines; i++)
             {
                 memcpy(dst, src, bm->opl);
                 src += bm->opl;
@@ -244,13 +254,16 @@ gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
         goto end;
     }
 
-    int width = _scale * bm->width;
-    int height = _scale * abs(bm->height);
+    width = _scale * bm->width;
+    height = _scale * abs(bm->height);
     SelectObject(bmp_dc, bmp);
     StretchBlt(_dc, x, y, width, height, bmp_dc, 0, 0, bm->width,
                abs(bm->height), SRCCOPY);
 
-    RECT rect = {x, y, x + width, y + height};
+    rect.left = x;
+    rect.top = y;
+    rect.right = x + width;
+    rect.bottom = y + height;
     OffsetRect(&rect, _origin.x, _origin.y);
     InvalidateRect(_wnd, &rect, FALSE);
 
@@ -285,6 +298,8 @@ _get_pen(gfx_color color)
 bool
 gfx_draw_line(gfx_rect *rect, gfx_color color)
 {
+    RECT wrect;
+
     HPEN pen = _get_pen(color);
     HPEN old_pen = (HPEN)SelectObject(_dc, _get_pen(color));
     MoveToEx(_dc, rect->left, rect->top, NULL);
@@ -292,7 +307,6 @@ gfx_draw_line(gfx_rect *rect, gfx_color color)
     SelectObject(_dc, old_pen);
     DeleteObject(pen);
 
-    RECT wrect;
     _to_wrect(rect, &wrect);
     _grow_wrect(&wrect, _scale);
     OffsetRect(&wrect, _origin.x, _origin.y);
@@ -304,12 +318,13 @@ bool
 gfx_draw_rectangle(gfx_rect *rect, gfx_color color)
 {
     RECT wrect;
-    _to_wrect(rect, &wrect);
-    _grow_wrect(&wrect, 1);
 
     HPEN   pen = _get_pen(color);
     HPEN   old_pen = (HPEN)SelectObject(_dc, _get_pen(color));
     HBRUSH old_brush = (HBRUSH)SelectObject(_dc, GetStockObject(HOLLOW_BRUSH));
+
+    _to_wrect(rect, &wrect);
+    _grow_wrect(&wrect, 1);
     Rectangle(_dc, wrect.left, wrect.top, wrect.right, wrect.bottom);
     SelectObject(_dc, old_brush);
     SelectObject(_dc, old_pen);
@@ -332,10 +347,10 @@ gfx_fill_rectangle(gfx_rect *rect, gfx_color color)
 
     if ((_screen.cx == rect->width) && (_screen.cy == rect->height))
     {
+        RECT wnd_rect;
         HDC  wnd_dc = GetDC(_wnd);
         SetDCBrushColor(wnd_dc, COLORS[color]);
 
-        RECT wnd_rect;
         GetClientRect(_wnd, &wnd_rect);
         FillRect(wnd_dc, &wnd_rect, GetStockObject(DC_BRUSH));
 
@@ -353,6 +368,10 @@ gfx_fill_rectangle(gfx_rect *rect, gfx_color color)
 bool
 gfx_draw_text(const char *str, uint16_t x, uint16_t y)
 {
+    HBITMAP txt_bm;
+    HDC     txt_dc;
+    RECT    rect, txt_rect = {0, 0};
+
     size_t length = MultiByteToWideChar(CP_UTF8, 0, str, -1, NULL, 0);
     LPWSTR wstr = (LPWSTR)malloc((length + 1) * sizeof(WCHAR));
     if (NULL == wstr)
@@ -362,18 +381,17 @@ gfx_draw_text(const char *str, uint16_t x, uint16_t y)
 
     MultiByteToWideChar(CP_UTF8, 0, str, -1, wstr, length + 1);
 
-    RECT rect;
     GetClientRect(_wnd, &rect);
     rect.left += x * _glyph.cx;
     rect.top += y * _glyph.cy;
 
     SelectObject(_dc, _font);
     DrawTextW(_dc, wstr, -1, &rect, DT_CALCRECT | DT_SINGLELINE);
-    RECT txt_rect = {0, 0, rect.right - rect.left, rect.bottom - rect.top};
+    txt_rect.right = rect.right - rect.left;
+    txt_rect.bottom = rect.bottom - rect.top;
 
-    HDC     txt_dc = CreateCompatibleDC(_dc);
-    HBITMAP txt_bm =
-        CreateCompatibleBitmap(_dc, txt_rect.right, txt_rect.bottom);
+    txt_dc = CreateCompatibleDC(_dc);
+    txt_bm = CreateCompatibleBitmap(_dc, txt_rect.right, txt_rect.bottom);
     SelectObject(txt_dc, txt_bm);
     SelectObject(txt_dc, _font);
     SetBkMode(txt_dc, OPAQUE);
