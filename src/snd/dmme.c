@@ -19,16 +19,22 @@ _time_callback(UINT id, UINT msg, DWORD_PTR user, DWORD_PTR dw1, DWORD_PTR dw2)
 static bool ddcall
 mme_open(device *dev)
 {
+    UINT devices, id;
+#if PAL_EXTERNAL_TICK
+    TIMECAPS tc;
+    unsigned period;
+#endif
+
     LOG("entry");
 
-    UINT devices = midiOutGetNumDevs();
+    devices = midiOutGetNumDevs();
     if (0 == devices)
     {
         LOG("no MIDI output devices");
         return false;
     }
 
-    for (UINT id = 0; id < devices; id++)
+    for (id = 0; id < devices; id++)
     {
         MIDIOUTCAPSW caps;
 
@@ -44,7 +50,6 @@ mme_open(device *dev)
     }
 
 #if PAL_EXTERNAL_TICK
-    TIMECAPS tc;
     if (TIMERR_NOERROR != timeGetDevCaps(&tc, sizeof(TIMECAPS)))
     {
         LOG("cannot get multimedia timer capabilities");
@@ -60,7 +65,7 @@ mme_open(device *dev)
     }
 
 #if PAL_EXTERNAL_TICK
-    unsigned period = min(max(tc.wPeriodMin, 1), tc.wPeriodMax);
+    period = min(max(tc.wPeriodMin, 1), tc.wPeriodMax);
     if (TIMERR_NOERROR != timeBeginPeriod(period))
     {
         LOG("cannot request the multimedia timer period");

@@ -39,6 +39,10 @@ static uint8_t  _last_note;
 static uint32_t
 _lb(uint32_t x)
 {
+    uint32_t y;
+    uint16_t left, right, frac_part;
+    uint8_t  index, remainder;
+
     uint8_t  n = 0;
     uint32_t temp_x = x;
     while (temp_x >>= 1)
@@ -46,13 +50,14 @@ _lb(uint32_t x)
         n++;
     }
 
-    uint32_t y = (x << 8) >> n; // 8-bit fixed point
-    uint8_t  index = (y - 256) >> 4, remainder = (y - 256) & 0xF;
+    y = (x << 8) >> n; // 8-bit fixed point
+    index = (y - 256) >> 4;
+    remainder = (y - 256) & 0xF;
 
-    uint16_t left = LB_LOOKUP[index] * (15 - remainder);
-    uint16_t right =
+    left = LB_LOOKUP[index] * (15 - remainder);
+    right =
         (index < 15) ? (LB_LOOKUP[index + 1] * remainder) : (remainder << 8);
-    uint16_t frac_part = (left + right) / 15;
+    frac_part = (left + right) / 15;
 
     return (n << 8) + frac_part;
 }
@@ -72,22 +77,27 @@ _fspk_start(void *music, uint16_t length)
     _sequence = (spk_note3 *)((uint8_t *)music + sizeof(spk_header));
     _ticks = 0;
 
-    char       program = 81; // Lead 1 (square wave)
-    midi_event event = {0, MIDI_MSG_PROGRAM, &program, sizeof(program)};
-    snd_send(&event);
+    {
+        char       program = 81; // Lead 1 (square wave)
+        midi_event event = {0, MIDI_MSG_PROGRAM, &program, sizeof(program)};
+        snd_send(&event);
+    }
     return true;
 }
 
 static bool
 _fspk_step(void)
 {
+    uint32_t now;
+    char     msg[2];
+
     if (!_sequence)
     {
         errno = EINVAL;
         return false;
     }
 
-    uint32_t now = pal_get_counter();
+    now = pal_get_counter();
     if (_next_tick > now)
     {
         return true;
@@ -100,7 +110,8 @@ _fspk_step(void)
         return true;
     }
 
-    char msg[] = {_last_note, 64};
+    msg[0] = _last_note;
+    msg[1] = 64;
     if (SPK_NOTE_DURATION_STOP == _sequence->duration)
     {
         midi_event event = {0, MIDI_MSG_NOTEOFF, msg, sizeof(msg)};
@@ -117,6 +128,7 @@ _fspk_step(void)
     }
     else
     {
+        uint32_t   note;
         midi_event event = {0, MIDI_MSG_NOTEOFF, msg, sizeof(msg)};
         snd_send(&event);
 
@@ -125,7 +137,7 @@ _fspk_step(void)
         // lb(F / 440) - lb(d) = (x - 69) / 12
         // x = 12 * (lb(F / 440) - lb(d)) + 69
         event.status = MIDI_MSG_NOTEON;
-        uint32_t note = NOTE_CONST_U32F8 - 12 * _lb(_sequence->divisor);
+        note = NOTE_CONST_U32F8 - 12 * _lb(_sequence->divisor);
         _last_note = ((note >> 8) & 0x7F) + ((note & 0x80) >> 7);
         msg[0] = (char)_last_note;
         snd_send(&event);

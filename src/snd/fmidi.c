@@ -21,6 +21,9 @@ _fmidi_probe(void *music, uint16_t length)
 static bool
 _fmidi_start(void *music, uint16_t length)
 {
+    midi_mthd mthd = {0};
+    iff_chunk mtrk_chunk = {0};
+    iff_chunk it = {0};
 
     _iff = iff_open(music, length);
     if (NULL == _iff)
@@ -28,10 +31,6 @@ _fmidi_start(void *music, uint16_t length)
         return false;
     }
 
-    midi_mthd mthd = {0};
-    iff_chunk mtrk_chunk = {0};
-
-    iff_chunk it = {0};
     while (iff_next_chunk(_iff, &it))
     {
         if (MIDI_FOURCC_MTHD.dw == it.type.dw)
@@ -80,6 +79,9 @@ _fmidi_start(void *music, uint16_t length)
 static bool
 _fmidi_step(void)
 {
+    uint32_t now;
+    size_t   length;
+
     if (!_track)
     {
         errno = EINVAL;
@@ -93,7 +95,7 @@ _fmidi_step(void)
         return true;
     }
 
-    uint32_t now = pal_get_counter();
+    now = pal_get_counter();
     if (_next_event > now)
     {
         return true;
@@ -104,7 +106,7 @@ _fmidi_step(void)
         snd_send(&_event);
     }
 
-    size_t length = midi_read_event(_track, &_event);
+    length = midi_read_event(_track, &_event);
     _track += length;
 
     while ((0 != length) && (0 == _event.delta) && (_track_end > _track))
