@@ -11,11 +11,12 @@
 int
 main(int argc, char *argv[])
 {
-    int status = EXIT_SUCCESS;
+    sld_context *script;
+    int          status = EXIT_SUCCESS;
 
     pal_initialize(argc, argv);
 
-    sld_context *script = sld_create_context("slides.txt", O_RDONLY);
+    script = sld_create_context("slides.txt", O_RDONLY);
     if (NULL == script)
     {
         char msg[GFX_COLUMNS];

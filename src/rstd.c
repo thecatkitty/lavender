@@ -112,13 +112,14 @@ isxdigstr(const char *str)
 uint8_t
 xtob(const char *str)
 {
+    uint8_t ret;
+
     if (!isxdigit(str[0]) || !isxdigit(str[1]))
     {
         return 0;
     }
 
-    uint8_t ret =
-        isdigit(str[1]) ? (str[1] - '0') : (toupper(str[1]) - 'A' + 10);
+    ret = isdigit(str[1]) ? (str[1] - '0') : (toupper(str[1]) - 'A' + 10);
     ret |= (isdigit(str[0]) ? (str[0] - '0') : (toupper(str[0]) - 'A' + 10))
            << 4;
 
