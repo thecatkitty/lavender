@@ -78,6 +78,11 @@ __mme_init(void);
 extern int
 main(int argc, char *argv[]);
 
+#if MSC_VER < 1800
+#define snprintf _snprintf
+#endif
+
+
 int WINAPI
 wWinMain(_In_ HINSTANCE     instance,
          _In_opt_ HINSTANCE prev_instance,
