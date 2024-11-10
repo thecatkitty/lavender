@@ -19,10 +19,12 @@ else()
 endif()
 
 cmake_path(GET CMAKE_C_COMPILER PARENT_PATH compiler_root)
-find_program(win32_windres ${WIN32_TRIPLE}-windres PATHS ${compiler_root})
-find_program(win32_objcopy ${WIN32_TRIPLE}-objcopy PATHS ${compiler_root})
-set(CMAKE_RC_COMPILER ${win32_windres})
-set(CMAKE_WIN32_OBJCOPY ${win32_objcopy})
+if(NOT MSVC)
+    find_program(win32_windres ${WIN32_TRIPLE}-windres PATHS ${compiler_root})
+    find_program(win32_objcopy ${WIN32_TRIPLE}-objcopy PATHS ${compiler_root})
+    set(CMAKE_RC_COMPILER ${win32_windres})
+    set(CMAKE_WIN32_OBJCOPY ${win32_objcopy})
+endif()
 
 function(add_win32_strings target source_file)
     add_custom_command(

@@ -34,6 +34,13 @@ static const COLORREF COLORS[] = {/* BLACK */ RGB(0, 0, 0),
                                   /* YELLOW */ RGB(255, 255, 0),
                                   /* WHITE */ RGB(255, 255, 255)};
 
+#if MSC_VER < 1800
+float roundf(float x)
+{
+   return x >= 0.0f ? floorf(x + 0.5f) : ceilf(x - 0.5f);
+}
+#endif
+
 bool
 windows_set_font(HFONT font)
 {
