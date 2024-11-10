@@ -57,7 +57,8 @@ void
 snd_enum_devices(snd_enum_devices_callback callback, void *data)
 {
 #if defined(CONFIG_SOUND)
-    for (int i = 0; i < MAX_DEVICES; i++)
+    int i;
+    for (i = 0; i < MAX_DEVICES; i++)
     {
         if (NULL == _devices[i].ops)
         {
@@ -76,7 +77,8 @@ int ddcall
 snd_register_device(far device *dev)
 {
 #if defined(CONFIG_SOUND)
-    for (int i = 0; i < MAX_DEVICES; i++)
+    int i;
+    for (i = 0; i < MAX_DEVICES; i++)
     {
         if (NULL == _devices[i].ops)
         {
@@ -96,9 +98,9 @@ int ddcall
 snd_unregister_devices(far snd_device_ops *ops)
 {
 #if defined(CONFIG_SOUND)
-    int count = 0;
+    int count = 0, i;
 
-    for (int i = 0; i < MAX_DEVICES; i++)
+    for (i = 0; i < MAX_DEVICES; i++)
     {
         if (ops == _devices[i].ops)
         {
@@ -254,6 +256,11 @@ bool
 snd_play(const char *name)
 {
 #if defined(CONFIG_SOUND)
+    snd_format_protocol **format;
+
+    char *data;
+    int   length;
+
     _format.probe = 0;
     _format.start = 0;
     _format.step = 0;
@@ -269,15 +276,14 @@ snd_play(const char *name)
         return false;
     }
 
-    char *data = pal_get_asset_data(_music);
+    data = pal_get_asset_data(_music);
     if (NULL == data)
     {
         return false;
     }
 
-    int length = pal_get_asset_size(_music);
-    for (snd_format_protocol **format = _formats;
-         format < _formats + lengthof(_formats); format++)
+    length = pal_get_asset_size(_music);
+    for (format = _formats; format < _formats + lengthof(_formats); format++)
     {
         if ((*format)->probe(data, length))
         {
