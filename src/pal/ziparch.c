@@ -73,9 +73,11 @@ _tmpnam(char *path)
 bool
 ziparch_initialize(const char *self)
 {
+    int i;
+
     LOG("entry, self: '%s'", self);
 
-    for (int i = 0; i < MAX_OPEN_ASSETS; ++i)
+    for (i = 0; i < MAX_OPEN_ASSETS; ++i)
     {
         __pal_assets[i].inzip = -1;
         __pal_assets[i].flags = 0;
@@ -95,9 +97,11 @@ ziparch_initialize(const char *self)
 void
 ziparch_cleanup(void)
 {
+    int i;
+
     LOG("entry");
 
-    for (int i = 0; i < MAX_OPEN_ASSETS; ++i)
+    for (i = 0; i < MAX_OPEN_ASSETS; ++i)
     {
         if (NULL != __pal_assets[i].data)
         {
@@ -153,11 +157,12 @@ pal_enum_assets(pal_enum_assets_callback callback,
 int
 pal_extract_asset(const char *name, char *path)
 {
-    LOG("entry, name: '%s'", name);
-
     hasset asset = NULL;
     char  *data = NULL;
     FILE  *out = NULL;
+    int    size;
+
+    LOG("entry, name: '%s'", name);
 
     if (NULL == (asset = pal_open_asset(name, O_RDONLY)))
     {
@@ -184,7 +189,7 @@ pal_extract_asset(const char *name, char *path)
         goto exit;
     }
 
-    int size = pal_get_asset_size(asset);
+    size = pal_get_asset_size(asset);
     if (size != fwrite(data, 1, size, out))
     {
         LOG("cannot write the file!");
@@ -211,16 +216,19 @@ exit:
 hasset
 pal_open_asset(const char *name, int flags)
 {
+    off_t lfh;
+    int   slot;
+
     LOG("entry, name: '%s', flags: %#x", name, flags);
 
-    off_t lfh = zip_search(name, strlen(name));
+    lfh = zip_search(name, strlen(name));
     if (-1 == lfh)
     {
         LOG("exit, cannot find asset. %s", strerror(errno));
         return NULL;
     }
 
-    int slot = 0;
+    slot = 0;
     while (-1 != __pal_assets[slot].inzip)
     {
         if (lfh == __pal_assets[slot].inzip)
@@ -253,9 +261,10 @@ pal_open_asset(const char *name, int flags)
 bool
 pal_close_asset(hasset asset)
 {
+    pal_asset *ptr = (pal_asset *)asset;
+
     LOG("entry, asset: %p", (void *)asset);
 
-    pal_asset *ptr = (pal_asset *)asset;
     if (-1 == ptr->inzip)
     {
         LOG("exit, wrong handle");
@@ -285,9 +294,10 @@ pal_close_asset(hasset asset)
 char *
 pal_get_asset_data(hasset asset)
 {
+    pal_asset *ptr = (pal_asset *)asset;
+
     LOG("entry, asset: %p", (void *)asset);
 
-    pal_asset *ptr = (pal_asset *)asset;
     if (-1 == ptr->inzip)
     {
         LOG("exit, wrong handle");
@@ -308,9 +318,11 @@ pal_get_asset_data(hasset asset)
 int
 pal_get_asset_size(hasset asset)
 {
+    pal_asset *ptr = (pal_asset *)asset;
+    uint32_t   size;
+
     LOG("entry, asset: %p", (void *)asset);
 
-    pal_asset *ptr = (pal_asset *)asset;
     if (-1 == ptr->inzip)
     {
         LOG("exit, wrong handle");
@@ -318,7 +330,7 @@ pal_get_asset_size(hasset asset)
         return -1;
     }
 
-    uint32_t size = zip_get_size(ptr->inzip);
+    size = zip_get_size(ptr->inzip);
 
     LOG("exit, %u", size);
     return size;
