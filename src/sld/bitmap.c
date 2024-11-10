@@ -8,6 +8,8 @@
 static hasset
 _find_best_bitmap(char *pattern)
 {
+    int par, offset;
+
     const char *hex = "0123456789ABCDEF";
     char       *placeholder = strstr(pattern, "<>");
     if (NULL == placeholder)
@@ -15,16 +17,16 @@ _find_best_bitmap(char *pattern)
         return pal_open_asset(pattern, O_RDONLY);
     }
 
-    int par = (int)gfx_get_pixel_aspect();
-    int offset = 0;
-
+    par = (int)gfx_get_pixel_aspect();
+    offset = 0;
     while ((0 <= (par + offset)) || (255 >= (par + offset)))
     {
         if ((0 <= (par + offset)) && (255 >= (par + offset)))
         {
+            hasset asset;
             placeholder[0] = hex[(par + offset) / 16];
             placeholder[1] = hex[(par + offset) % 16];
-            hasset asset = pal_open_asset(pattern, O_RDONLY);
+            asset = pal_open_asset(pattern, O_RDONLY);
             if (NULL != asset)
             {
                 return asset;
@@ -45,13 +47,17 @@ _find_best_bitmap(char *pattern)
 int
 __sld_execute_bitmap(sld_entry *sld)
 {
-    hasset bitmap = _find_best_bitmap(sld->content);
+    float          scale;
+    gfx_bitmap     bm;
+    gfx_dimensions screen;
+    hasset         bitmap = _find_best_bitmap(sld->content);
+    int            x, y;
+
     if (NULL == bitmap)
     {
         return SLD_SYSERR;
     }
 
-    gfx_bitmap bm;
     if (bmp_is_format(bitmap))
     {
         if (!bmp_load_bitmap(&bm, bitmap))
@@ -64,11 +70,9 @@ __sld_execute_bitmap(sld_entry *sld)
         return SLD_SYSERR;
     }
 
-    gfx_dimensions screen;
     gfx_get_screen_dimensions(&screen);
-    float scale = gfx_get_scale();
+    scale = gfx_get_scale();
 
-    int x, y;
     switch (sld->posx)
     {
     case SLD_ALIGN_CENTER:
