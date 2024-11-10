@@ -8,11 +8,11 @@
 #define PT_SIZE(data, size)                                                    \
     (*(uint32_t *)((char *)(data) + (size) - sizeof(uint32_t)))
 
-static enc_provider_proc * const PROVIDER[] = {
-    [ENC_PROVIDER_CALLER] = &__enc_caller_proc,
-    [ENC_PROVIDER_PROMPT] = &__enc_prompt_proc,
-    [ENC_PROVIDER_SPLIT] = &__enc_split_proc,
-    [ENC_PROVIDER_DISKID] = &__enc_diskid_proc,
+static enc_provider_proc *const PROVIDER[] = {
+    &__enc_caller_proc,
+    &__enc_prompt_proc,
+    &__enc_split_proc,
+    &__enc_diskid_proc,
 };
 
 #define ENC_PROV(enc) (*(PROVIDER[(enc)->provider & 0xFF]))
@@ -37,6 +37,8 @@ enc_prepare(enc_stream    *stream,
             const uint8_t *key,
             size_t         key_length)
 {
+    enc_stream_allocate allocate_impl = NULL;
+
     stream->data = data;
     stream->data_length = data_length;
     stream->key = key;
@@ -56,8 +58,7 @@ enc_prepare(enc_stream    *stream,
         return false;
     }
 
-    enc_stream_allocate allocate_impl =
-        ((enc_stream_impl *)stream->_impl)->allocate;
+    allocate_impl = ((enc_stream_impl *)stream->_impl)->allocate;
     if (NULL == allocate_impl)
     {
         stream->_context = NULL;

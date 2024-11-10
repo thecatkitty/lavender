@@ -33,7 +33,6 @@ typedef int bool;
 #define __builtin_bswap16(x) _byteswap_ushort(x)
 #define __builtin_bswap32(x) _byteswap_ulong(x)
 #define __builtin_bswap64(x) _byteswap_uint64(x)
-#define __builtin_parity(x) (__popcnt(x) % 2)
 
 #define strcasecmp _stricmp
 #endif

@@ -13,6 +13,9 @@
 static int
 _dsn_page_proc(int msg, void *param, void *data)
 {
+    const char *dsn = (const char *)param;
+    int         i;
+
     if (ENCUIM_NEXT == msg)
     {
         enc_context *enc = (enc_context *)data;
@@ -27,7 +30,6 @@ _dsn_page_proc(int msg, void *param, void *data)
         return -ENOSYS;
     }
 
-    const char *dsn = (const char *)param;
     if (NULL == dsn)
     {
         return 1;
@@ -38,7 +40,7 @@ _dsn_page_proc(int msg, void *param, void *data)
         return 1;
     }
 
-    for (int i = 0; i < 9; i++)
+    for (i = 0; i < 9; i++)
     {
         if (4 == i)
         {
@@ -96,13 +98,15 @@ __enc_diskid_proc(int msg, enc_context *enc)
     case ENCM_INITIALIZE: {
         if (ENC_XOR == enc->cipher)
         {
+            uint32_t medium_id;
+
             _pages[0].buffer = enc->data.diskid.dsn;
             _pages[0].data = enc;
             _pages[1].buffer = enc->buffer;
             _pages[1].data = enc;
             encui_enter(_pages, 2);
 
-            uint32_t medium_id = pal_get_medium_id(enc->parameter);
+            medium_id = pal_get_medium_id(enc->parameter);
             if (0 != medium_id)
             {
                 enc->data.diskid.split.local_part = medium_id;
@@ -118,9 +122,10 @@ __enc_diskid_proc(int msg, enc_context *enc)
     }
 
     case ENCM_TRANSFORM: {
+        uint32_t key_src[2];
         enc->data.split.passcode = rstrtoull(enc->buffer, 10);
-        uint32_t key_src[2] = {enc->data.split.local_part,
-                               enc->data.split.passcode};
+        key_src[0] = enc->data.split.local_part;
+        key_src[1] = enc->data.split.passcode;
         enc->key.qw = enc_decode_key(key_src, ENC_KEYSM_LE32B6D);
         return 0;
     }

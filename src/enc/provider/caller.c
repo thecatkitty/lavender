@@ -18,7 +18,8 @@ __enc_caller_proc(int msg, enc_context *enc)
 
         if (ENC_DES == enc->cipher)
         {
-            for (int i = 0; i < sizeof(uint64_t); i++)
+            int i;
+            for (i = 0; i < sizeof(uint64_t); i++)
             {
                 enc->key.b[i] = xtob((const char *)enc->parameter + (2 * i));
             }
