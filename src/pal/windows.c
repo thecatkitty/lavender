@@ -17,10 +17,15 @@
 #include "evtmouse.h"
 #include "pal_impl.h"
 
-#if defined(_MSC_VER) || (defined(__USE_MINGW_ANSI_STDIO) && !__USE_MINGW_ANSI_STDIO)
-#define FMT_AS "%S"
+#if defined(_MSC_VER) ||                                                       \
+    (defined(__USE_MINGW_ANSI_STDIO) && !__USE_MINGW_ANSI_STDIO)
+#define FMT_AS L"%S"
 #else
-#define FMT_AS "%s"
+#define FMT_AS L"%s"
+#endif
+
+#ifndef INFINITY
+#define INFINITY 1000.f
 #endif
 
 #define ID_ABOUT 0x1000
@@ -79,17 +84,17 @@ wWinMain(_In_ HINSTANCE     instance,
          _In_ PWSTR         cmd_line,
          _In_ int           cmd_show)
 {
-    _instance = instance;
-    _cmd_show = cmd_show;
-
-    int    argc = __argc;
+    int    argc = __argc, i, status;
     char **argv = (char **)malloc(((size_t)argc + 2) * sizeof(char *));
     if (NULL == argv)
     {
         return errno;
     }
 
-    for (int i = 0; i < argc; i++)
+    _instance = instance;
+    _cmd_show = cmd_show;
+
+    for (i = 0; i < argc; i++)
     {
         size_t length = WideCharToMultiByte(CP_UTF8, 0, __wargv[i], -1, NULL, 0,
                                             NULL, NULL);
@@ -104,9 +109,9 @@ wWinMain(_In_ HINSTANCE     instance,
     }
     argv[argc] = NULL;
 
-    int status = main(argc, argv);
+    status = main(argc, argv);
 
-    for (int i = 0; i < argc; i++)
+    for (i = 0; i < argc; i++)
     {
         free(argv[i]);
     }
@@ -117,6 +122,8 @@ wWinMain(_In_ HINSTANCE     instance,
 static BOOL CALLBACK
 _about_enum_child_proc(HWND wnd, LPARAM lparam)
 {
+    LONG_PTR style;
+
     wchar_t wndc_name[256];
     GetClassNameW(wnd, wndc_name, lengthof(wndc_name));
     if (0 != wcsicmp(wndc_name, L"Static"))
@@ -124,7 +131,7 @@ _about_enum_child_proc(HWND wnd, LPARAM lparam)
         return TRUE;
     }
 
-    LONG_PTR style = GetWindowLongW(wnd, GWL_STYLE);
+    style = GetWindowLongW(wnd, GWL_STYLE);
     if (SS_ICON & style)
     {
         *(HWND *)lparam = wnd;
@@ -141,21 +148,22 @@ _about_hook_wnd_proc(HWND wnd, UINT message, WPARAM wparam, LPARAM lparam)
 
     if (message == WM_INITDIALOG)
     {
-        RECT parent_rect;
-        GetWindowRect(windows_get_hwnd(), &parent_rect);
-        LONG parent_width = parent_rect.right - parent_rect.left;
-        LONG parent_height = parent_rect.bottom - parent_rect.top;
+        HWND icon_wnd = NULL;
+        RECT parent_rect, msgbox_rect;
+        LONG parent_width, parent_height, msgbox_width, msgbox_height;
 
-        RECT msgbox_rect;
+        GetWindowRect(windows_get_hwnd(), &parent_rect);
+        parent_width = parent_rect.right - parent_rect.left;
+        parent_height = parent_rect.bottom - parent_rect.top;
+
         GetWindowRect(wnd, &msgbox_rect);
-        LONG msgbox_width = msgbox_rect.right - msgbox_rect.left;
-        LONG msgbox_height = msgbox_rect.bottom - msgbox_rect.top;
+        msgbox_width = msgbox_rect.right - msgbox_rect.left;
+        msgbox_height = msgbox_rect.bottom - msgbox_rect.top;
 
         MoveWindow(wnd, parent_rect.left + (parent_width - msgbox_width) / 2,
                    parent_rect.top + (parent_height - msgbox_height) / 2,
                    msgbox_width, msgbox_height, FALSE);
 
-        HWND icon_wnd = NULL;
         EnumChildWindows(wnd, _about_enum_child_proc, (LPARAM)&icon_wnd);
         if (NULL != icon_wnd)
         {
@@ -199,14 +207,15 @@ _append(wchar_t *dst, const wchar_t *src, size_t size)
 static int
 _find_scale(float scale, int direction)
 {
+    float best_delta = INFINITY;
+    int   scale_idx = 0, i;
+
     if (0 == direction)
     {
         return _min_scale_id;
     }
 
-    int   scale_idx = 0;
-    float best_delta = INFINITY;
-    for (int i = 0; i < lengthof(SCALES); i++)
+    for (i = 0; i < lengthof(SCALES); i++)
     {
         float delta = fabsf(SCALES[i] - scale);
         if (best_delta > delta)
@@ -223,11 +232,15 @@ _find_scale(float scale, int direction)
 HFONT
 windows_find_font(int max_width, int max_height)
 {
-    const wchar_t *family = NULL;
+
+    HDC            dc;
     HFONT          font = NULL;
+    TEXTMETRICW    metric;
+    const wchar_t *family = NULL;
+    int            i, min_height;
 
     // Determine the font family
-    for (int i = 0; i < lengthof(FONT_NAMES); i++)
+    for (i = 0; i < lengthof(FONT_NAMES); i++)
     {
         font = CreateFontW(max_height, 0, 0, 0, FW_REGULAR, FALSE, FALSE, FALSE,
                            DEFAULT_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS,
@@ -245,8 +258,7 @@ windows_find_font(int max_width, int max_height)
         return NULL;
     }
 
-    HDC         dc = windows_get_dc();
-    TEXTMETRICW metric;
+    dc = windows_get_dc();
 
     // Try the largest height
     SelectObject(dc, font);
@@ -257,12 +269,12 @@ windows_find_font(int max_width, int max_height)
     }
 
     // Continue with binary search, fit width
-    int min_height = 0;
+    min_height = 0;
     while (1 < (max_height - min_height))
     {
+        int height = (min_height + max_height) / 2;
         DeleteObject(font);
 
-        int height = (min_height + max_height) / 2;
         font =
             CreateFontW(height, 0, 0, 0, FW_REGULAR, FALSE, FALSE, FALSE,
                         DEFAULT_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS,
@@ -305,6 +317,8 @@ _set_scale(int idx)
 static void
 _toggle_fullscreen(HWND wnd)
 {
+    int i;
+
     DWORD style = GetWindowLongW(wnd, GWL_STYLE);
     if (_fullscreen)
     {
@@ -322,12 +336,12 @@ _toggle_fullscreen(HWND wnd)
             GetMonitorInfoW(MonitorFromWindow(wnd, MONITOR_DEFAULTTOPRIMARY),
                             &mi))
         {
-            _window_scale = gfx_get_scale();
-
             int max_width =
                 (mi.rcMonitor.right - mi.rcMonitor.left) / GFX_COLUMNS;
             int max_height =
                 (mi.rcMonitor.bottom - mi.rcMonitor.top) / GFX_LINES;
+
+            _window_scale = gfx_get_scale();
             windows_set_font(windows_find_font(max_width, max_height));
             windows_set_box(mi.rcMonitor.right - mi.rcMonitor.left,
                             mi.rcMonitor.bottom - mi.rcMonitor.top);
@@ -344,7 +358,7 @@ _toggle_fullscreen(HWND wnd)
 
     CheckMenuItem(_size_menu, ID_FULL,
                   MF_BYCOMMAND | (_fullscreen ? MF_CHECKED : MF_UNCHECKED));
-    for (int i = _min_scale_id - ID_SCALE; i < lengthof(SCALES); i++)
+    for (i = _min_scale_id - ID_SCALE; i < lengthof(SCALES); i++)
     {
         EnableMenuItem(_size_menu, ID_SCALE + i,
                        MF_BYCOMMAND | (_fullscreen ? MF_GRAYED : MF_ENABLED));
@@ -360,12 +374,13 @@ _wnd_proc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
         _sys_menu = GetSystemMenu(wnd, FALSE);
         if (NULL != _sys_menu)
         {
+            HDC     wnd_dc = GetDC(_wnd);
+            float   min_scale = (float)GetDeviceCaps(wnd_dc, LOGPIXELSX) / 96.f;
             wchar_t str[MAX_PATH];
+            size_t  i;
 
             _size_menu = CreatePopupMenu();
 
-            HDC   wnd_dc = GetDC(_wnd);
-            float min_scale = (float)GetDeviceCaps(wnd_dc, LOGPIXELSX) / 96.f;
             ReleaseDC(_wnd, wnd_dc);
 
             LoadStringW(_instance, IDS_FULL, str, lengthof(str));
@@ -373,8 +388,10 @@ _wnd_proc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
             AppendMenuW(_size_menu, MF_SEPARATOR, 0, NULL);
 
-            for (size_t i = 0; i < lengthof(SCALES); i++)
+            for (i = 0; i < lengthof(SCALES); i++)
             {
+                int percent;
+
                 if (min_scale > SCALES[i])
                 {
                     continue;
@@ -385,7 +402,7 @@ _wnd_proc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
                     _min_scale_id = ID_SCALE + i;
                 }
 
-                int percent = (int)(SCALES[i] * 100.f / min_scale);
+                percent = (int)(SCALES[i] * 100.f / min_scale);
                 wsprintfW(str, L"%d%%", percent);
                 AppendMenuW(_size_menu, MF_STRING | MFS_CHECKED, ID_SCALE + i,
                             str);
@@ -567,6 +584,7 @@ _wnd_proc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
     case WM_PAINT: {
         PAINTSTRUCT ps;
+        POINT       origin;
         HDC         dc = BeginPaint(wnd, &ps);
 
         // All painting occurs here, between BeginPaint and EndPaint.
@@ -577,7 +595,6 @@ _wnd_proc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
         SetDCBrushColor(dc, windows_get_bg());
         FillRect(dc, &ps.rcPaint, GetStockObject(DC_BRUSH));
 
-        POINT origin;
         windows_get_origin(&origin);
         BitBlt(dc, ps.rcPaint.left, ps.rcPaint.top,
                ps.rcPaint.right - ps.rcPaint.left,
@@ -609,6 +626,14 @@ _die(unsigned ids)
 void
 pal_initialize(int argc, char *argv[])
 {
+    const wchar_t wndc_name[] = L"Slideshow Window Class";
+    WCHAR         title[MAX_PATH];
+    WNDCLASS      wndc = {0};
+
+    bool   arg_kiosk;
+    int    i;
+    hasset icon;
+
     _start_time = timeGetTime();
 
     LOG("entry");
@@ -619,8 +644,8 @@ pal_initialize(int argc, char *argv[])
         _die(IDS_NOARCHIVE);
     }
 
-    bool arg_kiosk = false;
-    for (int i = 1; i < argc; i++)
+    arg_kiosk = false;
+    for (i = 1; i < argc; i++)
     {
         if ('/' != argv[i][0])
         {
@@ -633,22 +658,21 @@ pal_initialize(int argc, char *argv[])
         }
     }
 
-    INITCOMMONCONTROLSEX icc = {.dwSize = sizeof(INITCOMMONCONTROLSEX),
-                                .dwICC = ICC_STANDARD_CLASSES};
-    InitCommonControlsEx(&icc);
+    {
+        INITCOMMONCONTROLSEX icc = {sizeof(INITCOMMONCONTROLSEX),
+                                    ICC_STANDARD_CLASSES};
+        InitCommonControlsEx(&icc);
+    }
 
-    const wchar_t wndc_name[] = L"Slideshow Window Class";
-    WNDCLASS      wndc = {.lpfnWndProc = _wnd_proc,
-                          .hInstance = _instance,
-                          .lpszClassName = wndc_name};
-
+    wndc.lpfnWndProc = _wnd_proc;
+    wndc.hInstance = _instance;
+    wndc.lpszClassName = wndc_name;
     if (0 == RegisterClassW(&wndc))
     {
         LOG("cannot register the window class");
         _die(IDS_UNSUPPENV);
     }
 
-    WCHAR title[MAX_PATH];
     MultiByteToWideChar(CP_UTF8, 0, pal_get_version_string(), -1, title,
                         MAX_PATH);
 
@@ -689,7 +713,7 @@ pal_initialize(int argc, char *argv[])
         _toggle_fullscreen(_wnd);
     }
 
-    hasset icon = pal_open_asset("windows.ico", O_RDONLY);
+    icon = pal_open_asset("windows.ico", O_RDONLY);
     if (icon)
     {
         int   small_size = GetSystemMetrics(SM_CYSMICON);
@@ -820,6 +844,12 @@ pal_stall(int ms)
 static bool
 _load_version_info(void)
 {
+    DWORD   resource_size;
+    HGLOBAL resource_data;
+    LPVOID  resource;
+    WORD   *translation = NULL;
+    UINT    translation_len = 0;
+
     HRSRC resource_info = FindResourceW(NULL, MAKEINTRESOURCEW(1), RT_VERSION);
     if (NULL == resource_info)
     {
@@ -827,15 +857,15 @@ _load_version_info(void)
         return false;
     }
 
-    DWORD   resource_size = SizeofResource(NULL, resource_info);
-    HGLOBAL resource_data = LoadResource(NULL, resource_info);
+    resource_size = SizeofResource(NULL, resource_info);
+    resource_data = LoadResource(NULL, resource_info);
     if (NULL == resource_data)
     {
         LOG("cannot load version resource");
         return false;
     }
 
-    LPVOID resource = LockResource(resource_data);
+    resource = LockResource(resource_data);
     if (NULL == resource)
     {
         LOG("cannot lock version resource");
@@ -854,8 +884,6 @@ _load_version_info(void)
     CopyMemory(_ver_resource, resource, resource_size);
     FreeResource(resource_data);
 
-    WORD *translation = NULL;
-    UINT  translation_len = 0;
     if (!VerQueryValueW(_ver_resource, L"\\VarFileInfo\\Translation",
                         (LPVOID *)&translation, &translation_len))
     {
@@ -870,12 +898,13 @@ _load_version_info(void)
 static LPCWSTR
 _load_string_file_info(const char *name)
 {
-    WCHAR path[MAX_PATH];
+    WCHAR  path[MAX_PATH];
+    WCHAR *string = NULL;
+    UINT   string_len = 0;
+
     swprintf(path, MAX_PATH, L"\\StringFileInfo\\%04X%04X\\" FMT_AS,
              _ver_vfi_translation[0], _ver_vfi_translation[1], name);
 
-    WCHAR *string = NULL;
-    UINT   string_len = 0;
     if (!VerQueryValueW(_ver_resource, path, (LPVOID *)&string, &string_len))
     {
         LOG("cannot query %s", name);
@@ -888,6 +917,7 @@ _load_string_file_info(const char *name)
 const char *
 pal_get_version_string(void)
 {
+    LPCWSTR name, version;
     LOG("entry");
 
     if (_ver_string[0])
@@ -902,14 +932,14 @@ pal_get_version_string(void)
         return "Lavender";
     }
 
-    LPCWSTR name = _load_string_file_info("ProductName");
+    name = _load_string_file_info("ProductName");
     if (NULL == name)
     {
         LOG("cannot load product name string");
         return "Lavender";
     }
 
-    LPCWSTR version = _load_string_file_info("ProductVersion");
+    version = _load_string_file_info("ProductVersion");
     if (NULL == version)
     {
         LOG("cannot load product version string");
@@ -929,24 +959,26 @@ pal_get_version_string(void)
 uint32_t
 pal_get_medium_id(const char *tag)
 {
-    LOG("entry");
-    DWORD volume_sn = 0;
-
     wchar_t self[MAX_PATH];
+    wchar_t volume_name[MAX_PATH];
+    wchar_t volume_path[MAX_PATH];
+    DWORD   volume_sn = 0;
+    wchar_t wide_tag[12];
+
+    LOG("entry");
+
     if (0 == GetModuleFileNameW(NULL, self, MAX_PATH))
     {
         LOG("cannot retrieve executable path!");
         goto end;
     }
 
-    wchar_t volume_path[MAX_PATH];
     if (!GetVolumePathNameW(self, volume_path, MAX_PATH))
     {
         LOG("cannot get volume path for '%ls'!", self);
         goto end;
     }
 
-    wchar_t volume_name[MAX_PATH];
     if (!GetVolumeInformationW(volume_path, volume_name, MAX_PATH, &volume_sn,
                                NULL, NULL, NULL, 0))
     {
@@ -954,7 +986,6 @@ pal_get_medium_id(const char *tag)
         goto end;
     }
 
-    wchar_t wide_tag[12];
     if (0 == MultiByteToWideChar(CP_OEMCP, 0, tag, -1, wide_tag, 12))
     {
         LOG("cannot widen tag '%s'!", tag);
@@ -977,15 +1008,18 @@ end:
 int
 pal_load_string(unsigned id, char *buffer, int max_length)
 {
+    LPWSTR wbuffer;
+    int    length, mb_length;
+
     LOG("entry, id: %u, buffer: %p, max_length: %d", id, buffer, max_length);
 
-    LPWSTR wbuffer = (PWSTR)malloc(max_length * sizeof(WCHAR));
+    wbuffer = (PWSTR)malloc(max_length * sizeof(WCHAR));
     if (NULL == wbuffer)
     {
         return -1;
     }
 
-    int length = LoadStringW(NULL, id, wbuffer, max_length);
+    length = LoadStringW(NULL, id, wbuffer, max_length);
     if (0 > length)
     {
         const char msg[] = "!!! string missing !!!";
@@ -996,8 +1030,8 @@ pal_load_string(unsigned id, char *buffer, int max_length)
         return sizeof(msg) - 1;
     }
 
-    int mb_length = WideCharToMultiByte(CP_UTF8, 0, wbuffer, length, buffer,
-                                        max_length, NULL, NULL);
+    mb_length = WideCharToMultiByte(CP_UTF8, 0, wbuffer, length, buffer,
+                                    max_length, NULL, NULL);
     buffer[mb_length] = 0;
     free(wbuffer);
 
@@ -1011,7 +1045,7 @@ pal_alert(const char *text, int error)
     WCHAR msg[MAX_PATH];
     if (error)
     {
-        swprintf(msg, MAX_PATH, L"" FMT_AS "\nerror %d", text, error);
+        swprintf(msg, MAX_PATH, L"" FMT_AS L"\nerror %d", text, error);
     }
     else
     {
