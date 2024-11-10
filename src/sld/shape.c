@@ -10,13 +10,15 @@ typedef struct
 static void
 _translate(uint16_t *x, uint16_t *y, gfx_dimensions *dims)
 {
+    int32_t w = dims->width;
+    int32_t h = dims->height;
+    int32_t xend, yend;
+
     gfx_dimensions screen;
     gfx_get_screen_dimensions(&screen);
 
-    int32_t w = dims->width;
-    int32_t h = dims->height;
-    int32_t xend = ((int32_t)*x + w) * screen.width / SLD_VIEWBOX_WIDTH;
-    int32_t yend = ((int32_t)*y + h) * screen.height / SLD_VIEWBOX_HEIGHT;
+    xend = ((int32_t)*x + w) * screen.width / SLD_VIEWBOX_WIDTH;
+    yend = ((int32_t)*y + h) * screen.height / SLD_VIEWBOX_HEIGHT;
     *x = (uint16_t)((int32_t)*x * screen.width / SLD_VIEWBOX_WIDTH);
     *y = (uint16_t)((int32_t)*y * screen.height / SLD_VIEWBOX_HEIGHT);
     dims->width = xend - *x;
@@ -26,7 +28,10 @@ _translate(uint16_t *x, uint16_t *y, gfx_dimensions *dims)
 int
 __sld_execute_rectangle(sld_entry *sld)
 {
+    bool (*draw)(gfx_rect *, gfx_color);
+    gfx_rect rect;
     uint16_t x, y = sld->posy;
+
     switch (sld->posx)
     {
     case SLD_ALIGN_CENTER:
@@ -41,9 +46,10 @@ __sld_execute_rectangle(sld_entry *sld)
 
     _translate(&x, &y, &CONTENT(sld)->dimensions);
 
-    bool (*draw)(gfx_rect *, gfx_color);
-    gfx_rect rect = {x, y, CONTENT(sld)->dimensions.width,
-                     CONTENT(sld)->dimensions.height};
+    rect.left = x;
+    rect.top = y;
+    rect.width = CONTENT(sld)->dimensions.width;
+    rect.height = CONTENT(sld)->dimensions.height;
     draw =
         (SLD_TYPE_RECT == sld->type) ? gfx_draw_rectangle : gfx_fill_rectangle;
     if (!draw(&rect, CONTENT(sld)->color))

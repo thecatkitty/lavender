@@ -61,6 +61,7 @@ _goto_label(sld_context *ctx, const char *label)
 {
     sld_entry entry;
     int       length;
+    char      msg[sizeof(sld_entry)] = {0};
 
     ctx->offset = 0;
     while (ctx->offset < ctx->size)
@@ -82,7 +83,6 @@ _goto_label(sld_context *ctx, const char *label)
         }
     }
 
-    char msg[sizeof(sld_entry)] = {0};
     __sld_errmsgcpy(msg, IDS_NOLABEL);
     __sld_errmsgcat(msg, ": ");
     __sld_errmsgcat(msg, label);
@@ -93,6 +93,9 @@ _goto_label(sld_context *ctx, const char *label)
 void
 sld_handle(void)
 {
+    sld_context *ctx = __sld_ctx;
+    int          status;
+
     if (!pal_handle())
     {
         __sld_ctx->state = SLD_QUIT;
@@ -103,7 +106,6 @@ sld_handle(void)
     snd_handle();
 #endif
 
-    sld_context *ctx = __sld_ctx;
     if (NULL == __sld_ctx)
     {
         return;
@@ -124,6 +126,8 @@ sld_handle(void)
     // SLD_STATE_WAIT
     if (SLD_STATE_WAIT == ctx->state)
     {
+        uint16_t x, y, tag;
+
         int keystroke = pal_get_keystroke();
         if (0 != keystroke)
         {
@@ -133,13 +137,12 @@ sld_handle(void)
             return;
         }
 
-        uint16_t x, y;
         if (0 == (PAL_MOUSE_LBUTTON & pal_get_mouse(&x, &y)))
         {
             return;
         }
 
-        uint16_t tag = __sld_retrieve_active_area_tag(x, y);
+        tag = __sld_retrieve_active_area_tag(x, y);
         if (0 != tag)
         {
             __sld_accumulator = tag;
@@ -152,13 +155,15 @@ sld_handle(void)
     // SLD_STATE_LOAD
     if (SLD_STATE_LOAD == ctx->state)
     {
+        int length;
+
         if (ctx->offset >= ctx->size)
         {
             ctx->state = SLD_STATE_STOP;
             return;
         }
 
-        int length = sld_load_entry(ctx, &ctx->entry);
+        length = sld_load_entry(ctx, &ctx->entry);
         if (0 > length)
         {
             char msg[sizeof(sld_entry)] = {0};
@@ -199,7 +204,7 @@ sld_handle(void)
     }
 
     // SLD_STATE_EXECUTE
-    int status = _execute_entry(&ctx->entry);
+    status = _execute_entry(&ctx->entry);
     if (CONTINUE == status)
     {
         return;

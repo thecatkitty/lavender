@@ -22,7 +22,8 @@ static bool
 _add_area(
     uint16_t left, uint16_t top, uint16_t width, uint16_t height, uint16_t tag)
 {
-    for (int i = 0; i < MAX_AREAS; i++)
+    int i;
+    for (i = 0; i < MAX_AREAS; i++)
     {
         if ((_areas[i].left == left) && (_areas[i].top == top) &&
             (_areas[i].width == width) && (_areas[i].height == height))
@@ -48,10 +49,13 @@ _add_area(
 int
 __sld_execute_active_area(sld_entry *sld)
 {
+    uint16_t x, y;
+
     if ((0 == sld->posx) && (0 == sld->posy) &&
         (0 == CONTENT(sld)->dimensions.width) && (0 == CONTENT(sld)->tag))
     {
-        for (int i = 0; i < MAX_AREAS; i++)
+        int i;
+        for (i = 0; i < MAX_AREAS; i++)
         {
             _areas[i].tag = 0;
         }
@@ -59,7 +63,7 @@ __sld_execute_active_area(sld_entry *sld)
         return 0;
     }
 
-    uint16_t x, y = sld->posy;
+    y = sld->posy;
     switch (sld->posx)
     {
     case SLD_ALIGN_CENTER:
@@ -105,7 +109,8 @@ __sld_load_active_area(const char *str, sld_entry *out)
 int
 __sld_retrieve_active_area_tag(uint16_t x, uint16_t y)
 {
-    for (int i = 0; i < MAX_AREAS; i++)
+    int i;
+    for (i = 0; i < MAX_AREAS; i++)
     {
         if (_areas[i].left > x)
         {

@@ -76,17 +76,11 @@ __sld_handle_script_call(sld_entry *sld);
 extern int
 __sld_retrieve_active_area_tag(uint16_t x, uint16_t y);
 
-static inline void
-__sld_errmsgcpy(void *sld, unsigned int msg)
-{
-    pal_load_string(msg, (char *)sld, sizeof(sld_entry));
-}
+extern void
+__sld_errmsgcpy(void *sld, unsigned int msg);
 
-static inline void
-__sld_errmsgcat(void *sld, const char *msg)
-{
-    strncat((char *)sld, msg, sizeof(sld_entry) - strlen((char *)sld));
-}
+extern void
+__sld_errmsgcat(void *sld, const char *msg);
 
 extern uint16_t       __sld_accumulator;
 extern sld_context   *__sld_ctx;

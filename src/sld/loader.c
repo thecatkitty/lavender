@@ -110,14 +110,15 @@ sld_load_entry(sld_context *ctx, sld_entry *out)
 {
     const char *start = (char *)ctx->data + ctx->offset;
     const char *cur = start;
+    int         length;
+    uint16_t    num;
+    uint8_t     type_tag;
+
     if ('\r' == *cur)
     {
         out->type = SLD_TYPE_BLANK;
         return ('\n' == cur[1]) ? 2 : 1;
     }
-
-    int      length;
-    uint16_t num;
 
     if (SLD_TAG_PREFIX_LABEL == *cur)
     {
@@ -139,7 +140,7 @@ sld_load_entry(sld_context *ctx, sld_entry *out)
     cur += length;
 
     // Load type
-    uint8_t type_tag = *cur;
+    type_tag = *cur;
     cur++;
 
     // Process all parts

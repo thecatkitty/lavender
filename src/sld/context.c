@@ -58,3 +58,15 @@ sld_exit_context(void)
     __sld_ctx = ctx->parent;
     return ctx;
 }
+
+void
+__sld_errmsgcpy(void *sld, unsigned int msg)
+{
+    pal_load_string(msg, (char *)sld, sizeof(sld_entry));
+}
+
+void
+__sld_errmsgcat(void *sld, const char *msg)
+{
+    strncat((char *)sld, msg, sizeof(sld_entry) - strlen((char *)sld));
+}

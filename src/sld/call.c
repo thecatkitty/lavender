@@ -39,6 +39,12 @@ enum
 static int
 _handle_prepare(sld_entry *sld)
 {
+#if defined(CONFIG_ENCRYPTED_CONTENT)
+    enc_cipher cipher = 0;
+    int        provider = 0;
+    void      *parameter = NULL;
+#endif
+
     sld_context *script = sld_create_context(
         CONTENT(sld)->file_name,
         (SLD_METHOD_STORE == CONTENT(sld)->method) ? O_RDONLY : O_RDWR);
@@ -59,10 +65,6 @@ _handle_prepare(sld_entry *sld)
     }
 
 #if defined(CONFIG_ENCRYPTED_CONTENT)
-    enc_cipher cipher = 0;
-    int        provider = 0;
-    void      *parameter = NULL;
-
     switch (CONTENT(sld)->parameter)
     {
     case SLD_PARAMETER_XOR48_INLINE: {
