@@ -6,7 +6,10 @@
 iff_context *
 iff_open(void *data, uint16_t length)
 {
-    iff_context *ctx = (iff_context *)malloc(sizeof(iff_context));
+    iff_context *ctx;
+    iff_head    *head;
+
+    ctx = (iff_context *)malloc(sizeof(iff_context));
     if (NULL == ctx)
     {
         return NULL;
@@ -15,7 +18,7 @@ iff_open(void *data, uint16_t length)
     ctx->data = data;
     ctx->length = length;
 
-    iff_head *head = (iff_head *)ctx->data;
+    head = (iff_head *)ctx->data;
     if (IFF_FOURCC_RIFF.dw == head->type.dw)
     {
         ctx->mode = IFF_MODE_BE;
@@ -53,6 +56,8 @@ iff_close(iff_context *ctx)
 bool
 iff_next_chunk(iff_context *ctx, iff_chunk *it)
 {
+    ptrdiff_t pos;
+
     if (NULL == it->data)
     {
         it->data =
@@ -60,7 +65,7 @@ iff_next_chunk(iff_context *ctx, iff_chunk *it)
         it->length = 0;
     }
 
-    ptrdiff_t pos = it->data - ctx->data;
+    pos = it->data - ctx->data;
     if (0 > pos)
     {
         return false;

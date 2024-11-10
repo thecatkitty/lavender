@@ -10,6 +10,7 @@ size_t
 midi_read_event(const char *buffer, midi_event *event)
 {
     const char *ptr = buffer;
+    uint8_t     status;
 
     int delta_len = midi_read_vlq(ptr, &event->delta);
     if (0 > delta_len)
@@ -19,7 +20,7 @@ midi_read_event(const char *buffer, midi_event *event)
 
     ptr += delta_len;
 
-    uint8_t status = *ptr;
+    status = *ptr;
     if (0x80 <= status)
     {
         event->status = status;
@@ -80,10 +81,11 @@ midi_read_event(const char *buffer, midi_event *event)
     }
 
     case MIDI_MSG_META: {
-        ptr++;
-
         uint32_t meta_vlq;
-        int      meta_vlq_len = midi_read_vlq(ptr, &meta_vlq);
+        int      meta_vlq_len;
+
+        ptr++;
+        meta_vlq_len = midi_read_vlq(ptr, &meta_vlq);
         if (0 > meta_vlq_len)
         {
             return 0;
