@@ -33,10 +33,7 @@ typedef struct
     const char *data;
 } iff_chunk;
 
-#define IFF_FOURCC(fourcc)                                                     \
-    {                                                                          \
-        .c = fourcc                                                            \
-    }
+#define IFF_FOURCC(fourcc) {fourcc}
 
 static const iff_fourcc IFF_FOURCC_RIFF = IFF_FOURCC("RIFF");
 static const iff_fourcc IFF_FOURCC_FORM = IFF_FOURCC("FORM");

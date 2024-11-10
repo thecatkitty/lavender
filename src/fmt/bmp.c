@@ -16,6 +16,10 @@ bmp_is_format(hasset asset)
 bool
 bmp_load_bitmap(gfx_bitmap *bm, hasset asset)
 {
+    const bmp_file_header *fh;
+    const bmp_info_header *ih;
+    char                  *data;
+
     LOG("entry, bm: %p, asset: %p", (void *)bm, (void *)asset);
     if (!bmp_is_format(asset))
     {
@@ -24,13 +28,12 @@ bmp_load_bitmap(gfx_bitmap *bm, hasset asset)
         return false;
     }
 
-    char *data = pal_get_asset_data(asset);
+    data = pal_get_asset_data(asset);
 
-    const bmp_file_header *fh = (const bmp_file_header *)data;
+    fh = (const bmp_file_header *)data;
     bm->bits = data + fh->off_bits;
 
-    const bmp_info_header *ih =
-        (const bmp_info_header *)(data + sizeof(bmp_file_header));
+    ih = (const bmp_info_header *)(data + sizeof(bmp_file_header));
     switch (ih->size)
     {
     case sizeof(bmp_info_header):

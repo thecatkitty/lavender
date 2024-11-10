@@ -51,12 +51,12 @@ bool
 pbm_load_bitmap(gfx_bitmap *bm, hasset asset)
 {
     int count;
+    uint16_t width, height;
 
     // Skip magic
     char *data = pal_get_asset_data(asset);
     data += sizeof(uint16_t);
 
-    uint16_t width, height;
     count = _load_number(data, &width);
     if (0 > count)
         return false;

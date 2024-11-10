@@ -4,6 +4,8 @@ uint16_t
 utf8_get_codepoint(const char *sequence, int *length)
 {
     unsigned lead = *sequence & 0xC0;
+    int      continuation, i;
+    uint16_t cp;
 
     if (0x80 == lead)
     {
@@ -19,8 +21,8 @@ utf8_get_codepoint(const char *sequence, int *length)
     }
 
     // At first, assume two-byte sequence
-    int      continuation = 1;
-    uint16_t cp = *sequence & 0x1F;
+    continuation = 1;
+    cp = *sequence & 0x1F;
 
     if (0 != (*sequence & 0x20))
     {
@@ -43,7 +45,7 @@ utf8_get_codepoint(const char *sequence, int *length)
         }
     }
 
-    for (int i = 1; i <= continuation; i++)
+    for (i = 1; i <= continuation; i++)
     {
         if (0x80 != (sequence[i] & 0xC0))
         {
@@ -178,6 +180,8 @@ static const uint16_t _FOLDING_DOUBLE[] = {
 static int
 _fold_case(uint16_t cp, uint16_t *buff)
 {
+    const uint16_t *mapping;
+
     buff[0] = cp;
     buff[1] = 0;
 
@@ -228,7 +232,7 @@ _fold_case(uint16_t cp, uint16_t *buff)
         return 1;
     }
 
-    const uint16_t *mapping = _FOLDING_SINGLE;
+    mapping = _FOLDING_SINGLE;
     while (mapping[0] != 0xFFFF)
     {
         if (cp == mapping[0])
@@ -278,13 +282,13 @@ utf8_strlen(const char *str)
 int
 utf8_strncasecmp(const char *str1, const char *str2, unsigned length)
 {
-    errno = 0;
-
     uint16_t code1, code2;
-    int      length1, length2;
+    int      length1, length2, index;
     uint16_t fold1[2], fold2[2];
+    unsigned i;
 
-    for (unsigned i = 0; i < length; i++)
+    errno = 0;
+    for (i = 0; i < length; i++)
     {
         code1 = utf8_get_codepoint(str1, &length1);
         code2 = utf8_get_codepoint(str2, &length2);
@@ -292,7 +296,7 @@ utf8_strncasecmp(const char *str1, const char *str2, unsigned length)
         _fold_case(code1, fold1);
         _fold_case(code2, fold2);
 
-        int index = fold1[0] == fold2[0];
+        index = fold1[0] == fold2[0];
         if (fold1[index] < fold2[index])
         {
             return -1;

@@ -44,7 +44,14 @@ static off_t
 _get_bundle_length(void)
 {
 #ifdef _WIN32
-    exe_dos_header dos_header;
+    exe_dos_header         dos_header;
+    exe_pe_optional_header optional_header = {0};
+    exe_pe_data_directory  security = {0};
+
+    ULONG  new_signature;
+    char   padded_cdirend[sizeof(zip_cdir_end_header) + 7];
+    size_t offset;
+
     if (!_seek_read(&dos_header, 0, sizeof(dos_header)))
     {
         return -1;
@@ -56,7 +63,6 @@ _get_bundle_length(void)
         return lseek(_fd, 0, SEEK_END);
     }
 
-    ULONG new_signature;
     if (!_seek_read(&new_signature, dos_header.e_lfanew, sizeof(new_signature)))
     {
         return -1;
@@ -70,7 +76,6 @@ _get_bundle_length(void)
 
     lseek(_fd, sizeof(exe_pe_file_header), SEEK_CUR);
 
-    exe_pe_optional_header optional_header = {0};
     read(_fd, &optional_header, sizeof(optional_header));
     if (EXE_PE_DIRECTORY_ENTRY_SECURITY >= optional_header.NumberOfRvaAndSizes)
     {
@@ -78,7 +83,6 @@ _get_bundle_length(void)
         return lseek(_fd, 0, SEEK_END);
     }
 
-    exe_pe_data_directory security = {0};
     lseek(_fd, sizeof(exe_pe_data_directory) * EXE_PE_DIRECTORY_ENTRY_SECURITY,
           SEEK_CUR);
     read(_fd, &security, sizeof(security));
@@ -88,7 +92,6 @@ _get_bundle_length(void)
         return lseek(_fd, 0, SEEK_END);
     }
 
-    char padded_cdirend[sizeof(zip_cdir_end_header) + 7];
     if (!_seek_read(padded_cdirend,
                     security.VirtualAddress - sizeof(padded_cdirend),
                     sizeof(padded_cdirend)))
@@ -96,7 +99,7 @@ _get_bundle_length(void)
         return -1;
     }
 
-    for (size_t offset = 0; offset < 7; offset++)
+    for (offset = 0; offset < 7; offset++)
     {
         zip_cdir_end_header *cdirend =
             (zip_cdir_end_header *)(padded_cdirend + offset);
@@ -115,13 +118,17 @@ _get_bundle_length(void)
 bool
 zip_open(zip_archive archive)
 {
+    zip_cdir_end_header *cdirend;
+#ifndef ZIP_PIGGYBACK
+    zip_cdir_end_header cdirend_buff = {0};
+    long                cdir_size;
+#endif
+
     if (NULL != _cdir)
     {
         errno = EINVAL;
         return false;
     }
-
-    zip_cdir_end_header *cdirend;
 
 #ifdef ZIP_PIGGYBACK
     cdirend = archive;
@@ -143,7 +150,6 @@ zip_open(zip_archive archive)
         return false;
     }
 
-    zip_cdir_end_header cdirend_buff = {0};
     cdirend = &cdirend_buff;
     if (!_seek_read(cdirend, _flen - sizeof(zip_cdir_end_header),
                     sizeof(zip_cdir_end_header)))
@@ -168,7 +174,7 @@ zip_open(zip_archive archive)
 #ifdef ZIP_PIGGYBACK
     _cdir = (zip_cdir_file_header *)((char *)cdirend - cdirend->cdir_size);
 #else
-    long cdir_size = cdirend->cdir_size + sizeof(zip_cdir_end_header);
+    cdir_size = cdirend->cdir_size + sizeof(zip_cdir_end_header);
     _cdir = (zip_cdir_file_header *)malloc(cdir_size);
     if (NULL == _cdir)
     {
@@ -195,14 +201,15 @@ zip_open(zip_archive archive)
 int
 zip_enum_files(zip_enum_files_callback callback, void *data)
 {
+    zip_cdir_file_header *cfh = _cdir;
+    int                   i = 0;
+
     if (NULL == _cdir)
     {
         errno = EINVAL;
         return -1;
     }
 
-    int                   i = 0;
-    zip_cdir_file_header *cfh = _cdir;
     while (true)
     {
         if (ZIP_PK_SIGN != cfh->pk_signature)
@@ -277,6 +284,12 @@ zip_search(const char *name, uint16_t length)
 char *
 zip_get_data(off_t olfh)
 {
+    zip_local_file_header *lfh;
+    char                  *buffer;
+#ifndef ZIP_PIGGYBACK
+    zip_local_file_header lfh_buff = {0};
+#endif
+
     if (NULL == _cdir)
     {
         errno = EINVAL;
@@ -289,13 +302,10 @@ zip_get_data(off_t olfh)
         return NULL;
     }
 
-    zip_local_file_header *lfh;
-
 #ifdef ZIP_PIGGYBACK
     char *base = (char *)_cdir - _cden->cdir_offset;
     lfh = (zip_local_file_header *)(base + olfh);
 #else
-    zip_local_file_header lfh_buff = {0};
     lfh = &lfh_buff;
     if (!_seek_read(lfh, _fbase + olfh, sizeof(zip_local_file_header)))
     {
@@ -316,8 +326,6 @@ zip_get_data(off_t olfh)
         errno = ENOSYS;
         return NULL;
     }
-
-    char *buffer;
 
 #ifdef ZIP_PIGGYBACK
     buffer = (char *)(lfh + 1) + lfh->name_length + lfh->extra_length;
@@ -388,6 +396,9 @@ zip_get_size(off_t olfh)
 int
 _match_file_name(const char *name, uint16_t length, zip_cdir_file_header *cfh)
 {
+    zip_extra_fields_header *hdr, *end;
+    uint16_t                 file_system;
+
     if (ZIP_PK_SIGN != cfh->pk_signature)
     {
         errno = EFTYPE;
@@ -406,7 +417,7 @@ _match_file_name(const char *name, uint16_t length, zip_cdir_file_header *cfh)
         return -1;
     }
 
-    uint16_t file_system = (cfh->version >> 8) & 0xFF;
+    file_system = (cfh->version >> 8) & 0xFF;
     if ((ZIP_VERSION_FS_MSDOS != file_system) &&
         (ZIP_VERSION_FS_NTFS != file_system) &&
         (ZIP_VERSION_FS_VFAT != file_system))
@@ -432,12 +443,13 @@ _match_file_name(const char *name, uint16_t length, zip_cdir_file_header *cfh)
         return 0;
     }
 
-    zip_extra_fields_header *hdr =
-        (zip_extra_fields_header *)((char *)(cfh + 1) + cfh->name_length);
-    zip_extra_fields_header *end =
-        (zip_extra_fields_header *)((char *)hdr + cfh->extra_length);
+    hdr = (zip_extra_fields_header *)((char *)(cfh + 1) + cfh->name_length);
+    end = (zip_extra_fields_header *)((char *)hdr + cfh->extra_length);
     while (hdr < end)
     {
+        zip_extra_unicode_path_field *uni_name;
+        uint16_t                      uni_name_length;
+
         if (ZIP_EXTRA_INFOZIP_UNICODE_PATH != hdr->signature)
         {
             hdr = (zip_extra_fields_header *)((char *)hdr + hdr->total_size);
@@ -445,9 +457,8 @@ _match_file_name(const char *name, uint16_t length, zip_cdir_file_header *cfh)
             continue;
         }
 
-        zip_extra_unicode_path_field *uni_name =
-            (zip_extra_unicode_path_field *)hdr;
-        uint16_t uni_name_length =
+        uni_name = (zip_extra_unicode_path_field *)hdr;
+        uni_name_length =
             uni_name->total_size - sizeof(zip_extra_unicode_path_field);
         if (0 ==
             utf8_strncasecmp(name, uni_name->unicode_name, uni_name_length))
@@ -465,14 +476,17 @@ static const uint32_t _CRC_TABLE[] = {
     0x9B64C2B0, 0x86D3D2D4, 0xA00AE278, 0xBDBDF21C};
 
 #define _calculate_crc(byte_source)                                            \
-    uint32_t crc = 0xFFFFFFFF;                                                 \
-    for (size_t i = 0; i < length; i++)                                        \
     {                                                                          \
-        uint8_t b = byte_source;                                               \
-        crc = (crc >> 4) ^ _CRC_TABLE[(crc & 0xF) ^ (b & 0xF)];                \
-        crc = (crc >> 4) ^ _CRC_TABLE[(crc & 0xF) ^ (b >> 4)];                 \
-    }                                                                          \
-    return ~crc;
+        size_t   i;                                                            \
+        uint32_t crc = 0xFFFFFFFF;                                             \
+        for (i = 0; i < length; i++)                                           \
+        {                                                                      \
+            uint8_t b = byte_source;                                           \
+            crc = (crc >> 4) ^ _CRC_TABLE[(crc & 0xF) ^ (b & 0xF)];            \
+            crc = (crc >> 4) ^ _CRC_TABLE[(crc & 0xF) ^ (b >> 4)];             \
+        }                                                                      \
+        return ~crc;                                                           \
+    }
 
 uint32_t
 zip_calculate_crc(const uint8_t *buffer, size_t length)
