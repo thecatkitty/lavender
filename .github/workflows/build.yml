@@ -10,7 +10,7 @@ jobs:
   Build:
     name: Build for ${{ matrix.platform.name }}
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.platform.host }}
     strategy:
       matrix:
         platform:
@@ -19,29 +19,40 @@ jobs:
             apts: gcc-mingw-w64-i686
             flags: -DCMAKE_TOOLCHAIN_FILE=ext/nicetia16/cmake/DOS-GCC-IA16.cmake -DDOS_TARGET_COM=1
             config: tiny
+            host: ubuntu-latest
           - name: DOS 3.0+ (IA16, EXE)
             target: dos-ia16-exe
             apts: gcc-mingw-w64-i686
             flags: -DCMAKE_TOOLCHAIN_FILE=ext/nicetia16/cmake/DOS-GCC-IA16.cmake
+            host: ubuntu-latest
           - name: Linux
             target: linux
             apts: gcc-mingw-w64-x86-64 libsdl2-dev libsdl2-ttf-dev libfontconfig-dev libfluidsynth-dev libblkid-dev
+            host: ubuntu-latest
           - name: Windows (IA32)
             target: windows-ia32
             cc: i686-w64-mingw32-gcc
             flags: -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_EXE_LINKER_FLAGS=-L$GITHUB_WORKSPACE/ext/bulwa/i686-w64-mingw32/lib
+            host: ubuntu-latest
           - name: Windows (x64)
             target: windows-x64
             cc: x86_64-w64-mingw32-gcc
             flags: -DCMAKE_SYSTEM_NAME=Windows -DWINVER=0x0502
+            host: ubuntu-latest
           - name: Windows (ARM)
             target: windows-arm
             cc: armv7-w64-mingw32-gcc
             flags: -DCMAKE_SYSTEM_NAME=Windows -DWINVER=0x0602
+            host: ubuntu-latest
           - name: Windows (ARM64)
             target: windows-arm64
             cc: aarch64-w64-mingw32-gcc
             flags: -DCMAKE_SYSTEM_NAME=Windows -DWINVER=0x0A00
+            host: ubuntu-latest
+          - name: Windows (IA64)
+            target: windows-ia64
+            flags: -G "NMake Makefiles" -DWINVER=0x0502
+            host: windows-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -49,13 +60,14 @@ jobs:
           fetch-depth: 0
           submodules: true
   
-      - name: Install dependencies
+      - name: Install Linux host dependencies
+        if: startsWith(matrix.platform.host, 'ubuntu')
         run: |
           sudo apt update
           sudo apt install ${{ matrix.platform.apts }} cmake zip -y
 
-      - name: Fetch Windows dependencies
-        if: startsWith(matrix.platform.target, 'windows')
+      - name: Fetch Windows cross-compiler
+        if: startsWith(matrix.platform.target, 'windows') && !startsWith(matrix.platform.host, 'windows')
         run: |
           wget -nv -P ext/ https://github.com/mstorsjo/llvm-mingw/releases/download/20241001/llvm-mingw-20241001-msvcrt-ubuntu-20.04-x86_64.tar.xz
           tar -xf ext/llvm-mingw-20241001-msvcrt-ubuntu-20.04-x86_64.tar.xz -C ext/
@@ -77,7 +89,23 @@ jobs:
           wget -nv -P ext/ https://github.com/thecatkitty/bulwa/releases/download/REL-20241013/bulwa-REL-20241013.zip
           unzip ext/bulwa-REL-20241013.zip -d ext/bulwa
 
+      - name: Fetch Windows (IA64) dependencies
+        if: matrix.platform.target == 'windows-ia64'
+        shell: powershell
+        run: |
+          choco install gsudo zip
+          Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
+          refreshenv
+          curl.exe -kL http://download.microsoft.com/download/F/1/0/F10113F5-B750-4969-A255-274341AC6BCE/GRMSDKX_EN_DVD.iso -o ext/winsdk.iso
+          7z x ext/winsdk.iso -oext/winsdk
+          "Patching .NET Framework version Registry entries..."
+          gsudo --ti reg add "HKLM\SOFTWARE\Wow6432Node\Microsoft\NET Framework Setup\NDP\v4\Client" /v Version /d "4.0.30319" /f
+          gsudo --ti reg add "HKLM\SOFTWARE\Wow6432Node\Microsoft\NET Framework Setup\NDP\v4\Full" /v Version /d "4.0.30319" /f
+          "Running the Windows SDK 7.1 Setup..."
+          Start-Process -Wait .\ext\winsdk\setup.exe -ArgumentList @("-q", "-params:ADDLOCAL=ALL")
+
       - name: Build for ${{ matrix.platform.name }}
+        if: startsWith(matrix.platform.host, 'ubuntu')
         env:
           CC: ${{ matrix.platform.cc }}
           KCONFIG_CONFIG: ${{ matrix.platform.config }}.config
@@ -89,8 +117,22 @@ jobs:
             cd build && make bundle && make install && cd ..
           done
 
+      - name: Build for ${{ matrix.platform.name }}
+        if: startsWith(matrix.platform.host, 'windows')
+        shell: cmd
+        run: |
+          git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+          call "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.Cmd" /Release /ia64 /xp
+          set PATH=%PATH%;C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\Bin\amd64
+          for %%L in (ENU,CSY,PLK) do (
+            cmake -S . -B build -DCMAKE_INSTALL_PREFIX=bin/${{ matrix.platform.target }}/%%L -DLAV_LANG=%%L ${{ matrix.platform.flags }}
+            cmake --build build -t bundle --config Release
+            cmake --install build --config Release
+          )
+
       - name: Prepare release info
         if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
         run: |
           git tag -l --format='%(contents:subject)' ${{ github.ref_name }} | sed -r "s/^.+: //" > bin/RELEASE.md
   
@@ -119,6 +161,7 @@ jobs:
           cd lavender-windows-x64   && zip -r ../lavender-${{ github.ref_name }}-windows-x64.zip   * && cd ..
           cd lavender-windows-arm   && zip -r ../lavender-${{ github.ref_name }}-windows-arm.zip   * && cd ..
           cd lavender-windows-arm64 && zip -r ../lavender-${{ github.ref_name }}-windows-arm64.zip * && cd ..
+          cd lavender-windows-ia64  && zip -r ../lavender-${{ github.ref_name }}-windows-ia64.zip  * && cd ..
 
       - name: Release
         uses: softprops/action-gh-release@v1
