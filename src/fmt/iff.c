@@ -79,14 +79,16 @@ iff_next_chunk(iff_context *ctx, iff_chunk *it)
 
     while (ctx->length > pos)
     {
-        iff_head *head = (iff_head *)(ctx->data + pos);
-        uint32_t  length = (ctx->mode & IFF_MODE_BE)
-                               ? __builtin_bswap32(head->length)
-                               : head->length;
+        iff_head head;
+        uint32_t length;
 
-        if ((0 == it->type.dw) || (head->type.dw == it->type.dw))
+        memcpy(&head, ctx->data + pos, sizeof(head));
+        length = (ctx->mode & IFF_MODE_BE) ? __builtin_bswap32(head.length)
+                                           : head.length;
+
+        if ((0 == it->type.dw) || (head.type.dw == it->type.dw))
         {
-            it->type.dw = head->type.dw;
+            it->type.dw = head.type.dw;
             it->length = length;
             it->data = ctx->data + pos + sizeof(iff_head);
             return true;

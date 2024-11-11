@@ -80,7 +80,7 @@ typedef struct
     uint16_t delay;
     uint16_t posx;
     uint16_t posy;
-    uint8_t  type;
+    uint16_t type;
     char     content[SLD_ENTRY_MAX_LENGTH + 1];
     uint8_t  length;
 } sld_entry;
