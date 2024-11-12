@@ -13,7 +13,7 @@ typedef struct
     uint16_t method;
     uint32_t crc32;
     uint16_t parameter;
-    char     data[52];
+    char     data[44];
 
     // Execution state
     int16_t      state;
