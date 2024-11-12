@@ -112,6 +112,11 @@ _handle_prepare(sld_entry *sld)
         }
     }
 
+    if ((SLD_METHOD_TDES == CONTENT(sld)->method))
+    {
+        cipher = ENC_TDES;
+    }
+
     if (0 == enc_access_content(&CONTENT(sld)->enc, cipher, provider, parameter,
                                 (uint8_t *)CONTENT(sld)->context->data,
                                 CONTENT(sld)->context->size,
