@@ -61,6 +61,7 @@ typedef enum
 #if defined(CONFIG_ENCRYPTED_CONTENT)
 #define SLD_METHOD_XOR48 1
 #define SLD_METHOD_DES   2
+#define SLD_METHOD_TDES  3
 
 #define SLD_KEYSOURCE_INLINE 0
 #define SLD_KEYSOURCE_PROMPT 1

@@ -16,10 +16,11 @@ __enc_caller_proc(int msg, enc_context *enc)
             return 0;
         }
 
-        if (ENC_DES == enc->cipher)
+        if ((ENC_DES == enc->cipher) || (ENC_TDES == enc->cipher))
         {
-            int i;
-            for (i = 0; i < sizeof(uint64_t); i++)
+            int i,
+                size = sizeof(uint64_t) * ((ENC_TDES == enc->cipher) ? 2 : 1);
+            for (i = 0; i < size; i++)
             {
                 enc->key.b[i] = xtob((const char *)enc->parameter + (2 * i));
             }

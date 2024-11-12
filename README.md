@@ -30,7 +30,7 @@ This is still work in progress, but I'm doing my best to separate working versio
   * Windows MME API
   * FluidSynth under Linux
 * script nesting
-  * plain text, or encrypted using XOR or DES
+  * plain text, or encrypted using XOR, DES, or TDES
 * navigation and user input using key presses and mouse clicks
 * multiple language support (Czech, English, Polish)
 
