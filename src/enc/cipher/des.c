@@ -9,7 +9,7 @@
 
 typedef struct
 {
-    uint64_t subkeys[DES_ROUNDS];
+    uint64_t subkeys[DES_ROUNDS * 2];
     size_t   at_pos;
     uint64_t at_pt;
 } des_context;
@@ -101,7 +101,7 @@ _F(uint64_t K, uint32_t R)
 }
 
 static uint64_t
-_des(const uint64_t subkeys[], uint64_t M)
+_des(const uint64_t subkeys[], uint64_t M, bool encrypt)
 {
     uint32_t L, R;
     int      i;
@@ -117,7 +117,7 @@ _des(const uint64_t subkeys[], uint64_t M)
     for (i = 0; i < DES_ROUNDS; i++)
     {
         uint32_t L_old = L;
-        uint64_t subkey = subkeys[DES_ROUNDS - i - 1];
+        uint64_t subkey = subkeys[encrypt ? i : DES_ROUNDS - i - 1];
         L = R;
         R = L_old ^ _F(subkey, R);
     }
@@ -129,10 +129,25 @@ _des(const uint64_t subkeys[], uint64_t M)
     return _permute(FP, lengthof(FP), M, 64);
 }
 
+static uint64_t
+_get_pt(enc_stream *stream, uint64_t iv, uint64_t ct)
+{
+    if ((2 * sizeof(uint64_t)) == stream->key_length)
+    {
+        uint64_t pt = _des(CONTEXT(stream)->subkeys, ct, false);
+        pt = _des(CONTEXT(stream)->subkeys + DES_ROUNDS, pt, true);
+        pt = _des(CONTEXT(stream)->subkeys, pt, false);
+        return pt ^ iv;
+    }
+
+    return _des(CONTEXT(stream)->subkeys, ct, false) ^ iv;
+}
+
 static bool
 des_allocate(enc_stream *stream)
 {
-    if (sizeof(uint64_t) != stream->key_length)
+    if ((sizeof(uint64_t) != stream->key_length) &&
+        ((2 * sizeof(uint64_t)) != stream->key_length))
     {
         return false;
     }
@@ -157,6 +172,11 @@ des_allocate(enc_stream *stream)
     CONTEXT(stream)->at_pt = 0;
 
     _generate_subkeys(_from_bytes(stream->key), CONTEXT(stream)->subkeys);
+    if (sizeof(uint64_t) < stream->key_length)
+    {
+        _generate_subkeys(_from_bytes(stream->key + sizeof(uint64_t)),
+                          CONTEXT(stream)->subkeys + DES_ROUNDS);
+    }
     return true;
 }
 
@@ -184,7 +204,7 @@ des_at(enc_stream *stream, size_t i)
         uint64_t iv = _from_bytes(stream->data + position - sizeof(uint64_t));
         uint64_t ct = _from_bytes(stream->data + position);
         CONTEXT(stream)->at_pos = position;
-        CONTEXT(stream)->at_pt = _des(CONTEXT(stream)->subkeys, ct) ^ iv;
+        CONTEXT(stream)->at_pt = _get_pt(stream, iv, ct);
     }
 
     bytes = (const uint8_t *)&CONTEXT(stream)->at_pt;
@@ -209,7 +229,7 @@ des_decrypt(enc_stream *stream, uint8_t *dst)
     while (ct_ptr < ct_padding)
     {
         uint64_t ct = _from_bytes(ct_ptr);
-        uint64_t pt = _des(CONTEXT(stream)->subkeys, ct) ^ ct_previous;
+        uint64_t pt = _get_pt(stream, ct_previous, ct);
         _to_bytes(pt, dst);
         ct_previous = ct;
 
@@ -219,7 +239,7 @@ des_decrypt(enc_stream *stream, uint8_t *dst)
 
     // Process the padded part of the ciphertext
     ct = _from_bytes(ct_ptr);
-    pt = _des(CONTEXT(stream)->subkeys, ct) ^ ct_previous;
+    pt = _get_pt(stream, ct_previous, ct);
 
     _to_bytes(pt, pt_bytes);
     padding = pt_bytes[7];
@@ -236,7 +256,7 @@ des_verify(enc_stream *stream, uint32_t crc)
     size_t   position = stream->data_length - sizeof(uint64_t);
     uint64_t iv = _from_bytes(stream->data + position - sizeof(uint64_t));
     uint64_t ct = _from_bytes(stream->data + position);
-    uint64_t pt = _des(CONTEXT(stream)->subkeys, ct) ^ iv;
+    uint64_t pt = _get_pt(stream, iv, ct);
 
     uint8_t pt_bytes[sizeof(uint64_t)];
     uint8_t padding;

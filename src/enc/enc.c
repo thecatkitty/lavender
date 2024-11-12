@@ -51,6 +51,7 @@ enc_prepare(enc_stream    *stream,
         break;
 
     case ENC_DES:
+    case ENC_TDES:
         stream->_impl = &__enc_des_impl;
         break;
 
@@ -198,10 +199,13 @@ enc_handle(enc_context *enc)
 static int
 _decrypt_content(enc_context *enc)
 {
+    size_t size = (ENC_XOR == enc->cipher)    ? 6
+                  : (ENC_DES == enc->cipher)  ? sizeof(uint64_t)
+                  : (ENC_TDES == enc->cipher) ? (2 * sizeof(uint64_t))
+                                              : 0;
     REQUIRE_SUCCESS(ENC_PROV(enc)(ENCM_TRANSFORM, enc));
     if (!enc_prepare(&enc->stream, enc->cipher, enc->content, enc->size,
-                     enc->key.b,
-                     (ENC_XOR == enc->cipher) ? 6 : sizeof(uint64_t)))
+                     enc->key.b, size))
     {
         return -EINVAL;
     }
@@ -214,7 +218,7 @@ _decrypt_content(enc_context *enc)
 
     enc_decrypt(&enc->stream, (uint8_t *)enc->content);
     enc_free(&enc->stream);
-    if (ENC_DES == enc->cipher)
+    if ((ENC_DES == enc->cipher) || (ENC_TDES == enc->cipher))
     {
         PT_SIZE(enc->content, enc->size) = enc->stream.data_length;
         enc->size = enc->stream.data_length;
@@ -263,7 +267,7 @@ enc_access_content(enc_context *enc,
         return 0;
     }
 
-    if (ENC_DES == cipher)
+    if ((ENC_DES == cipher) || (ENC_TDES == cipher))
     {
         uint32_t pt_size = PT_SIZE(content, length);
         if ((length > pt_size) && zip_calculate_crc(content, pt_size) == crc32)

@@ -61,13 +61,6 @@ typedef int bool;
 #define lengthof(x)           (sizeof(x) / sizeof((x)[0]))
 #define sizeofm(type, member) sizeof(((type *)0)->member)
 
-typedef union {
-    uint64_t qw;
-    uint32_t dw[sizeof(uint64_t) / sizeof(uint32_t)];
-    uint16_t w[sizeof(uint64_t) / sizeof(uint16_t)];
-    uint8_t  b[sizeof(uint64_t) / sizeof(uint8_t)];
-} uquad;
-
 extern uint64_t
 rstrtoull(const char *str, int base);
 

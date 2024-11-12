@@ -9,7 +9,8 @@
 typedef enum
 {
     ENC_XOR,
-    ENC_DES
+    ENC_DES,
+    ENC_TDES,
 } enc_cipher;
 
 typedef enum
@@ -60,8 +61,11 @@ typedef struct
 
     int        state;
     enc_stream stream;
-    uquad      key;
-    char       buffer[24];
+    union {
+        uint64_t qw;
+        uint8_t  b[16];
+    } key;
+    char buffer[24];
     union {
         enc_split_data  split;
         enc_diskid_data diskid;
