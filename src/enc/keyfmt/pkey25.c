@@ -46,11 +46,11 @@ _parity(uint8_t n)
 #endif
 }
 
-uint64_t
-__enc_pkey25xor12_decode(const void *src)
+int
+__enc_pkey25xor12_decode(const void *src, void *dst)
 {
     const char *str = (const char *)src;
-    uint8_t     key[sizeof(uint64_t)];
+    uint8_t    *key = (uint8_t *)dst;
 
     // Remove hyphens
     char  pkey[PKEY25XOR12_LENGTH];
@@ -77,7 +77,7 @@ __enc_pkey25xor12_decode(const void *src)
         // Retrieve the 64-bit key
         uint64_t key_56 = ekey ^ udata;
         size_t   b;
-        for (b = 0; b < lengthof(key); b++)
+        for (b = 0; b < sizeof(uint64_t); b++)
         {
             key[b] = ((uint8_t)key_56 & 0x7F) << 1;
             if (!_parity(key[b]))
@@ -88,7 +88,7 @@ __enc_pkey25xor12_decode(const void *src)
         }
     }
 
-    return *(uint64_t *)key;
+    return 0;
 }
 
 bool

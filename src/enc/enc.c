@@ -17,11 +17,11 @@ static enc_provider_proc *const PROVIDER[] = {
 
 #define ENC_PROV(enc) (*(PROVIDER[(enc)->provider & 0xFF]))
 
-extern uint64_t
-__enc_le32b6d_decode(const void *src);
+extern int
+__enc_le32b6d_decode(const void *src, void *dst);
 
-extern uint64_t
-__enc_pkey25xor12_decode(const void *src);
+extern int
+__enc_pkey25xor12_decode(const void *src, void *dst);
 
 extern bool
 __enc_pkey25xor12_validate_format(const char *key);
@@ -101,23 +101,20 @@ enc_verify(enc_stream *stream, uint32_t crc)
     return ((const enc_stream_impl *)stream->_impl)->verify(stream, crc);
 }
 
-uint64_t
-enc_decode_key(const void *src, enc_keysm sm)
+int
+enc_decode_key(const void *src, void *dst, enc_keysm sm)
 {
-    errno = 0;
-
     if (sm == ENC_KEYSM_LE32B6D)
     {
-        return __enc_le32b6d_decode(src);
+        return __enc_le32b6d_decode(src, dst);
     }
 
     if (sm == ENC_KEYSM_PKEY25XOR12)
     {
-        return __enc_pkey25xor12_decode(src);
+        return __enc_pkey25xor12_decode(src, dst);
     }
 
-    errno = EFTYPE;
-    return 0;
+    return -(errno = EFTYPE);
 }
 
 bool
