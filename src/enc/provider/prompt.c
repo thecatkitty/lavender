@@ -56,6 +56,11 @@ __enc_prompt_proc(int msg, enc_context *enc)
             enc->stream.key_length = sizeof(uint64_t);
         }
 
+        if (ENC_TDES == enc->cipher)
+        {
+            enc->stream.key_length = 2 * sizeof(uint64_t);
+        }
+
         _pages[0].buffer = enc->buffer;
         _pages[0].capacity = enc->stream.key_length * 2;
         _pages[0].data = enc;
@@ -80,10 +85,11 @@ __enc_prompt_proc(int msg, enc_context *enc)
                 return 0;
             }
 
-            if (ENC_DES == enc->cipher)
+            if ((ENC_DES == enc->cipher) || (ENC_TDES == enc->cipher))
             {
-                int i;
-                for (i = 0; i < sizeof(uint64_t); i++)
+                int i, size = sizeof(uint64_t) *
+                              ((ENC_TDES == enc->cipher) ? 2 : 1);
+                for (i = 0; i < size; i++)
                 {
                     enc->key.b[i] = xtob((const char *)enc->buffer + (2 * i));
                 }

@@ -65,7 +65,7 @@ typedef struct
         uint64_t qw;
         uint8_t  b[16];
     } key;
-    char buffer[24];
+    char buffer[34];
     union {
         enc_split_data  split;
         enc_diskid_data diskid;
