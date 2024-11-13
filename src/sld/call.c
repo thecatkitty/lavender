@@ -9,11 +9,11 @@
 typedef struct
 {
     // External data
-    char     file_name[40];
+    char     file_name[30];
     uint16_t method;
     uint32_t crc32;
     uint16_t parameter;
-    char     data[44];
+    char     data[40];
 
     // Execution state
     int16_t      state;
