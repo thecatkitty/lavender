@@ -29,8 +29,8 @@ _rotr24(uint32_t n, unsigned c)
     return (n >> c | n << (24 - c)) & UINTN_MAX(24);
 }
 
-uint64_t
-__enc_le32b6d_decode(const void *src)
+int
+__enc_le32b6d_decode(const void *src, void *dst)
 {
     uint32_t local = ((const uint32_t *)src)[0];
     uint32_t external = ((const uint32_t *)src)[1];
@@ -45,9 +45,12 @@ __enc_le32b6d_decode(const void *src)
     unsigned rhigh =
         (local >> LE32B6D_LOCHI_ROTATION) & LE32B6D_LOCHI_ROTATION_MASK;
 
+    uint64_t key;
     low = _rotr24(low, LE32B6D_ROTATIONS[rlow]);
     high = _rotr24(high, LE32B6D_ROTATIONS[rhigh]);
+    key = (((uint64_t)high & LE32B6D_KEYHI_MASK) << LE32B6D_KEYHI) |
+          (((uint64_t)low & LE32B6D_KEYLO_MASK) << LE32B6D_KEYLO);
+    memcpy(dst, &key, sizeof(key));
 
-    return (((uint64_t)high & LE32B6D_KEYHI_MASK) << LE32B6D_KEYHI) |
-           (((uint64_t)low & LE32B6D_KEYLO_MASK) << LE32B6D_KEYLO);
+    return 0;
 }

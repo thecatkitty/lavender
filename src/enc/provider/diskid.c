@@ -126,7 +126,7 @@ __enc_diskid_proc(int msg, enc_context *enc)
         enc->data.split.passcode = rstrtoull(enc->buffer, 10);
         key_src[0] = enc->data.split.local_part;
         key_src[1] = enc->data.split.passcode;
-        enc->key.qw = enc_decode_key(key_src, ENC_KEYSM_LE32B6D);
+        enc_decode_key(key_src, enc->key.b, ENC_KEYSM_LE32B6D);
         return 0;
     }
 
