@@ -36,7 +36,7 @@ _parity(uint8_t n)
 
     while (n)
     {
-        ret ^= 1;
+        ret ^= (n & 1);
         n >>= 1;
     }
 
