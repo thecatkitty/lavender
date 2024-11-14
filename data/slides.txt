@@ -16,7 +16,8 @@
 0       K
 0       =   50  ExtendedFont
 0       =   51  Rectangles
-0       =   52  Encryption
+0       =   52  Encryption DES
+0       =   53  Encryption TDES
 0       =   27  End
 0       J   Start
 :ExtendedFont
@@ -31,7 +32,8 @@
 0       A   0   0   0   0   0
 0       =   49  Start
 0       =   51  Rectangles
-0       =   52  Encryption
+0       =   52  Encryption DES
+0       =   53  Encryption TDES
 0       =   27  End
 0       J   ExtendedFont
 :Rectangles
@@ -107,12 +109,18 @@
 0       K
 0       =   49  Start
 0       =   50  ExtendedFont
-0       =   52  Encryption
+0       =   52  Encryption DES
+0       =   53  Encryption TDES
 0       =   27  End
 0       J   Rectangles
-:Encryption
+:Encryption DES
 0       r   0   <640 200 B
 0       !   hellodes.enc    2   C1D0F85C    1   131A15CE89D5F2BC
+0       =   65535   Key not provided
+0       J   Start
+:Encryption TDES
+0       r   0   <640 200 B
+0       !   helltdes.enc    3   10B60E1D    8   9G9CR-HQVD3-MT69W-GX6MJ-38X7D
 0       =   65535   Key not provided
 0       J   Start
 :Key not provided
