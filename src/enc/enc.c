@@ -23,8 +23,11 @@ __enc_le32b6d_decode(const void *src, void *dst);
 extern int
 __enc_pkey25xor12_decode(const void *src, void *dst);
 
+extern int
+__enc_pkey25xor2b_decode(const void *src, void *dst);
+
 extern bool
-__enc_pkey25xor12_validate_format(const char *key);
+__enc_pkey25_validate_format(const char *key);
 
 static int
 _decrypt_content(enc_context *enc);
@@ -114,15 +117,20 @@ enc_decode_key(const void *src, void *dst, enc_keysm sm)
         return __enc_pkey25xor12_decode(src, dst);
     }
 
+    if (sm == ENC_KEYSM_PKEY25XOR2B)
+    {
+        return __enc_pkey25xor2b_decode(src, dst);
+    }
+
     return -(errno = EFTYPE);
 }
 
 bool
 enc_validate_key_format(const char *key, enc_keysm sm)
 {
-    if (ENC_KEYSM_PKEY25XOR12 == sm)
+    if ((ENC_KEYSM_PKEY25XOR12 == sm) || (ENC_KEYSM_PKEY25XOR2B == sm))
     {
-        return __enc_pkey25xor12_validate_format(key);
+        return __enc_pkey25_validate_format(key);
     }
 
     return false;

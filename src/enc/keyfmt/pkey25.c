@@ -1,12 +1,37 @@
 #include <enc.h>
 
-// PKEY25XOR12 definitions
-#define PKEY25XOR12_BASE         24
+#define PKEY25_BASE   24
+#define PKEY25_LENGTH 25
+
 #define PKEY25XOR12_UDATA_LENGTH 13
 #define PKEY25XOR12_EKEY_LENGTH  12
-#define PKEY25XOR12_LENGTH       (PKEY25XOR12_UDATA_LENGTH + PKEY25XOR12_EKEY_LENGTH)
 
-static const char PKEY25XOR12_ALPHABET[] = "2346789BCDFGHJKMPQRTVWXY";
+#define PKEY25XOR2B_K1E_LENGTH 13 // X[1..0] K2[55] K1[55..0]
+#define PKEY25XOR2B_K2_LENGTH  12 // K2[54..0]
+
+static const char PKEY25_ALPHABET[] = "2346789BCDFGHJKMPQRTVWXY";
+
+static const uint64_t PKEY25XOR2B_MASK[] = {
+    0x00000000000000ULL,
+    0x55555555555555ULL,
+    0xAAAAAAAAAAAAAAULL,
+    0xFFFFFFFFFFFFFFULL,
+};
+
+static void
+_remove_hyphens(const char *src, char *dst)
+{
+    char *ptr = dst;
+    while (ptr < dst + PKEY25_LENGTH)
+    {
+        if ('-' != *src)
+        {
+            *ptr = *src;
+            ptr++;
+        }
+        src++;
+    }
+}
 
 static uint64_t
 _aatoull(const char *str, size_t length, const char *alphabet, size_t base)
@@ -46,56 +71,77 @@ _parity(uint8_t n)
 #endif
 }
 
+static void
+_expand56(uint64_t src, uint8_t *dst)
+{
+    size_t b;
+    for (b = 0; b < sizeof(uint64_t); b++)
+    {
+        dst[b] = ((uint8_t)src & 0x7F) << 1;
+        if (!_parity(dst[b]))
+        {
+            dst[b] |= 1;
+        }
+        src >>= 7;
+    }
+}
+
 int
 __enc_pkey25xor12_decode(const void *src, void *dst)
 {
-    const char *str = (const char *)src;
-    uint8_t    *key = (uint8_t *)dst;
+    const char *left_part, *right_part;
+    uint64_t    udata, ekey;
 
     // Remove hyphens
-    char  pkey[PKEY25XOR12_LENGTH];
-    char *ppkey = pkey;
-    while (ppkey < pkey + PKEY25XOR12_LENGTH)
-    {
-        if ('-' != *str)
-        {
-            *ppkey = *str;
-            ppkey++;
-        }
-        str++;
-    }
+    char pkey[PKEY25_LENGTH];
+    _remove_hyphens((const char *)src, pkey);
 
     // Convert to integer parts
-    {
-        const char *left_part = pkey;
-        const char *right_part = pkey + PKEY25XOR12_UDATA_LENGTH;
-        uint64_t    udata = _aatoull(left_part, PKEY25XOR12_UDATA_LENGTH,
-                                     PKEY25XOR12_ALPHABET, 24);
-        uint64_t    ekey = _aatoull(right_part, PKEY25XOR12_EKEY_LENGTH,
-                                    PKEY25XOR12_ALPHABET, 24);
+    left_part = pkey;
+    right_part = pkey + PKEY25XOR12_UDATA_LENGTH;
+    udata = _aatoull(left_part, PKEY25XOR12_UDATA_LENGTH, PKEY25_ALPHABET,
+                     PKEY25_BASE);
+    ekey = _aatoull(right_part, PKEY25XOR12_EKEY_LENGTH, PKEY25_ALPHABET,
+                    PKEY25_BASE);
 
-        // Retrieve the 64-bit key
-        uint64_t key_56 = ekey ^ udata;
-        size_t   b;
-        for (b = 0; b < sizeof(uint64_t); b++)
-        {
-            key[b] = ((uint8_t)key_56 & 0x7F) << 1;
-            if (!_parity(key[b]))
-            {
-                key[b] |= 1;
-            }
-            key_56 >>= 7;
-        }
-    }
+    // Retrieve the 64-bit key
+    _expand56(ekey ^ udata, (uint8_t *)dst);
+    return 0;
+}
 
+int
+__enc_pkey25xor2b_decode(const void *src, void *dst)
+{
+    const char *left_part, *right_part;
+    uint64_t    k1e, k2, x;
+
+    // Remove hyphens
+    char pkey[PKEY25_LENGTH];
+    _remove_hyphens((const char *)src, pkey);
+
+    // Convert to integer parts
+    left_part = pkey;
+    right_part = pkey + PKEY25XOR2B_K1E_LENGTH;
+    k1e = _aatoull(left_part, PKEY25XOR2B_K1E_LENGTH, PKEY25_ALPHABET,
+                   PKEY25_BASE);
+    k2 = _aatoull(right_part, PKEY25XOR2B_K2_LENGTH, PKEY25_ALPHABET,
+                  PKEY25_BASE);
+
+    // Retrieve the 64-bit key
+    x = PKEY25XOR2B_MASK[(k1e >> 57) & 3];
+    k2 |= (k1e >> 1) & (1ULL << 55);
+    k1e &= (1ULL << 56) - 1;
+
+    _expand56(k1e ^ x, (uint8_t *)dst);
+    _expand56(k2 ^ x, (uint8_t *)dst + sizeof(uint64_t));
     return 0;
 }
 
 bool
-__enc_pkey25xor12_validate_format(const char *key)
+__enc_pkey25_validate_format(const char *key)
 {
     size_t i;
-    for (i = 0; i < PKEY25XOR12_LENGTH + 4; i++)
+    for (i = 0; i < PKEY25_LENGTH + 4; i++)
     {
         if (5 == (i % 6))
         {
@@ -104,12 +150,11 @@ __enc_pkey25xor12_validate_format(const char *key)
                 return false;
             }
         }
-        else if ((0 == key[i]) ||
-                 (NULL == strchr(PKEY25XOR12_ALPHABET, key[i])))
+        else if ((0 == key[i]) || (NULL == strchr(PKEY25_ALPHABET, key[i])))
         {
             return false;
         }
     }
 
-    return PKEY25XOR12_LENGTH + 4 == i;
+    return PKEY25_LENGTH + 4 == i;
 }

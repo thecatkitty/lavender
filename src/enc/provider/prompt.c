@@ -18,10 +18,11 @@ _passcode_page_proc(int msg, void *param, void *data)
             return 1;
         }
 
-        if (ENC_KEYSM_PKEY25XOR12 == (enc->provider >> 8))
+        if ((ENC_KEYSM_PKEY25XOR12 == (enc->provider >> 8)) ||
+            (ENC_KEYSM_PKEY25XOR2B == (enc->provider >> 8)))
         {
-            return enc_validate_key_format(passcode, ENC_KEYSM_PKEY25XOR12) ? 0
-                                                                            : 1;
+            return enc_validate_key_format(passcode, enc->provider >> 8) ? 0
+                                                                         : 1;
         }
 
         return isxdigstr(passcode) ? 0 : 1;
@@ -66,7 +67,8 @@ __enc_prompt_proc(int msg, enc_context *enc)
         _pages[0].message = IDS_ENTERPASS_DESC;
         _pages[0].capacity = enc->stream.key_length * 2;
 
-        if (ENC_KEYSM_PKEY25XOR12 == (enc->provider >> 8))
+        if ((ENC_KEYSM_PKEY25XOR12 == (enc->provider >> 8)) ||
+            (ENC_KEYSM_PKEY25XOR2B == (enc->provider >> 8)))
         {
             _pages[0].title = IDS_ENTERPKEY;
             _pages[0].message = IDS_ENTERPKEY_DESC;
@@ -102,10 +104,13 @@ __enc_prompt_proc(int msg, enc_context *enc)
             return -EINVAL;
         }
 
-        if (ENC_KEYSM_PKEY25XOR12 == (enc->provider >> 8))
+        if ((ENC_KEYSM_PKEY25XOR12 == (enc->provider >> 8)) ||
+            (ENC_KEYSM_PKEY25XOR2B == (enc->provider >> 8)))
         {
-            enc_decode_key(enc->buffer, enc->key.b, ENC_KEYSM_PKEY25XOR12);
-            enc->key.qw = __builtin_bswap64(enc->key.qw);
+            enc_decode_key(enc->buffer, enc->key.b, enc->provider >> 8);
+            (&enc->key.qw)[0] = __builtin_bswap64((&enc->key.qw)[0]);
+            (&enc->key.qw)[1] = __builtin_bswap64((&enc->key.qw)[1]);
+
             return 0;
         }
 
@@ -113,9 +118,8 @@ __enc_prompt_proc(int msg, enc_context *enc)
     }
 
     case ENCM_GET_ERROR_STRING: {
-        return (ENC_KEYSM_PKEY25XOR12 == (enc->provider >> 8))
-                   ? IDS_INVALIDPKEY
-                   : IDS_INVALIDPASS;
+        return (ENC_KEYSM_RAW == (enc->provider >> 8)) ? IDS_INVALIDPASS
+                                                       : IDS_INVALIDPKEY;
     }
     }
 

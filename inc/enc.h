@@ -18,6 +18,7 @@ typedef enum
     ENC_KEYSM_RAW,         // not transformed
     ENC_KEYSM_LE32B6D,     // 32 local bits, 6 external decimals
     ENC_KEYSM_PKEY25XOR12, // 25-character product key, XORed 12 characters
+    ENC_KEYSM_PKEY25XOR2B, // 25-character product key, XORed 3 MSBs
 } enc_keysm;
 
 typedef enum
