@@ -167,6 +167,7 @@ enc_handle(enc_context *enc)
         if (0 == status)
         {
             // Operation aborted by the user
+            encui_exit();
             return -EACCES;
         }
 
