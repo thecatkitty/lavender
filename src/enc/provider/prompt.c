@@ -44,8 +44,6 @@ __enc_prompt_proc(int msg, enc_context *enc)
     switch (msg)
     {
     case ENCM_INITIALIZE: {
-        encui_enter(_pages, 1);
-
         if (ENC_XOR == enc->cipher)
         {
             enc->stream.key_length = 6;
@@ -62,8 +60,11 @@ __enc_prompt_proc(int msg, enc_context *enc)
         }
 
         _pages[0].buffer = enc->buffer;
-        _pages[0].capacity = enc->stream.key_length * 2;
         _pages[0].data = enc;
+        _pages[0].length = 0;
+        _pages[0].title = IDS_ENTERPASS;
+        _pages[0].message = IDS_ENTERPASS_DESC;
+        _pages[0].capacity = enc->stream.key_length * 2;
 
         if (ENC_KEYSM_PKEY25XOR12 == (enc->provider >> 8))
         {
@@ -72,6 +73,7 @@ __enc_prompt_proc(int msg, enc_context *enc)
             _pages[0].capacity = 5 * 5 + 4;
         }
 
+        encui_enter(_pages, 1);
         encui_set_page(0);
         return CONTINUE;
     }
