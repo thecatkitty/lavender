@@ -115,6 +115,14 @@ _handle_prepare(sld_entry *sld)
     if ((SLD_METHOD_TDES == CONTENT(sld)->method))
     {
         cipher = ENC_TDES;
+
+        switch (CONTENT(sld)->parameter)
+        {
+        case SLD_PARAMETER_DES_PKEY: {
+            provider = ENC_KEYSRC(ENC_PROVIDER_PROMPT, ENC_KEYSM_PKEY25XOR2B);
+            break;
+        }
+        }
     }
 
     if (0 == enc_access_content(&CONTENT(sld)->enc, cipher, provider, parameter,

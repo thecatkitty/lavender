@@ -121,7 +121,7 @@ Calls a script file named `<script>` as plain text or using some encryption meth
   * parameter 1 - hexadecimal key entered by the user
   * parameter 8 - key split between `<data>` and a passcode entered by the user
   * parameter 9 - key split between the volume ID and a passcode entered by the user
-* method 2 - DES
+* method 2 - DES, method 3 - TDES (Keying option 2)
   * parameter 0 - hexadecimal key stored in `<data>`
   * parameter 1 - hexadecimal key entered by the user
   * parameter 8 - 25-character CD key entered by the user
