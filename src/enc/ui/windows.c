@@ -54,6 +54,53 @@ _set_text(HWND wnd, int ids)
     return true;
 }
 
+static bool
+_check_input(HWND dlg, int page_id)
+{
+    HWND   edit_box;
+    size_t length;
+    LPWSTR text;
+    LPSTR  atext;
+    int    status;
+
+    if (-ENOSYS ==
+        _pages[page_id].proc(ENCUIM_CHECK, NULL, _pages[page_id].data))
+    {
+        return true;
+    }
+
+    edit_box = GetDlgItem(dlg, IDC_EDITBOX);
+    length = GetWindowTextLengthW(edit_box);
+    text = (LPWSTR)malloc((length + 1) * sizeof(WCHAR));
+    if (NULL == text)
+    {
+        return TRUE;
+    }
+    GetWindowTextW(edit_box, text, length + 1);
+
+    length = WideCharToMultiByte(CP_UTF8, 0, text, -1, NULL, 0, NULL, NULL);
+    atext = (LPSTR)malloc(length);
+    if (NULL == atext)
+    {
+        free(text);
+        return TRUE;
+    }
+    WideCharToMultiByte(CP_UTF8, 0, text, -1, atext, length, NULL, NULL);
+    free(text);
+
+    status = _pages[page_id].proc(ENCUIM_CHECK, atext, _pages[page_id].data);
+    free(atext);
+    return 0 == status;
+}
+
+static void
+_set_buttons(HWND dlg, int id, bool has_next)
+{
+    bool has_previous = (0 != id) && (0 != _pages[id - 1].title);
+    PropSheet_SetWizButtons(GetParent(dlg), (has_previous ? PSWIZB_BACK : 0) |
+                                                (has_next ? PSWIZB_NEXT : 0));
+}
+
 static INT_PTR CALLBACK
 _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
 {
@@ -119,6 +166,8 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
         _set_text(dlg, page->title);
         _set_text(GetDlgItem(dlg, IDC_TEXT), page->message);
         SetWindowTextW(GetDlgItem(dlg, IDC_ALERT), L"");
+        _set_buttons(dlg, (int)template->lParam,
+                     -ENOSYS == page->proc(ENCUIM_CHECK, NULL, page->data));
 
         return TRUE;
     }
@@ -129,12 +178,7 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
         switch (notif->code)
         {
         case PSN_SETACTIVE: {
-            bool has_previous = (0 != id) && (0 != _pages[id - 1].title);
-            bool has_validator =
-                -ENOSYS == _pages[id].proc(ENCUIM_CHECK, NULL, _pages[id].data);
-            PropSheet_SetWizButtons(GetParent(dlg),
-                                    (has_previous ? PSWIZB_BACK : 0) |
-                                        (!has_validator ? PSWIZB_NEXT : 0));
+            _set_buttons(dlg, id, _check_input(dlg, id));
             return 0;
         }
 
@@ -196,47 +240,7 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
 
         if ((EN_CHANGE == HIWORD(wparam)) && (IDC_EDITBOX == LOWORD(wparam)))
         {
-            HWND   edit_box;
-            size_t length;
-            LPWSTR text;
-            LPSTR  atext;
-
-            if (-ENOSYS == _pages[id].proc(ENCUIM_CHECK, NULL, _pages[id].data))
-            {
-                return TRUE;
-            }
-
-            edit_box = GetDlgItem(dlg, IDC_EDITBOX);
-            length = GetWindowTextLengthW(edit_box);
-            text = (LPWSTR)malloc((length + 1) * sizeof(WCHAR));
-            if (NULL == text)
-            {
-                return TRUE;
-            }
-            GetWindowTextW(edit_box, text, length + 1);
-
-            length =
-                WideCharToMultiByte(CP_UTF8, 0, text, -1, NULL, 0, NULL, NULL);
-            atext = (LPSTR)malloc(length);
-            if (NULL == atext)
-            {
-                free(text);
-                return TRUE;
-            }
-            WideCharToMultiByte(CP_UTF8, 0, text, -1, atext, length, NULL,
-                                NULL);
-
-            {
-                bool has_previous = (0 != id) && (0 != _pages[id - 1].title);
-                bool is_valid =
-                    0 >= _pages[id].proc(ENCUIM_CHECK, atext, _pages[id].data);
-                PropSheet_SetWizButtons(GetParent(dlg),
-                                        (has_previous ? PSWIZB_BACK : 0) |
-                                            (is_valid ? PSWIZB_NEXT : 0));
-            }
-
-            free(text);
-            free(atext);
+            _set_buttons(dlg, id, _check_input(dlg, id));
             return TRUE;
         }
     }
