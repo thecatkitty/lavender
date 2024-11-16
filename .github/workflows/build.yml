@@ -175,3 +175,4 @@ jobs:
             lavender-${{ github.ref_name }}-windows-x64.zip
             lavender-${{ github.ref_name }}-windows-arm.zip
             lavender-${{ github.ref_name }}-windows-arm64.zip
+            lavender-${{ github.ref_name }}-windows-ia64.zip
