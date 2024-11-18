@@ -1,1 +1,1 @@
-from . import xor
+from . import des, xor
