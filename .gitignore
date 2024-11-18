@@ -5,3 +5,4 @@ build*
 /ext/*
 !/ext/MatchingWildcards
 venv
+__pycache__
