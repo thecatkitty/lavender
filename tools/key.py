@@ -2,11 +2,12 @@
 
 from argparse import ArgumentParser
 
-from lavender.key import LE32B6D
+from lavender.key import LE32B6D, PKey25
 
 
 METHODS = {
-    "le": LE32B6D
+    "le": LE32B6D,
+    "pkey25": PKey25
 }
 
 
@@ -36,7 +37,7 @@ args = parser.parse_args()
 
 if args.subparser_name == "decode":
     decoded = METHODS[args.m].decode(args.part)
-    print("".join(f"{b:02X}" for b in decoded))
+    print("".join(f"{b:02X}" for b in decoded.key))
 
 if args.subparser_name == "encode":
     le = METHODS[args.m](args.key)
