@@ -2,10 +2,12 @@
 
 from argparse import ArgumentParser, FileType
 
-from lavender.cipher import xor
+from lavender.cipher import des, xor
 
 CIPHERS = {
     6: xor,
+    7: des,
+    14: des,
 }
 
 
