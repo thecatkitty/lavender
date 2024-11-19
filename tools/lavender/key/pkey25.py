@@ -10,7 +10,7 @@ PKEY25XOR2B_MASK = [0x00000000000000,
                     0xFFFFFFFFFFFFFF]
 
 
-def base24_decode(string: str) -> int:
+def from_base24(string: str) -> int:
     ret = 0
     for c in string:
         ret *= 24
@@ -19,18 +19,18 @@ def base24_decode(string: str) -> int:
     return ret
 
 
-def base24_encode(number: int) -> str:
+def to_base24(number: int, length: int = 0) -> str:
     ret = str()
     while number != 0:
         ret = BASE24_ALPHABET[number % 24] + ret
         number //= 24
 
-    return ret
+    return ret if length == 0 else ret.rjust(length, BASE24_ALPHABET[0])
 
 
 def _format(left: int, right: int) -> str:
-    head = base24_encode(left).rjust(13, BASE24_ALPHABET[0])
-    tail = base24_encode(right).rjust(12, BASE24_ALPHABET[0])
+    head = to_base24(left, 13)
+    tail = to_base24(right, 12)
     full = head + tail
     if len(full) > 25:
         return None
@@ -85,8 +85,8 @@ class PKey25(object):
             raise ValueError("Product key has a wrong format")
         pkey = pkey.replace("-", "")
 
-        left_part = base24_decode(pkey[:13])
-        right_part = base24_decode(pkey[13:])
+        left_part = from_base24(pkey[:13])
+        right_part = from_base24(pkey[13:])
 
         if length == 56:
             encoded_key = right_part.to_bytes(7, "big")

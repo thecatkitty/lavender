@@ -2,6 +2,8 @@ from io import BytesIO
 from Crypto.Cipher import DES, DES3
 from Crypto.Util.Padding import pad, unpad
 
+from lavender.math import parity
+
 
 def _get_cipher(key: bytes) -> object:
     if 8 == len(key):
@@ -11,20 +13,12 @@ def _get_cipher(key: bytes) -> object:
         return DES3.new(key, DES3.MODE_CBC)
 
 
-def _parity(n: int) -> int:
-    result = 1
-    while n:
-        result ^= n & 1
-        n >>= 1
-    return result
-
-
 def _expand(key: bytes) -> bytes:
     key_size = len(key) // 2
     key_num = int.from_bytes(key, "big")
     key_parts = [((key_num >> (i * 7)) & 0x7F) <<
                  1 for i in reversed(range((key_size + 1) * 2))]
-    return bytes(b | _parity(b) for b in key_parts)
+    return bytes(b | (1 ^ parity(b)) for b in key_parts)
 
 
 def decrypt(input: BytesIO, output: BytesIO, key: bytes) -> None:
