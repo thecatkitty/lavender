@@ -296,8 +296,8 @@ _reset(void)
 static void
 _draw_text_box(void)
 {
-    if (0 <
-        _pages[_id].proc(ENCUIM_CHECK, _pages[_id].buffer, _pages[_id].data))
+    if (0 < _pages[_id].proc(ENCUIM_CHECK, _pages[_id].prompt.buffer,
+                             _pages[_id].data))
     {
         gfx_draw_rectangle(&_tbox, GFX_COLOR_GRAY);
     }
@@ -307,13 +307,15 @@ _draw_text_box(void)
     }
 
     gfx_fill_rectangle(&_tbox, GFX_COLOR_WHITE);
-    gfx_draw_text(_pages[_id].buffer, _tbox_left, _tbox_top);
+    gfx_draw_text(_pages[_id].prompt.buffer, _tbox_left, _tbox_top);
 }
 
 int
 encui_handle(void)
 {
-    encui_page *page = _pages + _id;
+    encui_page        *page = _pages + _id;
+    encui_prompt_page *prompt = &page->prompt;
+
     if (STATE_NONE == _state)
     {
         return 0;
@@ -356,11 +358,11 @@ encui_handle(void)
 
     if (STATE_VERIFY == _state)
     {
-        int status = page->proc(ENCUIM_NEXT, page->buffer, page->data);
+        int status = page->proc(ENCUIM_NEXT, prompt->buffer, page->data);
         if ((0 == status) || (-ENOSYS == status))
         {
             _reset();
-            return page->length;
+            return prompt->length;
         }
 
         if (0 > status)
@@ -410,9 +412,9 @@ encui_handle(void)
         pal_get_mouse(&x, &y);
 
         int cursor = x - _tbox_left;
-        if (page->length < cursor)
+        if (prompt->length < cursor)
         {
-            cursor = page->length;
+            cursor = prompt->length;
         }
 
         if (_position != cursor)
@@ -443,7 +445,7 @@ encui_handle(void)
 
     if (VK_RETURN == scancode)
     {
-        if (0 >= page->proc(ENCUIM_CHECK, page->buffer, page->data))
+        if (0 >= page->proc(ENCUIM_CHECK, prompt->buffer, page->data))
         {
             _state = STATE_VERIFY;
             return ENCUI_INCOMPLETE;
@@ -472,7 +474,7 @@ encui_handle(void)
         _draw_text_box();
     }
 
-    if ((VK_RIGHT == scancode) && (page->length > _position))
+    if ((VK_RIGHT == scancode) && (prompt->length > _position))
     {
         _position++;
         _draw_text_box();
@@ -480,34 +482,34 @@ encui_handle(void)
 
     if ((VK_BACK == scancode) && (0 < _position))
     {
-        memmove(page->buffer + _position - 1, page->buffer + _position,
-                page->length - _position);
+        memmove(prompt->buffer + _position - 1, prompt->buffer + _position,
+                prompt->length - _position);
         _position--;
-        page->length--;
-        page->buffer[page->length] = 0;
+        prompt->length--;
+        prompt->buffer[prompt->length] = 0;
         _draw_text_box();
     }
 
-    if ((VK_DELETE == scancode) && (page->length > _position))
+    if ((VK_DELETE == scancode) && (prompt->length > _position))
     {
-        memmove(page->buffer + _position, page->buffer + _position + 1,
-                page->length - _position - 1);
-        page->length--;
-        page->buffer[page->length] = 0;
+        memmove(prompt->buffer + _position, prompt->buffer + _position + 1,
+                prompt->length - _position - 1);
+        prompt->length--;
+        prompt->buffer[prompt->length] = 0;
         _draw_text_box();
     }
 
     if (((' ' == scancode) || (VK_OEM_MINUS == scancode) ||
          ((VK_DELETE < scancode) && (VK_F1 > scancode))) &&
-        (page->length < page->capacity))
+        (prompt->length < prompt->capacity))
     {
-        memmove(page->buffer + _position + 1, page->buffer + _position,
-                page->length - _position);
-        page->buffer[_position] =
+        memmove(prompt->buffer + _position + 1, prompt->buffer + _position,
+                prompt->length - _position);
+        prompt->buffer[_position] =
             (VK_OEM_MINUS == scancode) ? '-' : (scancode & 0xFF);
         _position++;
-        page->length++;
-        page->buffer[page->length] = 0;
+        prompt->length++;
+        prompt->buffer[prompt->length] = 0;
         _draw_text_box();
     }
 
@@ -536,7 +538,8 @@ encui_set_page(int id)
         return false;
     }
 
-    encui_page *page = _pages + id;
+    encui_page        *page = _pages + id;
+    encui_prompt_page *prompt = &page->prompt;
     _id = id;
 
     if (0 == page->title)
@@ -546,9 +549,9 @@ encui_set_page(int id)
         return true;
     }
 
-    if (0 == page->length)
+    if (0 == prompt->length)
     {
-        page->buffer[0] = 0;
+        prompt->buffer[0] = 0;
     }
 
     char buffer[GFX_COLUMNS * 4];
@@ -559,9 +562,9 @@ encui_set_page(int id)
     int lines = _draw_text(2, buffer);
 
     int field_width = GFX_COLUMNS / 2 - 1;
-    if (field_width < page->capacity)
+    if (field_width < prompt->capacity)
     {
-        field_width = page->capacity;
+        field_width = prompt->capacity;
     }
     _tbox_left = 1;
     _tbox_top = 2 + lines + 2;
@@ -572,7 +575,7 @@ encui_set_page(int id)
     _tbox.left = _tbox_left * _glyph.width - 1;
 
     _state = STATE_PROMPT;
-    _position = page->length;
+    _position = prompt->length;
     _caret_counter = pal_get_counter();
     _caret_period = pal_get_ticks(500);
 

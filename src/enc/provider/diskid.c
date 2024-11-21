@@ -85,9 +85,8 @@ _passcode_page_proc(int msg, void *param, void *data)
 }
 
 static encui_page _pages[] = {
-    {IDS_ENTERDSN, IDS_ENTERDSN_DESC, NULL, XOR48_DSN_LENGTH, _dsn_page_proc},
-    {IDS_ENTERPASS, IDS_ENTERPASS_DESC, NULL, XOR48_PASSCODE_SIZE * 2,
-     _passcode_page_proc},
+    {IDS_ENTERDSN, IDS_ENTERDSN_DESC, _dsn_page_proc},
+    {IDS_ENTERPASS, IDS_ENTERPASS_DESC, _passcode_page_proc},
     {0}};
 
 int
@@ -100,10 +99,12 @@ __enc_diskid_proc(int msg, enc_context *enc)
         {
             uint32_t medium_id;
 
-            _pages[0].buffer = enc->data.diskid.dsn;
             _pages[0].data = enc;
-            _pages[1].buffer = enc->buffer;
+            _pages[0].prompt.buffer = enc->data.diskid.dsn;
+            _pages[0].prompt.capacity = XOR48_DSN_LENGTH;
             _pages[1].data = enc;
+            _pages[1].prompt.buffer = enc->buffer;
+            _pages[1].prompt.capacity = XOR48_PASSCODE_SIZE * 2;
             encui_enter(_pages, 2);
 
             medium_id = pal_get_medium_id(enc->parameter);

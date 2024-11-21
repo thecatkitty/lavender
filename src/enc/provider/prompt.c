@@ -37,7 +37,7 @@ _passcode_page_proc(int msg, void *param, void *data)
 }
 
 static encui_page _pages[] = {
-    {IDS_ENTERPASS, IDS_ENTERPASS_DESC, NULL, 0, _passcode_page_proc}, {0}};
+    {IDS_ENTERPASS, IDS_ENTERPASS_DESC, _passcode_page_proc}, {0}};
 
 int
 __enc_prompt_proc(int msg, enc_context *enc)
@@ -60,19 +60,19 @@ __enc_prompt_proc(int msg, enc_context *enc)
             enc->stream.key_length = 2 * sizeof(uint64_t);
         }
 
-        _pages[0].buffer = enc->buffer;
-        _pages[0].data = enc;
-        _pages[0].length = 0;
         _pages[0].title = IDS_ENTERPASS;
         _pages[0].message = IDS_ENTERPASS_DESC;
-        _pages[0].capacity = enc->stream.key_length * 2;
+        _pages[0].data = enc;
+        _pages[0].prompt.buffer = enc->buffer;
+        _pages[0].prompt.capacity = enc->stream.key_length * 2;
+        _pages[0].prompt.length = 0;
 
         if ((ENC_KEYSM_PKEY25XOR12 == (enc->provider >> 8)) ||
             (ENC_KEYSM_PKEY25XOR2B == (enc->provider >> 8)))
         {
             _pages[0].title = IDS_ENTERPKEY;
             _pages[0].message = IDS_ENTERPKEY_DESC;
-            _pages[0].capacity = 5 * 5 + 4;
+            _pages[0].prompt.capacity = 5 * 5 + 4;
         }
 
         encui_enter(_pages, 1);

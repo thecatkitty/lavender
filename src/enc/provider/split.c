@@ -31,9 +31,8 @@ _passcode_page_proc(int msg, void *param, void *data)
     return -ENOSYS;
 }
 
-static encui_page _pages[] = {{IDS_ENTERPASS, IDS_ENTERPASS_DESC, NULL,
-                               XOR48_PASSCODE_SIZE * 2, _passcode_page_proc},
-                              {0}};
+static encui_page _pages[] = {
+    {IDS_ENTERPASS, IDS_ENTERPASS_DESC, _passcode_page_proc}, {0}};
 
 int
 __enc_split_proc(int msg, enc_context *enc)
@@ -49,8 +48,9 @@ __enc_split_proc(int msg, enc_context *enc)
             return CONTINUE;
         }
 
-        _pages[0].buffer = enc->buffer;
         _pages[0].data = enc;
+        _pages[0].prompt.buffer = enc->buffer;
+        _pages[0].prompt.capacity = XOR48_PASSCODE_SIZE * 2;
         encui_set_page(0);
         return CONTINUE;
     }
