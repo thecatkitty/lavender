@@ -22,13 +22,21 @@ typedef int(encui_page_proc)(int msg, void *param, void *data);
 
 typedef struct
 {
+    char  *buffer;
+    size_t capacity;
+    size_t length;
+} encui_prompt_page;
+
+typedef struct
+{
     int              title;
     int              message;
-    char            *buffer;
-    size_t           capacity;
     encui_page_proc *proc;
     void            *data;
-    size_t           length;
+
+    union {
+        encui_prompt_page prompt;
+    };
 } encui_page;
 
 extern bool

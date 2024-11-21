@@ -192,12 +192,12 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
                 return -1;
             }
             GetWindowTextW(edit_box, text, length + 1);
-            WideCharToMultiByte(CP_UTF8, 0, text, -1, _pages[id].buffer,
-                                _pages[id].capacity, NULL, NULL);
+            WideCharToMultiByte(CP_UTF8, 0, text, -1, _pages[id].prompt.buffer,
+                                _pages[id].prompt.capacity, NULL, NULL);
             _value = length;
             free(text);
 
-            status = _pages[id].proc(ENCUIM_NEXT, _pages[id].buffer,
+            status = _pages[id].proc(ENCUIM_NEXT, _pages[id].prompt.buffer,
                                      _pages[id].data);
             if (0 < status)
             {
