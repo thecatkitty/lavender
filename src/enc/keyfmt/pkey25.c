@@ -87,6 +87,26 @@ _expand56(uint64_t src, uint8_t *dst)
 }
 
 int
+__enc_pkey25raw_decode(const void *src, void *dst)
+{
+    const char *left_part, *right_part;
+
+    // Remove hyphens
+    char pkey[PKEY25_LENGTH];
+    _remove_hyphens((const char *)src, pkey);
+
+    // Convert to integer parts
+    left_part = pkey;
+    right_part = pkey + PKEY25XOR12_UDATA_LENGTH;
+
+    ((uint64_t *)dst)[0] = _aatoull(left_part, PKEY25XOR12_UDATA_LENGTH,
+                                    PKEY25_ALPHABET, PKEY25_BASE);
+    ((uint64_t *)dst)[1] = _aatoull(right_part, PKEY25XOR12_EKEY_LENGTH,
+                                    PKEY25_ALPHABET, PKEY25_BASE);
+    return 0;
+}
+
+int
 __enc_pkey25xor12_decode(const void *src, void *dst)
 {
     const char *left_part, *right_part;
