@@ -209,23 +209,28 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
                 MessageBeep(MB_ICONEXCLAMATION);
 
                 SetFocus(edit_box);
-                return -1;
+                SetWindowLongPtrW(dlg, DWLP_MSGRESULT, -1);
+                return TRUE;
             }
 
             if ((0 > status) && (-ENOSYS != status))
             {
-                return -1;
+                SetWindowLongPtrW(dlg, DWLP_MSGRESULT, -1);
+                return TRUE;
             }
+
+            SetWindowTextW(GetDlgItem(dlg, IDC_ALERT), L"");
+            Static_SetIcon(GetDlgItem(dlg, IDC_BANG), NULL);
 
             if (0 != _pages[id + 1].title)
             {
                 _id = id + 1;
-                return 0;
+                return TRUE;
             }
 
             PropSheet_PressButton(GetParent(dlg), PSBTN_FINISH);
-            SetWindowLong(dlg, DWLP_MSGRESULT, _value);
-            return 0;
+            SetWindowLongPtrW(dlg, DWLP_MSGRESULT, -1);
+            return TRUE;
         }
 
         case PSN_QUERYCANCEL: {
