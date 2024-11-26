@@ -50,4 +50,7 @@ enum
 extern int
 __enc_decrypt_content(enc_context *enc);
 
+extern void
+__enc_des_expand56(uint64_t src, uint8_t *dst);
+
 #endif // _ENC_IMPL_H_
