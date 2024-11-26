@@ -276,3 +276,36 @@ des_verify(enc_stream *stream, uint32_t crc)
 
 enc_stream_impl __enc_des_impl = {des_allocate, des_free, des_at, des_decrypt,
                                   des_verify};
+
+static uint8_t
+_parity(uint8_t n)
+{
+#if defined(_MSC_VER)
+    uint8_t ret = 0;
+
+    while (n)
+    {
+        ret ^= (n & 1);
+        n >>= 1;
+    }
+
+    return ret;
+#else
+    return __builtin_parity(n);
+#endif
+}
+
+void
+__enc_des_expand56(uint64_t src, uint8_t *dst)
+{
+    size_t b;
+    for (b = 0; b < sizeof(uint64_t); b++)
+    {
+        dst[b] = ((uint8_t)src & 0x7F) << 1;
+        if (!_parity(dst[b]))
+        {
+            dst[b] |= 1;
+        }
+        src >>= 7;
+    }
+}

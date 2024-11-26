@@ -1,5 +1,7 @@
 #include <enc.h>
 
+#include "../enc_impl.h"
+
 #define PKEY25_BASE   24
 #define PKEY25_LENGTH 25
 
@@ -53,39 +55,6 @@ _aatoull(const char *str, size_t length, const char *alphabet, size_t base)
     return ret;
 }
 
-static uint8_t
-_parity(uint8_t n)
-{
-#if defined(_MSC_VER)
-    uint8_t ret = 0;
-
-    while (n)
-    {
-        ret ^= (n & 1);
-        n >>= 1;
-    }
-
-    return ret;
-#else
-    return __builtin_parity(n);
-#endif
-}
-
-static void
-_expand56(uint64_t src, uint8_t *dst)
-{
-    size_t b;
-    for (b = 0; b < sizeof(uint64_t); b++)
-    {
-        dst[b] = ((uint8_t)src & 0x7F) << 1;
-        if (!_parity(dst[b]))
-        {
-            dst[b] |= 1;
-        }
-        src >>= 7;
-    }
-}
-
 int
 __enc_pkey25raw_decode(const void *src, void *dst)
 {
@@ -125,7 +94,7 @@ __enc_pkey25xor12_decode(const void *src, void *dst)
                     PKEY25_BASE);
 
     // Retrieve the 64-bit key
-    _expand56(ekey ^ udata, (uint8_t *)dst);
+    __enc_des_expand56(ekey ^ udata, (uint8_t *)dst);
     return 0;
 }
 
@@ -152,8 +121,8 @@ __enc_pkey25xor2b_decode(const void *src, void *dst)
     k2 |= (k1e >> 1) & (1ULL << 55);
     k1e &= (1ULL << 56) - 1;
 
-    _expand56(k1e ^ x, (uint8_t *)dst);
-    _expand56(k2 ^ x, (uint8_t *)dst + sizeof(uint64_t));
+    __enc_des_expand56(k1e ^ x, (uint8_t *)dst);
+    __enc_des_expand56(k2 ^ x, (uint8_t *)dst + sizeof(uint64_t));
     return 0;
 }
 
