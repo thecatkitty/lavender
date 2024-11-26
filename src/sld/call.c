@@ -121,6 +121,10 @@ _handle_prepare(sld_entry *sld)
         case SLD_PARAMETER_DES_PKEY: {
             provider = ENC_KEYSRC(ENC_PROVIDER_PROMPT, ENC_KEYSM_PKEY25XOR2B);
             break;
+        case SLD_PARAMETER_DES_REMOTE: {
+            provider = ENC_PROVIDER_REMOTE;
+            break;
+        }
         }
         }
     }
