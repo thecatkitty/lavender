@@ -52,6 +52,14 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
     IDS_SIZE, "Rozměr"
     IDS_FULL, "&Celá obrazovka\tF11"
 #endif
+
+#if defined(CONFIG_ENCRYPTED_CONTENT)
+    IDS_UNLOCK, "Ověř přístupová práva"  
+    IDS_UNLOCK_DESC, "Aplikace musí před odemknutím obsahu kontaktovat autora prezentace, aby ověřil tvoje přístupová práva."  
+    IDS_RCODE_DESC, "Sdílej následující kód s autorem prezentace. Platnost kódu vyprší po 15 minutách."  
+    IDS_CCODE_DESC, "Zadej 42místný potvrzovací kód obdržený od autora prezentace:"  
+    IDS_INVALIDCCODE, "Nesprávný potvrzovací kód!"  
+#endif
 }
 
 #ifndef STRINGS_ONLY

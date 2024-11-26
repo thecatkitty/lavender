@@ -55,3 +55,11 @@
 #define IDS_SIZE 0x50
 #define IDS_FULL 0x51
 #endif
+
+#if defined(CONFIG_ENCRYPTED_CONTENT)
+#define IDS_UNLOCK       0x60
+#define IDS_UNLOCK_DESC  0x61
+#define IDS_RCODE_DESC   0x62
+#define IDS_CCODE_DESC   0x63
+#define IDS_INVALIDCCODE 0x64
+#endif

@@ -52,6 +52,14 @@ LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
     IDS_SIZE, "Rozmiar"
     IDS_FULL, "&Pełny ekran\tF11"
 #endif
+
+#if defined(CONFIG_ENCRYPTED_CONTENT)
+    IDS_UNLOCK, "Zweryfikuj uprawnienia dostępu"
+    IDS_UNLOCK_DESC, "Aplikacja musi skontaktować się z autorem pokazu slajdów, aby zweryfikować twoje uprawnienia dostępu przed odblokowaniem treści."
+    IDS_RCODE_DESC, "Przekaż poniższy kod autorowi pokazu slajdów. Kod wygaśnie po 15 minutach."
+    IDS_CCODE_DESC, "Wpisz 42-cyfrowy kod potwierdzenia otrzymany od autora pokazu slajdów:"
+    IDS_INVALIDCCODE, "Niepoprawny kod potwierdzenia!"
+#endif
 }
 
 #ifndef STRINGS_ONLY

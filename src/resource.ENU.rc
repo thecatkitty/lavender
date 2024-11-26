@@ -52,6 +52,14 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
     IDS_SIZE, "Size"
     IDS_FULL, "&Fullscreen\tF11"
 #endif
+
+#if defined(CONFIG_ENCRYPTED_CONTENT)
+    IDS_UNLOCK, "Verify access rights"
+    IDS_UNLOCK_DESC, "Application must contact the slideshow author to verify your access rights before unlocking the content."
+    IDS_RCODE_DESC, "Share the following code with the slideshow author. The code will expire after 15 minutes."
+    IDS_CCODE_DESC, "Enter the 42-digit confirmation code received from the slideshow author:"
+    IDS_INVALIDCCODE, "Incorrect confirmation code!"
+#endif
 }
 
 #ifndef STRINGS_ONLY
