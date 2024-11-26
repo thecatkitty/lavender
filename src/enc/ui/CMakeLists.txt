@@ -1,3 +1,4 @@
+target_sources(enc PRIVATE common.c)
 if(WIN32)
     target_sources(enc PRIVATE windows.c)
     target_sources(enc PRIVATE prompt.rc)
