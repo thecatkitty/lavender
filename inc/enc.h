@@ -28,6 +28,7 @@ typedef enum
     ENC_PROVIDER_PROMPT, // entered by the user
     ENC_PROVIDER_SPLIT,  // part from the caller, completed by the user
     ENC_PROVIDER_DISKID, // part from the diskette, completed by the user
+    ENC_PROVIDER_REMOTE, // retrieved remotely
 } enc_provider;
 
 typedef struct

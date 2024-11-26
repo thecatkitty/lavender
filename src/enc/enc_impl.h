@@ -27,6 +27,7 @@ extern enc_provider_proc __enc_caller_proc;
 extern enc_provider_proc __enc_diskid_proc;
 extern enc_provider_proc __enc_split_proc;
 extern enc_provider_proc __enc_prompt_proc;
+extern enc_provider_proc __enc_remote_proc;
 
 #define CONTINUE 1
 

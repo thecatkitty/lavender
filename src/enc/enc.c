@@ -13,6 +13,7 @@ static enc_provider_proc *const PROVIDER[] = {
     &__enc_prompt_proc,
     &__enc_split_proc,
     &__enc_diskid_proc,
+    &__enc_remote_proc,
 };
 
 #define ENC_PROV(enc) (*(PROVIDER[(enc)->provider & 0xFF]))
