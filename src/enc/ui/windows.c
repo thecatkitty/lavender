@@ -23,6 +23,8 @@
 #define WIZARD97_PADDING_LEFT 21
 #define WIZARD97_PADDING_TOP  0
 
+#define CPX_CTLID(i) (0x100 + (i))
+
 static NONCLIENTMETRICSW _nclm = {0};
 static bool              _is_vista = WINVER >= 0x0600;
 static HICON             _bang = NULL;
@@ -37,21 +39,69 @@ static PROPSHEETHEADERW _psh = {sizeof(PROPSHEETHEADERW)};
 
 static int _value;
 
-static bool
-_set_text(HWND wnd, int ids)
+static int
+_set_text(HWND wnd, uintptr_t ids, bool measure)
 {
+    int    height = 0;
     LPWSTR text = NULL;
-    int    length = LoadStringW(NULL, ids, (LPWSTR)&text, 0);
+    int    length = 0;
+
+    if (0x10000 > ids)
+    {
+        length = LoadStringW(NULL, ids, (LPWSTR)&text, 0);
+    }
+    else
+    {
+        length = MultiByteToWideChar(CP_UTF8, 0, (LPCCH)ids, -1, NULL, 0);
+    }
+
     text = (LPWSTR)malloc((length + 1) * sizeof(WCHAR));
     if (NULL == text)
     {
-        return false;
+        return height;
     }
 
-    LoadStringW(NULL, ids, text, length + 1);
+    if (0x10000 > ids)
+    {
+        LoadStringW(NULL, ids, text, length + 1);
+    }
+    else
+    {
+        MultiByteToWideChar(CP_UTF8, 0, (LPCCH)ids, -1, text, length + 1);
+    }
+
     SetWindowTextW(wnd, text);
+
+    if (measure)
+    {
+        HDC   dc = GetDC(wnd);
+        HFONT font = (HFONT)SendMessageW(wnd, WM_GETFONT, 0, 0);
+        RECT  rect;
+        GetClientRect(wnd, &rect);
+        SelectObject(dc, font);
+        DrawTextW(dc, text, -1, &rect, DT_CALCRECT | DT_WORDBREAK);
+        ReleaseDC(wnd, dc);
+        height = rect.bottom;
+
+        GetWindowRect(wnd, &rect);
+        MapWindowPoints(NULL, GetParent(wnd), (LPPOINT)&rect, 2);
+        SetWindowPos(wnd, NULL, rect.left, rect.top, rect.right - rect.left,
+                     height, SWP_NOZORDER | SWP_NOACTIVATE);
+    }
+
     free(text);
-    return true;
+    return height;
+}
+
+static int
+_get_separator_height(HWND dlg, HFONT font)
+{
+    HDC  dc = GetDC(dlg);
+    RECT line_rect = {0, 0, 0, 0};
+    SelectObject(dc, font);
+    DrawTextW(dc, L"lightyear", -1, &line_rect, DT_CALCRECT);
+    ReleaseDC(dlg, dc);
+    return line_rect.bottom;
 }
 
 static bool
@@ -91,6 +141,108 @@ _check_input(HWND dlg, int page_id)
     status = _pages[page_id].proc(ENCUIM_CHECK, atext, _pages[page_id].data);
     free(atext);
     return 0 == status;
+}
+
+static void
+_create_controls(HWND dlg, encui_page *page)
+{
+    HFONT font;
+    RECT  rect;
+    int   cx, cy, my, i;
+
+    SetWindowTextW(GetDlgItem(dlg, IDC_ALERT), L"");
+
+    if (0 != page->message)
+    {
+        _set_text(GetDlgItem(dlg, IDC_TEXT), page->message, false);
+        return;
+    }
+
+    font = (HFONT)SendDlgItemMessageW(dlg, IDC_TEXT, WM_GETFONT, 0, 0);
+    my = _get_separator_height(dlg, font);
+    SetWindowTextW(GetDlgItem(dlg, IDC_TEXT), L"");
+
+    GetWindowRect(GetDlgItem(dlg, IDC_TEXT), &rect);
+    ScreenToClient(dlg, (POINT *)&rect.left);
+    ScreenToClient(dlg, (POINT *)&rect.right);
+    cx = rect.left;
+    cy = rect.top;
+
+    for (i = 0; i < page->cpx.length; i++)
+    {
+        encui_field *field = &page->cpx.fields[i];
+
+        if (ENCUIFT_SEPARATOR == field->type)
+        {
+            cy += my * field->data;
+        }
+
+        if (ENCUIFT_LABEL == field->type)
+        {
+            DWORD style =
+                WS_VISIBLE | WS_CHILD |
+                (ENCUIFF_CENTER == (ENCUIFF_ALIGN & field->flags) ? SS_CENTER
+                                                                  : 0) |
+                (ENCUIFF_RIGHT == (ENCUIFF_ALIGN & field->flags) ? SS_RIGHT
+                                                                 : 0);
+            HWND ctl = CreateWindowW(
+                L"STATIC", L"", style, cx, cy, rect.right - rect.left, 64, dlg,
+                (HMENU)(UINT_PTR)CPX_CTLID(i), GetModuleHandleW(NULL), NULL);
+            SendMessageW(ctl, WM_SETFONT, (WPARAM)font, TRUE);
+            cy += _set_text(ctl, field->data, true) + my;
+        }
+
+        if (ENCUIFT_TEXTBOX == field->type)
+        {
+            HWND box, ctl;
+            RECT box_rect, ctl_rect;
+
+            box = GetDlgItem(dlg, IDC_EDITBOX);
+            GetWindowRect(box, &box_rect);
+            MoveWindow(box, cx, cy, box_rect.right - box_rect.left,
+                       box_rect.bottom - box_rect.top, TRUE);
+
+            ctl = GetDlgItem(dlg, IDC_BANG);
+            GetWindowRect(ctl, &ctl_rect);
+            MoveWindow(ctl, cx + ctl_rect.left - box_rect.left,
+                       cy + ctl_rect.top - box_rect.top,
+                       ctl_rect.right - ctl_rect.left,
+                       ctl_rect.bottom - ctl_rect.top, TRUE);
+
+            ctl = GetDlgItem(dlg, IDC_ALERT);
+            GetWindowRect(ctl, &ctl_rect);
+            MoveWindow(ctl, cx + ctl_rect.left - box_rect.left,
+                       cy + ctl_rect.top - box_rect.top,
+                       ctl_rect.right - ctl_rect.left,
+                       ctl_rect.bottom - ctl_rect.top, TRUE);
+
+            cy += ctl_rect.bottom - box_rect.top + my;
+        }
+    }
+
+    DestroyWindow(GetDlgItem(dlg, IDC_TEXT));
+}
+
+static void
+_update_controls(HWND dlg, encui_page *page)
+{
+    int i;
+
+    if (0 != page->message)
+    {
+        return;
+    }
+
+    for (i = 0; i < page->cpx.length; i++)
+    {
+        encui_field *field = &page->cpx.fields[i];
+
+        if ((ENCUIFT_LABEL == field->type) && (ENCUIFF_DYNAMIC & field->flags))
+        {
+            HWND ctl = GetDlgItem(dlg, CPX_CTLID(i));
+            _set_text(ctl, field->data, false);
+        }
+    }
 }
 
 static void
@@ -163,9 +315,8 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
 #endif // WINVER < 0x0600
 
         // Set the prompt's content
-        _set_text(dlg, page->title);
-        _set_text(GetDlgItem(dlg, IDC_TEXT), page->message);
-        SetWindowTextW(GetDlgItem(dlg, IDC_ALERT), L"");
+        _set_text(dlg, page->title, false);
+        _create_controls(dlg, page);
         _set_buttons(dlg, (int)template->lParam,
                      -ENOSYS == page->proc(ENCUIM_CHECK, NULL, page->data));
 
@@ -179,26 +330,28 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
         {
         case PSN_SETACTIVE: {
             _set_buttons(dlg, id, _check_input(dlg, id));
+            _update_controls(dlg, _pages + id);
             return 0;
         }
 
         case PSN_WIZNEXT: {
-            int    status;
-            HWND   edit_box = GetDlgItem(dlg, IDC_EDITBOX);
-            size_t length = GetWindowTextLengthW(edit_box);
+            int                status;
+            encui_prompt_page *prompt = encui_find_prompt(_pages + id);
+            HWND               edit_box = GetDlgItem(dlg, IDC_EDITBOX);
+            size_t             length = GetWindowTextLengthW(edit_box);
             LPWSTR text = (LPWSTR)malloc((length + 1) * sizeof(WCHAR));
             if (NULL == text)
             {
                 return -1;
             }
             GetWindowTextW(edit_box, text, length + 1);
-            WideCharToMultiByte(CP_UTF8, 0, text, -1, _pages[id].prompt.buffer,
-                                _pages[id].prompt.capacity, NULL, NULL);
+            WideCharToMultiByte(CP_UTF8, 0, text, -1, prompt->buffer,
+                                prompt->capacity, NULL, NULL);
             _value = length;
             free(text);
 
-            status = _pages[id].proc(ENCUIM_NEXT, _pages[id].prompt.buffer,
-                                     _pages[id].data);
+            status =
+                _pages[id].proc(ENCUIM_NEXT, prompt->buffer, _pages[id].data);
             if (0 < status)
             {
                 WCHAR message[GFX_COLUMNS];

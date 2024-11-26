@@ -296,8 +296,8 @@ _reset(void)
 static void
 _draw_text_box(void)
 {
-    if (0 < _pages[_id].proc(ENCUIM_CHECK, _pages[_id].prompt.buffer,
-                             _pages[_id].data))
+    encui_prompt_page *prompt = encui_find_prompt(_pages + _id);
+    if (0 < _pages[_id].proc(ENCUIM_CHECK, prompt->buffer, _pages[_id].data))
     {
         gfx_draw_rectangle(&_tbox, GFX_COLOR_GRAY);
     }
@@ -307,14 +307,14 @@ _draw_text_box(void)
     }
 
     gfx_fill_rectangle(&_tbox, GFX_COLOR_WHITE);
-    gfx_draw_text(_pages[_id].prompt.buffer, _tbox_left, _tbox_top);
+    gfx_draw_text(prompt->buffer, _tbox_left, _tbox_top);
 }
 
 int
 encui_handle(void)
 {
     encui_page        *page = _pages + _id;
-    encui_prompt_page *prompt = &page->prompt;
+    encui_prompt_page *prompt = encui_find_prompt(_pages + _id);
 
     if (STATE_NONE == _state)
     {
@@ -525,6 +525,82 @@ encui_get_page(void)
     return _id;
 }
 
+static void
+_create_text_box(encui_prompt_page *prompt, int *cy)
+{
+    if (0 == prompt->length)
+    {
+        prompt->buffer[0] = 0;
+    }
+
+    int field_width = GFX_COLUMNS / 2 - 1;
+    if (field_width < prompt->capacity)
+    {
+        field_width = prompt->capacity;
+    }
+
+    (*cy)++;
+    _tbox_left = 1;
+    _tbox_top = *cy;
+
+    _tbox.width = field_width * _glyph.width + 2;
+    _tbox.height = _glyph.height + 2;
+    _tbox.top = _tbox_top * _glyph.height - 1;
+    _tbox.left = _tbox_left * _glyph.width - 1;
+
+    _state = STATE_PROMPT;
+    _position = prompt->length;
+    _caret_counter = pal_get_counter();
+    _caret_period = pal_get_ticks(500);
+
+    _draw_text_box();
+
+    (*cy) += 3;
+}
+
+static void
+_create_controls(encui_page *page)
+{
+    char buffer[GFX_COLUMNS * 4];
+    int  cy = 2;
+
+    if (0 != page->message)
+    {
+        pal_load_string(page->message, buffer, sizeof(buffer));
+        cy += _draw_text(cy, buffer) + 1;
+        _create_text_box(&page->prompt, &cy);
+        return;
+    }
+
+    for (int i = 0; i < page->cpx.length; i++)
+    {
+        encui_field *field = &page->cpx.fields[i];
+
+        if (ENCUIFT_SEPARATOR == field->type)
+        {
+            cy += field->data;
+        }
+
+        if (ENCUIFT_LABEL == field->type)
+        {
+            if (ENCUIFF_DYNAMIC & field->flags)
+            {
+                strncpy(buffer, (const char *)field->data, sizeof(buffer));
+            }
+            else
+            {
+                pal_load_string(field->data, buffer, sizeof(buffer));
+            }
+            cy += _draw_text(cy, buffer) + 1;
+        }
+
+        if (ENCUIFT_TEXTBOX == field->type)
+        {
+            _create_text_box((encui_prompt_page *)field->data, &cy);
+        }
+    }
+}
+
 bool
 encui_set_page(int id)
 {
@@ -538,8 +614,7 @@ encui_set_page(int id)
         return false;
     }
 
-    encui_page        *page = _pages + id;
-    encui_prompt_page *prompt = &page->prompt;
+    encui_page *page = _pages + id;
     _id = id;
 
     if (0 == page->title)
@@ -549,37 +624,11 @@ encui_set_page(int id)
         return true;
     }
 
-    if (0 == prompt->length)
-    {
-        prompt->buffer[0] = 0;
-    }
-
-    char buffer[GFX_COLUMNS * 4];
+    char buffer[GFX_COLUMNS * 2];
     _draw_background();
     pal_load_string(page->title, buffer, sizeof(buffer));
     _draw_title(buffer);
-    pal_load_string(page->message, buffer, sizeof(buffer));
-    int lines = _draw_text(2, buffer);
-
-    int field_width = GFX_COLUMNS / 2 - 1;
-    if (field_width < prompt->capacity)
-    {
-        field_width = prompt->capacity;
-    }
-    _tbox_left = 1;
-    _tbox_top = 2 + lines + 2;
-
-    _tbox.width = field_width * _glyph.width + 2;
-    _tbox.height = _glyph.height + 2;
-    _tbox.top = _tbox_top * _glyph.height - 1;
-    _tbox.left = _tbox_left * _glyph.width - 1;
-
-    _state = STATE_PROMPT;
-    _position = prompt->length;
-    _caret_counter = pal_get_counter();
-    _caret_period = pal_get_ticks(500);
-
-    _draw_text_box();
+    _create_controls(page);
 
     char caption[9];
     if ((0 < id) && (0 != _pages[id - 1].title))
