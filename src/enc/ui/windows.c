@@ -355,7 +355,17 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
             if (0 < status)
             {
                 WCHAR message[GFX_COLUMNS];
-                LoadStringW(NULL, status, message, lengthof(message));
+                if (INT_MAX == status)
+                {
+                    MultiByteToWideChar(CP_UTF8, 0, prompt->alert, -1, message,
+                                        lengthof(message));
+                    free((void *)prompt->alert);
+                    prompt->alert = NULL;
+                }
+                else
+                {
+                    LoadStringW(NULL, status, message, lengthof(message));
+                }
                 SetWindowTextW(GetDlgItem(dlg, IDC_ALERT), message);
 
                 Static_SetIcon(GetDlgItem(dlg, IDC_BANG), _bang);
