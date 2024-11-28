@@ -59,6 +59,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
     IDS_RCODE_DESC, "Share the following code with the slideshow author. The code will expire after 15 minutes."
     IDS_CCODE_DESC, "Enter the 42-digit confirmation code received from the slideshow author:"
     IDS_INVALIDCCODE, "Incorrect confirmation code!"
+    IDS_WRONGCID, "Incorrect access key for the selected content!"
 #endif
 }
 
