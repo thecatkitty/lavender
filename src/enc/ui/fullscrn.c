@@ -375,7 +375,16 @@ encui_handle(void)
         gfx_fill_rectangle(&bg, GFX_COLOR_WHITE);
 
         char message[GFX_COLUMNS];
-        pal_load_string(status, message, sizeof(message));
+        if (INT_MAX == status)
+        {
+            strncpy(message, prompt->alert, GFX_COLUMNS - 1);
+            free((void *)prompt->alert);
+            prompt->alert = NULL;
+        }
+        else
+        {
+            pal_load_string(status, message, sizeof(message));
+        }
         _draw_text(_tbox_top + 2, message);
 
         _state = STATE_PROMPT;

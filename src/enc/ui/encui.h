@@ -37,9 +37,10 @@ typedef int(encui_page_proc)(int msg, void *param, void *data);
 
 typedef struct
 {
-    char  *buffer;
-    size_t capacity;
-    size_t length;
+    char       *buffer;
+    size_t      capacity;
+    size_t      length;
+    const char *alert;
 } encui_prompt_page;
 
 typedef struct
