@@ -80,6 +80,9 @@ Loads value of `<name>` into the *Accumulator*.
 Updates `<name>` variable using the `<value>`.
 
 ### Defined variables
+* env.tz (W, DOS only) - set timezone fallback (POSIX TZ format)
+  * 0 - error
+  * 1 - success
 * gfx.colorful (R) - status of color support
   * 0 - absent
   * 1 - present
