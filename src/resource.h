@@ -63,4 +63,5 @@
 #define IDS_CCODE_DESC   0x63
 #define IDS_INVALIDCCODE 0x64
 #define IDS_WRONGCID     0x65
+#define IDS_INVALIDGROUP 0x66
 #endif

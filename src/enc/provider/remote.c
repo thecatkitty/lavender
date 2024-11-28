@@ -188,7 +188,16 @@ _ccode_page_proc(int msg, void *param, void *data)
             uint32_t group = atol(ccode + i * 7);
             if (0 != _compl10(group))
             {
-                return IDS_INVALIDCCODE;
+                char  fmt[GFX_COLUMNS * 2];
+                char *msg;
+                int   length;
+
+                pal_load_string(IDS_INVALIDGROUP, fmt, lengthof(fmt));
+                length = snprintf(NULL, 0, fmt, i + 1);
+                msg = malloc(length + 1);
+                snprintf(msg, length + 1, fmt, i + 1);
+                ((encui_prompt_page *)_pages[1].cpx.fields[6].data)->alert = msg;
+                return INT_MAX;
             }
 
             cwords[i] = (uint16_t)(group % 100000);
