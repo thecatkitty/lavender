@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <string.h>
 
 #include <gfx.h>
@@ -18,6 +19,13 @@ _get(const char *name)
 static uint16_t
 _set(const char *name, const char *value)
 {
+#if defined(__ia16__)
+    if (0 == strcmp("env.tz", name))
+    {
+        return (0 == setenv("TZ", value, 0)) ? 1 : 0;
+    }
+#endif
+
     if (0 == strcmp("gfx.title", name))
     {
         return gfx_set_title(value) ? 1 : 0;
