@@ -115,7 +115,7 @@ _acode_page_proc(int msg, void *param, void *data)
         cid ^= (uid_right >> 12) & 0xFFFFFFFF;
         if (enc->crc32 != cid)
         {
-            return IDS_INVALIDPKEY;
+            return IDS_WRONGCID;
         }
 
         // 80-bit user ID in big endian

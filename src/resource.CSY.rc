@@ -59,6 +59,7 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
     IDS_RCODE_DESC, "Sdílej následující kód s autorem prezentace. Platnost kódu vyprší po 15 minutách."  
     IDS_CCODE_DESC, "Zadej 42místný potvrzovací kód obdržený od autora prezentace:"  
     IDS_INVALIDCCODE, "Nesprávný potvrzovací kód!"  
+    IDS_WRONGCID, "Nesprávný přístupový klíč pro vybraný obsah!"
 #endif
 }
 
