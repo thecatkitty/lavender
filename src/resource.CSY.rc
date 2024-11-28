@@ -60,6 +60,7 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
     IDS_CCODE_DESC, "Zadej 42místný potvrzovací kód obdržený od autora prezentace:"  
     IDS_INVALIDCCODE, "Nesprávný potvrzovací kód!"  
     IDS_WRONGCID, "Nesprávný přístupový klíč pro vybraný obsah!"
+    IDS_INVALIDGROUP, "Skupina číslic %d byla zadána nesprávně. Zkontroluj ji a zkus to znovu."
 #endif
 }
 

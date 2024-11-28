@@ -60,6 +60,7 @@ LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
     IDS_CCODE_DESC, "Wpisz 42-cyfrowy kod potwierdzenia otrzymany od autora pokazu slajdów:"
     IDS_INVALIDCCODE, "Niepoprawny kod potwierdzenia!"
     IDS_WRONGCID, "Klucz dostępu niewłaściwy dla wybranej treści!"
+    IDS_INVALIDGROUP, "Niepoprawnie wprowadzono grupę cyfr %d. Sprawdź i spróbuj ponownie."
 #endif
 }
 

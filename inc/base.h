@@ -13,6 +13,8 @@
 typedef int bool;
 #define false 0
 #define true 1
+
+#define snprintf _snprintf
 #endif
 
 #if defined(__ia16__)
