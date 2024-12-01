@@ -593,6 +593,13 @@ _get_volume_info(uint8_t drive, _volume_info *out)
     return false;
 }
 
+bool
+pal_get_machine_id(uint8_t *mid)
+{
+    // No known reliable way to identify the machine under DOS
+    return false;
+}
+
 uint32_t
 pal_get_medium_id(const char *tag)
 {
