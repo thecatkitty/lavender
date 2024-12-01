@@ -149,11 +149,13 @@ _create_controls(HWND dlg, encui_page *page)
     HFONT font;
     RECT  rect;
     int   cx, cy, my, i;
+    bool  has_checkbox = false;
 
     SetWindowTextW(GetDlgItem(dlg, IDC_ALERT), L"");
 
     if (0 != page->message)
     {
+        DestroyWindow(GetDlgItem(dlg, IDC_CHECK));
         _set_text(GetDlgItem(dlg, IDC_TEXT), page->message, false);
         return;
     }
@@ -218,9 +220,28 @@ _create_controls(HWND dlg, encui_page *page)
 
             cy += ctl_rect.bottom - box_rect.top + my;
         }
+
+        if (ENCUIFT_CHECKBOX == field->type)
+        {
+            if (has_checkbox)
+            {
+                continue;
+            }
+
+            has_checkbox = true;
+            _set_text(GetDlgItem(dlg, IDC_CHECK), field->data, false);
+            if (ENCUIFF_CHECKED & field->flags)
+            {
+                Button_SetCheck(GetDlgItem(dlg, IDC_CHECK), BST_CHECKED);
+            }
+        }
     }
 
     DestroyWindow(GetDlgItem(dlg, IDC_TEXT));
+    if (!has_checkbox)
+    {
+        DestroyWindow(GetDlgItem(dlg, IDC_CHECK));
+    }
 }
 
 static void
@@ -409,6 +430,21 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
         if ((EN_CHANGE == HIWORD(wparam)) && (IDC_EDITBOX == LOWORD(wparam)))
         {
             _set_buttons(dlg, id, _check_input(dlg, id));
+            return TRUE;
+        }
+
+        if ((BN_CLICKED == HIWORD(wparam)) && (IDC_CHECK == LOWORD(wparam)))
+        {
+            encui_field *checkbox = encui_find_checkbox(_pages + id);
+            int          state = Button_GetCheck(GetDlgItem(dlg, IDC_CHECK));
+            if (BST_CHECKED == state)
+            {
+                checkbox->flags |= ENCUIFF_CHECKED;
+            }
+            else
+            {
+                checkbox->flags &= ~ENCUIFF_CHECKED;
+            }
             return TRUE;
         }
     }

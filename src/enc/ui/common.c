@@ -1,5 +1,24 @@
 #include "encui.h"
 
+encui_field *
+encui_find_checkbox(encui_page *page)
+{
+    encui_field *checkbox = NULL;
+    int          i;
+
+    for (i = 0; i < page->cpx.length; i++)
+    {
+        encui_field *field = page->cpx.fields + i;
+        if (ENCUIFT_CHECKBOX == field->type)
+        {
+            return field;
+            break;
+        }
+    }
+
+    return checkbox;
+}
+
 encui_prompt_page *
 encui_find_prompt(encui_page *page)
 {
