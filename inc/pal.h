@@ -15,6 +15,8 @@ typedef bool (*pal_enum_assets_callback)(const char *, void *);
 #define PAL_EXTERNAL_TICK 0
 #endif
 
+#define PAL_MACHINE_ID_SIZE 16
+
 #define PAL_MOUSE_LBUTTON 0x0001
 #define PAL_MOUSE_RBUTTON 0x0002
 
@@ -108,6 +110,9 @@ pal_get_asset_size(hasset asset);
 
 extern const char *
 pal_get_version_string(void);
+
+extern bool
+pal_get_machine_id(uint8_t *mid);
 
 extern uint32_t
 pal_get_medium_id(const char *tag);

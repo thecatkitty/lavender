@@ -956,6 +956,52 @@ pal_get_version_string(void)
     return _ver_string;
 }
 
+bool
+pal_get_machine_id(uint8_t *mid)
+{
+    char        buffer[MAX_PATH] = "";
+    const char *src = buffer, *end;
+    uint8_t    *dst = mid;
+    HKEY        key = NULL;
+    DWORD       size = sizeof(buffer);
+    DWORD       type = 0;
+
+    if (ERROR_SUCCESS != RegOpenKeyExA(HKEY_LOCAL_MACHINE,
+                                       "SOFTWARE\\Microsoft\\Cryptography", 0,
+                                       KEY_READ, &key))
+    {
+        return false;
+    }
+
+    if (ERROR_SUCCESS != RegQueryValueExA(key, "MachineGuid", NULL, &type,
+                                          (LPBYTE)buffer, &size))
+    {
+        return false;
+    }
+
+    RegCloseKey(key);
+    if (NULL == mid)
+    {
+        return true;
+    }
+
+    end = buffer + size;
+    while ((src < end) && *src)
+    {
+        if (!isxdigit(*src))
+        {
+            src++;
+            continue;
+        }
+
+        *dst = xtob(src);
+        src += 2;
+        dst++;
+    }
+
+    return true;
+}
+
 uint32_t
 pal_get_medium_id(const char *tag)
 {
