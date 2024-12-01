@@ -179,6 +179,42 @@ pal_get_keystroke(void)
     case SDLK_PAGEUP:
         c = VK_PRIOR;
         break;
+    case SDLK_F1:
+        c = VK_F1;
+        break;
+    case SDLK_F2:
+        c = VK_F2;
+        break;
+    case SDLK_F3:
+        c = VK_F3;
+        break;
+    case SDLK_F4:
+        c = VK_F4;
+        break;
+    case SDLK_F5:
+        c = VK_F5;
+        break;
+    case SDLK_F6:
+        c = VK_F6;
+        break;
+    case SDLK_F7:
+        c = VK_F7;
+        break;
+    case SDLK_F8:
+        c = VK_F8;
+        break;
+    case SDLK_F9:
+        c = VK_F9;
+        break;
+    case SDLK_F10:
+        c = VK_F10;
+        break;
+    case SDLK_F11:
+        c = VK_F11;
+        break;
+    case SDLK_F12:
+        c = VK_F12;
+        break;
     case SDLK_KP_0:
         c = '0';
         break;
@@ -209,16 +245,16 @@ pal_get_keystroke(void)
     case SDLK_KP_9:
         c = '9';
         break;
-    }
-    
-    if (255 < c)
-    {
-        c = 0;
-    }
+    default:
+        if (255 < c)
+        {
+            c = 0;
+        }
 
-    if (islower(c))
-    {
-        c = toupper(c);
+        if (islower(c))
+        {
+            c = toupper(c);
+        }
     }
 
     LOG("keystroke: %#.2x", c);
