@@ -756,6 +756,18 @@ pal_load_string(unsigned id, char *buffer, int max_length)
     return length;
 }
 
+size_t
+pal_load_state(const char *name, uint8_t *buffer, size_t size)
+{
+    return false;
+}
+
+bool
+pal_save_state(const char *name, const uint8_t *buffer, size_t size)
+{
+    return false;
+}
+
 void
 pal_alert(const char *text, int error)
 {
