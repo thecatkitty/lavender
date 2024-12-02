@@ -4,12 +4,16 @@
 #include <errno.h>
 #include <limits.h>
 #include <stddef.h>
-#include <stdint.h>
 #include <sys/types.h>
 
 #if !defined(_MSC_VER) || (_MSC_VER >= 1800)
+#include <inttypes.h>
 #include <stdbool.h>
 #else
+#include <stdint.h>
+
+#define PRIx32 "x"
+
 typedef int bool;
 #define false 0
 #define true 1

@@ -77,6 +77,8 @@ typedef struct
 
 #define ENC_KEYSRC(p, sm) (((sm) << 8) | (p))
 
+#define ENC_KEY_LENGTH_MAX 16
+
 extern bool
 enc_prepare(enc_stream    *stream,
             enc_cipher     cipher,
@@ -114,6 +116,12 @@ enc_access_content(enc_context *enc,
 
 extern int
 enc_handle(enc_context *enc);
+
+extern bool
+enc_load_key(uint32_t cid, uint8_t *buffer, size_t size);
+
+extern bool
+enc_save_key(uint32_t cid, const uint8_t *buffer, size_t size);
 #endif // CONFIG_ENCRYPTED_CONTENT
 
 #endif // _ENC_H_
