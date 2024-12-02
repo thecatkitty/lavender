@@ -132,6 +132,12 @@ pal_get_mouse(uint16_t *x, uint16_t *y);
 extern int
 pal_load_string(unsigned id, char *buffer, int max_length);
 
+extern size_t
+pal_load_state(const char *name, uint8_t *buffer, size_t size);
+
+extern bool
+pal_save_state(const char *name, const uint8_t *buffer, size_t size);
+
 extern void
 pal_alert(const char *text, int error);
 
