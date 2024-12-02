@@ -1,5 +1,8 @@
+#include <stdio.h>
+
 #include <enc.h>
 #include <fmt/zip.h>
+#include <pal.h>
 
 #include "enc_impl.h"
 #include "ui/encui.h"
@@ -7,6 +10,8 @@
 // Size of the plaintext stored at the end of the data buffer
 #define PT_SIZE(data, size)                                                    \
     (*(uint32_t *)((char *)(data) + (size) - sizeof(uint32_t)))
+
+static const char CONTENT_KEY_FMT[] = "ContentKey-%08" PRIx32;
 
 static enc_provider_proc *const PROVIDER[] = {
     &__enc_caller_proc,
@@ -296,4 +301,57 @@ enc_access_content(enc_context *enc,
 
     enc->state = ENCS_INITIALIZE;
     return CONTINUE;
+}
+
+bool
+enc_load_key(uint32_t cid, uint8_t *buffer, size_t size)
+{
+    size_t  i;
+    uint8_t mid[PAL_MACHINE_ID_SIZE];
+    char    name[20];
+
+    if (!pal_get_machine_id(mid))
+    {
+        return false;
+    }
+
+    snprintf(name, sizeof(name), CONTENT_KEY_FMT, cid);
+    if (size != pal_load_state(name, buffer, size))
+    {
+        return false;
+    }
+
+    for (i = 0; i < size; i++)
+    {
+        buffer[i] ^= mid[i % PAL_MACHINE_ID_SIZE];
+    }
+
+    return true;
+}
+
+bool
+enc_save_key(uint32_t cid, const uint8_t *buffer, size_t size)
+{
+    uint8_t bound_key[ENC_KEY_LENGTH_MAX];
+    size_t  i;
+    uint8_t mid[PAL_MACHINE_ID_SIZE];
+    char    name[20];
+
+    if (ENC_KEY_LENGTH_MAX < size)
+    {
+        return false;
+    }
+
+    if (!pal_get_machine_id(mid))
+    {
+        return false;
+    }
+
+    for (i = 0; i < size; i++)
+    {
+        bound_key[i] = buffer[i] ^ mid[i % PAL_MACHINE_ID_SIZE];
+    }
+
+    snprintf(name, sizeof(name), CONTENT_KEY_FMT, cid);
+    return pal_save_state(name, bound_key, size);
 }
