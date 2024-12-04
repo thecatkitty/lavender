@@ -30,6 +30,10 @@ __enc_caller_proc(int msg, enc_context *enc)
 
         return -EINVAL;
     }
+
+    case ENCM_GET_STORAGE_POLICY: {
+        return ENCSTORPOL_NONE;
+    }
     }
 
     return -ENOSYS;

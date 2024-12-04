@@ -39,7 +39,7 @@ extern bool
 __enc_pkey25_validate_format(const char *key);
 
 static int
-_decrypt_content(enc_context *enc);
+_decrypt_content(enc_context *enc, bool load_key);
 
 bool
 enc_prepare(enc_stream    *stream,
@@ -169,6 +169,12 @@ enc_handle(enc_context *enc)
     switch (enc->state)
     {
     case ENCS_INITIALIZE: {
+        if (0 == _decrypt_content(enc, true))
+        {
+            enc->state = ENCS_COMPLETE;
+            return CONTINUE;
+        }
+
         REQUIRE_SUCCESS(status = ENC_PROV(enc)(ENCM_INITIALIZE, enc));
         if (0 == status)
         {
@@ -204,7 +210,7 @@ enc_handle(enc_context *enc)
     }
 
     case ENCS_VERIFY: {
-        REQUIRE_SUCCESS(_decrypt_content(enc));
+        REQUIRE_SUCCESS(_decrypt_content(enc, false));
         enc->state = ENCS_COMPLETE;
         return CONTINUE;
     }
@@ -218,13 +224,24 @@ enc_handle(enc_context *enc)
 }
 
 static int
-_decrypt_content(enc_context *enc)
+_decrypt_content(enc_context *enc, bool load_key)
 {
     size_t size = (ENC_XOR == enc->cipher)    ? 6
                   : (ENC_DES == enc->cipher)  ? sizeof(uint64_t)
                   : (ENC_TDES == enc->cipher) ? (2 * sizeof(uint64_t))
                                               : 0;
-    REQUIRE_SUCCESS(ENC_PROV(enc)(ENCM_TRANSFORM, enc));
+    if (load_key)
+    {
+        if (!enc_load_key(enc->crc32, enc->key.b, size))
+        {
+            return -ENOENT;
+        }
+    }
+    else
+    {
+        REQUIRE_SUCCESS(ENC_PROV(enc)(ENCM_TRANSFORM, enc));
+    }
+
     if (!enc_prepare(&enc->stream, enc->cipher, enc->content, enc->size,
                      enc->key.b, size))
     {
@@ -235,6 +252,12 @@ _decrypt_content(enc_context *enc)
     {
         enc_free(&enc->stream);
         return -EACCES;
+    }
+
+    if (!load_key &&
+        (ENCSTORPOL_SAVE == ENC_PROV(enc)(ENCM_GET_STORAGE_POLICY, enc)))
+    {
+        enc_save_key(enc->crc32, enc->key.b, enc->stream.key_length);
     }
 
     enc_decrypt(&enc->stream, (uint8_t *)enc->content);
@@ -251,7 +274,7 @@ _decrypt_content(enc_context *enc)
 int
 __enc_decrypt_content(enc_context *enc)
 {
-    int status = _decrypt_content(enc);
+    int status = _decrypt_content(enc, false);
     if ((0 > status) && (-EACCES != status))
     {
         return status;
