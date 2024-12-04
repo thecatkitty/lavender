@@ -36,8 +36,17 @@ _passcode_page_proc(int msg, void *param, void *data)
     return -ENOSYS;
 }
 
+static encui_prompt_page _passcode_prompt = {NULL};
+
+static encui_field _passcode_fields[] = {
+    {ENCUIFT_LABEL, ENCUIFF_STATIC, IDS_ENTERPASS_DESC},
+    {ENCUIFT_SEPARATOR, 0, 1},
+    {ENCUIFT_TEXTBOX, 0, (intptr_t)&_passcode_prompt},
+    {ENCUIFT_CHECKBOX, ENCUIFF_STATIC, IDS_STOREKEY},
+};
+
 static encui_page _pages[] = {
-    {IDS_ENTERPASS, IDS_ENTERPASS_DESC, _passcode_page_proc}, {0}};
+    {IDS_ENTERPASS, 0, _passcode_page_proc}, {0}};
 
 int
 __enc_prompt_proc(int msg, enc_context *enc)
@@ -61,18 +70,28 @@ __enc_prompt_proc(int msg, enc_context *enc)
         }
 
         _pages[0].title = IDS_ENTERPASS;
-        _pages[0].message = IDS_ENTERPASS_DESC;
         _pages[0].data = enc;
-        _pages[0].prompt.buffer = enc->buffer;
-        _pages[0].prompt.capacity = enc->stream.key_length * 2;
-        _pages[0].prompt.length = 0;
+        _pages[0].cpx.length = lengthof(_passcode_fields);
+        _pages[0].cpx.fields = _passcode_fields;
+        _pages[0].cpx.fields[0].data = IDS_ENTERPASS_DESC;
+        _passcode_prompt.buffer = enc->buffer;
+        _passcode_prompt.capacity = enc->stream.key_length * 2;
 
         if ((ENC_KEYSM_PKEY25XOR12 == (enc->provider >> 8)) ||
             (ENC_KEYSM_PKEY25XOR2B == (enc->provider >> 8)))
         {
             _pages[0].title = IDS_ENTERPKEY;
-            _pages[0].message = IDS_ENTERPKEY_DESC;
-            _pages[0].prompt.capacity = 5 * 5 + 4;
+            _pages[0].cpx.fields[0].data = IDS_ENTERPASS_DESC;
+            _passcode_prompt.capacity = 5 * 5 + 4;
+        }
+
+        if (enc_has_key_store())
+        {
+            _passcode_fields[3].flags |= ENCUIFF_CHECKED;
+        }
+        else
+        {
+            _pages[0].cpx.length--;
         }
 
         encui_enter(_pages, 1);
@@ -120,6 +139,11 @@ __enc_prompt_proc(int msg, enc_context *enc)
     case ENCM_GET_ERROR_STRING: {
         return (ENC_KEYSM_RAW == (enc->provider >> 8)) ? IDS_INVALIDPASS
                                                        : IDS_INVALIDPKEY;
+    }
+
+    case ENCM_GET_STORAGE_POLICY: {
+        return (ENCUIFF_CHECKED & _passcode_fields[3].flags) ? ENCSTORPOL_SAVE
+                                                             : ENCSTORPOL_NONE;
     }
     }
 

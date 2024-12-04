@@ -31,8 +31,16 @@ _passcode_page_proc(int msg, void *param, void *data)
     return -ENOSYS;
 }
 
-static encui_page _pages[] = {
-    {IDS_ENTERPASS, IDS_ENTERPASS_DESC, _passcode_page_proc}, {0}};
+static encui_prompt_page _passcode_prompt = {NULL};
+
+static encui_field _passcode_fields[] = {
+    {ENCUIFT_LABEL, ENCUIFF_STATIC, IDS_ENTERPASS_DESC},
+    {ENCUIFT_SEPARATOR, 0, 1},
+    {ENCUIFT_TEXTBOX, 0, (intptr_t)&_passcode_prompt},
+    {ENCUIFT_CHECKBOX, ENCUIFF_STATIC, IDS_STOREKEY},
+};
+
+static encui_page _pages[] = {{IDS_ENTERPASS, 0, _passcode_page_proc}, {0}};
 
 int
 __enc_split_proc(int msg, enc_context *enc)
@@ -49,8 +57,21 @@ __enc_split_proc(int msg, enc_context *enc)
         }
 
         _pages[0].data = enc;
-        _pages[0].prompt.buffer = enc->buffer;
-        _pages[0].prompt.capacity = XOR48_PASSCODE_SIZE * 2;
+        _pages[0].cpx.length = lengthof(_passcode_fields);
+        _pages[0].cpx.fields = _passcode_fields;
+        _pages[0].cpx.fields[0].data = IDS_ENTERPASS_DESC;
+        _passcode_prompt.buffer = enc->buffer;
+        _passcode_prompt.capacity = XOR48_PASSCODE_SIZE * 2;
+
+        if (enc_has_key_store())
+        {
+            _passcode_fields[3].flags |= ENCUIFF_CHECKED;
+        }
+        else
+        {
+            _pages[0].cpx.length--;
+        }
+
         encui_set_page(0);
         return CONTINUE;
     }

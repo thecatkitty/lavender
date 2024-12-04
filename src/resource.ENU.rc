@@ -61,6 +61,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
     IDS_INVALIDCCODE, "Incorrect confirmation code!"
     IDS_WRONGCID, "Incorrect access key for the selected content!"
     IDS_INVALIDGROUP, "Digit group %d was entered incorrectly. Review it and try again."
+    IDS_STOREKEY, "Remember my access details on this computer"
 #endif
 }
 

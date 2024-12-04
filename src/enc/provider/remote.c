@@ -225,6 +225,7 @@ static encui_field _unlock_fields[] = {
     {ENCUIFT_SEPARATOR, 0, 2},
     {ENCUIFT_LABEL, ENCUIFF_STATIC, IDS_CCODE_DESC},
     {ENCUIFT_TEXTBOX, 0, (intptr_t)&_ccode_prompt},
+    {ENCUIFT_CHECKBOX, ENCUIFF_STATIC, IDS_STOREKEY},
 };
 
 static encui_page _pages[] = {
@@ -272,6 +273,15 @@ __enc_remote_proc(int msg, enc_context *enc)
             (intptr_t) "888888-888888-888888-888888-888888-888888-888888-"
                        "888888-888888";
 
+        if (enc_has_key_store())
+        {
+            _unlock_fields[7].flags |= ENCUIFF_CHECKED;
+        }
+        else
+        {
+            _pages[1].cpx.length--;
+        }
+
         encui_enter(_pages, 2);
         encui_set_page(0);
         return CONTINUE;
@@ -287,6 +297,11 @@ __enc_remote_proc(int msg, enc_context *enc)
 
     case ENCM_GET_ERROR_STRING: {
         return IDS_INVALIDCCODE;
+    }
+
+    case ENCM_GET_STORAGE_POLICY: {
+        return (ENCUIFF_CHECKED & _unlock_fields[7].flags) ? ENCSTORPOL_SAVE
+                                                           : ENCSTORPOL_NONE;
     }
     }
 
