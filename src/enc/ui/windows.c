@@ -151,18 +151,10 @@ _create_controls(HWND dlg, encui_page *page)
     int   cx, cy, my, i;
     bool  has_checkbox = false;
 
-    SetWindowTextW(GetDlgItem(dlg, IDC_ALERT), L"");
-
-    if (0 != page->message)
-    {
-        DestroyWindow(GetDlgItem(dlg, IDC_CHECK));
-        _set_text(GetDlgItem(dlg, IDC_TEXT), page->message, false);
-        return;
-    }
-
     font = (HFONT)SendDlgItemMessageW(dlg, IDC_TEXT, WM_GETFONT, 0, 0);
     my = _get_separator_height(dlg, font);
     SetWindowTextW(GetDlgItem(dlg, IDC_TEXT), L"");
+    SetWindowTextW(GetDlgItem(dlg, IDC_ALERT), L"");
 
     GetWindowRect(GetDlgItem(dlg, IDC_TEXT), &rect);
     ScreenToClient(dlg, (POINT *)&rect.left);
@@ -170,9 +162,9 @@ _create_controls(HWND dlg, encui_page *page)
     cx = rect.left;
     cy = rect.top;
 
-    for (i = 0; i < page->cpx.length; i++)
+    for (i = 0; i < page->length; i++)
     {
-        encui_field *field = &page->cpx.fields[i];
+        encui_field *field = &page->fields[i];
 
         if (ENCUIFT_SEPARATOR == field->type)
         {
@@ -248,15 +240,9 @@ static void
 _update_controls(HWND dlg, encui_page *page)
 {
     int i;
-
-    if (0 != page->message)
+    for (i = 0; i < page->length; i++)
     {
-        return;
-    }
-
-    for (i = 0; i < page->cpx.length; i++)
-    {
-        encui_field *field = &page->cpx.fields[i];
+        encui_field *field = &page->fields[i];
 
         if ((ENCUIFT_LABEL == field->type) && (ENCUIFF_DYNAMIC & field->flags))
         {

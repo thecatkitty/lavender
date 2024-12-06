@@ -56,21 +56,11 @@ typedef struct
 
 typedef struct
 {
-    int          length;
-    encui_field *fields;
-} encui_complex_page;
-
-typedef struct
-{
     int              title;
-    int              message;
     encui_page_proc *proc;
     void            *data;
-
-    union {
-        encui_prompt_page  prompt;
-        encui_complex_page cpx;
-    };
+    int              length;
+    encui_field     *fields;
 } encui_page;
 
 extern bool
