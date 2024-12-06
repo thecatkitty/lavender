@@ -84,6 +84,14 @@ _passcode_page_proc(int msg, void *param, void *data)
     return -ENOSYS;
 }
 
+static encui_prompt_page _dsn_prompt = {NULL};
+
+static encui_field _dsn_fields[] = {
+    {ENCUIFT_LABEL, ENCUIFF_STATIC, IDS_ENTERDSN_DESC},
+    {ENCUIFT_SEPARATOR, 0, 1},
+    {ENCUIFT_TEXTBOX, 0, (intptr_t)&_dsn_prompt},
+};
+
 static encui_prompt_page _passcode_prompt = {NULL};
 
 static encui_field _passcode_fields[] = {
@@ -94,7 +102,7 @@ static encui_field _passcode_fields[] = {
 };
 
 static encui_page _pages[] = {
-    {IDS_ENTERDSN, IDS_ENTERDSN_DESC, _dsn_page_proc},
+    {IDS_ENTERDSN, 0, _dsn_page_proc},
     {IDS_ENTERPASS, 0, _passcode_page_proc},
     {0}};
 
@@ -109,8 +117,11 @@ __enc_diskid_proc(int msg, enc_context *enc)
             uint32_t medium_id;
 
             _pages[0].data = enc;
-            _pages[0].prompt.buffer = enc->data.diskid.dsn;
-            _pages[0].prompt.capacity = XOR48_DSN_LENGTH;
+            _pages[0].cpx.length = lengthof(_dsn_fields);
+            _pages[0].cpx.fields = _dsn_fields;
+            _dsn_prompt.buffer = enc->data.diskid.dsn;
+            _dsn_prompt.capacity = XOR48_DSN_LENGTH;
+
             _pages[1].data = enc;
             _pages[1].cpx.length = lengthof(_passcode_fields);
             _pages[1].cpx.fields = _passcode_fields;
