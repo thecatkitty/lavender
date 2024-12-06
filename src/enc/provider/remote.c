@@ -215,6 +215,14 @@ _ccode_page_proc(int msg, void *param, void *data)
     return -ENOSYS;
 }
 
+static encui_prompt_page _acode_prompt = {NULL};
+
+static encui_field _acode_fields[] = {
+    {ENCUIFT_LABEL, ENCUIFF_STATIC, IDS_ENTERPKEY_DESC},
+    {ENCUIFT_SEPARATOR, 0, 1},
+    {ENCUIFT_TEXTBOX, 0, (intptr_t)&_acode_prompt},
+};
+
 static encui_prompt_page _ccode_prompt = {_ccode, sizeof(_ccode), 0};
 
 static encui_field _unlock_fields[] = {
@@ -229,7 +237,7 @@ static encui_field _unlock_fields[] = {
 };
 
 static encui_page _pages[] = {
-    {IDS_ENTERPKEY, IDS_ENTERPKEY_DESC, _acode_page_proc},
+    {IDS_ENTERPKEY, 0, _acode_page_proc},
     {IDS_UNLOCK, 0, _ccode_page_proc},
     {0}};
 
@@ -262,9 +270,11 @@ __enc_remote_proc(int msg, enc_context *enc)
         enc->stream.key_length = 2 * sizeof(uint64_t);
 
         _pages[0].data = enc;
-        _pages[0].prompt.buffer = enc->buffer;
-        _pages[0].prompt.capacity = 5 * 5 + 4;
-        _pages[0].prompt.length = 0;
+        _pages[0].cpx.length = lengthof(_acode_fields);
+        _pages[0].cpx.fields = _acode_fields;
+        _acode_prompt.buffer = enc->buffer;
+        _acode_prompt.capacity = 5 * 5 + 4;
+        _acode_prompt.length = 0;
 
         _pages[1].data = enc;
         _pages[1].cpx.length = lengthof(_unlock_fields);
