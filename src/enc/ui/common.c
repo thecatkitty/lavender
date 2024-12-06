@@ -6,9 +6,9 @@ encui_find_checkbox(encui_page *page)
     encui_field *checkbox = NULL;
     int          i;
 
-    for (i = 0; i < page->cpx.length; i++)
+    for (i = 0; i < page->length; i++)
     {
-        encui_field *field = page->cpx.fields + i;
+        encui_field *field = page->fields + i;
         if (ENCUIFT_CHECKBOX == field->type)
         {
             return field;
@@ -22,19 +22,16 @@ encui_find_checkbox(encui_page *page)
 encui_prompt_page *
 encui_find_prompt(encui_page *page)
 {
-    encui_prompt_page *prompt = &page->prompt;
+    encui_prompt_page *prompt = NULL;
     int                i;
 
-    if (0 == page->message)
+    for (i = 0; i < page->length; i++)
     {
-        for (i = 0; i < page->cpx.length; i++)
+        encui_field *field = page->fields + i;
+        if (ENCUIFT_TEXTBOX == field->type)
         {
-            encui_field *field = page->cpx.fields + i;
-            if (ENCUIFT_TEXTBOX == field->type)
-            {
-                prompt = (encui_prompt_page *)field->data;
-                break;
-            }
+            prompt = (encui_prompt_page *)field->data;
+            break;
         }
     }
 

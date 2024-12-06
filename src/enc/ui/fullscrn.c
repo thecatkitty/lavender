@@ -614,17 +614,9 @@ _create_controls(encui_page *page)
     int  cy = 2;
     bool has_checkbox = false;
 
-    if (0 != page->message)
+    for (int i = 0; i < page->length; i++)
     {
-        pal_load_string(page->message, buffer, sizeof(buffer));
-        cy += _draw_text(cy, buffer) + 1;
-        _create_text_box(&page->prompt, &cy);
-        return;
-    }
-
-    for (int i = 0; i < page->cpx.length; i++)
-    {
-        encui_field *field = &page->cpx.fields[i];
+        encui_field *field = &page->fields[i];
 
         if (ENCUIFT_SEPARATOR == field->type)
         {

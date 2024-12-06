@@ -132,7 +132,7 @@ _acode_page_proc(int msg, void *param, void *data)
 
         stamp = time(NULL);
         _get_rcode(cid, uid, stamp);
-        _pages[1].cpx.fields[3].data = (intptr_t)_rcode;
+        _pages[1].fields[3].data = (intptr_t)_rcode;
 
         return 0;
     }
@@ -196,7 +196,7 @@ _ccode_page_proc(int msg, void *param, void *data)
                 length = snprintf(NULL, 0, fmt, i + 1);
                 msg = malloc(length + 1);
                 snprintf(msg, length + 1, fmt, i + 1);
-                ((encui_prompt_page *)_pages[1].cpx.fields[6].data)->alert = msg;
+                ((encui_prompt_page *)_pages[1].fields[6].data)->alert = msg;
                 return INT_MAX;
             }
 
@@ -236,9 +236,9 @@ static encui_field _unlock_fields[] = {
     {ENCUIFT_CHECKBOX, ENCUIFF_STATIC, IDS_STOREKEY},
 };
 
-static encui_page _pages[] = {
-    {IDS_ENTERPKEY, 0, _acode_page_proc},
-    {IDS_UNLOCK, 0, _ccode_page_proc},
+static encui_page _pages[] = {         //
+    {IDS_ENTERPKEY, _acode_page_proc}, //
+    {IDS_UNLOCK, _ccode_page_proc},    //
     {0}};
 
 static uint64_t
@@ -270,16 +270,16 @@ __enc_remote_proc(int msg, enc_context *enc)
         enc->stream.key_length = 2 * sizeof(uint64_t);
 
         _pages[0].data = enc;
-        _pages[0].cpx.length = lengthof(_acode_fields);
-        _pages[0].cpx.fields = _acode_fields;
+        _pages[0].length = lengthof(_acode_fields);
+        _pages[0].fields = _acode_fields;
         _acode_prompt.buffer = enc->buffer;
         _acode_prompt.capacity = 5 * 5 + 4;
         _acode_prompt.length = 0;
 
         _pages[1].data = enc;
-        _pages[1].cpx.length = lengthof(_unlock_fields);
-        _pages[1].cpx.fields = _unlock_fields;
-        _pages[1].cpx.fields[3].data =
+        _pages[1].length = lengthof(_unlock_fields);
+        _pages[1].fields = _unlock_fields;
+        _pages[1].fields[3].data =
             (intptr_t) "888888-888888-888888-888888-888888-888888-888888-"
                        "888888-888888";
 
@@ -289,7 +289,7 @@ __enc_remote_proc(int msg, enc_context *enc)
         }
         else
         {
-            _pages[1].cpx.length--;
+            _pages[1].length--;
         }
 
         encui_enter(_pages, 2);
