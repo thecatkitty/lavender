@@ -970,7 +970,7 @@ pal_get_machine_id(uint8_t *mid)
 
     if (ERROR_SUCCESS != RegOpenKeyExA(HKEY_LOCAL_MACHINE,
                                        "SOFTWARE\\Microsoft\\Cryptography", 0,
-                                       KEY_READ, &key))
+                                       KEY_READ | KEY_WOW64_64KEY, &key))
     {
         return false;
     }
