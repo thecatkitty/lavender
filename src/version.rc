@@ -18,5 +18,6 @@
 #include <common.ver>
 
 1 ICON "lavender.ico"
+2 ICON "secondary.ico"
 
 1 24 "lavender.exe.manifest"
