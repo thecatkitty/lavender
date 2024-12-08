@@ -167,7 +167,7 @@ _about_hook_wnd_proc(HWND wnd, UINT message, WPARAM wparam, LPARAM lparam)
         EnumChildWindows(wnd, _about_enum_child_proc, (LPARAM)&icon_wnd);
         if (NULL != icon_wnd)
         {
-            HICON icon = LoadIconW(_instance, MAKEINTRESOURCEW(1));
+            HICON icon = LoadIconW(_instance, MAKEINTRESOURCEW(2));
             Static_SetIcon(icon_wnd, icon);
         }
 
