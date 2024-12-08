@@ -96,7 +96,7 @@ sld_handle(void)
     sld_context *ctx = __sld_ctx;
     int          status;
 
-    if (!pal_handle())
+    if ((SLD_QUIT != ctx->state) && !pal_handle())
     {
         __sld_ctx->state = SLD_QUIT;
         return;
