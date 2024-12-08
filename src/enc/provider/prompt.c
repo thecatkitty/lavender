@@ -82,7 +82,7 @@ __enc_prompt_proc(int msg, enc_context *enc)
             (ENC_KEYSM_PKEY25XOR2B == (enc->provider >> 8)))
         {
             _pages[0].title = IDS_ENTERPKEY;
-            _pages[0].fields[0].data = IDS_ENTERPASS_DESC;
+            _pages[0].fields[0].data = IDS_ENTERPKEY_DESC;
             _passcode_prompt.capacity = 5 * 5 + 4;
         }
 
