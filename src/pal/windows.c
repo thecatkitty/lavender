@@ -768,6 +768,8 @@ pal_cleanup(void)
         KillTimer(_wnd, 0);
     }
 
+    snd_cleanup();
+    gfx_cleanup();
     ziparch_cleanup();
 }
 
