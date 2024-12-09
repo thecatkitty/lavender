@@ -303,7 +303,7 @@ _get_pen(gfx_color color)
 }
 
 bool
-gfx_draw_line(gfx_rect *rect, gfx_color color)
+gfx_draw_line(const gfx_rect *rect, gfx_color color)
 {
     RECT wrect;
 
@@ -322,7 +322,7 @@ gfx_draw_line(gfx_rect *rect, gfx_color color)
 }
 
 bool
-gfx_draw_rectangle(gfx_rect *rect, gfx_color color)
+gfx_draw_rectangle(const gfx_rect *rect, gfx_color color)
 {
     RECT wrect;
 
@@ -344,7 +344,7 @@ gfx_draw_rectangle(gfx_rect *rect, gfx_color color)
 }
 
 bool
-gfx_fill_rectangle(gfx_rect *rect, gfx_color color)
+gfx_fill_rectangle(const gfx_rect *rect, gfx_color color)
 {
     RECT wrect;
     _to_wrect(rect, &wrect);

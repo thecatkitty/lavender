@@ -193,7 +193,7 @@ _draw_hline(uint16_t top,
 }
 
 bool ddcall
-ega_draw_line(device *dev, gfx_rect *rect, gfx_color color)
+ega_draw_line(device *dev, const gfx_rect *rect, gfx_color color)
 {
     uint8_t pattern;
 
@@ -238,7 +238,7 @@ ega_draw_line(device *dev, gfx_rect *rect, gfx_color color)
 }
 
 bool ddcall
-ega_draw_rectangle(device *dev, gfx_rect *rect, gfx_color color)
+ega_draw_rectangle(device *dev, const gfx_rect *rect, gfx_color color)
 {
     uint16_t left = rect->left - 1;
     uint16_t right = rect->left + rect->width;
@@ -273,7 +273,7 @@ ega_draw_rectangle(device *dev, gfx_rect *rect, gfx_color color)
 }
 
 bool ddcall
-ega_fill_rectangle(device *dev, gfx_rect *rect, gfx_color color)
+ega_fill_rectangle(device *dev, const gfx_rect *rect, gfx_color color)
 {
     uint16_t left = rect->left;
     uint16_t right = left + rect->width;

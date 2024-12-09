@@ -28,7 +28,7 @@ _translate(uint16_t *x, uint16_t *y, gfx_dimensions *dims)
 int
 __sld_execute_rectangle(sld_entry *sld)
 {
-    bool (*draw)(gfx_rect *, gfx_color);
+    bool (*draw)(const gfx_rect *, gfx_color);
     gfx_rect rect;
     uint16_t x, y = sld->posy;
 
