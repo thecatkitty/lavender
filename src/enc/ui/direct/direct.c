@@ -4,8 +4,8 @@
 #include <gfx.h>
 #include <pal.h>
 
-#include "../../resource.h"
-#include "../ui/encui.h"
+#include "../../../resource.h"
+#include "../encui.h"
 
 enum
 {
