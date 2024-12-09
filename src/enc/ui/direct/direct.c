@@ -42,10 +42,6 @@ static bool     _caret_visible = true;
 static gfx_rect _cancel;
 static gfx_rect _back;
 static gfx_rect _next;
-
-// Check box
-static gfx_rect _checkbox = {0};
-static gfx_rect _checkbox_area;
 static bool     _checkbox_down;
 
 bool
@@ -170,25 +166,6 @@ _reset(void)
 {
     pal_disable_mouse();
     _state = STATE_NONE;
-}
-
-static void
-_draw_check_box(void)
-{
-    encui_field *checkbox = encui_find_checkbox(_pages + _id);
-    if (NULL == checkbox)
-    {
-        return;
-    }
-
-#ifndef __ia16__
-    gfx_fill_rectangle(&_checkbox, GFX_COLOR_WHITE);
-
-    if (ENCUIFF_CHECKED & checkbox->flags)
-#endif
-    {
-        gfx_draw_text("x", 2, GFX_LINES - 5);
-    }
 }
 
 static void
@@ -333,7 +310,7 @@ encui_handle(void)
             pal_enable_mouse();
         }
     }
-    else if (_is_pressed(&_checkbox_area))
+    else if (_is_pressed(encui_direct_get_checkbox_area()))
     {
         scancode = VK_F8;
     }
@@ -377,15 +354,10 @@ encui_handle(void)
         return ENCUI_INCOMPLETE;
     }
 
-    if (VK_F8 == scancode)
+    if ((VK_F8 == scancode) && !_checkbox_down)
     {
-        encui_field *checkbox = encui_find_checkbox(_pages + _id);
-        if ((NULL != checkbox) && !_checkbox_down)
-        {
-            _checkbox_down = true;
-            checkbox->flags ^= ENCUIFF_CHECKED;
-            _draw_check_box();
-        }
+        _checkbox_down = true;
+        encui_direct_click_checkbox(encui_find_checkbox(_pages + _id));
     }
 
     pal_disable_mouse();
@@ -515,42 +487,11 @@ _create_controls(encui_page *page)
             _create_text_box((encui_prompt_page *)field->data, &cy);
         }
 
-        if (ENCUIFT_CHECKBOX == field->type)
+        if (!has_checkbox && (ENCUIFT_CHECKBOX == field->type))
         {
-            if (has_checkbox)
-            {
-                continue;
-            }
-
             has_checkbox = true;
             _checkbox_down = false;
-            buffer[0] = buffer[1] = buffer[2] = ' ';
-            if (ENCUIFF_DYNAMIC & field->flags)
-            {
-                strncpy(buffer + 3, (const char *)field->data,
-                        sizeof(buffer) - 8);
-            }
-            else
-            {
-                pal_load_string(field->data, buffer + 3, sizeof(buffer) - 8);
-            }
-            strcat(buffer, " [F8]");
-            encui_direct_print(GFX_LINES - 5, buffer);
-
-            _checkbox.width = _checkbox.height = _glyph.width + 4;
-            _checkbox.left = _glyph.width * 5 / 3 + 1;
-            _checkbox.top = (GFX_LINES - 5) * _glyph.height +
-                            (_glyph.height - _glyph.width) / 2;
-            gfx_draw_rectangle(&_checkbox, GFX_COLOR_BLACK);
-            if (ENCUIFF_CHECKED & field->flags)
-            {
-                _draw_check_box();
-            }
-
-            _checkbox_area.left = _glyph.width;
-            _checkbox_area.top = _checkbox.top - (_glyph.height / 2);
-            _checkbox_area.width = TEXT_WIDTH * _glyph.width;
-            _checkbox_area.height = _glyph.height * 2;
+            encui_direct_create_checkbox(field, buffer, sizeof(buffer));
         }
     }
 }
