@@ -294,7 +294,7 @@ _draw_line(
 }
 
 bool ddcall
-cga_draw_line(device *dev, gfx_rect *rect, gfx_color color)
+cga_draw_line(device *dev, const gfx_rect *rect, gfx_color color)
 {
     uint16_t left = rect->left;
     uint16_t y = rect->top;
@@ -334,7 +334,7 @@ cga_draw_line(device *dev, gfx_rect *rect, gfx_color color)
 }
 
 bool ddcall
-cga_draw_rectangle(device *dev, gfx_rect *rect, gfx_color color)
+cga_draw_rectangle(device *dev, const gfx_rect *rect, gfx_color color)
 {
     uint16_t x = rect->left;
     uint16_t y = rect->top;
@@ -386,7 +386,7 @@ cga_draw_rectangle(device *dev, gfx_rect *rect, gfx_color color)
 }
 
 bool ddcall
-cga_fill_rectangle(device *dev, gfx_rect *rect, gfx_color color)
+cga_fill_rectangle(device *dev, const gfx_rect *rect, gfx_color color)
 {
     uint16_t x = rect->left;
     uint16_t y = rect->top;

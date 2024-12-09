@@ -65,9 +65,15 @@ typedef struct
     void ddcall (*close)(device *dev);
     bool ddcall (*get_property)(device *dev, gfx_property property, void *out);
 
-    bool ddcall (*draw_line)(device *dev, gfx_rect *rect, gfx_color color);
-    bool ddcall (*draw_rectangle)(device *dev, gfx_rect *rect, gfx_color color);
-    bool ddcall (*fill_rectangle)(device *dev, gfx_rect *rect, gfx_color color);
+    bool ddcall (*draw_line)(device         *dev,
+                             const gfx_rect *rect,
+                             gfx_color       color);
+    bool ddcall (*draw_rectangle)(device         *dev,
+                                  const gfx_rect *rect,
+                                  gfx_color       color);
+    bool ddcall (*fill_rectangle)(device         *dev,
+                                  const gfx_rect *rect,
+                                  gfx_color       color);
 
     bool ddcall (*draw_bitmap)(device *dev, gfx_bitmap *bm, int x, int y);
     bool ddcall (*draw_text)(device     *dev,
@@ -149,13 +155,13 @@ extern bool
 gfx_draw_bitmap(gfx_bitmap *bm, int x, int y);
 
 extern bool
-gfx_draw_line(gfx_rect *rect, gfx_color color);
+gfx_draw_line(const gfx_rect *rect, gfx_color color);
 
 extern bool
-gfx_draw_rectangle(gfx_rect *rect, gfx_color color);
+gfx_draw_rectangle(const gfx_rect *rect, gfx_color color);
 
 extern bool
-gfx_fill_rectangle(gfx_rect *rect, gfx_color color);
+gfx_fill_rectangle(const gfx_rect *rect, gfx_color color);
 
 extern bool
 gfx_draw_text(const char *str, uint16_t x, uint16_t y);

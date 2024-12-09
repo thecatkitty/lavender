@@ -312,7 +312,7 @@ gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
 }
 
 bool
-gfx_draw_line(gfx_rect *rect, gfx_color color)
+gfx_draw_line(const gfx_rect *rect, gfx_color color)
 {
     LOG("entry, rect: %dx%d@%u,%u, color: %d", rect->width, rect->height,
         rect->left, rect->top, color);
@@ -342,7 +342,7 @@ gfx_draw_line(gfx_rect *rect, gfx_color color)
 }
 
 bool
-gfx_draw_rectangle(gfx_rect *rect, gfx_color color)
+gfx_draw_rectangle(const gfx_rect *rect, gfx_color color)
 {
     LOG("entry, rect: %dx%d@%u,%u, color: %d", rect->width, rect->height,
         rect->left, rect->top, color);
@@ -365,7 +365,7 @@ gfx_draw_rectangle(gfx_rect *rect, gfx_color color)
 }
 
 bool
-gfx_fill_rectangle(gfx_rect *rect, gfx_color color)
+gfx_fill_rectangle(const gfx_rect *rect, gfx_color color)
 {
     LOG("entry, rect: %dx%d@%u,%u, color: %d", rect->width, rect->height,
         rect->left, rect->top, color);
