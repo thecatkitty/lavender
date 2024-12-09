@@ -5,7 +5,7 @@
 #include <pal.h>
 
 #include "../../../resource.h"
-#include "../encui.h"
+#include "direct.h"
 
 enum
 {
@@ -16,8 +16,6 @@ enum
     STATE_PROMPT_INVALID3,
     STATE_VERIFY,
 };
-
-#define TEXT_WIDTH (GFX_COLUMNS - 2)
 
 // User interface state
 static int         _state = STATE_NONE;
@@ -108,130 +106,6 @@ _draw_background(void)
     footer.left = footer.width;
     footer.top = _screen.height - footer.height;
     gfx_fill_rectangle(&footer, GFX_COLOR_BLACK);
-}
-
-static int
-_measure_span(const char *str, size_t span)
-{
-#ifdef UTF8_NATIVE
-    const char *end = str + span;
-    int         length;
-
-    for (length = 0; str < end; length++)
-    {
-        int seq;
-        utf8_get_codepoint(str, &seq);
-        str += seq;
-    }
-
-    return length;
-#else
-    return span;
-#endif
-}
-
-static int
-_copy_text(char *dst, const char *src, size_t length)
-{
-#ifdef UTF8_NATIVE
-    int size = 0;
-
-    for (int i = 0; i < length; i++)
-    {
-        int seq;
-        utf8_get_codepoint(src + size, &seq);
-        memcpy(dst + size, src + size, seq);
-        size += seq;
-    }
-
-    dst[size] = 0;
-    return size;
-#else
-    memcpy(dst, src, length);
-    dst[length] = 0;
-    return length;
-#endif
-}
-
-static int
-_wrap(char *dst, const char *src, size_t width, char delimiter)
-{
-    int chars = 0;
-
-    const char *psrc = src;
-    char       *pdst = dst;
-    while (*psrc && (chars <= width))
-    {
-        if (delimiter == *psrc)
-        {
-            *pdst = 0;
-            return psrc - src + 1;
-        }
-
-        size_t word_span = strcspn(psrc, " \n");
-        int    word_length = _measure_span(psrc, word_span);
-        if (width < chars + word_length)
-        {
-            if (src == psrc)
-            {
-                return _copy_text(dst, src, width);
-            }
-
-            break;
-        }
-
-        memcpy(pdst, psrc, word_span);
-        psrc += word_span;
-        pdst += word_span;
-        chars += word_length;
-
-        while ((' ' == *psrc) && (chars < width))
-        {
-            *pdst = *psrc;
-            psrc++;
-            pdst++;
-            chars++;
-        }
-
-        if (chars == width)
-        {
-            while (' ' == *psrc)
-            {
-                psrc++;
-            }
-        }
-    }
-
-    *pdst = 0;
-    return psrc - src;
-}
-
-static int
-_draw_text(int top, char *text)
-{
-#ifndef UTF8_NATIVE
-    utf8_encode(text, text, pal_wctob);
-#endif
-
-    const char *fragment = text;
-#ifdef UTF8_NATIVE
-    char line_buff[2 * TEXT_WIDTH + 1];
-#else
-    char line_buff[TEXT_WIDTH + 1];
-#endif
-
-    int line = 0;
-    while (*fragment)
-    {
-        fragment += _wrap(line_buff, fragment, TEXT_WIDTH, '\n');
-        if (!gfx_draw_text(line_buff, 1, top + line))
-        {
-            return -1;
-        }
-        line++;
-    }
-
-    return line;
 }
 
 static void
@@ -409,7 +283,7 @@ encui_handle(void)
         {
             pal_load_string(status, message, sizeof(message));
         }
-        _draw_text(_tbox_top + 2, message);
+        encui_direct_print(_tbox_top + 2, message);
 
         _state = STATE_PROMPT;
         pal_enable_mouse();
@@ -633,7 +507,7 @@ _create_controls(encui_page *page)
             {
                 pal_load_string(field->data, buffer, sizeof(buffer));
             }
-            cy += _draw_text(cy, buffer) + 1;
+            cy += encui_direct_print(cy, buffer) + 1;
         }
 
         if (ENCUIFT_TEXTBOX == field->type)
@@ -661,7 +535,7 @@ _create_controls(encui_page *page)
                 pal_load_string(field->data, buffer + 3, sizeof(buffer) - 8);
             }
             strcat(buffer, " [F8]");
-            _draw_text(GFX_LINES - 5, buffer);
+            encui_direct_print(GFX_LINES - 5, buffer);
 
             _checkbox.width = _checkbox.height = _glyph.width + 4;
             _checkbox.left = _glyph.width * 5 / 3 + 1;
