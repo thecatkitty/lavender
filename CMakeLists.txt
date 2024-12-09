@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 if(WIN32)
     project(Lavender C RC)
 else()
-    project(Lavender C ASM)
+    project(Lavender C CXX ASM)
 endif()
 include(cmake/extensions.cmake)
 
