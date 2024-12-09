@@ -118,19 +118,19 @@ gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
 }
 
 bool
-gfx_draw_line(gfx_rect *rect, gfx_color color)
+gfx_draw_line(const gfx_rect *rect, gfx_color color)
 {
     return gfx_device_draw_line(_dev, rect, color);
 }
 
 bool
-gfx_draw_rectangle(gfx_rect *rect, gfx_color color)
+gfx_draw_rectangle(const gfx_rect *rect, gfx_color color)
 {
     return gfx_device_draw_rectangle(_dev, rect, color);
 }
 
 bool
-gfx_fill_rectangle(gfx_rect *rect, gfx_color color)
+gfx_fill_rectangle(const gfx_rect *rect, gfx_color color)
 {
     return gfx_device_fill_rectangle(_dev, rect, color);
 }
