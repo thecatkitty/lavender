@@ -11,32 +11,17 @@ enum
 {
     STATE_NONE,
     STATE_PROMPT,
-    STATE_PROMPT_INVALID1,
-    STATE_PROMPT_INVALID2,
-    STATE_PROMPT_INVALID3,
     STATE_VERIFY,
 };
 
 // User interface state
 static int         _state = STATE_NONE;
-static int         _position;
 static encui_page *_pages = NULL;
 static int         _id;
 
 // Screen metrics
 static gfx_dimensions _glyph = {0, 0};
 static gfx_rect       _screen = {0, 0, 0, 0};
-
-// Text box frame
-static gfx_rect _tbox;
-static int      _tbox_left;
-static int      _tbox_top;
-static uint32_t _tbox_blink_start;
-
-// Caret animation
-static uint32_t _caret_period = 0;
-static uint32_t _caret_counter;
-static bool     _caret_visible = true;
 
 // Buttons
 static gfx_rect _cancel;
@@ -168,23 +153,6 @@ _reset(void)
     _state = STATE_NONE;
 }
 
-static void
-_draw_text_box(void)
-{
-    encui_prompt_page *prompt = encui_find_prompt(_pages + _id);
-    if (0 < _pages[_id].proc(ENCUIM_CHECK, prompt->buffer, _pages[_id].data))
-    {
-        gfx_draw_rectangle(&_tbox, GFX_COLOR_GRAY);
-    }
-    else
-    {
-        gfx_draw_rectangle(&_tbox, GFX_COLOR_BLACK);
-    }
-
-    gfx_fill_rectangle(&_tbox, GFX_COLOR_WHITE);
-    gfx_draw_text(prompt->buffer, _tbox_left, _tbox_top);
-}
-
 int
 encui_handle(void)
 {
@@ -196,38 +164,8 @@ encui_handle(void)
         return 0;
     }
 
-    if (STATE_PROMPT_INVALID1 == _state)
+    if (!encui_direct_animate_textbox(prompt, page, true))
     {
-        if (pal_get_counter() > _tbox_blink_start + pal_get_ticks(63))
-        {
-            gfx_draw_rectangle(&_tbox, GFX_COLOR_GRAY);
-            _state = STATE_PROMPT_INVALID2;
-        }
-
-        return ENCUI_INCOMPLETE;
-    }
-
-    if (STATE_PROMPT_INVALID2 == _state)
-    {
-        if (pal_get_counter() > _tbox_blink_start + pal_get_ticks(126))
-        {
-            gfx_draw_rectangle(&_tbox, GFX_COLOR_BLACK);
-            _state = STATE_PROMPT_INVALID3;
-        }
-
-        return ENCUI_INCOMPLETE;
-    }
-
-    if (STATE_PROMPT_INVALID3 == _state)
-    {
-        if (pal_get_counter() > _tbox_blink_start + pal_get_ticks(189))
-        {
-            gfx_draw_rectangle(&_tbox, GFX_COLOR_GRAY);
-            _draw_text_box();
-            _state = STATE_PROMPT;
-            pal_enable_mouse();
-        }
-
         return ENCUI_INCOMPLETE;
     }
 
@@ -245,10 +183,6 @@ encui_handle(void)
             return status;
         }
 
-        gfx_rect bg = {0, (_tbox_top + 2) * _glyph.height, _screen.width, 0};
-        bg.height = (GFX_LINES - 3) * _glyph.height - bg.top;
-        gfx_fill_rectangle(&bg, GFX_COLOR_WHITE);
-
         char message[GFX_COLUMNS];
         if (INT_MAX == status)
         {
@@ -260,21 +194,11 @@ encui_handle(void)
         {
             pal_load_string(status, message, sizeof(message));
         }
-        encui_direct_print(_tbox_top + 2, message);
+        encui_direct_set_textbox_error(message);
 
         _state = STATE_PROMPT;
         pal_enable_mouse();
         return ENCUI_INCOMPLETE;
-    }
-
-    gfx_rect caret = {(_tbox_left + _position) * _glyph.width, _tbox.top + 1, 1,
-                      _glyph.height};
-    if (pal_get_counter() > _caret_counter + _caret_period)
-    {
-        gfx_draw_line(&caret,
-                      _caret_visible ? GFX_COLOR_BLACK : GFX_COLOR_WHITE);
-        _caret_counter = pal_get_counter();
-        _caret_visible = !_caret_visible;
     }
 
     uint16_t scancode = 0;
@@ -290,25 +214,11 @@ encui_handle(void)
     {
         scancode = VK_ESCAPE;
     }
-    else if (_is_pressed(&_tbox))
+    else if (_is_pressed(encui_direct_get_textbox_area()))
     {
         uint16_t x, y;
         pal_get_mouse(&x, &y);
-
-        int cursor = x - _tbox_left;
-        if (prompt->length < cursor)
-        {
-            cursor = prompt->length;
-        }
-
-        if (_position != cursor)
-        {
-            _position = cursor;
-            caret.left = (_tbox_left + _position) * _glyph.width;
-            pal_disable_mouse();
-            _draw_text_box();
-            pal_enable_mouse();
-        }
+        encui_direct_click_textbox(prompt, page, x, y);
     }
     else if (_is_pressed(encui_direct_get_checkbox_area()))
     {
@@ -341,9 +251,8 @@ encui_handle(void)
         }
 
         pal_disable_mouse();
-        gfx_draw_rectangle(&_tbox, GFX_COLOR_BLACK);
-        _tbox_blink_start = pal_get_counter();
-        _state = STATE_PROMPT_INVALID1;
+        gfx_draw_rectangle(encui_direct_get_textbox_area(), GFX_COLOR_BLACK);
+        encui_direct_animate_textbox(prompt, page, false);
         return ENCUI_INCOMPLETE;
     }
 
@@ -360,57 +269,7 @@ encui_handle(void)
         encui_direct_click_checkbox(encui_find_checkbox(_pages + _id));
     }
 
-    pal_disable_mouse();
-    gfx_draw_line(&caret, GFX_COLOR_WHITE);
-
-    if ((VK_LEFT == scancode) && (0 < _position))
-    {
-        _position--;
-        _draw_text_box();
-    }
-
-    if ((VK_RIGHT == scancode) && (prompt->length > _position))
-    {
-        _position++;
-        _draw_text_box();
-    }
-
-    if ((VK_BACK == scancode) && (0 < _position))
-    {
-        memmove(prompt->buffer + _position - 1, prompt->buffer + _position,
-                prompt->length - _position);
-        _position--;
-        prompt->length--;
-        prompt->buffer[prompt->length] = 0;
-        _draw_text_box();
-    }
-
-    if ((VK_DELETE == scancode) && (prompt->length > _position))
-    {
-        memmove(prompt->buffer + _position, prompt->buffer + _position + 1,
-                prompt->length - _position - 1);
-        prompt->length--;
-        prompt->buffer[prompt->length] = 0;
-        _draw_text_box();
-    }
-
-    if (((' ' == scancode) || (VK_OEM_MINUS == scancode) ||
-         ((VK_DELETE < scancode) && (VK_F1 > scancode))) &&
-        (prompt->length < prompt->capacity))
-    {
-        memmove(prompt->buffer + _position + 1, prompt->buffer + _position,
-                prompt->length - _position);
-        prompt->buffer[_position] =
-            (VK_OEM_MINUS == scancode) ? '-' : (scancode & 0xFF);
-        _position++;
-        prompt->length++;
-        prompt->buffer[prompt->length] = 0;
-        _draw_text_box();
-    }
-
-    caret.left = (_tbox_left + _position) * _glyph.width;
-    gfx_draw_line(&caret, GFX_COLOR_BLACK);
-    pal_enable_mouse();
+    encui_direct_key_textbox(prompt, page, scancode);
     return ENCUI_INCOMPLETE;
 }
 
@@ -418,39 +277,6 @@ int
 encui_get_page(void)
 {
     return _id;
-}
-
-static void
-_create_text_box(encui_prompt_page *prompt, int *cy)
-{
-    if (0 == prompt->length)
-    {
-        prompt->buffer[0] = 0;
-    }
-
-    int field_width = GFX_COLUMNS / 2 - 1;
-    if (field_width < prompt->capacity)
-    {
-        field_width = prompt->capacity;
-    }
-
-    (*cy)++;
-    _tbox_left = 1;
-    _tbox_top = *cy;
-
-    _tbox.width = field_width * _glyph.width + 2;
-    _tbox.height = _glyph.height + 2;
-    _tbox.top = _tbox_top * _glyph.height - 1;
-    _tbox.left = _tbox_left * _glyph.width - 1;
-
-    _state = STATE_PROMPT;
-    _position = prompt->length;
-    _caret_counter = pal_get_counter();
-    _caret_period = pal_get_ticks(500);
-
-    _draw_text_box();
-
-    (*cy) += 3;
 }
 
 static void
@@ -484,7 +310,8 @@ _create_controls(encui_page *page)
 
         if (ENCUIFT_TEXTBOX == field->type)
         {
-            _create_text_box((encui_prompt_page *)field->data, &cy);
+            encui_direct_create_textbox((encui_prompt_page *)field->data, page,
+                                        &cy);
         }
 
         if (!has_checkbox && (ENCUIFT_CHECKBOX == field->type))
@@ -540,6 +367,7 @@ encui_set_page(int id)
     pal_load_string(IDS_CANCEL, caption, sizeof(caption));
     _draw_button(GFX_COLUMNS - 10, GFX_LINES - 2, caption, &_cancel);
 
+    _state = STATE_PROMPT;
     pal_enable_mouse();
     return true;
 }
