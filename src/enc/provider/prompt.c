@@ -77,6 +77,7 @@ __enc_prompt_proc(int msg, enc_context *enc)
         _pages[0].fields[0].data = IDS_ENTERPASS_DESC;
         _passcode_prompt.buffer = enc->buffer;
         _passcode_prompt.capacity = enc->stream.key_length * 2;
+        _passcode_prompt.length = 0;
 
         if ((ENC_KEYSM_PKEY25XOR12 == (enc->provider >> 8)) ||
             (ENC_KEYSM_PKEY25XOR2B == (enc->provider >> 8)))

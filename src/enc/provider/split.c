@@ -64,6 +64,7 @@ __enc_split_proc(int msg, enc_context *enc)
         _pages[0].fields[0].data = IDS_ENTERPASS_DESC;
         _passcode_prompt.buffer = enc->buffer;
         _passcode_prompt.capacity = XOR48_PASSCODE_SIZE * 2;
+        _passcode_prompt.length = 0;
 
         if (enc_has_key_store())
         {
