@@ -11,6 +11,18 @@ int
 encui_direct_print(int top, char *text);
 
 void
+encui_direct_init_frame(void);
+
+void
+encui_direct_enter_page(encui_page *pages, int id);
+
+int
+encui_direct_click(uint16_t x, uint16_t y);
+
+int
+encui_direct_key(uint16_t scancode);
+
+void
 encui_direct_create_checkbox(encui_field *field, char *buffer, size_t size);
 
 const gfx_rect *
