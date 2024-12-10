@@ -121,12 +121,14 @@ __enc_diskid_proc(int msg, enc_context *enc)
             _pages[0].fields = _dsn_fields;
             _dsn_prompt.buffer = enc->data.diskid.dsn;
             _dsn_prompt.capacity = XOR48_DSN_LENGTH;
+            _dsn_prompt.length = 0;
 
             _pages[1].data = enc;
             _pages[1].length = lengthof(_passcode_fields);
             _pages[1].fields = _passcode_fields;
             _passcode_prompt.buffer = enc->buffer;
             _passcode_prompt.capacity = XOR48_PASSCODE_SIZE * 2;
+            _passcode_prompt.length = 0;
 
             if (enc_has_key_store())
             {
