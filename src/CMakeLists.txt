@@ -21,6 +21,16 @@ add_subdirectory(pal)
 add_subdirectory(sld)
 add_subdirectory(snd)
 
+if(DOS)
+    target_include_directories(lavender SYSTEM BEFORE PRIVATE ../ext/nicetia16/include/c++/6.3.0)
+    target_link_directories(lavender BEFORE PRIVATE ../ext/nicetia16/lib)
+endif()
+
+if(NOT WIN32)
+    set_property(TARGET lavender PROPERTY CXX_STANDARD 14)
+    target_link_libraries(lavender -lstdc++)
+endif()
+
 if(MSVC)
     target_link_options(lavender PRIVATE /manifest:no /manifestuac:no)
 else()
@@ -63,6 +73,7 @@ if(DOS)
             BYPRODUCTS lavender.exe.a
             DEPENDS lavender)
     endif()
+    target_link_libraries(lavender -lnstdio)
     target_link_libraries(lavender -li86)
 endif()
 

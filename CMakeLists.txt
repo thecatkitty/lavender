@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
 
-if(WIN32)
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     project(Lavender C RC)
 else()
-    project(Lavender C ASM)
+    project(Lavender C CXX ASM)
 endif()
 include(cmake/extensions.cmake)
 
@@ -65,6 +65,9 @@ if(DOS)
             $<TARGET_FILE:sndmpu>
             $<TARGET_FILE:sndopl>)
     endif()
+
+    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions>)
+    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
 endif()
 
 if(WIN32)

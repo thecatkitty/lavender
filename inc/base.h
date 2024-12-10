@@ -21,6 +21,8 @@ typedef int bool;
 #define snprintf _snprintf
 #endif
 
+#ifndef __cplusplus
+
 #if defined(__ia16__)
 #include <libi86/malloc.h>
 #include <libi86/string.h>
@@ -55,6 +57,13 @@ typedef int bool;
 #define ddcall __attribute__((no_assume_ds_data)) far
 #else
 #define ddcall
+#endif
+
+#else
+
+#define far
+#define ddcall
+
 #endif
 
 #define DEFINE_HANDLE(x)                                                       \
