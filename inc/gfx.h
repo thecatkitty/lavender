@@ -139,9 +139,12 @@ gfx_get_glyph_dimensions(gfx_dimensions *dim);
 extern uint16_t
 gfx_get_pixel_aspect(void);
 
+#if !defined(__ia16__)
+#define GFX_HAS_SCALE
 // Get display scaling factor
 extern float
 gfx_get_scale(void);
+#endif
 
 #if defined(__ia16__)
 extern bool
