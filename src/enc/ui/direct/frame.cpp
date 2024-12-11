@@ -1,5 +1,14 @@
+#include <cstring>
+#include <memory>
+#include <vector>
+
+extern "C"
+{
 #include "../../../resource.h"
 #include "direct.h"
+}
+
+#include "widgets.hpp"
 
 // Screen metrics
 static gfx_dimensions _glyph = {0, 0};
@@ -13,6 +22,8 @@ static bool     _checkbox_down;
 
 // Page state
 static encui_page *_page;
+
+std::vector<std::unique_ptr<ui::widget>> widgets_{};
 
 void
 encui_direct_init_frame(void)
@@ -91,12 +102,12 @@ _is_pressed(const gfx_rect *rect, uint16_t msx, uint16_t msy)
     msx *= _glyph.width;
     msy *= _glyph.height;
 
-    if ((rect->left > msx) || ((rect->left + rect->width) <= msx))
+    if ((rect->left > int(msx)) || ((rect->left + rect->width) <= int(msx)))
     {
         return false;
     }
 
-    if ((rect->top > msy) || ((rect->top + rect->height) <= msy))
+    if ((rect->top > int(msy)) || ((rect->top + rect->height) <= int(msy)))
     {
         return false;
     }
@@ -107,6 +118,9 @@ _is_pressed(const gfx_rect *rect, uint16_t msx, uint16_t msy)
 static void
 _create_controls(encui_page *page)
 {
+    widgets_.clear();
+    widgets_.resize(page->length);
+
     char buffer[GFX_COLUMNS * 4];
     int  cy = 2;
     bool has_checkbox = false;
@@ -122,15 +136,11 @@ _create_controls(encui_page *page)
 
         if (ENCUIFT_LABEL == field->type)
         {
-            if (ENCUIFF_DYNAMIC & field->flags)
-            {
-                strncpy(buffer, (const char *)field->data, sizeof(buffer));
-            }
-            else
-            {
-                pal_load_string(field->data, buffer, sizeof(buffer));
-            }
-            cy += encui_direct_print(cy, buffer) + 1;
+            auto label = std::make_unique<ui::label>(*page, *field);
+            label->move(1, cy);
+            label->draw();
+            cy = ui::get_bottom(label->get_area());
+            widgets_[i] = std::move(label);
         }
 
         if (ENCUIFT_TEXTBOX == field->type)
