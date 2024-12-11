@@ -82,4 +82,14 @@ struct widget
     widget           *parent_;
 };
 
+struct label : widget
+{
+    label(const encui_page &page, encui_field &field) : widget{page, field}
+    {
+    }
+
+    void
+    draw() override;
+};
+
 } // namespace ui
