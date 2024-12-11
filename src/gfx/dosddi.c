@@ -91,12 +91,6 @@ gfx_get_glyph_dimensions(gfx_dimensions *dim)
     gfx_device_get_property(_dev, GFX_PROPERTY_GLYPH_SIZE, dim);
 }
 
-float
-gfx_get_scale(void)
-{
-    return 1.f;
-}
-
 bool
 gfx_get_font_data(gfx_glyph_data *data)
 {

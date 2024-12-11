@@ -47,7 +47,9 @@ _find_best_bitmap(char *pattern)
 int
 __sld_execute_bitmap(sld_entry *sld)
 {
-    float          scale;
+#if defined(GFX_HAS_SCALE)
+    float scale;
+#endif
     gfx_bitmap     bm;
     gfx_dimensions screen;
     hasset         bitmap = _find_best_bitmap(sld->content);
@@ -71,15 +73,25 @@ __sld_execute_bitmap(sld_entry *sld)
     }
 
     gfx_get_screen_dimensions(&screen);
+#if defined(GFX_HAS_SCALE)
     scale = gfx_get_scale();
+#endif
 
     switch (sld->posx)
     {
     case SLD_ALIGN_CENTER:
+#if defined(GFX_HAS_SCALE)
         x = ((float)screen.width / scale - bm.width) / 2 * scale;
+#else
+        x = (screen.width - bm.width) / 2;
+#endif
         break;
     case SLD_ALIGN_RIGHT:
+#if defined(GFX_HAS_SCALE)
         x = ((float)screen.width / scale - bm.width) * scale;
+#else
+        x = screen.width - bm.width;
+#endif
         break;
     default:
         x = (int)((int32_t)sld->posx * screen.width / SLD_VIEWBOX_WIDTH);
