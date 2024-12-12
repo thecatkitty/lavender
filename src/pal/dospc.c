@@ -445,8 +445,8 @@ pal_get_counter(void)
 uint32_t ddcall
 pal_get_ticks(unsigned ms)
 {
-    uint64_t ticks = (uint64_t)ms * PIT_INPUT_FREQ;
-    ticks /= 10000000ULL;
+    uint64_t ticks = (uint64_t)ms * (PIT_INPUT_FREQ_F10 / 1000ULL);
+    ticks >>= 10;
     return (UINT32_MAX < ticks) ? UINT32_MAX : ticks;
 }
 
@@ -911,3 +911,39 @@ ANDREA_EXPORT(dospc_is_dosbox);
 ANDREA_EXPORT(dospc_beep);
 ANDREA_EXPORT(dospc_silence);
 #endif
+
+static unsigned long
+_divmodul(unsigned long a, unsigned long b, unsigned long *c)
+{
+    unsigned long quotient = 0;
+
+    for (int i = 31; i >= 0; --i)
+    {
+        if ((b << i) <= a)
+        {
+            a -= (b << i);
+            quotient |= (1LL << i);
+        }
+    }
+
+    if (NULL != c)
+    {
+        *c = a;
+    }
+
+    return quotient;
+}
+
+unsigned long
+__udivdi3(unsigned long a, unsigned long b)
+{
+    return _divmodul(a, b, NULL);
+}
+
+unsigned long
+__umoddi3(unsigned long a, unsigned long b)
+{
+    unsigned long remainder = 0;
+    _divmodul(a, b, &remainder);
+    return remainder;
+}
