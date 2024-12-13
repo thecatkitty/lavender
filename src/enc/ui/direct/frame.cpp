@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cstring>
 #include <memory>
 #include <vector>
@@ -121,7 +122,6 @@ _create_controls(encui_page *page)
     widgets_.clear();
     widgets_.resize(page->length);
 
-    char buffer[GFX_COLUMNS * 4];
     int  cy = 2;
     bool has_checkbox = false;
 
@@ -153,7 +153,11 @@ _create_controls(encui_page *page)
         {
             has_checkbox = true;
             _checkbox_down = false;
-            encui_direct_create_checkbox(field, buffer, sizeof(buffer));
+
+            auto checkbox = std::make_unique<ui::checkbox>(*page, *field);
+            checkbox->move(1, GFX_LINES - 5);
+            checkbox->draw();
+            widgets_[i] = std::move(checkbox);
         }
     }
 }
@@ -213,9 +217,23 @@ encui_direct_click(uint16_t x, uint16_t y)
         return ENCUI_INCOMPLETE;
     }
 
-    if (_is_pressed(encui_direct_get_checkbox_area(), x, y))
+    auto checkbox_field = encui_find_checkbox(_page);
+    if (checkbox_field && !_checkbox_down)
     {
-        return encui_direct_key(VK_F8);
+        auto    &checkbox = widgets_[checkbox_field - _page->fields];
+        gfx_rect pos = checkbox->get_position();
+        pos.left *= _glyph.width;
+        pos.width *= _glyph.width;
+        pos.top *= _glyph.height;
+        pos.height *= _glyph.height;
+        if (_is_pressed(&pos, x, y))
+        {
+            _checkbox_down = true;
+
+            pos = checkbox->get_position();
+            checkbox->click(x - pos.left, y - pos.top);
+            return ENCUI_INCOMPLETE;
+        }
     }
 
     return ENCUI_INCOMPLETE;
@@ -261,7 +279,14 @@ encui_direct_key(uint16_t scancode)
     if ((VK_F8 == scancode) && !_checkbox_down)
     {
         _checkbox_down = true;
-        encui_direct_click_checkbox(encui_find_checkbox(_page));
+
+        auto checkbox_field = encui_find_checkbox(_page);
+        if (checkbox_field)
+        {
+            widgets_[checkbox_field - _page->fields]->click(-1, -1);
+        }
+
+        return ENCUI_INCOMPLETE;
     }
 
     encui_direct_key_textbox(prompt, _page, scancode);

@@ -23,15 +23,6 @@ int
 encui_direct_key(uint16_t scancode);
 
 void
-encui_direct_create_checkbox(encui_field *field, char *buffer, size_t size);
-
-const gfx_rect *
-encui_direct_get_checkbox_area(void);
-
-void
-encui_direct_click_checkbox(encui_field *field);
-
-void
 encui_direct_create_textbox(encui_prompt_page *prompt,
                             encui_page        *page,
                             int               *cy);
