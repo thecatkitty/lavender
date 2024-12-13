@@ -82,6 +82,23 @@ struct widget
     widget           *parent_;
 };
 
+struct checkbox : widget
+{
+    checkbox(const encui_page &page, encui_field &field);
+
+    void
+    draw() override;
+
+    int
+    click(int x, int y) override;
+
+  private:
+    void
+    mark(bool checked);
+
+    gfx_rect box_;
+};
+
 struct label : widget
 {
     label(const encui_page &page, encui_field &field) : widget{page, field}
