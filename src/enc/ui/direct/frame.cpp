@@ -16,10 +16,14 @@ static gfx_dimensions _glyph = {0, 0};
 static gfx_rect       _screen = {0, 0, 0, 0};
 
 // Buttons
-static gfx_rect _cancel;
-static gfx_rect _back;
-static gfx_rect _next;
-static bool     _checkbox_down;
+static encui_page  _null_page{};
+static encui_field _cancel_field{0, ENCUIFF_STATIC, IDS_CANCEL};
+static encui_field _back_field{0, ENCUIFF_STATIC, IDS_BACK};
+static encui_field _next_field{0, ENCUIFF_STATIC, IDS_NEXT};
+static ui::button  _cancel{_null_page, _cancel_field};
+static ui::button  _back{_null_page, _back_field};
+static ui::button  _next{_null_page, _next_field};
+static bool        _checkbox_down;
 
 // Page state
 static encui_page *_page;
@@ -43,6 +47,9 @@ encui_direct_init_frame(void)
     gfx_draw_text(pal_get_version_string(), 1, 22);
     gfx_draw_text("https://celones.pl/lavender", 1, 23);
     gfx_draw_text("(C) 2021-2024 Mateusz Karcz", 1, 24);
+
+    _next.move(GFX_COLUMNS - 22, GFX_LINES - 3);
+    _cancel.move(GFX_COLUMNS - 11, GFX_LINES - 3);
 }
 
 static void
@@ -68,28 +75,6 @@ _draw_background(void)
     footer.left = footer.width;
     footer.top = _screen.height - footer.height;
     gfx_fill_rectangle(&footer, GFX_COLOR_BLACK);
-}
-
-static void
-_draw_button(int x, int y, const char *text, gfx_rect *rect)
-{
-    rect->width = _glyph.width * 9;
-    rect->height = _glyph.height * 3 / 2;
-    rect->left = x * _glyph.width - (_glyph.width / 2);
-    rect->top = y * _glyph.height - (_glyph.height / 4);
-
-#ifdef UTF8_NATIVE
-    const char *buff = text;
-#else
-    char buff[9];
-    utf8_encode(text, buff, pal_wctob);
-#endif
-
-    gfx_rect inner = {rect->left - 1, rect->top, rect->width + 2, rect->height};
-    gfx_fill_rectangle(rect, GFX_COLOR_WHITE);
-    gfx_draw_rectangle(rect, GFX_COLOR_BLACK);
-    gfx_draw_rectangle(&inner, GFX_COLOR_BLACK);
-    gfx_draw_text(buff, x + (8 - strlen(buff)) / 2, y);
 }
 
 static bool
@@ -176,20 +161,18 @@ encui_direct_enter_page(encui_page *pages, int id)
     _draw_title(buffer);
     _create_controls(_page);
 
-    char caption[9];
     if ((0 < id) && (0 != pages[id - 1].title))
     {
-        pal_load_string(IDS_BACK, caption, sizeof(caption));
-        _draw_button(GFX_COLUMNS - 31, GFX_LINES - 2, caption, &_back);
+        _back.move(GFX_COLUMNS - 32, GFX_LINES - 3);
+        _back.draw();
     }
     else
     {
-        _back.width = 0;
+        _back.move(-1, -1);
     }
-    pal_load_string(IDS_NEXT, caption, sizeof(caption));
-    _draw_button(GFX_COLUMNS - 21, GFX_LINES - 2, caption, &_next);
-    pal_load_string(IDS_CANCEL, caption, sizeof(caption));
-    _draw_button(GFX_COLUMNS - 10, GFX_LINES - 2, caption, &_cancel);
+
+    _next.draw();
+    _cancel.draw();
 
     pal_enable_mouse();
 }
@@ -197,18 +180,36 @@ encui_direct_enter_page(encui_page *pages, int id)
 int
 encui_direct_click(uint16_t x, uint16_t y)
 {
-    if (_is_pressed(&_back, x, y))
+    gfx_rect pos = _back.get_position();
+    pos.left *= _glyph.width;
+    pos.width *= _glyph.width;
+    pos.top *= _glyph.height;
+    pos.height *= _glyph.height;
+    if (_is_pressed(&pos, x, y))
     {
+        pos = _back.get_position();
         return encui_direct_key(VK_PRIOR);
     }
 
-    if (_is_pressed(&_next, x, y))
+    pos = _next.get_position();
+    pos.left *= _glyph.width;
+    pos.width *= _glyph.width;
+    pos.top *= _glyph.height;
+    pos.height *= _glyph.height;
+    if (_is_pressed(&pos, x, y))
     {
+        pos = _next.get_position();
         return encui_direct_key(VK_RETURN);
     }
 
-    if (_is_pressed(&_cancel, x, y))
+    pos = _cancel.get_position();
+    pos.left *= _glyph.width;
+    pos.width *= _glyph.width;
+    pos.top *= _glyph.height;
+    pos.height *= _glyph.height;
+    if (_is_pressed(&pos, x, y))
     {
+        pos = _cancel.get_position();
         return encui_direct_key(VK_ESCAPE);
     }
 
@@ -236,8 +237,8 @@ encui_direct_click(uint16_t x, uint16_t y)
                      [](const encui_field &field) {
                          return ENCUIFT_TEXTBOX == field.type;
                      });
-    auto    &textbox = widgets_[textbox_field - _page->fields];
-    gfx_rect pos = textbox->get_position();
+    auto &textbox = widgets_[textbox_field - _page->fields];
+    pos = textbox->get_position();
     pos.left *= _glyph.width;
     pos.width *= _glyph.width;
     pos.top *= _glyph.height;
