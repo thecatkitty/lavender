@@ -50,6 +50,7 @@ extern void
 __dospc_pit_isr(void);
 
 static gfx_glyph_data _font = NULL;
+static gfx_dimensions _glyph;
 static bool           _has_mouse = false;
 
 #ifdef STACK_PROFILING
@@ -383,6 +384,7 @@ pal_initialize(int argc, char *argv[])
     }
 
     gfx_get_font_data(&_font);
+    gfx_get_glyph_dimensions(&_glyph);
     _has_mouse = msmouse_init();
 
     snd_initialize(arg_snd);
@@ -736,8 +738,8 @@ pal_get_mouse(uint16_t *x, uint16_t *y)
     uint16_t lowx, lowy, status;
 
     status = msmouse_get_status(&lowx, &lowy);
-    *x = lowx / (MSMOUSE_AREA_WIDTH / GFX_COLUMNS);
-    *y = lowy / (MSMOUSE_AREA_HEIGHT / GFX_LINES);
+    *x = lowx / _glyph.width;
+    *y = lowy / _glyph.height;
 
     return status;
 }
