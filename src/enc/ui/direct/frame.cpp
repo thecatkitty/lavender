@@ -145,8 +145,11 @@ _create_controls(encui_page *page)
 
         if (ENCUIFT_TEXTBOX == field->type)
         {
-            encui_direct_create_textbox((encui_prompt_page *)field->data, page,
-                                        &cy);
+            auto textbox = std::make_unique<ui::textbox>(*page, *field);
+            textbox->move(1, cy);
+            textbox->draw();
+            cy = ui::get_bottom(textbox->get_area());
+            widgets_[i] = std::move(textbox);
         }
 
         if (!has_checkbox && (ENCUIFT_CHECKBOX == field->type))
@@ -209,14 +212,6 @@ encui_direct_click(uint16_t x, uint16_t y)
         return encui_direct_key(VK_ESCAPE);
     }
 
-    if (_is_pressed(encui_direct_get_textbox_area(), x, y))
-    {
-        uint16_t x, y;
-        pal_get_mouse(&x, &y);
-        encui_direct_click_textbox(encui_find_prompt(_page), _page, x, y);
-        return ENCUI_INCOMPLETE;
-    }
-
     auto checkbox_field = encui_find_checkbox(_page);
     if (checkbox_field && !_checkbox_down)
     {
@@ -234,6 +229,24 @@ encui_direct_click(uint16_t x, uint16_t y)
             checkbox->click(x - pos.left, y - pos.top);
             return ENCUI_INCOMPLETE;
         }
+    }
+
+    auto textbox_field =
+        std::find_if(_page->fields, _page->fields + _page->length,
+                     [](const encui_field &field) {
+                         return ENCUIFT_TEXTBOX == field.type;
+                     });
+    auto    &textbox = widgets_[textbox_field - _page->fields];
+    gfx_rect pos = textbox->get_position();
+    pos.left *= _glyph.width;
+    pos.width *= _glyph.width;
+    pos.top *= _glyph.height;
+    pos.height *= _glyph.height;
+    if (_is_pressed(&pos, x, y))
+    {
+        pos = textbox->get_position();
+        textbox->click(x - pos.left, y - pos.top);
+        return ENCUI_INCOMPLETE;
     }
 
     return ENCUI_INCOMPLETE;
@@ -263,8 +276,7 @@ encui_direct_key(uint16_t scancode)
         }
 
         pal_disable_mouse();
-        gfx_draw_rectangle(encui_direct_get_textbox_area(), GFX_COLOR_BLACK);
-        encui_direct_animate_textbox(prompt, _page, false);
+        encui_direct_animate(false);
         return ENCUI_INCOMPLETE;
     }
 
@@ -289,6 +301,37 @@ encui_direct_key(uint16_t scancode)
         return ENCUI_INCOMPLETE;
     }
 
-    encui_direct_key_textbox(prompt, _page, scancode);
+    auto textbox_field =
+        std::find_if(_page->fields, _page->fields + _page->length,
+                     [](const encui_field &field) {
+                         return ENCUIFT_TEXTBOX == field.type;
+                     });
+    auto &textbox = *reinterpret_cast<ui::textbox *>(
+        widgets_[textbox_field - _page->fields].get());
+    textbox.key(scancode);
     return ENCUI_INCOMPLETE;
+}
+
+bool
+encui_direct_animate(bool valid)
+{
+    auto  field = std::find_if(_page->fields, _page->fields + _page->length,
+                               [](const encui_field &field) {
+                                  return ENCUIFT_TEXTBOX == field.type;
+                              });
+    auto &textbox =
+        *reinterpret_cast<ui::textbox *>(widgets_[field - _page->fields].get());
+    return textbox.animate(valid);
+}
+
+void
+encui_direct_set_error(char *message)
+{
+    auto  field = std::find_if(_page->fields, _page->fields + _page->length,
+                               [](const encui_field &field) {
+                                  return ENCUIFT_TEXTBOX == field.type;
+                              });
+    auto &textbox =
+        *reinterpret_cast<ui::textbox *>(widgets_[field - _page->fields].get());
+    textbox.alert(message);
 }

@@ -22,34 +22,10 @@ encui_direct_click(uint16_t x, uint16_t y);
 int
 encui_direct_key(uint16_t scancode);
 
-void
-encui_direct_create_textbox(encui_prompt_page *prompt,
-                            encui_page        *page,
-                            int               *cy);
-
-void
-encui_direct_draw_textbox(encui_prompt_page *prompt, encui_page *page);
-
 bool
-encui_direct_animate_textbox(encui_prompt_page *prompt,
-                             encui_page        *page,
-                             bool               valid);
+encui_direct_animate(bool valid);
 
 void
-encui_direct_set_textbox_error(char *message);
-
-const gfx_rect *
-encui_direct_get_textbox_area(void);
-
-void
-encui_direct_click_textbox(encui_prompt_page *prompt,
-                           encui_page        *page,
-                           uint16_t           x,
-                           uint16_t           y);
-
-void
-encui_direct_key_textbox(encui_prompt_page *prompt,
-                         encui_page        *page,
-                         uint16_t           scancode);
+encui_direct_set_error(char *message);
 
 #endif
