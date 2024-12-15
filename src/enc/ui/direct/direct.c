@@ -57,7 +57,7 @@ encui_handle(void)
         return 0;
     }
 
-    if (!encui_direct_animate_textbox(prompt, page, true))
+    if (!encui_direct_animate(true))
     {
         return ENCUI_INCOMPLETE;
     }
@@ -87,7 +87,7 @@ encui_handle(void)
         {
             pal_load_string(status, message, sizeof(message));
         }
-        encui_direct_set_textbox_error(message);
+        encui_direct_set_error(message);
 
         _state = STATE_PROMPT;
         pal_enable_mouse();

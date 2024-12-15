@@ -103,4 +103,32 @@ struct label : widget
     draw() override;
 };
 
+struct textbox : widget
+{
+    textbox(const encui_page &page, encui_field &field);
+
+    virtual void
+    draw() override;
+
+    virtual int
+    click(int x, int y) override;
+
+    virtual int
+    key(int scancode) override;
+
+    bool
+    animate(bool valid);
+
+    void
+    alert(char *message);
+
+  private:
+    uint32_t blink_start_;
+    uint32_t caret_period_;
+    uint32_t caret_counter_;
+    bool     caret_visible_;
+    int      position_;
+    int      state_;
+};
+
 } // namespace ui
