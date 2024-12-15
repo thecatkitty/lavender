@@ -77,22 +77,20 @@ _draw_background(void)
 }
 
 static bool
-_is_pressed(const gfx_rect *rect, uint16_t msx, uint16_t msy)
+_is_pressed(const ui::widget &widget, uint16_t msx, uint16_t msy)
 {
-    if (0 == rect->width)
+    gfx_rect pos = widget.get_position();
+    if (0 > pos.left)
     {
         return false;
     }
 
-    msx *= _glyph.width;
-    msy *= _glyph.height;
-
-    if ((rect->left > int(msx)) || ((rect->left + rect->width) <= int(msx)))
+    if ((pos.left > int(msx)) || ((pos.left + pos.width) <= int(msx)))
     {
         return false;
     }
 
-    if ((rect->top > int(msy)) || ((rect->top + rect->height) <= int(msy)))
+    if ((pos.top > int(msy)) || ((pos.top + pos.height) <= int(msy)))
     {
         return false;
     }
@@ -179,72 +177,29 @@ encui_direct_enter_page(encui_page *pages, int id)
 int
 encui_direct_click(uint16_t x, uint16_t y)
 {
-    gfx_rect pos = _back.get_position();
-    pos.left *= _glyph.width;
-    pos.width *= _glyph.width;
-    pos.top *= _glyph.height;
-    pos.height *= _glyph.height;
-    if (_is_pressed(&pos, x, y))
+    if (_is_pressed(_back, x, y))
     {
-        pos = _back.get_position();
         return encui_direct_key(VK_PRIOR);
     }
 
-    pos = _next.get_position();
-    pos.left *= _glyph.width;
-    pos.width *= _glyph.width;
-    pos.top *= _glyph.height;
-    pos.height *= _glyph.height;
-    if (_is_pressed(&pos, x, y))
+    if (_is_pressed(_next, x, y))
     {
-        pos = _next.get_position();
         return encui_direct_key(VK_RETURN);
     }
 
-    pos = _cancel.get_position();
-    pos.left *= _glyph.width;
-    pos.width *= _glyph.width;
-    pos.top *= _glyph.height;
-    pos.height *= _glyph.height;
-    if (_is_pressed(&pos, x, y))
+    if (_is_pressed(_cancel, x, y))
     {
-        pos = _cancel.get_position();
         return encui_direct_key(VK_ESCAPE);
     }
 
-    auto checkbox_field = encui_find_checkbox(_page);
-    if (checkbox_field)
+    for (auto &widget : widgets_)
     {
-        auto    &checkbox = widgets_[checkbox_field - _page->fields];
-        gfx_rect pos = checkbox->get_position();
-        pos.left *= _glyph.width;
-        pos.width *= _glyph.width;
-        pos.top *= _glyph.height;
-        pos.height *= _glyph.height;
-        if (_is_pressed(&pos, x, y))
+        if (widget && _is_pressed(*widget, x, y))
         {
-            pos = checkbox->get_position();
-            checkbox->click(x - pos.left, y - pos.top);
+            auto pos = widget->get_position();
+            widget->click(x - pos.left, y - pos.top);
             return ENCUI_INCOMPLETE;
         }
-    }
-
-    auto textbox_field =
-        std::find_if(_page->fields, _page->fields + _page->length,
-                     [](const encui_field &field) {
-                         return ENCUIFT_TEXTBOX == field.type;
-                     });
-    auto &textbox = widgets_[textbox_field - _page->fields];
-    pos = textbox->get_position();
-    pos.left *= _glyph.width;
-    pos.width *= _glyph.width;
-    pos.top *= _glyph.height;
-    pos.height *= _glyph.height;
-    if (_is_pressed(&pos, x, y))
-    {
-        pos = textbox->get_position();
-        textbox->click(x - pos.left, y - pos.top);
-        return ENCUI_INCOMPLETE;
     }
 
     return ENCUI_INCOMPLETE;
