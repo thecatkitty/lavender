@@ -74,11 +74,30 @@ pal_cleanup(void);
 extern bool
 pal_handle(void);
 
+#if !defined(__cplusplus) || !defined(__ia16__)
+
 extern uint32_t ddcall
 pal_get_counter(void);
 
 extern uint32_t ddcall
 pal_get_ticks(unsigned ms);
+
+#endif
+
+#if defined(__ia16__)
+
+uint32_t
+palpp_get_counter(void);
+
+uint32_t
+palpp_get_ticks(unsigned ms);
+
+#else
+
+#define palpp_get_counter pal_get_counter
+#define palpp_get_ticks   pal_get_ticks
+
+#endif
 
 extern void ddcall
 pal_sleep(unsigned ms);
