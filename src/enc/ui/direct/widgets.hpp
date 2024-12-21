@@ -1,5 +1,8 @@
 #pragma once
 
+#include <memory>
+#include <vector>
+
 extern "C"
 {
 #include "direct.h"
@@ -76,6 +79,8 @@ struct widget
     widget           *parent_;
 };
 
+using widget_ptr = std::unique_ptr<widget>;
+
 struct button : widget
 {
     button(const encui_page &page, encui_field &field);
@@ -112,6 +117,41 @@ struct label : widget
 
     virtual void
     draw() override;
+};
+
+struct panel : widget
+{
+    panel(const encui_page &page)
+        : widget{page, *static_cast<encui_field *>(nullptr)}, children_{}
+    {
+    }
+
+    virtual void
+    draw() override;
+
+    virtual int
+    click(int x, int y) override;
+
+    virtual int
+    key(int scancode) override;
+
+    void
+    append(widget_ptr &&wptr);
+
+    std::vector<widget_ptr>::iterator
+    begin()
+    {
+        return children_.begin();
+    }
+
+    std::vector<widget_ptr>::iterator
+    end()
+    {
+        return children_.end();
+    }
+
+  private:
+    std::vector<widget_ptr> children_;
 };
 
 struct textbox : widget
