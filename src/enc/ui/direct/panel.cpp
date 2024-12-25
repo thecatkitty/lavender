@@ -5,13 +5,6 @@
 using namespace ui;
 
 void
-panel::append(widget_ptr &&wptr)
-{
-    wptr->set_parent(this);
-    children_.push_back(std::move(wptr));
-}
-
-void
 panel::draw()
 {
     for (auto &child : children_)
@@ -70,4 +63,4 @@ panel::get_child_by_type(int type)
                         });
 }
 
-encui_field panel::null_field_{};
+encui_field ui::null_field{};

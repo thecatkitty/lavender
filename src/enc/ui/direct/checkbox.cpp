@@ -4,8 +4,7 @@
 
 using namespace ui;
 
-checkbox::checkbox(const encui_page &page, encui_field &field)
-    : widget{page, field}, box_{}
+checkbox::checkbox(encui_field &field) : widget{field}, box_{}
 {
     gfx_dimensions glyph;
     gfx_get_glyph_dimensions(&glyph);

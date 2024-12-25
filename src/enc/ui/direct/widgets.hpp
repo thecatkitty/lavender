@@ -11,6 +11,8 @@ extern "C"
 namespace ui
 {
 
+extern encui_field null_field;
+
 inline int
 get_bottom(gfx_rect rect)
 {
@@ -22,8 +24,13 @@ struct widget
     widget(const widget &) = delete;
     virtual ~widget() = default;
 
-    widget(const encui_page &page, encui_field &field)
-        : page_{page}, field_{field}, rect_{}, parent_{nullptr}
+    widget(const encui_page &page)
+        : page_{&page}, field_{null_field}, rect_{}, parent_{nullptr}
+    {
+    }
+
+    widget(encui_field &field)
+        : page_{}, field_{field}, rect_{}, parent_{nullptr}
     {
     }
 
@@ -31,6 +38,12 @@ struct widget
     get_model() const
     {
         return field_;
+    }
+
+    const encui_page *
+    get_page() const
+    {
+        return parent_ ? parent_->get_page() : page_;
     }
 
     void
@@ -79,7 +92,7 @@ struct widget
     }
 
   protected:
-    const encui_page &page_;
+    const encui_page *page_;
     encui_field      &field_;
     gfx_rect          rect_;
     widget           *parent_;
@@ -89,7 +102,7 @@ using widget_ptr = std::unique_ptr<widget>;
 
 struct button : widget
 {
-    button(const encui_page &page, encui_field &field);
+    button(encui_field &field);
 
     void
     draw() override;
@@ -100,7 +113,7 @@ struct button : widget
 
 struct checkbox : widget
 {
-    checkbox(const encui_page &page, encui_field &field);
+    checkbox(encui_field &field);
 
     void
     draw() override;
@@ -117,7 +130,7 @@ struct checkbox : widget
 
 struct label : widget
 {
-    label(const encui_page &page, encui_field &field) : widget{page, field}
+    label(encui_field &field) : widget{field}
     {
     }
 
@@ -127,7 +140,7 @@ struct label : widget
 
 struct panel : widget
 {
-    panel(const encui_page &page) : widget{page, null_field_}, children_{}
+    panel(const encui_page &page) : widget{page}, children_{}
     {
     }
 
@@ -140,8 +153,15 @@ struct panel : widget
     int
     key(int scancode) override;
 
-    void
-    append(widget_ptr &&wptr);
+    template <typename T, typename... Args>
+    T &
+    create(Args &&...args)
+    {
+        auto child = std::make_unique<T>(std::forward<Args>(args)...);
+        child->set_parent(this);
+        return *reinterpret_cast<T *>(
+            children_.insert(children_.end(), std::move(child))->get());
+    }
 
     std::vector<widget_ptr>::iterator
     begin()
@@ -160,13 +180,11 @@ struct panel : widget
 
   private:
     std::vector<widget_ptr> children_;
-
-    static encui_field null_field_;
 };
 
 struct textbox : widget
 {
-    textbox(const encui_page &page, encui_field &field);
+    textbox(encui_field &field);
 
     void
     draw() override;

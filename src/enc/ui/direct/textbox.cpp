@@ -35,8 +35,8 @@ enum
     STATE_INVALID3,
 };
 
-textbox::textbox(const encui_page &page, encui_field &field)
-    : widget{page, field}, blink_start_{}, caret_period_{}, caret_counter_{},
+textbox::textbox(encui_field &field)
+    : widget{field}, blink_start_{}, caret_period_{}, caret_counter_{},
       caret_visible_{true}, position_{}, state_{STATE_PROMPT}
 {
     auto &prompt = *reinterpret_cast<encui_prompt_page *>(field.data);
@@ -60,12 +60,13 @@ textbox::textbox(const encui_page &page, encui_field &field)
 void
 textbox::draw()
 {
+    auto &page = *get_page();
     auto &prompt = *reinterpret_cast<encui_prompt_page *>(field_.data);
 
     auto pos = get_position();
     auto field = get_field(pos);
     gfx_draw_rectangle(&field,
-                       (0 < page_.proc(ENCUIM_CHECK, prompt.buffer, page_.data))
+                       (0 < page.proc(ENCUIM_CHECK, prompt.buffer, page.data))
                            ? GFX_COLOR_GRAY
                            : GFX_COLOR_BLACK);
     gfx_fill_rectangle(&field, GFX_COLOR_WHITE);
