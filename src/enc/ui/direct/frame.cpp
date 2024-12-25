@@ -28,7 +28,7 @@ static bool        _mouse_down;
 // Page state
 static encui_page *_page;
 
-std::vector<std::unique_ptr<ui::widget>> widgets_{};
+std::unique_ptr<ui::panel> panel_{};
 
 void
 encui_direct_init_frame(void)
@@ -102,8 +102,7 @@ _is_pressed(const ui::widget &widget, uint16_t msx, uint16_t msy)
 static void
 _create_controls(encui_page *page)
 {
-    widgets_.clear();
-    widgets_.resize(page->length);
+    panel_ = std::make_unique<ui::panel>(*page);
     _mouse_down = false;
 
     int  cy = 2;
@@ -115,6 +114,7 @@ _create_controls(encui_page *page)
 
         if (ENCUIFT_SEPARATOR == field->type)
         {
+            panel_->append(std::make_unique<ui::widget>(*page, *field));
             cy += field->data;
         }
 
@@ -124,7 +124,7 @@ _create_controls(encui_page *page)
             label->move(1, cy);
             label->draw();
             cy = ui::get_bottom(label->get_area());
-            widgets_[i] = std::move(label);
+            panel_->append(std::move(label));
         }
 
         if (ENCUIFT_TEXTBOX == field->type)
@@ -133,7 +133,7 @@ _create_controls(encui_page *page)
             textbox->move(1, cy);
             textbox->draw();
             cy = ui::get_bottom(textbox->get_area());
-            widgets_[i] = std::move(textbox);
+            panel_->append(std::move(textbox));
         }
 
         if (!has_checkbox && (ENCUIFT_CHECKBOX == field->type))
@@ -143,7 +143,7 @@ _create_controls(encui_page *page)
             auto checkbox = std::make_unique<ui::checkbox>(*page, *field);
             checkbox->move(1, GFX_LINES - 5);
             checkbox->draw();
-            widgets_[i] = std::move(checkbox);
+            panel_->append(std::move(checkbox));
         }
     }
 }
@@ -199,16 +199,8 @@ encui_direct_click(uint16_t x, uint16_t y)
         return encui_direct_key(VK_ESCAPE);
     }
 
-    for (auto &widget : widgets_)
-    {
-        if (widget && _is_pressed(*widget, x, y))
-        {
-            auto pos = widget->get_position();
-            widget->click(x - pos.left, y - pos.top);
-            return ENCUI_INCOMPLETE;
-        }
-    }
-
+    auto pos = panel_->get_position();
+    panel_->click(x - pos.left, y - pos.top);
     return ENCUI_INCOMPLETE;
 }
 
@@ -250,46 +242,32 @@ encui_direct_key(uint16_t scancode)
 
     if (VK_F8 == scancode)
     {
-        auto checkbox_field = encui_find_checkbox(_page);
-        if (checkbox_field)
+        auto checkbox = ui::get_child<ui::checkbox>(*panel_);
+        if (checkbox)
         {
-            widgets_[checkbox_field - _page->fields]->click(-1, -1);
+            checkbox->click(-1, -1);
         }
 
         return ENCUI_INCOMPLETE;
     }
 
-    auto textbox_field =
-        std::find_if(_page->fields, _page->fields + _page->length,
-                     [](const encui_field &field) {
-                         return ENCUIFT_TEXTBOX == field.type;
-                     });
-    auto &textbox = *reinterpret_cast<ui::textbox *>(
-        widgets_[textbox_field - _page->fields].get());
-    textbox.key(scancode);
+    panel_->key(scancode);
     return ENCUI_INCOMPLETE;
 }
 
 bool
 encui_direct_animate(bool valid)
 {
-    auto  field = std::find_if(_page->fields, _page->fields + _page->length,
-                               [](const encui_field &field) {
-                                  return ENCUIFT_TEXTBOX == field.type;
-                              });
-    auto &textbox =
-        *reinterpret_cast<ui::textbox *>(widgets_[field - _page->fields].get());
-    return textbox.animate(valid);
+    auto textbox = ui::get_child<ui::textbox>(*panel_);
+    return textbox ? textbox->animate(valid) : true;
 }
 
 void
 encui_direct_set_error(char *message)
 {
-    auto  field = std::find_if(_page->fields, _page->fields + _page->length,
-                               [](const encui_field &field) {
-                                  return ENCUIFT_TEXTBOX == field.type;
-                              });
-    auto &textbox =
-        *reinterpret_cast<ui::textbox *>(widgets_[field - _page->fields].get());
-    textbox.alert(message);
+    auto textbox = ui::get_child<ui::textbox>(*panel_);
+    if (textbox)
+    {
+        textbox->alert(message);
+    }
 }
