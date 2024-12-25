@@ -22,16 +22,7 @@ button::draw()
                  (rect_.width - 2) * glyph.width, glyph.height * 3 / 2};
 
     char buff[GFX_COLUMNS / 2];
-    if (ENCUIFF_DYNAMIC & field_.flags)
-    {
-        std::strncpy(buff, reinterpret_cast<const char *>(field_.data),
-                     sizeof(buff));
-    }
-    else
-    {
-        pal_load_string(field_.data, buff, sizeof(buff));
-    }
-
+    encui_direct_load_string(&field_, buff, sizeof(buff));
 #ifndef UTF8_NATIVE
     utf8_encode(buff, buff, pal_wctob);
 #endif

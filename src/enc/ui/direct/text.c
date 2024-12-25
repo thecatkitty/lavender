@@ -96,6 +96,19 @@ _wrap(char *dst, const char *src, size_t width, char delimiter)
     return psrc - src;
 }
 
+void
+encui_direct_load_string(encui_field *field, char *buff, size_t length)
+{
+    if (ENCUIFF_DYNAMIC & field->flags)
+    {
+        strncpy(buff, (const char *)field->data, length);
+    }
+    else
+    {
+        pal_load_string(field->data, buff, length);
+    }
+}
+
 int
 encui_direct_print(int top, char *text)
 {
