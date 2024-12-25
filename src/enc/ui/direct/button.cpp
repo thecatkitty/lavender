@@ -4,7 +4,7 @@
 
 using namespace ui;
 
-button::button(const encui_page &page, encui_field &field) : widget{page, field}
+button::button(encui_field &field) : widget{field}
 {
     rect_.width = 11;
     rect_.height = 3;

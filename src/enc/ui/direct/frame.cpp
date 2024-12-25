@@ -16,13 +16,12 @@ static gfx_dimensions _glyph = {0, 0};
 static gfx_rect       _screen = {0, 0, 0, 0};
 
 // Buttons
-static encui_page  _null_page{};
 static encui_field _cancel_field{0, ENCUIFF_STATIC, IDS_CANCEL};
 static encui_field _back_field{0, ENCUIFF_STATIC, IDS_BACK};
 static encui_field _next_field{0, ENCUIFF_STATIC, IDS_NEXT};
-static ui::button  _cancel{_null_page, _cancel_field};
-static ui::button  _back{_null_page, _back_field};
-static ui::button  _next{_null_page, _next_field};
+static ui::button  _cancel{_cancel_field};
+static ui::button  _back{_back_field};
+static ui::button  _next{_next_field};
 static bool        _mouse_down;
 
 // Page state
@@ -114,36 +113,32 @@ _create_controls(encui_page *page)
 
         if (ENCUIFT_SEPARATOR == field->type)
         {
-            panel_->append(std::make_unique<ui::widget>(*page, *field));
             cy += field->data;
         }
 
         if (ENCUIFT_LABEL == field->type)
         {
-            auto label = std::make_unique<ui::label>(*page, *field);
-            label->move(1, cy);
-            label->draw();
-            cy = ui::get_bottom(label->get_area());
-            panel_->append(std::move(label));
+            auto &label = panel_->create<ui::label>(*field);
+            label.move(1, cy);
+            label.draw();
+            cy = ui::get_bottom(label.get_area());
         }
 
         if (ENCUIFT_TEXTBOX == field->type)
         {
-            auto textbox = std::make_unique<ui::textbox>(*page, *field);
-            textbox->move(1, cy);
-            textbox->draw();
-            cy = ui::get_bottom(textbox->get_area());
-            panel_->append(std::move(textbox));
+            auto &textbox = panel_->create<ui::textbox>(*field);
+            textbox.move(1, cy);
+            textbox.draw();
+            cy = ui::get_bottom(textbox.get_area());
         }
 
         if (!has_checkbox && (ENCUIFT_CHECKBOX == field->type))
         {
             has_checkbox = true;
 
-            auto checkbox = std::make_unique<ui::checkbox>(*page, *field);
-            checkbox->move(1, GFX_LINES - 5);
-            checkbox->draw();
-            panel_->append(std::move(checkbox));
+            auto &checkbox = panel_->create<ui::checkbox>(*field);
+            checkbox.move(1, GFX_LINES - 5);
+            checkbox.draw();
         }
     }
 }
