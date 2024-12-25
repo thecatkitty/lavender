@@ -1,5 +1,8 @@
 #pragma once
 
+#include <memory>
+#include <vector>
+
 extern "C"
 {
 #include "direct.h"
@@ -82,6 +85,8 @@ struct widget
     widget           *parent_;
 };
 
+using widget_ptr = std::unique_ptr<widget>;
+
 struct button : widget
 {
     button(const encui_page &page, encui_field &field);
@@ -120,6 +125,45 @@ struct label : widget
     draw() override;
 };
 
+struct panel : widget
+{
+    panel(const encui_page &page) : widget{page, null_field_}, children_{}
+    {
+    }
+
+    void
+    draw() override;
+
+    int
+    click(int x, int y) override;
+
+    int
+    key(int scancode) override;
+
+    void
+    append(widget_ptr &&wptr);
+
+    std::vector<widget_ptr>::iterator
+    begin()
+    {
+        return children_.begin();
+    }
+
+    std::vector<widget_ptr>::iterator
+    end()
+    {
+        return children_.end();
+    }
+
+    std::vector<widget_ptr>::iterator
+    get_child_by_type(int type);
+
+  private:
+    std::vector<widget_ptr> children_;
+
+    static encui_field null_field_;
+};
+
 struct textbox : widget
 {
     textbox(const encui_page &page, encui_field &field);
@@ -147,5 +191,32 @@ struct textbox : widget
     int      position_;
     int      state_;
 };
+
+template <typename T> struct field_type
+{
+    static const int type = ENCUIFT_SEPARATOR;
+};
+template <> struct field_type<checkbox>
+{
+    static const int type = ENCUIFT_CHECKBOX;
+};
+
+template <> struct field_type<label>
+{
+    static const int type = ENCUIFT_LABEL;
+};
+
+template <> struct field_type<textbox>
+{
+    static const int type = ENCUIFT_TEXTBOX;
+};
+
+template <typename T>
+T *
+get_child(panel &panel)
+{
+    auto it = panel.get_child_by_type(field_type<T>::type);
+    return (panel.end() == it) ? nullptr : reinterpret_cast<T *>(it->get());
+}
 
 } // namespace ui
