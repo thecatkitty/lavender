@@ -7,6 +7,9 @@
 
 #define TEXT_WIDTH (GFX_COLUMNS - 2)
 
+void
+encui_direct_load_string(encui_field *field, char *buff, size_t length);
+
 int
 encui_direct_print(int top, char *text);
 

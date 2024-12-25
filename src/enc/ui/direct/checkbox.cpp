@@ -22,14 +22,7 @@ void
 checkbox::draw()
 {
     char buffer[GFX_COLUMNS * 4] = "   ";
-    if (ENCUIFF_DYNAMIC & field_.flags)
-    {
-        std::strncpy(buffer + 3, (const char *)field_.data, sizeof(buffer) - 8);
-    }
-    else
-    {
-        pal_load_string(field_.data, buffer + 3, sizeof(buffer) - 8);
-    }
+    encui_direct_load_string(&field_, buffer + 3, sizeof(buffer) - 8);
     std::strcat(buffer, " [F8]");
     encui_direct_print(rect_.top, buffer);
 
