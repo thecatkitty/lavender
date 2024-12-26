@@ -385,6 +385,54 @@ zip_free_data(char *data)
     return;
 }
 
+bool
+zip_extract_data(off_t olfh, FILE *out)
+{
+#ifndef ZIP_PIGGYBACK
+    char buffer[512];
+#endif
+    uint32_t size = 0;
+    off_t    odata = _get_data(olfh, &size, NULL);
+
+    if (0 > odata)
+    {
+        return false;
+    }
+
+#ifdef ZIP_PIGGYBACK
+    char *buffer = (char *)_cdir - _cden->cdir_offset + odata;
+    return size == fwrite(buffer, 1, size, out);
+#else
+    while (512 < size)
+    {
+        if (!_seek_read(buffer, _fbase + odata, 512))
+        {
+            return false;
+        }
+
+        if (512 != fwrite(buffer, 1, 512, out))
+        {
+            return false;
+        }
+
+        odata += 512;
+        size -= 512;
+    }
+
+    if (!_seek_read(buffer, _fbase + odata, size))
+    {
+        return false;
+    }
+
+    if (size != fwrite(buffer, 1, size, out))
+    {
+        return false;
+    }
+
+    return true;
+#endif
+}
+
 uint32_t
 zip_get_size(off_t olfh)
 {
