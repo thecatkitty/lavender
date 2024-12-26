@@ -19,12 +19,12 @@ jobs:
             apts: gcc-mingw-w64-i686
             flags: -DCMAKE_TOOLCHAIN_FILE=ext/nicetia16/cmake/DOS-GCC-IA16.cmake -DDOS_TARGET_COM=1
             config: tiny
-            host: ubuntu-latest
+            host: ubuntu-22.04
           - name: DOS 3.0+ (IA16, EXE)
             target: dos-ia16-exe
             apts: gcc-mingw-w64-i686
             flags: -DCMAKE_TOOLCHAIN_FILE=ext/nicetia16/cmake/DOS-GCC-IA16.cmake
-            host: ubuntu-latest
+            host: ubuntu-22.04
           - name: Linux
             target: linux
             apts: gcc-mingw-w64-x86-64 libsdl2-dev libsdl2-ttf-dev libfontconfig-dev libfluidsynth-dev libblkid-dev
