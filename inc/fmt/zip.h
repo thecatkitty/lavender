@@ -2,6 +2,7 @@
 #define _FMT_ZIP_H_
 
 #include <assert.h>
+#include <stdio.h>
 
 #include <base.h>
 
@@ -194,6 +195,10 @@ zip_get_data(off_t olfh);
 // Dispose ZIP file data
 extern void
 zip_free_data(char *data);
+
+// Write file data to a file
+bool
+zip_extract_data(off_t olfh, FILE *out);
 
 // Get ZIP file size
 extern uint32_t
