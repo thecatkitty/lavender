@@ -281,25 +281,22 @@ zip_search(const char *name, uint16_t length)
     return -1;
 }
 
-char *
-zip_get_data(off_t olfh)
+static off_t
+_get_data(off_t olfh, uint32_t *size, uint32_t *crc32)
 {
     zip_local_file_header *lfh;
-    char                  *buffer;
 #ifndef ZIP_PIGGYBACK
     zip_local_file_header lfh_buff = {0};
 #endif
 
     if (NULL == _cdir)
     {
-        errno = EINVAL;
-        return NULL;
+        return -(errno = EINVAL);
     }
 
     if (0 > olfh)
     {
-        errno = EINVAL;
-        return NULL;
+        return -(errno = EINVAL);
     }
 
 #ifdef ZIP_PIGGYBACK
@@ -309,45 +306,65 @@ zip_get_data(off_t olfh)
     lfh = &lfh_buff;
     if (!_seek_read(lfh, _fbase + olfh, sizeof(zip_local_file_header)))
     {
-        return false;
+        return -errno;
     }
 #endif
 
     if ((ZIP_PK_SIGN != lfh->pk_signature) ||
         (ZIP_LOCAL_FILE_SIGN != lfh->header_signature))
     {
-        errno = EFTYPE;
-        return NULL;
+        return -(errno = EFTYPE);
     }
-
     if ((ZIP_METHOD_STORE != lfh->compression) ||
         (0 != (lfh->flags & ~ZIP_FLAGS_SUPPORTED)))
     {
-        errno = ENOSYS;
+        return -(errno = ENOSYS);
+    }
+
+    if (NULL != size)
+    {
+        *size = lfh->uncompressed_size;
+    }
+
+    if (NULL != crc32)
+    {
+        *crc32 = lfh->crc32;
+    }
+
+    return olfh + (off_t)sizeof(zip_local_file_header) +
+           (off_t)lfh->name_length + (off_t)lfh->extra_length;
+}
+
+char *
+zip_get_data(off_t olfh)
+{
+    char    *buffer;
+    uint32_t size = 0, crc32 = 0;
+    off_t    odata = _get_data(olfh, &size, &crc32);
+
+    if (0 > odata)
+    {
         return NULL;
     }
 
 #ifdef ZIP_PIGGYBACK
-    buffer = (char *)(lfh + 1) + lfh->name_length + lfh->extra_length;
+    char *base = (char *)_cdir - _cden->cdir_offset;
+    buffer = base + odata;
 #else
-    buffer = (char *)malloc(lfh->uncompressed_size);
+    buffer = (char *)malloc(size);
     if (NULL == buffer)
     {
         return NULL;
     }
 
-    if (!_seek_read(buffer,
-                    _fbase + olfh + (off_t)sizeof(zip_local_file_header) +
-                        (off_t)lfh->name_length + (off_t)lfh->extra_length,
-                    lfh->uncompressed_size))
+    if (!_seek_read(buffer, _fbase + odata, size))
     {
         free(buffer);
         return NULL;
     }
 #endif
 
-    if (zip_calculate_crc((uint8_t *)buffer, lfh->uncompressed_size) !=
-        lfh->crc32)
+    if (zip_calculate_crc((uint8_t *)buffer, size) != crc32)
     {
 #ifndef ZIP_PIGGYBACK
         free(buffer);
@@ -371,24 +388,9 @@ zip_free_data(char *data)
 uint32_t
 zip_get_size(off_t olfh)
 {
-    zip_local_file_header *lfh;
-
-#ifdef ZIP_PIGGYBACK
-    char *base = (char *)_cdir - _cden->cdir_offset;
-    lfh = (zip_local_file_header *)(base + olfh);
-#else
-    off_t base = _flen - (_cden->cdir_offset + _cden->cdir_size +
-                          (uint32_t)sizeof(zip_cdir_end_header));
-
-    zip_local_file_header lfh_buff = {0};
-    lfh = &lfh_buff;
-    if (!_seek_read(lfh, base + olfh, sizeof(zip_local_file_header)))
-    {
-        return false;
-    }
-#endif
-
-    return lfh->compressed_size;
+    uint32_t size;
+    _get_data(olfh, &size, NULL);
+    return size;
 }
 
 // Check if ZIP Central Directory File Header matches provided name
