@@ -157,22 +157,15 @@ pal_enum_assets(pal_enum_assets_callback callback,
 int
 pal_extract_asset(const char *name, char *path)
 {
-    hasset asset = NULL;
-    char  *data = NULL;
-    FILE  *out = NULL;
-    int    size;
+    FILE *out = NULL;
+    off_t lfh;
 
     LOG("entry, name: '%s'", name);
 
-    if (NULL == (asset = pal_open_asset(name, O_RDONLY)))
+    lfh = zip_search(name, strlen(name));
+    if (0 > lfh)
     {
-        LOG("cannot open the asset!");
-        goto exit;
-    }
-
-    if (NULL == (data = pal_get_asset_data(asset)))
-    {
-        LOG("cannot retrieve the asset data!");
+        LOG("exit, cannot find asset. %s", strerror(errno));
         goto exit;
     }
 
@@ -189,8 +182,7 @@ pal_extract_asset(const char *name, char *path)
         goto exit;
     }
 
-    size = pal_get_asset_size(asset);
-    if (size != fwrite(data, 1, size, out))
+    if (!zip_extract_data(lfh, out))
     {
         LOG("cannot write the file!");
         goto exit;
@@ -199,11 +191,6 @@ pal_extract_asset(const char *name, char *path)
     errno = 0;
 
 exit:
-    if (NULL != asset)
-    {
-        pal_close_asset(asset);
-    }
-
     if (NULL != out)
     {
         fclose(out);
