@@ -156,7 +156,6 @@ jobs:
           
       - name: Prepare archives
         run: |
-          cd lavender-dos-ia16-com  && zip -r ../lavender-${{ github.ref_name }}-dos-com.zip       * && cd ..
           cd lavender-dos-ia16-exe  && zip -r ../lavender-${{ github.ref_name }}-dos-exe.zip       * && cd ..
           cd lavender-windows-ia32  && zip -r ../lavender-${{ github.ref_name }}-windows-ia32.zip  * && cd ..
           cd lavender-windows-x64   && zip -r ../lavender-${{ github.ref_name }}-windows-x64.zip   * && cd ..
@@ -170,7 +169,6 @@ jobs:
           name: Version ${{ github.ref_name }}
           body_path: lavender-dos-ia16-com/RELEASE.md
           files: |
-            lavender-${{ github.ref_name }}-dos-com.zip
             lavender-${{ github.ref_name }}-dos-exe.zip
             lavender-${{ github.ref_name }}-windows-ia32.zip
             lavender-${{ github.ref_name }}-windows-x64.zip
