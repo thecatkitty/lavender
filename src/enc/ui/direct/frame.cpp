@@ -162,7 +162,7 @@ encui_direct_enter_page(encui_page *pages, int id)
     _draw_title(buffer);
     _create_controls(_page);
 
-    if ((0 < id) && (0 != pages[id - 1].title))
+    if (0 < id)
     {
         _back.move(GFX_COLUMNS - 32, GFX_LINES - 3);
         _back.draw();
