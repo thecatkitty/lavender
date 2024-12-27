@@ -55,12 +55,12 @@ panel::key(int scancode)
 }
 
 std::vector<widget_ptr>::iterator
-panel::get_child_by_type(int type)
+panel::get_child_by_type(int type, size_t nth)
 {
-    return std::find_if(children_.begin(), children_.end(),
-                        [=](const widget_ptr &widget) {
-                            return type == widget->get_model().type;
-                        });
+    return std::find_if(
+        children_.begin(), children_.end(), [&](const widget_ptr &widget) {
+            return (type == widget->get_model().type) && (0 == nth--);
+        });
 }
 
 encui_field ui::null_field{};

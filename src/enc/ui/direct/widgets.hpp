@@ -176,7 +176,7 @@ struct panel : widget
     }
 
     std::vector<widget_ptr>::iterator
-    get_child_by_type(int type);
+    get_child_by_type(int type, size_t nth = 0);
 
   private:
     std::vector<widget_ptr> children_;
@@ -231,9 +231,9 @@ template <> struct field_type<textbox>
 
 template <typename T>
 T *
-get_child(panel &panel)
+get_child(panel &panel, size_t nth = 0)
 {
-    auto it = panel.get_child_by_type(field_type<T>::type);
+    auto it = panel.get_child_by_type(field_type<T>::type, nth);
     return (panel.end() == it) ? nullptr : reinterpret_cast<T *>(it->get());
 }
 
