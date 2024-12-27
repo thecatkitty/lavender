@@ -39,19 +39,19 @@ textbox::textbox(encui_field &field)
     : widget{field}, blink_start_{}, caret_period_{}, caret_counter_{},
       caret_visible_{true}, position_{}, state_{STATE_PROMPT}
 {
-    auto &prompt = *reinterpret_cast<encui_prompt_page *>(field.data);
-    if (0 == prompt.length)
+    auto &textbox = *reinterpret_cast<encui_textbox_data *>(field.data);
+    if (0 == textbox.length)
     {
-        prompt.buffer[0] = 0;
+        textbox.buffer[0] = 0;
     }
 
     size_t field_width = GFX_COLUMNS / 2 - 1;
-    if (field_width < prompt.capacity)
+    if (field_width < textbox.capacity)
     {
-        field_width = prompt.capacity;
+        field_width = textbox.capacity;
     }
 
-    position_ = prompt.length;
+    position_ = textbox.length;
 
     rect_.width = field_width + 2;
     rect_.height = 5;
@@ -61,16 +61,16 @@ void
 textbox::draw()
 {
     auto &page = *get_page();
-    auto &prompt = *reinterpret_cast<encui_prompt_page *>(field_.data);
+    auto &textbox = *reinterpret_cast<encui_textbox_data *>(field_.data);
 
     auto pos = get_position();
     auto field = get_field(pos);
     gfx_draw_rectangle(&field,
-                       (0 < page.proc(ENCUIM_CHECK, prompt.buffer, page.data))
+                       (0 < page.proc(ENCUIM_CHECK, textbox.buffer, page.data))
                            ? GFX_COLOR_GRAY
                            : GFX_COLOR_BLACK);
     gfx_fill_rectangle(&field, GFX_COLOR_WHITE);
-    gfx_draw_text(prompt.buffer, rect_.left + 1, rect_.top + 1);
+    gfx_draw_text(textbox.buffer, rect_.left + 1, rect_.top + 1);
 
     caret_period_ = palpp_get_ticks(500);
     caret_counter_ = palpp_get_counter();
@@ -158,9 +158,9 @@ textbox::click(int x, int y)
         return 0;
     }
 
-    auto &prompt = *reinterpret_cast<encui_prompt_page *>(field_.data);
+    auto &textbox = *reinterpret_cast<encui_textbox_data *>(field_.data);
 
-    int cursor = std::max(0, std::min(int(prompt.length), x - 1));
+    int cursor = std::max(0, std::min(int(textbox.length), x - 1));
     if (position_ != cursor)
     {
         position_ = cursor;
@@ -175,7 +175,7 @@ textbox::click(int x, int y)
 int
 textbox::key(int scancode)
 {
-    auto &prompt = *reinterpret_cast<encui_prompt_page *>(field_.data);
+    auto &textbox = *reinterpret_cast<encui_textbox_data *>(field_.data);
 
     pal_disable_mouse();
 
@@ -192,7 +192,7 @@ textbox::key(int scancode)
         draw();
     }
 
-    if ((VK_RIGHT == scancode) && (int(prompt.length) > position_))
+    if ((VK_RIGHT == scancode) && (int(textbox.length) > position_))
     {
         position_++;
         draw();
@@ -200,34 +200,34 @@ textbox::key(int scancode)
 
     if ((VK_BACK == scancode) && (0 < position_))
     {
-        std::memmove(prompt.buffer + position_ - 1, prompt.buffer + position_,
-                     prompt.length - position_);
+        std::memmove(textbox.buffer + position_ - 1, textbox.buffer + position_,
+                     textbox.length - position_);
         position_--;
-        prompt.length--;
-        prompt.buffer[prompt.length] = 0;
+        textbox.length--;
+        textbox.buffer[textbox.length] = 0;
         draw();
     }
 
-    if ((VK_DELETE == scancode) && (int(prompt.length) > position_))
+    if ((VK_DELETE == scancode) && (int(textbox.length) > position_))
     {
-        std::memmove(prompt.buffer + position_, prompt.buffer + position_ + 1,
-                     prompt.length - position_ - 1);
-        prompt.length--;
-        prompt.buffer[prompt.length] = 0;
+        std::memmove(textbox.buffer + position_, textbox.buffer + position_ + 1,
+                     textbox.length - position_ - 1);
+        textbox.length--;
+        textbox.buffer[textbox.length] = 0;
         draw();
     }
 
     if (((' ' == scancode) || (VK_OEM_MINUS == scancode) ||
          ((VK_DELETE < scancode) && (VK_F1 > scancode))) &&
-        (prompt.length < prompt.capacity))
+        (textbox.length < textbox.capacity))
     {
-        std::memmove(prompt.buffer + position_ + 1, prompt.buffer + position_,
-                     prompt.length - position_);
-        prompt.buffer[position_] =
+        std::memmove(textbox.buffer + position_ + 1, textbox.buffer + position_,
+                     textbox.length - position_);
+        textbox.buffer[position_] =
             (VK_OEM_MINUS == scancode) ? '-' : (scancode & 0xFF);
         position_++;
-        prompt.length++;
-        prompt.buffer[prompt.length] = 0;
+        textbox.length++;
+        textbox.buffer[textbox.length] = 0;
         draw();
     }
 

@@ -49,8 +49,8 @@ _reset(void)
 int
 encui_handle(void)
 {
-    encui_page        *page = _pages + _id;
-    encui_prompt_page *prompt = encui_find_prompt(_pages + _id);
+    encui_page         *page = _pages + _id;
+    encui_textbox_data *textbox = encui_find_textbox(_pages + _id);
 
     if (STATE_NONE == _state)
     {
@@ -64,11 +64,11 @@ encui_handle(void)
 
     if (STATE_VERIFY == _state)
     {
-        int status = page->proc(ENCUIM_NEXT, prompt->buffer, page->data);
+        int status = page->proc(ENCUIM_NEXT, textbox->buffer, page->data);
         if ((0 == status) || (-ENOSYS == status))
         {
             _reset();
-            return prompt->length;
+            return textbox->length;
         }
 
         if (0 > status)
@@ -79,9 +79,9 @@ encui_handle(void)
         char message[GFX_COLUMNS];
         if (INT_MAX == status)
         {
-            strncpy(message, prompt->alert, GFX_COLUMNS - 1);
-            free((void *)prompt->alert);
-            prompt->alert = NULL;
+            strncpy(message, textbox->alert, GFX_COLUMNS - 1);
+            free((void *)textbox->alert);
+            textbox->alert = NULL;
         }
         else
         {

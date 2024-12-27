@@ -21,9 +21,9 @@ encui_find_checkbox(encui_page *page)
     return _find_field_by_type(page, ENCUIFT_CHECKBOX);
 }
 
-encui_prompt_page *
-encui_find_prompt(encui_page *page)
+encui_textbox_data *
+encui_find_textbox(encui_page *page)
 {
     encui_field *field = _find_field_by_type(page, ENCUIFT_TEXTBOX);
-    return field ? (encui_prompt_page *)field->data : NULL;
+    return field ? (encui_textbox_data *)field->data : NULL;
 }

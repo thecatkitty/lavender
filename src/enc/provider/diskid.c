@@ -84,20 +84,20 @@ _passcode_page_proc(int msg, void *param, void *data)
     return -ENOSYS;
 }
 
-static encui_prompt_page _dsn_prompt = {NULL};
+static encui_textbox_data _dsn_textbox = {NULL};
 
 static encui_field _dsn_fields[] = {
     {ENCUIFT_LABEL, ENCUIFF_STATIC, IDS_ENTERDSN_DESC},
     {ENCUIFT_SEPARATOR, 0, 1},
-    {ENCUIFT_TEXTBOX, 0, (intptr_t)&_dsn_prompt},
+    {ENCUIFT_TEXTBOX, 0, (intptr_t)&_dsn_textbox},
 };
 
-static encui_prompt_page _passcode_prompt = {NULL};
+static encui_textbox_data _passcode_textbox = {NULL};
 
 static encui_field _passcode_fields[] = {
     {ENCUIFT_LABEL, ENCUIFF_STATIC, IDS_ENTERPASS_DESC},
     {ENCUIFT_SEPARATOR, 0, 1},
-    {ENCUIFT_TEXTBOX, 0, (intptr_t)&_passcode_prompt},
+    {ENCUIFT_TEXTBOX, 0, (intptr_t)&_passcode_textbox},
     {ENCUIFT_CHECKBOX, ENCUIFF_STATIC, IDS_STOREKEY},
 };
 
@@ -119,16 +119,16 @@ __enc_diskid_proc(int msg, enc_context *enc)
             _pages[0].data = enc;
             _pages[0].length = lengthof(_dsn_fields);
             _pages[0].fields = _dsn_fields;
-            _dsn_prompt.buffer = enc->data.diskid.dsn;
-            _dsn_prompt.capacity = XOR48_DSN_LENGTH;
-            _dsn_prompt.length = 0;
+            _dsn_textbox.buffer = enc->data.diskid.dsn;
+            _dsn_textbox.capacity = XOR48_DSN_LENGTH;
+            _dsn_textbox.length = 0;
 
             _pages[1].data = enc;
             _pages[1].length = lengthof(_passcode_fields);
             _pages[1].fields = _passcode_fields;
-            _passcode_prompt.buffer = enc->buffer;
-            _passcode_prompt.capacity = XOR48_PASSCODE_SIZE * 2;
-            _passcode_prompt.length = 0;
+            _passcode_textbox.buffer = enc->buffer;
+            _passcode_textbox.capacity = XOR48_PASSCODE_SIZE * 2;
+            _passcode_textbox.length = 0;
 
             if (enc_has_key_store())
             {

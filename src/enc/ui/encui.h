@@ -45,7 +45,7 @@ typedef struct
     size_t      capacity;
     size_t      length;
     const char *alert;
-} encui_prompt_page;
+} encui_textbox_data;
 
 typedef struct
 {
@@ -81,7 +81,7 @@ encui_handle(void);
 extern encui_field *
 encui_find_checkbox(encui_page *page);
 
-extern encui_prompt_page *
-encui_find_prompt(encui_page *page);
+extern encui_textbox_data *
+encui_find_textbox(encui_page *page);
 
 #endif // _ENCUI_H_

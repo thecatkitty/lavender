@@ -213,11 +213,11 @@ encui_direct_key(uint16_t scancode)
         return ENCUI_CANCEL;
     }
 
-    encui_prompt_page *prompt = encui_find_prompt(_page);
+    encui_textbox_data *textbox = encui_find_textbox(_page);
 
     if (VK_RETURN == scancode)
     {
-        if (0 >= _page->proc(ENCUIM_CHECK, prompt->buffer, _page->data))
+        if (0 >= _page->proc(ENCUIM_CHECK, textbox->buffer, _page->data))
         {
             return ENCUI_OK;
         }

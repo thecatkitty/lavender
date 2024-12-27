@@ -196,7 +196,7 @@ _ccode_page_proc(int msg, void *param, void *data)
                 length = snprintf(NULL, 0, fmt, i + 1);
                 msg = malloc(length + 1);
                 snprintf(msg, length + 1, fmt, i + 1);
-                ((encui_prompt_page *)_pages[1].fields[6].data)->alert = msg;
+                ((encui_textbox_data *)_pages[1].fields[6].data)->alert = msg;
                 return INT_MAX;
             }
 
@@ -215,15 +215,15 @@ _ccode_page_proc(int msg, void *param, void *data)
     return -ENOSYS;
 }
 
-static encui_prompt_page _acode_prompt = {NULL};
+static encui_textbox_data _acode_textbox = {NULL};
 
 static encui_field _acode_fields[] = {
     {ENCUIFT_LABEL, ENCUIFF_STATIC, IDS_ENTERPKEY_DESC},
     {ENCUIFT_SEPARATOR, 0, 1},
-    {ENCUIFT_TEXTBOX, 0, (intptr_t)&_acode_prompt},
+    {ENCUIFT_TEXTBOX, 0, (intptr_t)&_acode_textbox},
 };
 
-static encui_prompt_page _ccode_prompt = {_ccode, sizeof(_ccode), 0};
+static encui_textbox_data _ccode_textbox = {_ccode, sizeof(_ccode), 0};
 
 static encui_field _unlock_fields[] = {
     {ENCUIFT_LABEL, ENCUIFF_STATIC, IDS_UNLOCK_DESC},
@@ -232,7 +232,7 @@ static encui_field _unlock_fields[] = {
     {ENCUIFT_LABEL, ENCUIFF_DYNAMIC | ENCUIFF_CENTER, ID_RCODE},
     {ENCUIFT_SEPARATOR, 0, 2},
     {ENCUIFT_LABEL, ENCUIFF_STATIC, IDS_CCODE_DESC},
-    {ENCUIFT_TEXTBOX, 0, (intptr_t)&_ccode_prompt},
+    {ENCUIFT_TEXTBOX, 0, (intptr_t)&_ccode_textbox},
     {ENCUIFT_CHECKBOX, ENCUIFF_STATIC, IDS_STOREKEY},
 };
 
@@ -272,9 +272,9 @@ __enc_remote_proc(int msg, enc_context *enc)
         _pages[0].data = enc;
         _pages[0].length = lengthof(_acode_fields);
         _pages[0].fields = _acode_fields;
-        _acode_prompt.buffer = enc->buffer;
-        _acode_prompt.capacity = 5 * 5 + 4;
-        _acode_prompt.length = 0;
+        _acode_textbox.buffer = enc->buffer;
+        _acode_textbox.capacity = 5 * 5 + 4;
+        _acode_textbox.length = 0;
 
         _pages[1].data = enc;
         _pages[1].length = lengthof(_unlock_fields);
