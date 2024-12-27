@@ -64,11 +64,12 @@ encui_handle(void)
 
     if (STATE_VERIFY == _state)
     {
-        int status = page->proc(ENCUIM_NEXT, textbox->buffer, page->data);
+        int status = page->proc(ENCUIM_NEXT, textbox ? textbox->buffer : NULL,
+                                page->data);
         if ((0 == status) || (-ENOSYS == status))
         {
             _reset();
-            return textbox->length;
+            return textbox ? textbox->length : 1;
         }
 
         if (0 > status)
@@ -77,7 +78,7 @@ encui_handle(void)
         }
 
         char message[GFX_COLUMNS];
-        if (INT_MAX == status)
+        if ((INT_MAX == status) && (NULL != textbox))
         {
             strncpy(message, textbox->alert, GFX_COLUMNS - 1);
             free((void *)textbox->alert);

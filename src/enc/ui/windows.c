@@ -149,7 +149,7 @@ _create_controls(HWND dlg, encui_page *page)
     HFONT font;
     RECT  rect;
     int   cx, cy, my, i;
-    bool  has_checkbox = false;
+    bool  has_checkbox = false, has_textbox = false;
 
     font = (HFONT)SendDlgItemMessageW(dlg, IDC_TEXT, WM_GETFONT, 0, 0);
     my = _get_separator_height(dlg, font);
@@ -190,6 +190,13 @@ _create_controls(HWND dlg, encui_page *page)
         {
             HWND box, ctl;
             RECT box_rect, ctl_rect;
+
+            if (has_textbox)
+            {
+                continue;
+            }
+
+            has_textbox = true;
 
             box = GetDlgItem(dlg, IDC_EDITBOX);
             GetWindowRect(box, &box_rect);
@@ -233,6 +240,13 @@ _create_controls(HWND dlg, encui_page *page)
     if (!has_checkbox)
     {
         DestroyWindow(GetDlgItem(dlg, IDC_CHECK));
+    }
+
+    if (!has_textbox)
+    {
+        DestroyWindow(GetDlgItem(dlg, IDC_EDITBOX));
+        DestroyWindow(GetDlgItem(dlg, IDC_BANG));
+        DestroyWindow(GetDlgItem(dlg, IDC_ALERT));
     }
 }
 
@@ -342,22 +356,28 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
 
         case PSN_WIZNEXT: {
             int                 status;
-            encui_textbox_data *textbox = encui_find_textbox(_pages + id);
+            encui_textbox_data *textbox;
             HWND                edit_box = GetDlgItem(dlg, IDC_EDITBOX);
             size_t              length = GetWindowTextLengthW(edit_box);
-            LPWSTR text = (LPWSTR)malloc((length + 1) * sizeof(WCHAR));
-            if (NULL == text)
-            {
-                return -1;
-            }
-            GetWindowTextW(edit_box, text, length + 1);
-            WideCharToMultiByte(CP_UTF8, 0, text, -1, textbox->buffer,
-                                textbox->capacity, NULL, NULL);
-            _value = length;
-            free(text);
+            LPWSTR              text;
 
-            status =
-                _pages[id].proc(ENCUIM_NEXT, textbox->buffer, _pages[id].data);
+            textbox = encui_find_textbox(_pages + id);
+            if (NULL != textbox)
+            {
+                text = (LPWSTR)malloc((length + 1) * sizeof(WCHAR));
+                if (NULL == text)
+                {
+                    return -1;
+                }
+                GetWindowTextW(edit_box, text, length + 1);
+                WideCharToMultiByte(CP_UTF8, 0, text, -1, textbox->buffer,
+                                    textbox->capacity, NULL, NULL);
+                _value = length;
+                free(text);
+            }
+
+            status = _pages[id].proc(
+                ENCUIM_NEXT, textbox ? textbox->buffer : NULL, _pages[id].data);
             if (0 < status)
             {
                 WCHAR message[GFX_COLUMNS];
@@ -407,6 +427,8 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
             return FALSE;
         }
         }
+
+        break;
     }
 
     case WM_COMMAND: {
