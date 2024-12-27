@@ -217,6 +217,11 @@ encui_direct_key(uint16_t scancode)
 
     if (VK_RETURN == scancode)
     {
+        if (NULL == textbox)
+        {
+            return ENCUI_OK;
+        }
+
         if (0 >= _page->proc(ENCUIM_CHECK, textbox->buffer, _page->data))
         {
             return ENCUI_OK;
