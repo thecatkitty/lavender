@@ -45,6 +45,7 @@ static WCHAR            _brand[MAX_PATH] = L"";
 static PROPSHEETPAGEW  *_psps = NULL;
 static HPROPSHEETPAGE  *_hpsps = NULL;
 static PROPSHEETHEADERW _psh = {sizeof(PROPSHEETHEADERW)};
+static HWND             _wnd = NULL;
 
 static int _value;
 
@@ -325,8 +326,7 @@ _create_controls(HWND dlg, encui_page *page)
 static void
 _set_buttons(HWND dlg, int id, bool has_next)
 {
-    bool has_previous = (0 != id) && (0 != _pages[id - 1].title);
-    PropSheet_SetWizButtons(GetParent(dlg), (has_previous ? PSWIZB_BACK : 0) |
+    PropSheet_SetWizButtons(GetParent(dlg), ((0 != id) ? PSWIZB_BACK : 0) |
                                                 (has_next ? PSWIZB_NEXT : 0));
 }
 
@@ -359,6 +359,8 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
     case WM_INITDIALOG: {
         PROPSHEETPAGEW *template = (PROPSHEETPAGEW *)lparam;
         encui_page *page = _pages + template->lParam;
+
+        _wnd = GetParent(dlg);
 
 #if WINVER < 0x0600
         if (!_is_vista)
@@ -429,6 +431,18 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
             _set_buttons(dlg, id, _check_input(dlg, id));
             _update_controls(dlg, _pages + id);
             return 0;
+        }
+
+        case PSN_WIZBACK: {
+            if (0 != _pages[id - 1].title)
+            {
+                break;
+            }
+
+            PropSheet_SetCurSel(GetParent(dlg), NULL,
+                                (intptr_t)_pages[id - 1].data);
+            SetWindowLongPtrW(dlg, DWLP_MSGRESULT, -1);
+            return TRUE;
         }
 
         case PSN_WIZNEXT: {
@@ -608,8 +622,15 @@ encui_enter(encui_page *pages, int count)
     {
         if (0 == pages[i].title)
         {
-            _psps[i].dwSize = 0;
-            _hpsps[i] = NULL;
+            _psps[i].dwSize = sizeof(PROPSHEETPAGEW);
+            _psps[i].hInstance = GetModuleHandleW(NULL);
+            _psps[i].dwFlags = PSP_USEHEADERTITLE | PSP_USETITLE;
+            _psps[i].lParam = (LPARAM)i;
+            _psps[i].pszHeaderTitle = L"Vacat";
+            _psps[i].pszTemplate = MAKEINTRESOURCEW(IDD_VACAT);
+            _psps[i].pszTitle = _brand;
+            _psps[i].pfnDlgProc = NULL;
+            _hpsps[i] = CreatePropertySheetPageW((LPCPROPSHEETPAGEW)&_psps[i]);
             continue;
         }
 
@@ -684,6 +705,13 @@ encui_set_page(int id)
         return true;
     }
 
+    if (0 != _value)
+    {
+        _id = id;
+        PropSheet_SetCurSel(_wnd, NULL, id);
+        return true;
+    }
+
     _value = ENCUI_INCOMPLETE;
     _psh.nStartPage = _id = id;
     PropertySheetW(&_psh);
@@ -697,5 +725,6 @@ encui_handle(void)
 {
     int value = _value;
     _value = 0;
+    _wnd = NULL;
     return value;
 }

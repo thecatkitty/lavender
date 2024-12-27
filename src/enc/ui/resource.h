@@ -1,4 +1,5 @@
 #define IDD_PROMPT 1
+#define IDD_VACAT  2
 
 #define IDC_ALERT   100
 #define IDC_BANG    101

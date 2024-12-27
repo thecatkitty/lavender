@@ -72,6 +72,14 @@ encui_handle(void)
             return textbox ? textbox->length : 1;
         }
 
+        if (-EINTR == status)
+        {
+            // Navigation interrupted
+            _state = STATE_PROMPT;
+            pal_enable_mouse();
+            return ENCUI_INCOMPLETE;
+        }
+
         if (0 > status)
         {
             return status;
@@ -134,15 +142,20 @@ encui_set_page(int id)
     }
 
     encui_page *page = _pages + id;
-    _id = id;
 
-    if (0 == page->title)
+    if ((0 == page->title) && (NULL == page->data))
     {
         _id = -1;
         _state = STATE_NONE;
         return true;
     }
 
+    if (0 == page->title)
+    {
+        id = (intptr_t)page->data;
+    }
+
+    _id = id;
     encui_direct_enter_page(_pages, id);
     _state = STATE_PROMPT;
     return true;
