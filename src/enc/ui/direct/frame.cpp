@@ -102,7 +102,9 @@ static void
 _create_controls(encui_page *page)
 {
     panel_ = std::make_unique<ui::panel>(*page);
-    _mouse_down = false;
+
+    uint16_t x, y;
+    _mouse_down = PAL_MOUSE_LBUTTON & pal_get_mouse(&x, &y);
 
     int  cy = 2;
     bool has_checkbox = false;
