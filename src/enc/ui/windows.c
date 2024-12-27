@@ -149,7 +149,7 @@ _create_controls(HWND dlg, encui_page *page)
     HFONT font;
     RECT  rect;
     int   cx, cy, my, i;
-    bool  has_checkbox = false, has_textbox = false;
+    bool  has_checkbox = false, has_textbox = false, has_options = false;
 
     font = (HFONT)SendDlgItemMessageW(dlg, IDC_TEXT, WM_GETFONT, 0, 0);
     my = _get_separator_height(dlg, font);
@@ -232,6 +232,24 @@ _create_controls(HWND dlg, encui_page *page)
             if (ENCUIFF_CHECKED & field->flags)
             {
                 Button_SetCheck(GetDlgItem(dlg, IDC_CHECK), BST_CHECKED);
+            }
+        }
+
+        if (ENCUIFT_OPTION == field->type)
+        {
+            DWORD style = WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON |
+                          (has_options ? 0 : WS_GROUP);
+            HWND  ctl = CreateWindowW(L"BUTTON", L"", style, cx, cy,
+                                      rect.right - rect.left, 64, dlg,
+                                      (HMENU)(UINT_PTR)CPX_CTLID(i),
+                                      GetModuleHandleW(NULL), NULL);
+
+            has_options = true;
+            SendMessageW(ctl, WM_SETFONT, (WPARAM)font, TRUE);
+            cy += _set_text(ctl, field->data, true) + my;
+            if (ENCUIFF_CHECKED & field->flags)
+            {
+                Button_SetCheck(ctl, BST_CHECKED);
             }
         }
     }
@@ -452,6 +470,32 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
             {
                 checkbox->flags &= ~ENCUIFF_CHECKED;
             }
+            return TRUE;
+        }
+
+        if ((BN_CLICKED == HIWORD(wparam)) && (0x100 < LOWORD(wparam)))
+        {
+            int i, ctl_idx = LOWORD(wparam) - 0x100;
+
+            if (_pages[id].length <= ctl_idx)
+            {
+                return FALSE;
+            }
+
+            if (ENCUIFT_OPTION != _pages[id].fields[ctl_idx].type)
+            {
+                return FALSE;
+            }
+
+            for (i = 0; i < _pages[id].length; i++)
+            {
+                if (ENCUIFT_OPTION == _pages[id].fields[i].type)
+                {
+                    _pages[id].fields[i].flags &= ~ENCUIFF_CHECKED;
+                }
+            }
+
+            _pages[id].fields[ctl_idx].flags |= ENCUIFF_CHECKED;
             return TRUE;
         }
     }
