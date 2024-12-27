@@ -31,12 +31,12 @@ _passcode_page_proc(int msg, void *param, void *data)
     return -ENOSYS;
 }
 
-static encui_prompt_page _passcode_prompt = {NULL};
+static encui_textbox_data _passcode_textbox = {NULL};
 
 static encui_field _passcode_fields[] = {
     {ENCUIFT_LABEL, ENCUIFF_STATIC, IDS_ENTERPASS_DESC},
     {ENCUIFT_SEPARATOR, 0, 1},
-    {ENCUIFT_TEXTBOX, 0, (intptr_t)&_passcode_prompt},
+    {ENCUIFT_TEXTBOX, 0, (intptr_t)&_passcode_textbox},
     {ENCUIFT_CHECKBOX, ENCUIFF_STATIC, IDS_STOREKEY},
 };
 
@@ -62,9 +62,9 @@ __enc_split_proc(int msg, enc_context *enc)
         _pages[0].length = lengthof(_passcode_fields);
         _pages[0].fields = _passcode_fields;
         _pages[0].fields[0].data = IDS_ENTERPASS_DESC;
-        _passcode_prompt.buffer = enc->buffer;
-        _passcode_prompt.capacity = XOR48_PASSCODE_SIZE * 2;
-        _passcode_prompt.length = 0;
+        _passcode_textbox.buffer = enc->buffer;
+        _passcode_textbox.capacity = XOR48_PASSCODE_SIZE * 2;
+        _passcode_textbox.length = 0;
 
         if (enc_has_key_store())
         {

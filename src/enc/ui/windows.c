@@ -321,7 +321,6 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
         }
 #endif // WINVER < 0x0600
 
-        // Set the prompt's content
         _set_text(dlg, page->title, false);
         _create_controls(dlg, page);
         _set_buttons(dlg, (int)template->lParam,
@@ -342,32 +341,32 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
         }
 
         case PSN_WIZNEXT: {
-            int                status;
-            encui_prompt_page *prompt = encui_find_prompt(_pages + id);
-            HWND               edit_box = GetDlgItem(dlg, IDC_EDITBOX);
-            size_t             length = GetWindowTextLengthW(edit_box);
+            int                 status;
+            encui_textbox_data *textbox = encui_find_textbox(_pages + id);
+            HWND                edit_box = GetDlgItem(dlg, IDC_EDITBOX);
+            size_t              length = GetWindowTextLengthW(edit_box);
             LPWSTR text = (LPWSTR)malloc((length + 1) * sizeof(WCHAR));
             if (NULL == text)
             {
                 return -1;
             }
             GetWindowTextW(edit_box, text, length + 1);
-            WideCharToMultiByte(CP_UTF8, 0, text, -1, prompt->buffer,
-                                prompt->capacity, NULL, NULL);
+            WideCharToMultiByte(CP_UTF8, 0, text, -1, textbox->buffer,
+                                textbox->capacity, NULL, NULL);
             _value = length;
             free(text);
 
             status =
-                _pages[id].proc(ENCUIM_NEXT, prompt->buffer, _pages[id].data);
+                _pages[id].proc(ENCUIM_NEXT, textbox->buffer, _pages[id].data);
             if (0 < status)
             {
                 WCHAR message[GFX_COLUMNS];
                 if (INT_MAX == status)
                 {
-                    MultiByteToWideChar(CP_UTF8, 0, prompt->alert, -1, message,
+                    MultiByteToWideChar(CP_UTF8, 0, textbox->alert, -1, message,
                                         lengthof(message));
-                    free((void *)prompt->alert);
-                    prompt->alert = NULL;
+                    free((void *)textbox->alert);
+                    textbox->alert = NULL;
                 }
                 else
                 {
