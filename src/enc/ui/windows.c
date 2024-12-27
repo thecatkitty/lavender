@@ -20,6 +20,15 @@
 #define PSH_AEROWIZARD 0x00004000
 #endif
 
+#ifndef BS_COMMANDLINK
+#define BS_COMMANDLINK    0x0000000EL
+#define BS_DEFCOMMANDLINK 0x0000000FL
+
+#define BCM_FIRST        0x1600
+#define BCM_GETIDEALSIZE (BCM_FIRST + 0x0001)
+#define BCM_SETNOTE      (BCM_FIRST + 0x0009)
+#endif
+
 #define WIZARD97_PADDING_LEFT 21
 #define WIZARD97_PADDING_TOP  0
 
@@ -149,7 +158,10 @@ _create_controls(HWND dlg, encui_page *page)
     HFONT font;
     RECT  rect;
     int   cx, cy, my, i;
-    bool  has_checkbox = false, has_textbox = false, has_options = false;
+    bool  has_checkbox = false, has_textbox = false;
+#if WINVER < 0x0600
+    bool has_options = false;
+#endif
 
     font = (HFONT)SendDlgItemMessageW(dlg, IDC_TEXT, WM_GETFONT, 0, 0);
     my = _get_separator_height(dlg, font);
@@ -237,19 +249,61 @@ _create_controls(HWND dlg, encui_page *page)
 
         if (ENCUIFT_OPTION == field->type)
         {
-            DWORD style = WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON |
-                          (has_options ? 0 : WS_GROUP);
-            HWND  ctl = CreateWindowW(L"BUTTON", L"", style, cx, cy,
-                                      rect.right - rect.left, 64, dlg,
-                                      (HMENU)(UINT_PTR)CPX_CTLID(i),
-                                      GetModuleHandleW(NULL), NULL);
-
-            has_options = true;
-            SendMessageW(ctl, WM_SETFONT, (WPARAM)font, TRUE);
-            cy += _set_text(ctl, field->data, true) + my;
-            if (ENCUIFF_CHECKED & field->flags)
+#if WINVER < 0x0600
+            if (!_is_vista)
             {
-                Button_SetCheck(ctl, BST_CHECKED);
+                DWORD style = WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON |
+                              (has_options ? 0 : WS_GROUP);
+                HWND ctl = CreateWindowW(L"BUTTON", L"", style, cx, cy,
+                                         rect.right - rect.left, 64, dlg,
+                                         (HMENU)(UINT_PTR)CPX_CTLID(i),
+                                         GetModuleHandleW(NULL), NULL);
+
+                has_options = true;
+                SendMessageW(ctl, WM_SETFONT, (WPARAM)font, TRUE);
+                cy += _set_text(ctl, field->data, true) + my;
+                if (ENCUIFF_CHECKED & field->flags)
+                {
+                    Button_SetCheck(ctl, BST_CHECKED);
+                }
+            }
+            else
+#endif
+            {
+                DWORD style =
+                    WS_TABSTOP | WS_VISIBLE | WS_CHILD |
+                    ((ENCUIFF_CHECKED & field->flags) ? BS_DEFCOMMANDLINK
+                                                      : BS_COMMANDLINK);
+                HWND ctl = CreateWindowW(L"BUTTON", L"", style, cx, cy,
+                                         rect.right - rect.left, 128, dlg,
+                                         (HMENU)(UINT_PTR)CPX_CTLID(i),
+                                         GetModuleHandleW(NULL), NULL);
+                SIZE ideal_size = {rect.right - rect.left};
+
+                if (0 == (ENCUIFF_DYNAMIC & field->flags))
+                {
+                    WCHAR buff[MAX_PATH];
+
+                    if (0 == LoadStringW(NULL, field->data + 0x200, buff,
+                                         lengthof(buff)))
+                    {
+                        _set_text(ctl, field->data, false);
+                    }
+                    else
+                    {
+                        SetWindowTextW(ctl, buff);
+                        LoadStringW(NULL, field->data + 0x300, buff,
+                                    lengthof(buff));
+                        SendMessageW(ctl, BCM_SETNOTE, 0, (LPARAM)buff);
+                    }
+                }
+
+                if (SendMessageW(ctl, BCM_GETIDEALSIZE, 0, (LPARAM)&ideal_size))
+                {
+                    SetWindowPos(ctl, NULL, 0, 0, rect.right - rect.left,
+                                 ideal_size.cy, SWP_NOMOVE | SWP_NOZORDER);
+                }
+                cy += ideal_size.cy;
             }
         }
     }
@@ -269,6 +323,14 @@ _create_controls(HWND dlg, encui_page *page)
 }
 
 static void
+_set_buttons(HWND dlg, int id, bool has_next)
+{
+    bool has_previous = (0 != id) && (0 != _pages[id - 1].title);
+    PropSheet_SetWizButtons(GetParent(dlg), (has_previous ? PSWIZB_BACK : 0) |
+                                                (has_next ? PSWIZB_NEXT : 0));
+}
+
+static void
 _update_controls(HWND dlg, encui_page *page)
 {
     int i;
@@ -281,15 +343,12 @@ _update_controls(HWND dlg, encui_page *page)
             HWND ctl = GetDlgItem(dlg, CPX_CTLID(i));
             _set_text(ctl, field->data, false);
         }
-    }
-}
 
-static void
-_set_buttons(HWND dlg, int id, bool has_next)
-{
-    bool has_previous = (0 != id) && (0 != _pages[id - 1].title);
-    PropSheet_SetWizButtons(GetParent(dlg), (has_previous ? PSWIZB_BACK : 0) |
-                                                (has_next ? PSWIZB_NEXT : 0));
+        if ((ENCUIFT_OPTION == field->type) && _is_vista)
+        {
+            _set_buttons(dlg, page - _pages, false);
+        }
+    }
 }
 
 static INT_PTR CALLBACK
@@ -496,6 +555,11 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
             }
 
             _pages[id].fields[ctl_idx].flags |= ENCUIFF_CHECKED;
+            if (_is_vista)
+            {
+                PropSheet_PressButton(GetParent(dlg), PSBTN_NEXT);
+            }
+
             return TRUE;
         }
     }
