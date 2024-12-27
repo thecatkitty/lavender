@@ -140,6 +140,14 @@ _create_controls(encui_page *page)
             checkbox.move(1, GFX_LINES - 5);
             checkbox.draw();
         }
+
+        if (ENCUIFT_OPTION == field->type)
+        {
+            auto &option = panel_->create<ui::option>(*field);
+            option.move(1, cy);
+            option.draw();
+            cy = ui::get_bottom(option.get_area());
+        }
     }
 }
 
@@ -237,6 +245,17 @@ encui_direct_key(uint16_t scancode)
     {
         pal_disable_mouse();
         encui_set_page(id - 1);
+        return ENCUI_INCOMPLETE;
+    }
+
+    if ((VK_F1 <= scancode) && (VK_F7 >= scancode))
+    {
+        auto option = ui::get_child<ui::option>(*panel_, scancode - VK_F1);
+        if (option)
+        {
+            option->click(-1, -1);
+        }
+
         return ENCUI_INCOMPLETE;
     }
 

@@ -138,6 +138,24 @@ struct label : widget
     draw() override;
 };
 
+struct option : widget
+{
+    option(encui_field &field);
+
+    void
+    draw() override;
+
+    int
+    click(int x, int y) override;
+
+  private:
+    void
+    mark(bool checked);
+
+    void
+    set(bool checked);
+};
+
 struct panel : widget
 {
     panel(const encui_page &page) : widget{page}, children_{}
@@ -222,6 +240,11 @@ template <> struct field_type<checkbox>
 template <> struct field_type<label>
 {
     static const int type = ENCUIFT_LABEL;
+};
+
+template <> struct field_type<option>
+{
+    static const int type = ENCUIFT_OPTION;
 };
 
 template <> struct field_type<textbox>
