@@ -13,6 +13,12 @@
 #define ID_RCODE 1
 #define ID_CCODE 2
 
+enum
+{
+    PAGE_PKEY,
+    PAGE_RCODE,
+};
+
 static encui_page _pages[3];
 static uint8_t    _rbytes[18];
 static char       _rcode[64];
@@ -132,7 +138,7 @@ _acode_page_proc(int msg, void *param, void *data)
 
         stamp = time(NULL);
         _get_rcode(cid, uid, stamp);
-        _pages[1].fields[3].data = (intptr_t)_rcode;
+        _pages[PAGE_RCODE].fields[3].data = (intptr_t)_rcode;
 
         return 0;
     }
@@ -196,7 +202,8 @@ _ccode_page_proc(int msg, void *param, void *data)
                 length = snprintf(NULL, 0, fmt, i + 1);
                 msg = malloc(length + 1);
                 snprintf(msg, length + 1, fmt, i + 1);
-                ((encui_textbox_data *)_pages[1].fields[6].data)->alert = msg;
+                ((encui_textbox_data *)_pages[PAGE_RCODE].fields[6].data)
+                    ->alert = msg;
                 return INT_MAX;
             }
 
@@ -225,7 +232,7 @@ static encui_field _acode_fields[] = {
 
 static encui_textbox_data _ccode_textbox = {_ccode, sizeof(_ccode), 0};
 
-static encui_field _unlock_fields[] = {
+static encui_field _rcode_fields[] = {
     {ENCUIFT_LABEL, ENCUIFF_STATIC, IDS_UNLOCK_DESC},
     {ENCUIFT_LABEL, ENCUIFF_STATIC, IDS_RCODE_DESC},
     {ENCUIFT_SEPARATOR, 0, 1},
@@ -236,10 +243,11 @@ static encui_field _unlock_fields[] = {
     {ENCUIFT_CHECKBOX, ENCUIFF_STATIC, IDS_STOREKEY},
 };
 
-static encui_page _pages[] = {         //
-    {IDS_ENTERPKEY, _acode_page_proc}, //
-    {IDS_UNLOCK, _ccode_page_proc},    //
-    {0}};
+static encui_page _pages[] = {
+    {IDS_ENTERPKEY, _acode_page_proc}, // PAGE_PKEY
+    {IDS_UNLOCK, _ccode_page_proc},    // PAGE_RCODE
+    {0}                                //
+};
 
 static uint64_t
 _56betoull(const uint8_t *src)
@@ -269,30 +277,30 @@ __enc_remote_proc(int msg, enc_context *enc)
 
         enc->stream.key_length = 2 * sizeof(uint64_t);
 
-        _pages[0].data = enc;
-        _pages[0].length = lengthof(_acode_fields);
-        _pages[0].fields = _acode_fields;
+        _pages[PAGE_PKEY].data = enc;
+        _pages[PAGE_PKEY].length = lengthof(_acode_fields);
+        _pages[PAGE_PKEY].fields = _acode_fields;
         _acode_textbox.buffer = enc->buffer;
         _acode_textbox.capacity = 5 * 5 + 4;
         _acode_textbox.length = 0;
 
-        _pages[1].data = enc;
-        _pages[1].length = lengthof(_unlock_fields);
-        _pages[1].fields = _unlock_fields;
-        _pages[1].fields[3].data =
+        _pages[PAGE_RCODE].data = enc;
+        _pages[PAGE_RCODE].length = lengthof(_rcode_fields);
+        _pages[PAGE_RCODE].fields = _rcode_fields;
+        _pages[PAGE_RCODE].fields[3].data =
             (intptr_t) "888888-888888-888888-888888-888888-888888-888888-"
                        "888888-888888";
 
         if (enc_has_key_store())
         {
-            _unlock_fields[7].flags |= ENCUIFF_CHECKED;
+            _rcode_fields[7].flags |= ENCUIFF_CHECKED;
         }
         else
         {
-            _pages[1].length--;
+            _pages[PAGE_RCODE].length--;
         }
 
-        encui_enter(_pages, 2);
+        encui_enter(_pages, lengthof(_pages));
         encui_set_page(0);
         return CONTINUE;
     }
@@ -310,8 +318,8 @@ __enc_remote_proc(int msg, enc_context *enc)
     }
 
     case ENCM_GET_STORAGE_POLICY: {
-        return (ENCUIFF_CHECKED & _unlock_fields[7].flags) ? ENCSTORPOL_SAVE
-                                                           : ENCSTORPOL_NONE;
+        return (ENCUIFF_CHECKED & _rcode_fields[7].flags) ? ENCSTORPOL_SAVE
+                                                          : ENCSTORPOL_NONE;
     }
     }
 
