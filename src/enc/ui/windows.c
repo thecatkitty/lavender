@@ -453,6 +453,7 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
         }
 #endif // WINVER < 0x0600
 
+        page->proc(ENCUIM_INIT, NULL, page->data);
         _set_text(dlg, page->title, false);
         _create_controls(dlg, page);
         _set_buttons(dlg, (int)template->lParam,
@@ -467,6 +468,7 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
         switch (notif->code)
         {
         case PSN_SETACTIVE: {
+            _pages[id].proc(ENCUIM_INIT, NULL, _pages[id].data);
             _set_buttons(dlg, id, _check_input(dlg, id));
             _update_controls(dlg, _pages + id);
             return 0;

@@ -165,6 +165,7 @@ void
 encui_direct_enter_page(encui_page *pages, int id)
 {
     _page = pages + id;
+    _page->proc(ENCUIM_INIT, NULL, _page->data);
 
     char buffer[GFX_COLUMNS * 2];
     _draw_background();
