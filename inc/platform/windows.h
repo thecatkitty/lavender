@@ -4,6 +4,7 @@
 #include <windows.h>
 
 #include <base.h>
+#include <gfx.h>
 
 extern HWND
 windows_get_hwnd(void);
@@ -28,5 +29,8 @@ windows_get_origin(POINT *origin);
 
 extern COLORREF
 windows_get_bg(void);
+
+extern HBITMAP
+windows_create_dib(HDC dc, gfx_bitmap *bm);
 
 #endif // _PLATFORM_WINDOWS_H_
