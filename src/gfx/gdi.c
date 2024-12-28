@@ -183,20 +183,16 @@ _grow_wrect(RECT *wrect, int length)
     wrect->bottom += length;
 }
 
-bool
-gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
+HBITMAP
+windows_create_dib(HDC dc, gfx_bitmap *bm)
 {
-    HDC     bmp_dc = NULL;
-    HBITMAP bmp = NULL;
-    RECT    rect;
-    int     width, height;
-
+    HBITMAP     bmp = NULL;
     const void *bits = bm->bits;
     BITMAPINFO *bmi = (BITMAPINFO *)calloc(1, sizeof(BITMAPINFOHEADER) +
                                                   16 * sizeof(COLORREF));
     if (NULL == bmi)
     {
-        return false;
+        return NULL;
     }
 
     bmi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
@@ -250,6 +246,24 @@ gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
 
     bmp = CreateDIBitmap(_dc, &bmi->bmiHeader, CBM_INIT, bits, bmi,
                          DIB_RGB_COLORS);
+end:
+    free(bmi);
+    if (bm->bits != bits)
+    {
+        free((void *)bits);
+    }
+    return bmp;
+}
+
+bool
+gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
+{
+    HDC     bmp_dc = NULL;
+    HBITMAP bmp = NULL;
+    RECT    rect;
+    int     width, height;
+
+    bmp = windows_create_dib(_dc, bm);
     if (NULL == bmp)
     {
         goto end;
@@ -285,12 +299,6 @@ end:
         DeleteObject(bmp);
     }
 
-    if ((NULL != bits) && (bm->bits != bits))
-    {
-        free((void *)bits);
-    }
-
-    free(bmi);
     return true;
 }
 
