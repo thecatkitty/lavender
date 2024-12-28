@@ -2,22 +2,13 @@
 #define _BASE_H_
 
 #include <errno.h>
+#include <inttypes.h>
 #include <limits.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <sys/types.h>
 
-#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
-#include <inttypes.h>
-#include <stdbool.h>
-#else
-#include <stdint.h>
-
-#define PRIx32 "x"
-
-typedef int bool;
-#define false 0
-#define true 1
-
+#if defined(_MSC_VER) && (_MSC_VER < 1800)
 #define snprintf _snprintf
 #endif
 
