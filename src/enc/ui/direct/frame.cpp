@@ -150,6 +150,14 @@ _create_controls(encui_page *page)
             option.draw();
             cy = ui::get_bottom(option.get_area());
         }
+
+        if (ENCUIFT_BITMAP == field->type)
+        {
+            auto &bitmap = panel_->create<ui::bitmap>(*field);
+            bitmap.move(1, cy);
+            bitmap.draw();
+            cy = ui::get_bottom(bitmap.get_area());
+        }
     }
 }
 

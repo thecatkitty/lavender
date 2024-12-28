@@ -100,6 +100,14 @@ struct widget
 
 using widget_ptr = std::unique_ptr<widget>;
 
+struct bitmap : widget
+{
+    bitmap(encui_field &field);
+
+    void
+    draw() override;
+};
+
 struct button : widget
 {
     button(encui_field &field);

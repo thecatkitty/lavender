@@ -307,6 +307,36 @@ _create_controls(HWND dlg, encui_page *page)
                 cy += ideal_size.cy;
             }
         }
+
+        if (ENCUIFT_BITMAP == field->type)
+        {
+            gfx_bitmap *bm = (gfx_bitmap *)field->data;
+            DWORD       style = WS_VISIBLE | WS_CHILD | SS_BITMAP;
+            HWND        ctl;
+            HDC         dc;
+            HBITMAP     bmp;
+            int         left = 0;
+
+            if (ENCUIFF_CENTER == (ENCUIFF_ALIGN & field->flags))
+            {
+                left = (rect.right - rect.left - bm->width) / 2;
+            }
+            else if (ENCUIFF_RIGHT == (ENCUIFF_ALIGN & field->flags))
+            {
+                left = rect.right - rect.left - bm->width;
+            }
+
+            ctl = CreateWindowW(L"STATIC", L"", style, cx + left, cy, bm->width,
+                                bm->height, dlg, (HMENU)(UINT_PTR)CPX_CTLID(i),
+                                GetModuleHandleW(NULL), NULL);
+
+            dc = GetWindowDC(ctl);
+            bmp = windows_create_dib(dc, bm);
+            SendMessageW(ctl, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)bmp);
+            ReleaseDC(ctl, dc);
+
+            cy += bm->height + my;
+        }
     }
 
     DestroyWindow(GetDlgItem(dlg, IDC_TEXT));
@@ -347,6 +377,15 @@ _update_controls(HWND dlg, encui_page *page)
         if ((ENCUIFT_OPTION == field->type) && _is_vista)
         {
             _set_buttons(dlg, page - _pages, false);
+        }
+
+        if ((ENCUIFT_BITMAP == field->type) && (ENCUIFF_DYNAMIC & field->flags))
+        {
+            HWND    ctl = GetDlgItem(dlg, CPX_CTLID(i));
+            HDC     dc = GetWindowDC(ctl);
+            HBITMAP bmp = windows_create_dib(dc, (gfx_bitmap *)field->data);
+            SendMessageW(ctl, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)bmp);
+            ReleaseDC(ctl, dc);
         }
     }
 }
