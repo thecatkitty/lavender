@@ -62,6 +62,15 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
     IDS_WRONGCID, "Nesprávný přístupový klíč pro vybraný obsah!"
     IDS_INVALIDGROUP, "Skupina číslic %d byla zadána nesprávně. Zkontroluj ji a zkus to znovu."
     IDS_STOREKEY, "Zapamatovat si přístupové údaje na tomto počítači"
+    IDS_METHOD, "Vyberte metodu ověření"
+    IDS_METHOD_DESC, "Aplikace musí před odemknutím obsahu kontaktovat autora prezentace, aby ověřil vaše přístupová práva."
+    IDS_METHOD_RCODE, "Chci ručně přepsat kód požadavku"
+
+#ifdef _WIN32
+    IDS_METHOD_RCODE_HEAD, "Přepište kód požadavku"
+
+    IDS_METHOD_RCODE_NOTE, "Ověřte pomocí kódu požadavku ručně sdíleného s autorem."
+#endif
 #endif
 }
 

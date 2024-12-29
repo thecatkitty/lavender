@@ -62,6 +62,15 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
     IDS_WRONGCID, "Incorrect access key for the selected content!"
     IDS_INVALIDGROUP, "Digit group %d was entered incorrectly. Review it and try again."
     IDS_STOREKEY, "Remember my access details on this computer"
+    IDS_METHOD, "Select verification method"
+    IDS_METHOD_DESC, "Application must contact the slideshow author to verify your access rights before unlocking the content."
+    IDS_METHOD_RCODE, "I want to copy the request code manually"
+
+#ifdef _WIN32
+    IDS_METHOD_RCODE_HEAD, "Copy a request code"
+
+    IDS_METHOD_RCODE_NOTE, "Verify using a request code manually shared with the author."
+#endif
 #endif
 }
 

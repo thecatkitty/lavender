@@ -65,4 +65,13 @@
 #define IDS_WRONGCID     0x65
 #define IDS_INVALIDGROUP 0x66
 #define IDS_STOREKEY     0x67
+#define IDS_METHOD       0x68
+#define IDS_METHOD_DESC  0x69
+#define IDS_METHOD_RCODE 0x6A
+
+#ifdef _WIN32
+#define IDS_METHOD_RCODE_HEAD (0x200 + IDS_METHOD_RCODE)
+
+#define IDS_METHOD_RCODE_NOTE (0x300 + IDS_METHOD_RCODE)
+#endif
 #endif
