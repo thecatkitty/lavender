@@ -32,7 +32,7 @@ This is still work in progress, but I'm doing my best to separate working versio
 * script nesting
   * plain text or encrypted
   * supported ciphers: XOR, DES, and TDES
-  * decryption key stored locally, entered manually, or retrieved remotely (using request and confirmation code)
+  * decryption key stored locally, entered manually, or retrieved remotely (using request and confirmation code, or QR and confirmation code)
 * navigation and user input using key presses and mouse clicks
 * multiple language support (Czech, English, Polish)
 

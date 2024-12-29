@@ -123,6 +123,10 @@ _handle_prepare(sld_entry *sld)
             break;
         case SLD_PARAMETER_DES_REMOTE: {
             provider = ENC_PROVIDER_REMOTE;
+            if (0 != strcmp(CONTENT(sld)->data, "*"))
+            {
+                parameter = CONTENT(sld)->data;
+            }
             break;
         }
         }
