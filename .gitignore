@@ -4,5 +4,6 @@ bin
 build*
 /ext/*
 !/ext/MatchingWildcards
+!/ext/QR-Code-generator
 venv
 __pycache__

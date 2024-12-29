@@ -1,3 +1,6 @@
 [submodule "ext/MatchingWildcards"]
 	path = ext/MatchingWildcards
 	url = https://github.com/kirkjkrauss/MatchingWildcards.git
+[submodule "ext/QR-Code-generator"]
+	path = ext/QR-Code-generator
+	url = https://github.com/nayuki/QR-Code-generator.git
