@@ -11,6 +11,8 @@
 #include "../enc_impl.h"
 #include "../ui/encui.h"
 
+#include "../../../ext/QR-Code-generator/c/qrcodegen.h"
+
 #define ID_RCODE 1
 #define ID_CCODE 2
 
@@ -19,13 +21,16 @@ enum
     PAGE_PKEY,
     PAGE_METHOD,
     PAGE_RCODE,
+    PAGE_QR = PAGE_RCODE + 2,
 };
 
-static encui_page _pages[4];
+static encui_page _pages[6];
 static uint8_t    _rbytes[18];
 static char       _rcode[64];
 static uint8_t    _cbytes[14];
 static char       _ccode[50];
+static gfx_bitmap _qr_bitmap = {128, 128, 16, 1, 1};
+static bool       _save = false;
 
 static int
 _parity(uint64_t n)
@@ -86,6 +91,65 @@ static encui_field _acode_fields[] = {
     {ENCUIFT_SEPARATOR, 0, 1},
     {ENCUIFT_TEXTBOX, 0, (intptr_t)&_acode_textbox},
 };
+
+static void
+_set_pixel(gfx_bitmap *bm, int x, int y, int scale, bool value)
+{
+    uint8_t *line = (uint8_t *)bm->bits + y * scale * bm->opl;
+    int      sx, sy;
+
+    for (sy = 0; sy < scale; sy++)
+    {
+        for (sx = 0; sx < scale; sx++)
+        {
+            uint8_t *cell = line + (x * scale + sx) / 8;
+            if (value)
+            {
+                *cell &= ~(0x80 >> ((x * scale + sx) % 8));
+            }
+        }
+
+        line += bm->opl;
+    }
+}
+
+static bool
+_get_qr(const char* str, gfx_bitmap* bm)
+{
+    uint8_t buffer[qrcodegen_BUFFER_LEN_FOR_VERSION(10)];
+    uint8_t qr[qrcodegen_BUFFER_LEN_FOR_VERSION(10)];
+    int     size, scale, x, y;
+
+    if (!qrcodegen_encodeText(str, buffer, qr, qrcodegen_Ecc_MEDIUM, 1, 10,
+                              qrcodegen_Mask_AUTO, true))
+    {
+        return false;
+    }
+
+    if (NULL == _qr_bitmap.bits)
+    {
+        _qr_bitmap.bits = malloc(bm->height * bm->opl);
+    }
+
+    if (NULL == _qr_bitmap.bits)
+    {
+        return false;
+    }
+
+    size = qrcodegen_getSize(qr);
+    scale = bm->width / size;
+
+    memset(bm->bits, 0xFF, bm->opl * bm->height);
+    for (y = 0; y < size; y++)
+    {
+        for (x = 0; x < size; x++)
+        {
+            _set_pixel(bm, x, y, scale, qrcodegen_getModule(qr, x, y));
+        }
+    }
+
+    return true;
+}
 
 static int
 _acode_page_proc(int msg, void *param, void *data)
@@ -156,7 +220,8 @@ _acode_page_proc(int msg, void *param, void *data)
 static encui_field _method_fields[] = {
     {ENCUIFT_LABEL, ENCUIFF_STATIC, IDS_METHOD_DESC},
     {ENCUIFT_SEPARATOR, 0, 1},
-    {ENCUIFT_OPTION, ENCUIFF_STATIC | ENCUIFF_CHECKED, IDS_METHOD_RCODE},
+    {ENCUIFT_OPTION, ENCUIFF_STATIC | ENCUIFF_CHECKED},
+    {ENCUIFT_OPTION, ENCUIFF_STATIC},
 };
 
 static int
@@ -176,6 +241,33 @@ _method_page_proc(int msg, void *param, void *data)
 
         _stamp_rbytes();
 
+        if (IDS_METHOD_QR == it->data)
+        {
+            enc_context *enc = (enc_context *)data;
+            uint8_t      rbytes[lengthof(_rbytes)];
+            char         url[100] = "", *purl;
+            size_t       url_len = strlen(enc->parameter);
+            int          i;
+
+            strcpy(url, enc->parameter);
+            strcpy(url + url_len, "/qr?rc=");
+            purl = url + url_len + 7;
+
+            _encode_rbytes(rbytes);
+            for (i = 0; i < lengthof(rbytes); i++)
+            {
+                sprintf(purl, "%02x", rbytes[i]);
+                purl += 2;
+            }
+
+            _get_qr(url, &_qr_bitmap);
+            encui_set_page(PAGE_QR);
+
+            free(_qr_bitmap.bits);
+            _qr_bitmap.bits = NULL;
+            return -EINTR;
+        }
+
         if (IDS_METHOD_RCODE == it->data)
         {
             encui_set_page(PAGE_RCODE);
@@ -187,7 +279,7 @@ _method_page_proc(int msg, void *param, void *data)
     return -ENOSYS;
 }
 
-// ----- Request code with manual delivery
+// ----- Request code with manual delivery, QR code
 
 static encui_textbox_data _ccode_textbox = {_ccode, sizeof(_ccode), 0};
 
@@ -198,6 +290,14 @@ static encui_field _rcode_fields[] = {
     {ENCUIFT_LABEL, ENCUIFF_DYNAMIC | ENCUIFF_CENTER, ID_RCODE},
     {ENCUIFT_SEPARATOR, 0, 2},
     {ENCUIFT_LABEL, ENCUIFF_STATIC, IDS_CCODE_DESC},
+    {ENCUIFT_TEXTBOX, 0, (intptr_t)&_ccode_textbox},
+    {ENCUIFT_CHECKBOX, ENCUIFF_STATIC, IDS_STOREKEY},
+};
+
+static encui_field _qr_fields[] = {
+    {ENCUIFT_BITMAP, ENCUIFF_DYNAMIC | ENCUIFF_CENTER, (intptr_t)&_qr_bitmap},
+    {ENCUIFT_SEPARATOR, 0, 1},
+    {ENCUIFT_LABEL, ENCUIFF_STATIC, IDS_QR_DESC},
     {ENCUIFT_TEXTBOX, 0, (intptr_t)&_ccode_textbox},
     {ENCUIFT_CHECKBOX, ENCUIFF_STATIC, IDS_STOREKEY},
 };
@@ -294,6 +394,15 @@ _ccode_page_proc(int msg, void *param, void *data)
             _cbytes[i] ^= rbytes[i] ^ rbytes[i + 2] ^ rbytes[i + 4];
         }
 
+        if (PAGE_RCODE == encui_get_page())
+        {
+            _save = ENCUIFF_CHECKED & _rcode_fields[7].flags;
+        }
+        else
+        {
+            _save = ENCUIFF_CHECKED & _qr_fields[4].flags;
+        }
+
         return __enc_decrypt_content((enc_context *)data);
     }
     }
@@ -301,10 +410,14 @@ _ccode_page_proc(int msg, void *param, void *data)
     return -ENOSYS;
 }
 
+// ----- Pages
+
 static encui_page _pages[] = {
     {IDS_ENTERPKEY, _acode_page_proc}, // PAGE_PKEY
     {IDS_METHOD, _method_page_proc},   // PAGE_METHOD
     {IDS_UNLOCK, _ccode_page_proc},    // PAGE_RCODE
+    {0},                               //
+    {IDS_UNLOCK, _ccode_page_proc},    // PAGE_QR
     {0}                                //
 };
 
@@ -344,8 +457,15 @@ __enc_remote_proc(int msg, enc_context *enc)
         _acode_textbox.length = 0;
 
         _pages[PAGE_METHOD].data = enc;
-        _pages[PAGE_METHOD].length = lengthof(_method_fields);
+        _pages[PAGE_METHOD].length = 2;
         _pages[PAGE_METHOD].fields = _method_fields;
+        if (NULL != enc->parameter)
+        {
+            _pages[PAGE_METHOD].fields[_pages[PAGE_METHOD].length++].data =
+                IDS_METHOD_QR;
+        }
+        _pages[PAGE_METHOD].fields[_pages[PAGE_METHOD].length++].data =
+            IDS_METHOD_RCODE;
 
         _pages[PAGE_RCODE].data = enc;
         _pages[PAGE_RCODE].length = lengthof(_rcode_fields);
@@ -354,13 +474,20 @@ __enc_remote_proc(int msg, enc_context *enc)
             (intptr_t) "888888-888888-888888-888888-888888-888888-888888-"
                        "888888-888888";
 
+        _pages[PAGE_QR - 1].data = (void *)PAGE_METHOD;
+        _pages[PAGE_QR].data = enc;
+        _pages[PAGE_QR].length = lengthof(_qr_fields);
+        _pages[PAGE_QR].fields = _qr_fields;
+
         if (enc_has_key_store())
         {
             _rcode_fields[7].flags |= ENCUIFF_CHECKED;
+            _qr_fields[4].flags |= ENCUIFF_CHECKED;
         }
         else
         {
             _pages[PAGE_RCODE].length--;
+            _pages[PAGE_QR].length--;
         }
 
         encui_enter(_pages, lengthof(_pages));
@@ -381,8 +508,7 @@ __enc_remote_proc(int msg, enc_context *enc)
     }
 
     case ENCM_GET_STORAGE_POLICY: {
-        return (ENCUIFF_CHECKED & _rcode_fields[7].flags) ? ENCSTORPOL_SAVE
-                                                          : ENCSTORPOL_NONE;
+        return _save ? ENCSTORPOL_SAVE : ENCSTORPOL_NONE;
     }
     }
 

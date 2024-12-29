@@ -65,11 +65,15 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
     IDS_METHOD, "Vyberte metodu ověření"
     IDS_METHOD_DESC, "Aplikace musí před odemknutím obsahu kontaktovat autora prezentace, aby ověřil vaše přístupová práva."
     IDS_METHOD_RCODE, "Chci ručně přepsat kód požadavku"
+    IDS_METHOD_QR, "Zobrazit QR kód pro použití s mobilním zařízením"
+    IDS_QR_DESC, "Naskenujte výše uvedený QR kód a pokračujte na mobilním zařízení a poté zadejte přijatý potvrzovací kód níže. Platnost QR kódu vyprší po 15 minutách."
 
 #ifdef _WIN32
     IDS_METHOD_RCODE_HEAD, "Přepište kód požadavku"
+    IDS_METHOD_QR_HEAD, "Naskenujte QR kód"
 
     IDS_METHOD_RCODE_NOTE, "Ověřte pomocí kódu požadavku ručně sdíleného s autorem."
+    IDS_METHOD_QR_NOTE, "Ověřte pomocí mobilního zařízení s fotoaparátem a přístupem k internetu."
 #endif
 #endif
 }

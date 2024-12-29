@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    project(Lavender C RC)
+    project(Lavender C CXX RC)
 else()
     project(Lavender C CXX ASM)
 endif()

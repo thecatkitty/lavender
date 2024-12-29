@@ -68,10 +68,14 @@
 #define IDS_METHOD       0x68
 #define IDS_METHOD_DESC  0x69
 #define IDS_METHOD_RCODE 0x6A
+#define IDS_METHOD_QR    0x6B
+#define IDS_QR_DESC      0x6D
 
 #ifdef _WIN32
 #define IDS_METHOD_RCODE_HEAD (0x200 + IDS_METHOD_RCODE)
+#define IDS_METHOD_QR_HEAD    (0x200 + IDS_METHOD_QR)
 
 #define IDS_METHOD_RCODE_NOTE (0x300 + IDS_METHOD_RCODE)
+#define IDS_METHOD_QR_NOTE    (0x300 + IDS_METHOD_QR)
 #endif
 #endif
