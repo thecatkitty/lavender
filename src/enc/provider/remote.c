@@ -20,11 +20,11 @@ enum
 {
     PAGE_PKEY,
     PAGE_METHOD,
-    PAGE_RCODE,
+    PAGE_RCODE = PAGE_METHOD + 2,
     PAGE_QR = PAGE_RCODE + 2,
 };
 
-static encui_page _pages[6];
+static encui_page _pages[7];
 static uint8_t    _rbytes[18];
 static char       _rcode[64];
 static uint8_t    _cbytes[14];
@@ -207,6 +207,15 @@ _acode_page_proc(int msg, void *param, void *data)
         uid[7] = (uid_right >> 16) & 0xFF;
         uid[8] = (uid_right >> 8) & 0xFF;
         uid[9] = (uid_right >> 0) & 0xFF;
+
+        if (2 + 1 == _pages[PAGE_METHOD].length)
+        {
+            // Only the request code method is available
+            _pages[PAGE_RCODE - 1].data = (void *)PAGE_PKEY;
+            _stamp_rbytes();
+            encui_set_page(PAGE_RCODE);
+            return -EINTR;
+        }
 
         return 0;
     }
@@ -415,6 +424,7 @@ _ccode_page_proc(int msg, void *param, void *data)
 static encui_page _pages[] = {
     {IDS_ENTERPKEY, _acode_page_proc}, // PAGE_PKEY
     {IDS_METHOD, _method_page_proc},   // PAGE_METHOD
+    {0},                               //
     {IDS_UNLOCK, _ccode_page_proc},    // PAGE_RCODE
     {0},                               //
     {IDS_UNLOCK, _ccode_page_proc},    // PAGE_QR
@@ -467,6 +477,7 @@ __enc_remote_proc(int msg, enc_context *enc)
         _pages[PAGE_METHOD].fields[_pages[PAGE_METHOD].length++].data =
             IDS_METHOD_RCODE;
 
+        _pages[PAGE_RCODE - 1].data = (void *)PAGE_METHOD;
         _pages[PAGE_RCODE].data = enc;
         _pages[PAGE_RCODE].length = lengthof(_rcode_fields);
         _pages[PAGE_RCODE].fields = _rcode_fields;
