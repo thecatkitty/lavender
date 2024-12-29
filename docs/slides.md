@@ -115,7 +115,7 @@ Calls a script file named `<script>` as plain text or using some encryption meth
 `<method>` is 0 for plain text, 1 for XOR48, 2 for DES.
 `<crc32>` is hexadecimal representation of plaintext ZIP CRC32.
 `<parameter>` is a decimal integer.
-`<data>` is up to 63 characters.
+`<data>` is up to 39 characters.
 
 ### Encryption parameter values
 * method 0 - plain text
@@ -128,4 +128,4 @@ Calls a script file named `<script>` as plain text or using some encryption meth
   * parameter 0 - hexadecimal key stored in `<data>`
   * parameter 1 - hexadecimal key entered by the user
   * parameter 8 - 25-character CD key entered by the user
-  * parameter 9 - remote key delivery (25-character access code with interactive unlock)
+  * parameter 9 - remote key delivery (25-character access code with interactive unlock), online service base URL in `<data>` (`*` means no online service)
