@@ -62,6 +62,15 @@ LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
     IDS_WRONGCID, "Klucz dostępu niewłaściwy dla wybranej treści!"
     IDS_INVALIDGROUP, "Niepoprawnie wprowadzono grupę cyfr %d. Sprawdź i spróbuj ponownie."
     IDS_STOREKEY, "Zapamiętaj dane dostępowe na tym komputerze"
+    IDS_METHOD, "Wybierz metodę weryfikacji"
+    IDS_METHOD_DESC, "Aplikacja musi skontaktować się z autorem pokazu slajdów, aby zweryfikować twoje uprawnienia dostępu przed odblokowaniem treści."
+    IDS_METHOD_RCODE, "Chcę ręcznie przepisać kod żądania"
+
+#ifdef _WIN32
+    IDS_METHOD_RCODE_HEAD, "Przepisz kod żądania"
+
+    IDS_METHOD_RCODE_NOTE, "Zweryfikuj, korzystając z kodu żądania udostępnionego ręcznie autorowi."
+#endif
 #endif
 }
 
