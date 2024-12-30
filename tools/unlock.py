@@ -63,18 +63,9 @@ if args.subparser_name == "request":
 if args.subparser_name == "handle":
     assert "LAV_KEY" in os.environ
 
-    request_bytes = remote.from_decimal_code(args.code)
-    cid, uid, stamp = remote.from_request_bytes(request_bytes)
-    now = int(time.time()) & 0xFFFFFFFF
+    directory = remote.AllowAllDirectory()
+    service = remote.LavenderService(directory, int(os.environ["LAV_KEY"], 16))
 
-    if stamp - now > 2 * 60:
-        print("The request is from the future!", file=sys.stderr)
-        exit(1)
-
-    if now - stamp > 15 * 60:
-        print("The request is stale!", file=sys.stderr)
-        exit(1)
-
-    key = int(os.environ["LAV_KEY"], 16)
-    response_bytes = remote.to_response(request_bytes, key)
-    print(remote.to_decimal_code(response_bytes))
+    request = remote.from_decimal_code(args.code)
+    response = service.handle_request(request)
+    print(remote.to_decimal_code(response))
