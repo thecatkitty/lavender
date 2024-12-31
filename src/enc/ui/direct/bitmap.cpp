@@ -9,7 +9,7 @@ bitmap::bitmap(encui_field &field) : widget{field}
 
     auto &bm = *reinterpret_cast<gfx_bitmap *>(field_.data);
     rect_.width = (bm.width + glyph.width - 1) / glyph.width;
-    rect_.height = (bm.height + glyph.height - 1) / glyph.height;
+    rect_.height = (bm.height + glyph.height - 1) / glyph.height + 1;
 }
 
 void
