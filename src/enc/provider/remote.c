@@ -253,7 +253,6 @@ static encui_field _rcode_fields[] = {
 
 static encui_field _qr_fields[] = {
     {ENCUIFT_BITMAP, ENCUIFF_DYNAMIC | ENCUIFF_CENTER, (intptr_t)&_qr_bitmap},
-    {ENCUIFT_SEPARATOR, 0, 1},
     {ENCUIFT_LABEL, ENCUIFF_STATIC, IDS_QR_DESC},
     {ENCUIFT_TEXTBOX, 0, (intptr_t)&_ccode_textbox},
     {ENCUIFT_CHECKBOX, ENCUIFF_STATIC, IDS_STOREKEY},
@@ -357,7 +356,7 @@ _ccode_page_proc(int msg, void *param, void *data)
         }
         else
         {
-            _save = ENCUIFF_CHECKED & _qr_fields[4].flags;
+            _save = ENCUIFF_CHECKED & _qr_fields[3].flags;
         }
 
         return __enc_decrypt_content((enc_context *)data);
@@ -441,7 +440,7 @@ __enc_remote_proc(int msg, enc_context *enc)
         if (enc_has_key_store())
         {
             _rcode_fields[6].flags |= ENCUIFF_CHECKED;
-            _qr_fields[4].flags |= ENCUIFF_CHECKED;
+            _qr_fields[3].flags |= ENCUIFF_CHECKED;
         }
         else
         {
