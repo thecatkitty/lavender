@@ -154,6 +154,43 @@ _check_input(HWND dlg, int page_id)
 }
 
 static void
+_get_scaled_dimensions(gfx_bitmap *bm, int *width, int *height)
+{
+    HDC   dc = GetDC(NULL);
+    float scale = (float)GetDeviceCaps(dc, LOGPIXELSX) / 96.f;
+    ReleaseDC(NULL, dc);
+
+    *width = bm->width * scale;
+    *height = bm->height * scale;
+}
+
+static void
+_set_scaled_bitmap(HWND ctl, gfx_bitmap *bm, int new_width, int new_height)
+{
+    HBITMAP bmp, old_src_bmp, old_dst_bmp, new_bmp;
+    HDC     src_dc, dst_dc;
+
+    src_dc = CreateCompatibleDC(NULL);
+    dst_dc = CreateCompatibleDC(NULL);
+
+    bmp = windows_create_dib(src_dc, bm);
+    old_src_bmp = (HBITMAP)SelectObject(src_dc, bmp);
+    new_bmp = CreateCompatibleBitmap(src_dc, new_width, new_height);
+    old_dst_bmp = (HBITMAP)SelectObject(dst_dc, new_bmp);
+
+    StretchBlt(dst_dc, 0, 0, new_width, new_height, src_dc, 0, 0, bm->width,
+               bm->height, SRCCOPY);
+
+    SelectObject(src_dc, old_src_bmp);
+    SelectObject(dst_dc, old_dst_bmp);
+    DeleteObject(bmp);
+    DeleteDC(src_dc);
+    DeleteDC(dst_dc);
+
+    SendMessageW(ctl, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)new_bmp);
+}
+
+static void
 _create_controls(HWND dlg, encui_page *page)
 {
     HFONT font;
@@ -313,29 +350,23 @@ _create_controls(HWND dlg, encui_page *page)
             gfx_bitmap *bm = (gfx_bitmap *)field->data;
             DWORD       style = WS_VISIBLE | WS_CHILD | SS_BITMAP;
             HWND        ctl;
-            HDC         dc;
-            HBITMAP     bmp;
-            int         left = 0;
+            int         left = 0, width, height;
 
+            _get_scaled_dimensions(bm, &width, &height);
             if (ENCUIFF_CENTER == (ENCUIFF_ALIGN & field->flags))
             {
-                left = (rect.right - rect.left - bm->width) / 2;
+                left = (rect.right - rect.left - width) / 2;
             }
             else if (ENCUIFF_RIGHT == (ENCUIFF_ALIGN & field->flags))
             {
-                left = rect.right - rect.left - bm->width;
+                left = rect.right - rect.left - width;
             }
 
-            ctl = CreateWindowW(L"STATIC", L"", style, cx + left, cy, bm->width,
-                                bm->height, dlg, (HMENU)(UINT_PTR)CPX_CTLID(i),
+            ctl = CreateWindowW(L"STATIC", L"", style, cx + left, cy, width,
+                                height, dlg, (HMENU)(UINT_PTR)CPX_CTLID(i),
                                 GetModuleHandleW(NULL), NULL);
-
-            dc = GetWindowDC(ctl);
-            bmp = windows_create_dib(dc, bm);
-            SendMessageW(ctl, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)bmp);
-            ReleaseDC(ctl, dc);
-
-            cy += bm->height + my;
+            _set_scaled_bitmap(ctl, bm, width, height);
+            cy += height + my;
         }
     }
 
@@ -381,11 +412,11 @@ _update_controls(HWND dlg, encui_page *page)
 
         if ((ENCUIFT_BITMAP == field->type) && (ENCUIFF_DYNAMIC & field->flags))
         {
-            HWND    ctl = GetDlgItem(dlg, CPX_CTLID(i));
-            HDC     dc = GetWindowDC(ctl);
-            HBITMAP bmp = windows_create_dib(dc, (gfx_bitmap *)field->data);
-            SendMessageW(ctl, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)bmp);
-            ReleaseDC(ctl, dc);
+            HWND ctl = GetDlgItem(dlg, CPX_CTLID(i));
+            int  width, height;
+
+            _get_scaled_dimensions((gfx_bitmap *)field->data, &width, &height);
+            _set_scaled_bitmap(ctl, (gfx_bitmap *)field->data, width, height);
         }
     }
 }
