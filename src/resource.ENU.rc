@@ -11,9 +11,9 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
     IDS_ENTERDSN, "Enter the disk serial number"
     IDS_ENTERDSN_DESC, "Application could not access your disk information. Enter the serial number attached to your program diskette."
     IDS_ENTERPASS, "Enter password"
-    IDS_ENTERPASS_DESC, "The content you're trying to view is protected. Enter the password provided by the authors of the slideshow to continue."
+    IDS_ENTERPASS_DESC, "The content you're trying to view is protected. Enter the password provided by the slideshow author to continue."
     IDS_ENTERPKEY, "Enter the access key"
-    IDS_ENTERPKEY_DESC, "The content you're trying to view is protected. Enter the access key provided by the authors of the slideshow to continue.\n\nThe access key consists of 25 characters, grouped in 5-character blocks separated by dashes."
+    IDS_ENTERPKEY_DESC, "The content you're trying to view is protected. Enter the access key provided by the slideshow author to continue.\n\nThe access key consists of 25 characters, grouped in 5-character blocks separated by dashes."
     IDS_INVALIDDSNPASS, "Incorrect password for the selected diskette!"
     IDS_INVALIDPASS, "Incorrect password!"
     IDS_INVALIDPKEY, "Incorrect access key!"
@@ -55,7 +55,6 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 #if defined(CONFIG_ENCRYPTED_CONTENT)
     IDS_UNLOCK, "Verify access rights"
-    IDS_UNLOCK_DESC, "Application must contact the slideshow author to verify your access rights before unlocking the content."
     IDS_RCODE_DESC, "Share the following code with the slideshow author. The code will expire after 15 minutes."
     IDS_CCODE_DESC, "Enter the 42-digit confirmation code received from the slideshow author:"
     IDS_INVALIDCCODE, "Incorrect confirmation code!"

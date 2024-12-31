@@ -11,9 +11,9 @@ LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
     IDS_ENTERDSN, "Wprowadź numer seryjny dysku"
     IDS_ENTERDSN_DESC, "Aplikacja nie była w stanie uzyskać dostępu do informacji o dysku. Wprowadź numer seryjny dołączony do dyskietki z programem."
     IDS_ENTERPASS, "Wprowadź hasło"
-    IDS_ENTERPASS_DESC, "Przeglądana przez ciebie treść jest chroniona. Wprowadź hasło dostarczone przez autorów pokazu slajdów, aby kontynuować."
+    IDS_ENTERPASS_DESC, "Przeglądana przez ciebie treść jest chroniona. Wprowadź hasło dostarczone przez autora pokazu slajdów, aby kontynuować."
     IDS_ENTERPKEY, "Wprowadź klucz dostępu"
-    IDS_ENTERPKEY_DESC, "Treść, którą próbujesz wyświetlić, jest chroniona. Wprowadź klucz dostępu dostarczony przez autorów pokazu slajdów, aby kontynuować.\n\nKlucz dostępu składa się 25 znaków ułożonych w pięcioznakowych grupach rozdzielonych myślnikami."
+    IDS_ENTERPKEY_DESC, "Treść, którą próbujesz wyświetlić, jest chroniona. Wprowadź klucz dostępu dostarczony przez autora pokazu slajdów, aby kontynuować.\n\nKlucz dostępu składa się 25 znaków ułożonych w pięcioznakowych grupach rozdzielonych myślnikami."
     IDS_INVALIDDSNPASS, "Hasło niewłaściwe dla wybranej dyskietki!"
     IDS_INVALIDPASS, "Niepoprawne hasło!"
     IDS_INVALIDPKEY, "Niepoprawny klucz dostępu!"
@@ -55,7 +55,6 @@ LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
 
 #if defined(CONFIG_ENCRYPTED_CONTENT)
     IDS_UNLOCK, "Zweryfikuj uprawnienia dostępu"
-    IDS_UNLOCK_DESC, "Aplikacja musi skontaktować się z autorem pokazu slajdów, aby zweryfikować twoje uprawnienia dostępu przed odblokowaniem treści."
     IDS_RCODE_DESC, "Przekaż poniższy kod autorowi pokazu slajdów. Kod wygaśnie po 15 minutach."
     IDS_CCODE_DESC, "Wpisz 42-cyfrowy kod potwierdzenia otrzymany od autora pokazu slajdów:"
     IDS_INVALIDCCODE, "Niepoprawny kod potwierdzenia!"
@@ -66,7 +65,7 @@ LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
     IDS_METHOD_DESC, "Aplikacja musi skontaktować się z autorem pokazu slajdów, aby zweryfikować twoje uprawnienia dostępu przed odblokowaniem treści."
     IDS_METHOD_RCODE, "Chcę ręcznie przepisać kod żądania"
     IDS_METHOD_QR, "Pokaż mi kod QR do użycia z urządzeniem przenośnym"
-    IDS_QR_DESC, "Zeskanuj powyższy kod QR, aby kontynuować na urządzeniu przenośnym, a następnie wprowadź otrzymany kod potwierdzający poniżej. Kod QR wygaśnie po 15 minutach."
+    IDS_QR_DESC, "Zeskanuj powyższy kod QR, aby kontynuować na urządzeniu przenośnym, a następnie wpisz poniżej otrzymany kod potwierdzenia. Kod QR wygaśnie po 15 minutach."
 
 #ifdef _WIN32
     IDS_METHOD_RCODE_HEAD, "Przepisz kod żądania"
