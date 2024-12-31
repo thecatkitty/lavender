@@ -8,12 +8,12 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
     IDS_UNSUPPENV, "Lavender nemůže běžet ve vašem prostředí."
 
 #if defined(CONFIG_ENCRYPTED_CONTENT)
-    IDS_ENTERDSN, "Zadej sériové číslo disku"
-    IDS_ENTERDSN_DESC, "Aplikace nemohla získat přístup k informacím o disku. Zadej sériové číslo připojené k disketě s programem."
-    IDS_ENTERPASS, "Zadej heslo"
-    IDS_ENTERPASS_DESC, "Obsah, který se pokoušíš zobrazit, je chráněn. Pokračuj zadáním hesla, které ti poskytli autoři prezentace."
-    IDS_ENTERPKEY, "Zadej přístupový klíč"
-    IDS_ENTERPKEY_DESC, "Obsah, který se pokoušíš zobrazit, je chráněn. Pokračuj zadáním přístupového klíče, který ti poskytli autoři prezentace.\n\nPřístupový klíč se skládá z 25 znaků, seskupených do 5znakových bloků oddělených pomlčkami."
+    IDS_ENTERDSN, "Zadejte sériové číslo disku"
+    IDS_ENTERDSN_DESC, "Aplikace nemohla získat přístup k informacím o disku. Zadejte sériové číslo připojené k disketě s programem."
+    IDS_ENTERPASS, "Zadejte heslo"
+    IDS_ENTERPASS_DESC, "Obsah, který se pokoušíte zobrazit, je chráněn. Pokračujte zadáním hesla, které vám poskytl autor prezentace."
+    IDS_ENTERPKEY, "Zadejte přístupový klíč"
+    IDS_ENTERPKEY_DESC, "Obsah, který se pokoušíte zobrazit, je chráněn. Pokračujte zadáním přístupového klíče, který vám poskytl autor prezentace.\n\nPřístupový klíč se skládá z 25 znaků, seskupených do 5znakových bloků oddělených pomlčkami."
     IDS_INVALIDDSNPASS, "Nesprávné heslo pro vybranou disketu!"
     IDS_INVALIDPASS, "Nesprávné heslo!"
     IDS_INVALIDPKEY, "Nesprávný přístupový klíč!"
@@ -54,13 +54,12 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
 #endif
 
 #if defined(CONFIG_ENCRYPTED_CONTENT)
-    IDS_UNLOCK, "Ověř přístupová práva"  
-    IDS_UNLOCK_DESC, "Aplikace musí před odemknutím obsahu kontaktovat autora prezentace, aby ověřil tvoje přístupová práva."  
-    IDS_RCODE_DESC, "Sdílej následující kód s autorem prezentace. Platnost kódu vyprší po 15 minutách."  
-    IDS_CCODE_DESC, "Zadej 42místný potvrzovací kód obdržený od autora prezentace:"  
+    IDS_UNLOCK, "Ověřte přístupová práva"
+    IDS_RCODE_DESC, "Sdílejte následující kód s autorem prezentace. Platnost kódu vyprší po 15 minutách."  
+    IDS_CCODE_DESC, "Zadejte 42místný potvrzovací kód obdržený od autora prezentace:"  
     IDS_INVALIDCCODE, "Nesprávný potvrzovací kód!"  
     IDS_WRONGCID, "Nesprávný přístupový klíč pro vybraný obsah!"
-    IDS_INVALIDGROUP, "Skupina číslic %d byla zadána nesprávně. Zkontroluj ji a zkus to znovu."
+    IDS_INVALIDGROUP, "Skupina číslic %d byla zadána nesprávně. Zkontrolujte ji a zkuste to znovu."
     IDS_STOREKEY, "Zapamatovat si přístupové údaje na tomto počítači"
     IDS_METHOD, "Vyberte metodu ověření"
     IDS_METHOD_DESC, "Aplikace musí před odemknutím obsahu kontaktovat autora prezentace, aby ověřil vaše přístupová práva."

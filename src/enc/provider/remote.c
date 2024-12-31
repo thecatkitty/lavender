@@ -237,7 +237,6 @@ _method_page_proc(int msg, void *param, void *data)
 static encui_textbox_data _ccode_textbox = {_ccode, sizeof(_ccode), 0};
 
 static encui_field _rcode_fields[] = {
-    {ENCUIFT_LABEL, ENCUIFF_STATIC, IDS_UNLOCK_DESC},
     {ENCUIFT_LABEL, ENCUIFF_STATIC, IDS_RCODE_DESC},
     {ENCUIFT_SEPARATOR, 0, 1},
     {ENCUIFT_LABEL, ENCUIFF_DYNAMIC | ENCUIFF_CENTER, ID_RCODE},
@@ -278,7 +277,7 @@ _ccode_page_proc(int msg, void *param, void *data)
     {
     case ENCUIM_INIT: {
         _get_rcode();
-        _pages[PAGE_RCODE].fields[3].data = (intptr_t)_rcode;
+        _pages[PAGE_RCODE].fields[2].data = (intptr_t)_rcode;
         return 0;
     }
 
@@ -333,7 +332,7 @@ _ccode_page_proc(int msg, void *param, void *data)
                 length = snprintf(NULL, 0, fmt, i + 1);
                 msg = malloc(length + 1);
                 snprintf(msg, length + 1, fmt, i + 1);
-                ((encui_textbox_data *)_pages[PAGE_RCODE].fields[6].data)
+                ((encui_textbox_data *)_pages[PAGE_RCODE].fields[5].data)
                     ->alert = msg;
                 return INT_MAX;
             }
@@ -349,7 +348,7 @@ _ccode_page_proc(int msg, void *param, void *data)
 
         if (PAGE_RCODE == encui_get_page())
         {
-            _save = ENCUIFF_CHECKED & _rcode_fields[7].flags;
+            _save = ENCUIFF_CHECKED & _rcode_fields[6].flags;
         }
         else
         {
@@ -425,7 +424,7 @@ __enc_remote_proc(int msg, enc_context *enc)
         _pages[PAGE_RCODE].data = enc;
         _pages[PAGE_RCODE].length = lengthof(_rcode_fields);
         _pages[PAGE_RCODE].fields = _rcode_fields;
-        _pages[PAGE_RCODE].fields[3].data =
+        _pages[PAGE_RCODE].fields[2].data =
             (intptr_t) "888888-888888-888888-888888-888888-888888-888888-"
                        "888888-888888";
 
@@ -436,7 +435,7 @@ __enc_remote_proc(int msg, enc_context *enc)
 
         if (enc_has_key_store())
         {
-            _rcode_fields[7].flags |= ENCUIFF_CHECKED;
+            _rcode_fields[6].flags |= ENCUIFF_CHECKED;
             _qr_fields[4].flags |= ENCUIFF_CHECKED;
         }
         else
