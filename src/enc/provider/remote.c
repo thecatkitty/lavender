@@ -9,9 +9,8 @@
 
 #include "../../resource.h"
 #include "../enc_impl.h"
+#include "../qr/encqr.h"
 #include "../ui/encui.h"
-
-#include "../../../ext/QR-Code-generator/c/qrcodegen.h"
 
 #define ID_RCODE 1
 #define ID_CCODE 2
@@ -91,65 +90,6 @@ static encui_field _acode_fields[] = {
     {ENCUIFT_SEPARATOR, 0, 1},
     {ENCUIFT_TEXTBOX, 0, (intptr_t)&_acode_textbox},
 };
-
-static void
-_set_pixel(gfx_bitmap *bm, int x, int y, int scale, bool value)
-{
-    uint8_t *line = (uint8_t *)bm->bits + y * scale * bm->opl;
-    int      sx, sy;
-
-    for (sy = 0; sy < scale; sy++)
-    {
-        for (sx = 0; sx < scale; sx++)
-        {
-            uint8_t *cell = line + (x * scale + sx) / 8;
-            if (value)
-            {
-                *cell &= ~(0x80 >> ((x * scale + sx) % 8));
-            }
-        }
-
-        line += bm->opl;
-    }
-}
-
-static bool
-_get_qr(const char* str, gfx_bitmap* bm)
-{
-    uint8_t buffer[qrcodegen_BUFFER_LEN_FOR_VERSION(10)];
-    uint8_t qr[qrcodegen_BUFFER_LEN_FOR_VERSION(10)];
-    int     size, scale, x, y;
-
-    if (!qrcodegen_encodeText(str, buffer, qr, qrcodegen_Ecc_MEDIUM, 1, 10,
-                              qrcodegen_Mask_AUTO, true))
-    {
-        return false;
-    }
-
-    if (NULL == _qr_bitmap.bits)
-    {
-        _qr_bitmap.bits = malloc(bm->height * bm->opl);
-    }
-
-    if (NULL == _qr_bitmap.bits)
-    {
-        return false;
-    }
-
-    size = qrcodegen_getSize(qr);
-    scale = bm->width / size;
-
-    memset(bm->bits, 0xFF, bm->opl * bm->height);
-    for (y = 0; y < size; y++)
-    {
-        for (x = 0; x < size; x++)
-        {
-            _set_pixel(bm, x, y, scale, qrcodegen_getModule(qr, x, y));
-        }
-    }
-
-    return true;
-}
 
 static int
 _acode_page_proc(int msg, void *param, void *data)
@@ -269,7 +209,11 @@ _method_page_proc(int msg, void *param, void *data)
                 purl += 2;
             }
 
-            _get_qr(url, &_qr_bitmap);
+            if (NULL == _qr_bitmap.bits)
+            {
+                _qr_bitmap.bits = malloc(_qr_bitmap.height * _qr_bitmap.opl);
+            }
+            encqr_generate(url, &_qr_bitmap);
             encui_set_page(PAGE_QR);
 
             free(_qr_bitmap.bits);
