@@ -23,12 +23,14 @@ enum
     PAGE_QR = PAGE_RCODE + 2,
 };
 
+#define QR_SIZE 128
+
 static encui_page _pages[7];
 static uint8_t    _rbytes[18];
 static char       _rcode[64];
 static uint8_t    _cbytes[14];
 static char       _ccode[50];
-static gfx_bitmap _qr_bitmap = {128, 128, 16, 1, 1};
+static gfx_bitmap _qr_bitmap = {QR_SIZE, QR_SIZE, QR_SIZE / 8, 1, 1};
 static bool       _save = false;
 
 static int
@@ -209,11 +211,14 @@ _method_page_proc(int msg, void *param, void *data)
                 purl += 2;
             }
 
+            _qr_bitmap.width = _qr_bitmap.height = QR_SIZE;
             if (NULL == _qr_bitmap.bits)
             {
                 _qr_bitmap.bits = malloc(_qr_bitmap.height * _qr_bitmap.opl);
             }
             encqr_generate(url, &_qr_bitmap);
+            _qr_bitmap.width = (_qr_bitmap.width + 7) / 8 * 8;
+
             encui_set_page(PAGE_QR);
 
             free(_qr_bitmap.bits);

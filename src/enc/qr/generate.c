@@ -53,5 +53,8 @@ encqr_generate(const char *str, gfx_bitmap *bm)
         }
     }
 
+    bm->width = size * xscale;
+    bm->height = size * yscale;
+
     return true;
 }
