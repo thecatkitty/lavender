@@ -44,7 +44,7 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
     IDS_BADSOUND, "Neplatný nebo nepodporovaný zvukový soubor"
 
     IDS_DESCRIPTION, "Přehrávač prezentací"
-    IDS_COPYRIGHT, "(C) 2021-2024 Mateusz Karcz.\nZpřístupněno pod Licencí MIT."
+    IDS_COPYRIGHT, "(C) 2021-2025 Mateusz Karcz.\nZpřístupněno pod Licencí MIT."
     IDS_ABOUT, "O programu..."
     IDS_ABOUT_LONG, "O programu Lavender"
 
@@ -81,7 +81,7 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
 LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
 
 #define VER_FILEDESCRIPTION_STR     "Přehrávač prezentací Lavender"
-#define VER_LEGALCOPYRIGHT_STR      "(C) 2021-2024 Mateusz Karcz. Zpřístupněno pod Licencí MIT."
+#define VER_LEGALCOPYRIGHT_STR      "(C) 2021-2025 Mateusz Karcz. Zpřístupněno pod Licencí MIT."
 #define VER_VERSION_UNICODE_LANG    "040504B0"
 #define VER_VERSION_TRANSLATION     LCID_CSY,0x04B0
 

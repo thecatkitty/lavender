@@ -45,7 +45,7 @@ encui_direct_init_frame(void)
 
     gfx_draw_text(pal_get_version_string(), 1, 22);
     gfx_draw_text("https://celones.pl/lavender", 1, 23);
-    gfx_draw_text("(C) 2021-2024 Mateusz Karcz", 1, 24);
+    gfx_draw_text("(C) 2021-2025 Mateusz Karcz", 1, 24);
 
     _next.move(GFX_COLUMNS - 22, GFX_LINES - 3);
     _cancel.move(GFX_COLUMNS - 11, GFX_LINES - 3);
