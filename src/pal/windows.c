@@ -968,9 +968,15 @@ pal_get_machine_id(uint8_t *mid)
     DWORD       size = sizeof(buffer);
     DWORD       type = 0;
 
+#if WINVER >= 0x0501
+    REGSAM wow64_key = KEY_WOW64_64KEY;
+#else
+    WORD   version = __builtin_bswap16(LOWORD(GetVersion()));
+    REGSAM wow64_key = (0x0501 <= version) ? KEY_WOW64_64KEY : 0;
+#endif
     if (ERROR_SUCCESS != RegOpenKeyExA(HKEY_LOCAL_MACHINE,
                                        "SOFTWARE\\Microsoft\\Cryptography", 0,
-                                       KEY_READ | KEY_WOW64_64KEY, &key))
+                                       KEY_READ | wow64_key, &key))
     {
         return false;
     }
