@@ -44,7 +44,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
     IDS_BADSOUND, "Invalid or unsupported sound file" 
 
     IDS_DESCRIPTION, "A slideshow player"
-    IDS_COPYRIGHT, "(C) 2021-2024 Mateusz Karcz.\nShared under the MIT License."
+    IDS_COPYRIGHT, "(C) 2021-2025 Mateusz Karcz.\nShared under the MIT License."
     IDS_ABOUT, "About..."
     IDS_ABOUT_LONG, "About Lavender"
 
@@ -81,7 +81,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 #define VER_FILEDESCRIPTION_STR     "Lavender slideshow player"
-#define VER_LEGALCOPYRIGHT_STR      "(C) 2021-2024 Mateusz Karcz. Shared under the MIT License."
+#define VER_LEGALCOPYRIGHT_STR      "(C) 2021-2025 Mateusz Karcz. Shared under the MIT License."
 #define VER_VERSION_UNICODE_LANG    "040904B0"
 #define VER_VERSION_TRANSLATION     LCID_ENU,0x04B0
 
