@@ -35,7 +35,6 @@
 #define CPX_CTLID(i) (0x100 + (i))
 
 static NONCLIENTMETRICSW _nclm = {0};
-static bool              _is_vista = WINVER >= 0x0600;
 static HICON             _bang = NULL;
 
 static encui_page *_pages = NULL;
@@ -196,10 +195,7 @@ _create_controls(HWND dlg, encui_page *page)
     HFONT font;
     RECT  rect;
     int   cx, cy, my, i;
-    bool  has_checkbox = false, has_textbox = false;
-#if WINVER < 0x0600
-    bool has_options = false;
-#endif
+    bool  has_checkbox = false, has_textbox = false, has_options = false;
 
     font = (HFONT)SendDlgItemMessageW(dlg, IDC_TEXT, WM_GETFONT, 0, 0);
     my = _get_separator_height(dlg, font);
@@ -287,8 +283,7 @@ _create_controls(HWND dlg, encui_page *page)
 
         if (ENCUIFT_OPTION == field->type)
         {
-#if WINVER < 0x0600
-            if (!_is_vista)
+            if (!windows_is_at_least_vista())
             {
                 DWORD style = WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON |
                               (has_options ? 0 : WS_GROUP);
@@ -306,7 +301,6 @@ _create_controls(HWND dlg, encui_page *page)
                 }
             }
             else
-#endif
             {
                 DWORD style =
                     WS_TABSTOP | WS_VISIBLE | WS_CHILD |
@@ -405,7 +399,7 @@ _update_controls(HWND dlg, encui_page *page)
             _set_text(ctl, field->data, false);
         }
 
-        if ((ENCUIFT_OPTION == field->type) && _is_vista)
+        if ((ENCUIFT_OPTION == field->type) && windows_is_at_least_vista())
         {
             _set_buttons(dlg, page - _pages, false);
         }
@@ -432,8 +426,7 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
 
         _wnd = GetParent(dlg);
 
-#if WINVER < 0x0600
-        if (!_is_vista)
+        if (!windows_is_at_least_vista())
         {
             HWND ps = GetParent(dlg), ctl;
             RECT padding = {WIZARD97_PADDING_LEFT, 0, WIZARD97_PADDING_TOP, 0};
@@ -482,7 +475,6 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
                 ctl = GetWindow(ctl, GW_HWNDNEXT);
             }
         }
-#endif // WINVER < 0x0600
 
         page->proc(ENCUIM_INIT, NULL, page->data);
         _set_text(dlg, page->title, false);
@@ -641,7 +633,7 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
             }
 
             _pages[id].fields[ctl_idx].flags |= ENCUIFF_CHECKED;
-            if (_is_vista)
+            if (windows_is_at_least_vista())
             {
                 PropSheet_PressButton(GetParent(dlg), PSBTN_NEXT);
             }
@@ -666,10 +658,6 @@ encui_enter(encui_page *pages, int count)
         _nclm.cbSize = 0;
         return false;
     }
-
-#if WINVER < 0x0600
-    _is_vista = 6 <= LOBYTE(GetVersion());
-#endif
 
     _psps = (PROPSHEETPAGEW *)malloc(sizeof(PROPSHEETPAGEW) * count);
     if (NULL == _psps)
@@ -720,8 +708,9 @@ encui_enter(encui_page *pages, int count)
     _psh.hInstance = GetModuleHandleW(NULL);
     _psh.phpage = _hpsps;
     _psh.hwndParent = windows_get_hwnd();
-    _psh.dwFlags = _is_vista ? PSH_WIZARD | PSH_AEROWIZARD | PSH_USEICONID
-                             : PSH_WIZARD97 | PSH_HEADER;
+    _psh.dwFlags = windows_is_at_least_vista()
+                       ? PSH_WIZARD | PSH_AEROWIZARD | PSH_USEICONID
+                       : PSH_WIZARD97 | PSH_HEADER;
     _psh.pszCaption = _brand;
     _psh.pszIcon = MAKEINTRESOURCEW(1);
     _psh.pszbmHeader = MAKEINTRESOURCEW(IDB_HEADER);

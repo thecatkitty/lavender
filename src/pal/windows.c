@@ -56,6 +56,7 @@ static DWORD _start_time = 0;
 static HINSTANCE _instance = NULL;
 static int       _cmd_show;
 static bool      _no_stall = false;
+static uint16_t  _version;
 
 static HHOOK   _hook = NULL;
 static WNDPROC _prev_wnd_proc = NULL;
@@ -635,6 +636,7 @@ pal_initialize(int argc, char *argv[])
     hasset icon;
 
     _start_time = timeGetTime();
+    _version = __builtin_bswap16(LOWORD(GetVersion()));
 
     LOG("entry");
 
@@ -968,12 +970,7 @@ pal_get_machine_id(uint8_t *mid)
     DWORD       size = sizeof(buffer);
     DWORD       type = 0;
 
-#if WINVER >= 0x0501
-    REGSAM wow64_key = KEY_WOW64_64KEY;
-#else
-    WORD   version = __builtin_bswap16(LOWORD(GetVersion()));
-    REGSAM wow64_key = (0x0501 <= version) ? KEY_WOW64_64KEY : 0;
-#endif
+    REGSAM wow64_key = windows_is_at_least_xp() ? KEY_WOW64_64KEY : 0;
     if (ERROR_SUCCESS != RegOpenKeyExA(HKEY_LOCAL_MACHINE,
                                        "SOFTWARE\\Microsoft\\Cryptography", 0,
                                        KEY_READ | wow64_key, &key))
@@ -1097,9 +1094,8 @@ static HKEY
 _open_state(void)
 {
     // On Windows 7 and newer avoid placing the state in the roaming profile
-    WORD version = __builtin_bswap16(LOWORD(GetVersion()));
-    HKEY root = (0x0601 <= version) ? HKEY_CURRENT_USER_LOCAL_SETTINGS
-                                    : HKEY_CURRENT_USER;
+    HKEY root = windows_is_at_least_7() ? HKEY_CURRENT_USER_LOCAL_SETTINGS
+                                        : HKEY_CURRENT_USER;
     HKEY key = NULL;
 
     RegCreateKeyExA(root, "Software\\Celones\\Lavender", 0, NULL, 0,
@@ -1169,4 +1165,10 @@ HWND
 windows_get_hwnd(void)
 {
     return _wnd;
+}
+
+uint16_t
+windows_get_version(void)
+{
+    return _version;
 }
