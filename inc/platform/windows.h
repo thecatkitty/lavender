@@ -33,4 +33,25 @@ windows_get_bg(void);
 extern HBITMAP
 windows_create_dib(HDC dc, gfx_bitmap *bm);
 
+extern uint16_t
+windows_get_version(void);
+
+#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
+inline
+#else
+__inline
+#endif
+    static bool
+    windows_is_at_least(uint16_t ver)
+{
+    return ver <= windows_get_version();
+}
+
+#define winver_or_windows_is_at_least(ver)                                     \
+    ((WINVER >= (ver)) || windows_is_at_least((ver)))
+
+#define windows_is_at_least_xp()    winver_or_windows_is_at_least(0x0501)
+#define windows_is_at_least_vista() winver_or_windows_is_at_least(0x0600)
+#define windows_is_at_least_7()     winver_or_windows_is_at_least(0x0601)
+
 #endif // _PLATFORM_WINDOWS_H_
