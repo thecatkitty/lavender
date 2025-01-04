@@ -476,7 +476,6 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
             }
         }
 
-        page->proc(ENCUIM_INIT, NULL, page->data);
         _set_text(dlg, page->title, false);
         _create_controls(dlg, page);
         _set_buttons(dlg, (int)template->lParam,
