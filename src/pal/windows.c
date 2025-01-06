@@ -7,6 +7,7 @@
 #include <shlobj.h>
 #include <windows.h>
 #include <windowsx.h>
+#include <wininet.h>
 
 #include <fmt/utf8.h>
 #include <pal.h>
@@ -57,6 +58,12 @@ static HINSTANCE _instance = NULL;
 static int       _cmd_show;
 static bool      _no_stall = false;
 static uint16_t  _version;
+
+static HINTERNET     _session = NULL;
+static HINTERNET     _connection = NULL;
+static HINTERNET     _request = NULL;
+static palinet_proc *_inet_proc = NULL;
+static DWORD_PTR     _inet_data = 0;
 
 static HHOOK   _hook = NULL;
 static WNDPROC _prev_wnd_proc = NULL;
@@ -1171,4 +1178,338 @@ uint16_t
 windows_get_version(void)
 {
     return _version;
+}
+
+bool
+palinet_start(void)
+{
+    char  user_agent[MAX_PATH] = "";
+    char *ptr = NULL;
+
+    if (NULL != _session)
+    {
+        return true;
+    }
+
+    strcpy(user_agent, pal_get_version_string());
+    ptr = strrchr(user_agent, ' ');
+    if (ptr)
+    {
+        *ptr = '/';
+    }
+
+    strcat(user_agent, " (");
+    ptr = user_agent + strlen(user_agent);
+
+    {
+        DWORD version = GetVersion();
+        if (0x80000000 & version)
+        {
+            ptr += sprintf(ptr, "Windows");
+        }
+        else if (10 == LOBYTE(version))
+        {
+            ptr += sprintf(ptr, "Windows NT 10.0.%u", HIWORD(version));
+        }
+        else
+        {
+            ptr += sprintf(ptr, "Windows NT %u.%u", LOBYTE(LOWORD(version)),
+                           HIBYTE(LOWORD(version)));
+        }
+    }
+
+    strcpy(ptr, "; ");
+    ptr += 2;
+    {
+#if defined(_M_IX86)
+        ptr += sprintf(ptr, "ia32");
+#elif defined(_M_X64)
+        ptr += sprintf(ptr, "x64");
+#elif defined(_M_IA64)
+        ptr += sprintf(ptr, "ia64");
+#elif defined(_M_ARM)
+        ptr += sprintf(ptr, "arm");
+#elif defined(_M_ARM64)
+        ptr += sprintf(ptr, "arm64");
+#else
+#error "Unknown architecture!"
+#endif
+    }
+
+    strcpy(ptr, "; ");
+    ptr += 2;
+    {
+        LCID locale = GetThreadLocale();
+#if WINVER >= 0x0600
+        WCHAR locale_name[LOCALE_NAME_MAX_LENGTH];
+        if (0 <
+            LCIDToLocaleName(locale, locale_name, LOCALE_NAME_MAX_LENGTH, 0))
+        {
+            ptr += sprintf(ptr, "%S", locale_name);
+        }
+#else
+        switch (PRIMARYLANGID(locale))
+        {
+        case LANG_CZECH:
+            ptr += sprintf(ptr, "cs");
+            break;
+        case LANG_ENGLISH:
+            ptr += sprintf(ptr, "en");
+            break;
+        case LANG_POLISH:
+            ptr += sprintf(ptr, "pl");
+            break;
+        default:
+            ptr += sprintf(ptr, "x-lcid-%04lx", locale);
+        }
+#endif
+    }
+
+    strcpy(ptr, ")");
+
+    _session = InternetOpenA(user_agent, INTERNET_OPEN_TYPE_PRECONFIG, NULL,
+                             NULL, INTERNET_FLAG_ASYNC);
+    return NULL != _session;
+}
+
+static char *
+_format_message(DWORD error)
+{
+    char  *msg = NULL;
+    LPWSTR wmsg = NULL;
+    DWORD  length = 0;
+    FormatMessageW(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
+            FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_FROM_HMODULE,
+        GetModuleHandleW(L"wininet.dll"), error, 0, (LPWSTR)&wmsg, 0, NULL);
+
+    length = WideCharToMultiByte(CP_UTF8, 0, wmsg, -1, NULL, 0, NULL, NULL);
+    msg = (char *)malloc(length);
+    if (NULL == msg)
+    {
+        return NULL;
+    }
+    WideCharToMultiByte(CP_UTF8, 0, wmsg, -1, msg, length, NULL, NULL);
+
+    LocalFree(wmsg);
+    return msg;
+}
+
+static void
+_inet_error(palinet_proc *proc, DWORD error, void *data)
+{
+    char *msg = _format_message(error);
+    proc(PALINETM_ERROR, msg, data);
+    free(msg);
+}
+
+static void CALLBACK
+_inet_status_callback(HINTERNET inet,
+                      DWORD_PTR context,
+                      DWORD     status,
+                      LPVOID    status_info,
+                      DWORD     status_length)
+{
+    switch (status)
+    {
+    case INTERNET_STATUS_REQUEST_COMPLETE: {
+        palinet_response_param param;
+        DWORD                  query_number;
+        DWORD                  query_size;
+
+        char  buffer[4096] = "";
+        DWORD bytes_size = 0;
+
+        INTERNET_ASYNC_RESULT *result = (INTERNET_ASYNC_RESULT *)status_info;
+        if (ERROR_SUCCESS != result->dwError)
+        {
+            if (ERROR_INTERNET_OPERATION_CANCELLED == result->dwError)
+            {
+                break;
+            }
+
+            _inet_error(_inet_proc, result->dwError, (void *)context);
+            InternetSetStatusCallbackA(_session, NULL);
+            InternetCloseHandle(_request);
+            InternetCloseHandle(_connection);
+            _request = _connection = NULL;
+            break;
+        }
+
+        query_size = sizeof(query_number);
+        if (!HttpQueryInfoA(_request,
+                            HTTP_QUERY_STATUS_CODE | HTTP_QUERY_FLAG_NUMBER,
+                            &query_number, &query_size, NULL))
+        {
+            // Cannot query status code
+            _inet_error(_inet_proc, GetLastError(), (void *)context);
+            break;
+        }
+        param.status = query_number;
+
+        query_size = lengthof(param.status_text);
+        HttpQueryInfoA(_request, HTTP_QUERY_STATUS_TEXT, param.status_text,
+                       &query_size, NULL);
+
+        query_size = sizeof(query_number);
+        if (!HttpQueryInfoA(_request,
+                            HTTP_QUERY_CONTENT_LENGTH | HTTP_QUERY_FLAG_NUMBER,
+                            &query_number, &query_size, NULL))
+        {
+            // Cannot query content length
+            _inet_error(_inet_proc, GetLastError(), (void *)context);
+            break;
+        }
+        param.content_length = query_number;
+
+        _inet_proc(PALINETM_RESPONSE, &param, (void *)context);
+
+        while (InternetReadFile(_request, buffer, sizeof(buffer) - 1,
+                                &bytes_size) &&
+               (0 < bytes_size))
+        {
+            palinet_received_param param = {bytes_size, (uint8_t *)buffer};
+            buffer[bytes_size] = 0;
+            if (0 != bytes_size)
+            {
+                _inet_proc(PALINETM_RECEIVED, &param, (void *)context);
+            }
+        }
+
+        if ((ERROR_SUCCESS != GetLastError()) &&
+            (ERROR_NO_MORE_ITEMS != GetLastError()))
+        {
+            // Reading error
+            _inet_error(_inet_proc, GetLastError(), (void *)context);
+            break;
+        }
+
+        _inet_proc(PALINETM_COMPLETE, NULL, (void *)context);
+
+        InternetSetStatusCallbackA(_session, NULL);
+        InternetCloseHandle(_request);
+        InternetCloseHandle(_connection);
+        _request = _connection = NULL;
+        break;
+    }
+    }
+}
+
+bool
+palinet_connect(const char *url, palinet_proc *proc, void *data)
+{
+    URL_COMPONENTSA parts;
+    char            url_hostname[MAX_PATH] = "";
+
+    if (NULL != _connection)
+    {
+        // Already connected
+        return false;
+    }
+
+    ZeroMemory(&parts, sizeof(parts));
+    parts.dwStructSize = sizeof(parts);
+    parts.lpszHostName = url_hostname;
+    parts.dwHostNameLength = MAX_PATH;
+    if (!InternetCrackUrlA(url, 0, 0, &parts))
+    {
+        // URL processing error
+        _inet_error(proc, GetLastError(), data);
+        return false;
+    }
+
+    _inet_data = (DWORD_PTR)data;
+    _inet_proc = proc;
+    InternetSetStatusCallbackA(_session, _inet_status_callback);
+
+    if (NULL == (_connection = InternetConnectA(
+                     _session, parts.lpszHostName, parts.nPort, NULL, NULL,
+                     INTERNET_SERVICE_HTTP, 0, _inet_data)))
+    {
+        // Connecting error
+        _inet_error(proc, GetLastError(), data);
+        return false;
+    }
+
+    proc(PALINETM_CONNECTED, NULL, data);
+    return true;
+}
+
+bool
+palinet_request(const char *method, const char *url)
+{
+    URL_COMPONENTSA parts;
+    const char     *headers = NULL;
+    const char     *payload = NULL;
+    int             payload_length;
+
+    if (NULL == _connection)
+    {
+        // Not connected
+        return false;
+    }
+
+    ZeroMemory(&parts, sizeof(parts));
+    parts.dwStructSize = sizeof(parts);
+    parts.dwUrlPathLength = MAX_PATH;
+    if (!InternetCrackUrlA(url, 0, 0, &parts))
+    {
+        // URL processing error
+        _inet_proc(PALINETM_ERROR, NULL, (void *)_inet_data);
+        return false;
+    }
+
+    if (NULL == (_request = HttpOpenRequestA(
+                     _connection, method, parts.lpszUrlPath, NULL, NULL, NULL,
+                     INTERNET_FLAG_NO_UI, _inet_data)))
+    {
+        // Request opening error
+        _inet_error(_inet_proc, GetLastError(), (void *)_inet_data);
+        goto end;
+    }
+
+    if (0 >
+        _inet_proc(PALINETM_GETHEADERS, (void *)&headers, (void *)_inet_data))
+    {
+        headers = NULL;
+    }
+
+    if (0 > (payload_length = _inet_proc(PALINETM_GETPAYLOAD, (void *)&payload,
+                                         (void *)_inet_data)))
+    {
+        payload = NULL;
+    }
+
+    if (!HttpSendRequestA(_request, headers, headers ? -1 : 0, (LPVOID)payload,
+                          payload ? payload_length : 0))
+    {
+        if (ERROR_IO_PENDING == GetLastError())
+        {
+            return true;
+        }
+
+        // Sending error
+        _inet_error(_inet_proc, GetLastError(), (void *)_inet_data);
+        goto end;
+    }
+
+end:
+    palinet_close();
+    return false;
+}
+
+void
+palinet_close(void)
+{
+    if (NULL != _request)
+    {
+        InternetCloseHandle(_request);
+        _request = NULL;
+    }
+
+    if (NULL != _connection)
+    {
+        InternetCloseHandle(_connection);
+        _connection = NULL;
+    }
 }
