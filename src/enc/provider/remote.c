@@ -21,11 +21,12 @@ enum
     PAGE_METHOD,
     PAGE_RCODE = PAGE_METHOD + 2,
     PAGE_QR = PAGE_RCODE + 2,
+    PAGE_LAST
 };
 
 #define QR_SIZE 128
 
-static encui_page _pages[7];
+static encui_page _pages[PAGE_LAST + 1];
 static uint8_t    _rbytes[18];
 static char       _rcode[64];
 static uint8_t    _cbytes[14];
@@ -448,7 +449,7 @@ __enc_remote_proc(int msg, enc_context *enc)
             _pages[PAGE_QR].length--;
         }
 
-        encui_enter(_pages, lengthof(_pages));
+        encui_enter(_pages, PAGE_LAST + 1);
         encui_set_page(0);
         return CONTINUE;
     }
