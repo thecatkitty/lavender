@@ -34,6 +34,8 @@
 
 #define CPX_CTLID(i) (0x100 + (i))
 
+#define WM_ENCUI_NOTIFY (WM_USER + 1)
+
 #define IDT_ENTERED 1
 
 static NONCLIENTMETRICSW _nclm = {0};
@@ -47,6 +49,7 @@ static PROPSHEETPAGEW  *_psps = NULL;
 static HPROPSHEETPAGE  *_hpsps = NULL;
 static PROPSHEETHEADERW _psh = {sizeof(PROPSHEETHEADERW)};
 static HWND             _wnd = NULL;
+static HWND             _active_dlg = NULL;
 
 static int _value;
 
@@ -414,6 +417,13 @@ encui_refresh_field(encui_page *page, int id)
     return false;
 }
 
+bool
+encui_request_notify(int cookie)
+{
+    return PostMessageW(_active_dlg, WM_ENCUI_NOTIFY, (WPARAM)_id,
+                        (LPARAM)cookie);
+}
+
 static void
 _update_controls(HWND dlg, encui_page *page)
 {
@@ -523,12 +533,24 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
         return 0;
     }
 
+    case WM_ENCUI_NOTIFY: {
+        int id = (int)wparam;
+        if (id != PropSheet_HwndToIndex(GetParent(dlg), dlg))
+        {
+            return 0;
+        }
+
+        _pages[id].proc(ENCUIM_NOTIFY, (void *)lparam, _pages[id].data);
+        return 0;
+    }
+
     case WM_NOTIFY: {
         int     id = PropSheet_HwndToIndex(GetParent(dlg), dlg);
         LPNMHDR notif = (LPNMHDR)lparam;
         switch (notif->code)
         {
         case PSN_SETACTIVE: {
+            _active_dlg = dlg;
             _pages[id].proc(ENCUIM_INIT, NULL, _pages[id].data);
             _set_buttons(dlg, id, _check_input(dlg, id));
             _update_controls(dlg, _pages + id);
