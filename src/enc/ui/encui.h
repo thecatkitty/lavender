@@ -15,6 +15,7 @@ enum encui_result
 enum
 {
     ENCUIM_INIT,
+    ENCUIM_ENTERED,
     ENCUIM_CHECK,
     ENCUIM_NEXT,
 };
