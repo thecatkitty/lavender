@@ -91,7 +91,7 @@ if(WIN32)
     else()
         target_link_options(lavender PRIVATE /subsystem:windows,${WINVER_MAJOR}.${WINVER_MINOR})
     endif()
-    target_link_libraries(lavender comctl32 msimg32 version winmm)
+    target_link_libraries(lavender comctl32 version wininet winmm)
 endif()
 
 if(LINUX)
