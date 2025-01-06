@@ -4,4 +4,4 @@ from .request import from_request_bytes, to_request_bytes
 from .response import from_response, to_response
 
 from .directory import AllowAllDirectory, UserDirectory
-from .service import AccessError, LavenderService
+from .service import AccessError, LavenderService, RequestError
