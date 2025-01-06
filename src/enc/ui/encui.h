@@ -88,4 +88,9 @@ encui_find_checkbox(encui_page *page);
 extern encui_textbox_data *
 encui_find_textbox(encui_page *page);
 
+#ifdef _WIN32
+extern bool
+encui_refresh_field(encui_page *page, int id);
+#endif
+
 #endif // _ENCUI_H_

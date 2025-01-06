@@ -387,6 +387,33 @@ _set_buttons(HWND dlg, int id, bool has_next)
                                                 (has_next ? PSWIZB_NEXT : 0));
 }
 
+bool
+encui_refresh_field(encui_page *page, int id)
+{
+    encui_field *field = NULL;
+
+    if ((_pages + _id) != page)
+    {
+        return false;
+    }
+
+    if ((0 > id) || (page->length <= id))
+    {
+        return false;
+    }
+
+    field = page->fields + id;
+    if (ENCUIFT_LABEL == field->type)
+    {
+        HWND dlg = PropSheet_GetCurrentPageHwnd(_wnd);
+        HWND ctl = GetDlgItem(dlg, CPX_CTLID(id));
+        _set_text(ctl, field->data, false);
+        return true;
+    }
+
+    return false;
+}
+
 static void
 _update_controls(HWND dlg, encui_page *page)
 {
