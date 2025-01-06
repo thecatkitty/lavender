@@ -499,6 +499,7 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
         case PSN_WIZBACK: {
             if (0 != _pages[id - 1].title)
             {
+                _id = id - 1;
                 break;
             }
 
