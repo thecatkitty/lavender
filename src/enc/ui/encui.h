@@ -16,6 +16,7 @@ enum
 {
     ENCUIM_INIT,
     ENCUIM_ENTERED,
+    ENCUIM_NOTIFY,
     ENCUIM_CHECK,
     ENCUIM_NEXT,
 };
@@ -91,6 +92,9 @@ encui_find_textbox(encui_page *page);
 #ifdef _WIN32
 extern bool
 encui_refresh_field(encui_page *page, int id);
+
+extern bool
+encui_request_notify(int cookie);
 #endif
 
 #endif // _ENCUI_H_
