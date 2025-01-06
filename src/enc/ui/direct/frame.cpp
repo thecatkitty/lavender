@@ -186,6 +186,7 @@ encui_direct_enter_page(encui_page *pages, int id)
     _next.draw();
     _cancel.draw();
 
+    _page->proc(ENCUIM_ENTERED, NULL, _page->data);
     pal_enable_mouse();
 }
 

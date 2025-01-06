@@ -34,6 +34,8 @@
 
 #define CPX_CTLID(i) (0x100 + (i))
 
+#define IDT_ENTERED 1
+
 static NONCLIENTMETRICSW _nclm = {0};
 static HICON             _bang = NULL;
 
@@ -484,6 +486,16 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
         return TRUE;
     }
 
+    case WM_TIMER: {
+        if (IDT_ENTERED == wparam)
+        {
+            KillTimer(dlg, IDT_ENTERED);
+            _pages[_id].proc(ENCUIM_ENTERED, NULL, _pages[_id].data);
+        }
+
+        return 0;
+    }
+
     case WM_NOTIFY: {
         int     id = PropSheet_HwndToIndex(GetParent(dlg), dlg);
         LPNMHDR notif = (LPNMHDR)lparam;
@@ -493,6 +505,7 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
             _pages[id].proc(ENCUIM_INIT, NULL, _pages[id].data);
             _set_buttons(dlg, id, _check_input(dlg, id));
             _update_controls(dlg, _pages + id);
+            SetTimer(dlg, IDT_ENTERED, USER_TIMER_MINIMUM, NULL);
             return 0;
         }
 
