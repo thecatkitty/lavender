@@ -242,7 +242,7 @@ encui_direct_key(uint16_t scancode)
             return ENCUI_OK;
         }
 
-        if (0 >= _page->proc(ENCUIM_CHECK, textbox->buffer, _page->data))
+        if (0 >= encui_check_page(_page, textbox->buffer))
         {
             return ENCUI_OK;
         }

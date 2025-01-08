@@ -160,3 +160,9 @@ encui_set_page(int id)
     _state = STATE_PROMPT;
     return true;
 }
+
+int
+encui_check_page(const encui_page *page, void *param)
+{
+    return page->proc(ENCUIM_CHECK, param, page->data);
+}
