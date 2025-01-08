@@ -127,18 +127,22 @@ _check_input(HWND dlg, int page_id)
     LPSTR  atext;
     int    status;
 
-    if (-ENOSYS ==
-        _pages[page_id].proc(ENCUIM_CHECK, NULL, _pages[page_id].data))
+    if (-ENOSYS == encui_check_page(_pages + page_id, NULL))
     {
         return true;
     }
 
     edit_box = GetDlgItem(dlg, IDC_EDITBOX);
+    if (NULL == edit_box)
+    {
+        return true;
+    }
+
     length = GetWindowTextLengthW(edit_box);
     text = (LPWSTR)malloc((length + 1) * sizeof(WCHAR));
     if (NULL == text)
     {
-        return TRUE;
+        return true;
     }
     GetWindowTextW(edit_box, text, length + 1);
 
@@ -147,12 +151,12 @@ _check_input(HWND dlg, int page_id)
     if (NULL == atext)
     {
         free(text);
-        return TRUE;
+        return true;
     }
     WideCharToMultiByte(CP_UTF8, 0, text, -1, atext, length, NULL, NULL);
     free(text);
 
-    status = _pages[page_id].proc(ENCUIM_CHECK, atext, _pages[page_id].data);
+    status = encui_check_page(_pages + page_id, atext);
     free(atext);
     return 0 == status;
 }
@@ -515,10 +519,10 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
             }
         }
 
+        _active_dlg = dlg;
         _set_text(dlg, page->title, false);
         _create_controls(dlg, page);
-        _set_buttons(dlg, (int)template->lParam,
-                     -ENOSYS == page->proc(ENCUIM_CHECK, NULL, page->data));
+        encui_check_page(page, NULL);
 
         return TRUE;
     }
@@ -552,7 +556,7 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
         case PSN_SETACTIVE: {
             _active_dlg = dlg;
             _pages[id].proc(ENCUIM_INIT, NULL, _pages[id].data);
-            _set_buttons(dlg, id, _check_input(dlg, id));
+            _check_input(dlg, id);
             _update_controls(dlg, _pages + id);
             SetTimer(dlg, IDT_ENTERED, USER_TIMER_MINIMUM, NULL);
             return 0;
@@ -850,4 +854,12 @@ encui_handle(void)
     _value = 0;
     _wnd = NULL;
     return value;
+}
+
+int
+encui_check_page(const encui_page *page, void *param)
+{
+    int status = page->proc(ENCUIM_CHECK, param, page->data);
+    _set_buttons(_active_dlg, _id, 0 >= status);
+    return status;
 }

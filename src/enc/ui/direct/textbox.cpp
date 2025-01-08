@@ -65,10 +65,9 @@ textbox::draw()
 
     auto pos = get_position();
     auto field = get_field(pos);
-    gfx_draw_rectangle(&field,
-                       (0 < page.proc(ENCUIM_CHECK, textbox.buffer, page.data))
-                           ? GFX_COLOR_GRAY
-                           : GFX_COLOR_BLACK);
+    gfx_draw_rectangle(&field, (0 < encui_check_page(&page, textbox.buffer))
+                                   ? GFX_COLOR_GRAY
+                                   : GFX_COLOR_BLACK);
     gfx_fill_rectangle(&field, GFX_COLOR_WHITE);
     gfx_draw_text(textbox.buffer, rect_.left + 1, rect_.top + 1);
 
