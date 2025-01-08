@@ -601,7 +601,9 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
                 ENCUIM_NEXT, textbox ? textbox->buffer : NULL, _pages[id].data);
             if (0 < status)
             {
-                WCHAR message[GFX_COLUMNS];
+                WCHAR message[MAX_PATH];
+                HWND  alert = GetDlgItem(dlg, IDC_ALERT);
+
                 if (INT_MAX == status)
                 {
                     MultiByteToWideChar(CP_UTF8, 0, textbox->alert, -1, message,
@@ -613,10 +615,23 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
                 {
                     LoadStringW(NULL, status, message, lengthof(message));
                 }
-                SetWindowTextW(GetDlgItem(dlg, IDC_ALERT), message);
 
+                if (NULL == alert)
+                {
+                    int label_id;
+                    for (label_id = 0; label_id < _pages[id].length; label_id++)
+                    {
+                        if (ENCUIFT_LABEL == _pages[id].fields[label_id].type)
+                        {
+                            alert = GetDlgItem(dlg, CPX_CTLID(label_id));
+                            break;
+                        }
+                    }
+                }
+                SetWindowTextW(alert, message);
                 Static_SetIcon(GetDlgItem(dlg, IDC_BANG), _bang);
                 MessageBeep(MB_ICONEXCLAMATION);
+                _set_buttons(dlg, id, false);
 
                 SetFocus(edit_box);
                 SetWindowLongPtrW(dlg, DWLP_MSGRESULT, -1);
