@@ -20,6 +20,7 @@ endif()
 import_dotconfig(${DOTCONFIG})
 add_config_header(config ${DOTCONFIG})
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/inc)
+include_directories(ext)
 
 if(MSVC)
     if(MSVC_VERSION GREATER_EQUAL 1800)
