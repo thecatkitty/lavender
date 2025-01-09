@@ -2,7 +2,7 @@
 
 #include "encqr.h"
 
-#include "../../../ext/QR-Code-generator/c/qrcodegen.h"
+#include <QR-Code-generator/c/qrcodegen.h>
 
 static void
 _set_pixel(gfx_bitmap *bm, int x, int y, int xscale, int yscale, bool value)
