@@ -7,10 +7,10 @@
 
 #include <pal.h>
 
-#include "../../resource.h"
-#include "../enc_impl.h"
-#include "../qr/encqr.h"
-#include "../ui/encui.h"
+#include "../../../resource.h"
+#include "../../enc_impl.h"
+#include "../../ui/encui.h"
+#include "qr/encqr.h"
 
 #define ID_RCODE 1
 #define ID_CCODE 2
