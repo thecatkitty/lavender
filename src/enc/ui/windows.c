@@ -1,7 +1,10 @@
 #define UNICODE
 
+// clang-format off
 #include <windows.h>
 #include <windowsx.h>
+#include <commctrl.h>
+// clang-format on
 
 #include <math.h>
 #include <stdlib.h>
@@ -27,6 +30,10 @@
 #define BCM_FIRST        0x1600
 #define BCM_GETIDEALSIZE (BCM_FIRST + 0x0001)
 #define BCM_SETNOTE      (BCM_FIRST + 0x0009)
+#endif
+
+#ifndef LWS_RIGHT
+#define LWS_RIGHT 0x20
 #endif
 
 #define WIZARD97_PADDING_LEFT 21
@@ -108,6 +115,76 @@ _set_text(HWND wnd, uintptr_t ids, bool measure)
 }
 
 static int
+_set_plain_text(HWND wnd, uintptr_t ids)
+{
+    int   height = 0;
+    int   length;
+    LPSTR text = NULL;
+    LPSTR src = NULL, dst = NULL;
+    bool  skipping = false;
+
+    if (0x10000 > ids)
+    {
+        LPWSTR wtext;
+        int    wlength = LoadStringW(NULL, ids, (LPWSTR)&wtext, 0);
+        length = WideCharToMultiByte(CP_UTF8, 0, wtext, wlength, NULL, 0, NULL,
+                                     NULL);
+    }
+    else
+    {
+        length = strlen((char *)ids);
+    }
+
+    text = malloc(length + 1);
+    if (NULL == text)
+    {
+        return height;
+    }
+
+    if (0x10000 > ids)
+    {
+        LPWSTR wtext;
+        int    wlength = LoadStringW(NULL, ids, (LPWSTR)&wtext, 0);
+        WideCharToMultiByte(CP_UTF8, 0, wtext, wlength, text, length + 1, NULL,
+                            NULL);
+        text[length] = 0;
+        src = text;
+    }
+    else
+    {
+        src = (char *)ids;
+    }
+
+    dst = text;
+    while (*src)
+    {
+        if ('<' == *src)
+        {
+            skipping = true;
+        }
+
+        if (!skipping)
+        {
+            *dst = *src;
+            dst++;
+        }
+
+        if ('>' == *src)
+        {
+            skipping = false;
+        }
+
+        src++;
+    }
+    *dst = 0;
+
+    height = _set_text(wnd, (uintptr_t)text, true);
+
+    free(text);
+    return height;
+}
+
+static int
 _get_separator_height(HWND dlg, HFONT font)
 {
     HDC  dc = GetDC(dlg);
@@ -159,6 +236,13 @@ _check_input(HWND dlg, int page_id)
     status = encui_check_page(_pages + page_id, atext);
     free(atext);
     return 0 == status;
+}
+
+static bool
+_has_syslink(void)
+{
+    INITCOMMONCONTROLSEX icc = {sizeof(INITCOMMONCONTROLSEX), ICC_LINK_CLASS};
+    return InitCommonControlsEx(&icc);
 }
 
 static void
@@ -228,17 +312,50 @@ _create_controls(HWND dlg, encui_page *page)
 
         if (ENCUIFT_LABEL == field->type)
         {
-            DWORD style =
-                WS_VISIBLE | WS_CHILD |
-                (ENCUIFF_CENTER == (ENCUIFF_ALIGN & field->flags) ? SS_CENTER
-                                                                  : 0) |
-                (ENCUIFF_RIGHT == (ENCUIFF_ALIGN & field->flags) ? SS_RIGHT
-                                                                 : 0);
-            HWND ctl = CreateWindowW(
-                L"STATIC", L"", style, cx, cy, rect.right - rect.left, 64, dlg,
-                (HMENU)(UINT_PTR)CPX_CTLID(i), GetModuleHandleW(NULL), NULL);
+            HWND ctl;
+
+            if ((ENCUIFF_BODY == (ENCUIFF_POSITION & field->flags)) ||
+                !(windows_is_at_least_vista() || _has_syslink()))
+            {
+                DWORD style =
+                    WS_VISIBLE | WS_CHILD |
+                    (ENCUIFF_CENTER == (ENCUIFF_ALIGN & field->flags)
+                         ? SS_CENTER
+                         : 0) |
+                    (ENCUIFF_RIGHT == (ENCUIFF_ALIGN & field->flags) ? SS_RIGHT
+                                                                     : 0);
+                ctl = CreateWindowW(L"STATIC", L"", style, cx, cy,
+                                    rect.right - rect.left, 64, dlg,
+                                    (HMENU)(UINT_PTR)CPX_CTLID(i),
+                                    GetModuleHandleW(NULL), NULL);
+            }
+            else
+            {
+                DWORD style =
+                    WS_VISIBLE | WS_CHILD |
+                    (ENCUIFF_RIGHT == (ENCUIFF_ALIGN & field->flags) ? LWS_RIGHT
+                                                                     : 0);
+                ctl = CreateWindowW(WC_LINK, L"", style, cx, cy,
+                                    rect.right - rect.left, 64, dlg,
+                                    (HMENU)(UINT_PTR)CPX_CTLID(i),
+                                    GetModuleHandleW(NULL), NULL);
+            }
+
             SendMessageW(ctl, WM_SETFONT, (WPARAM)font, TRUE);
-            cy += _set_text(ctl, field->data, true) + my;
+            if (ENCUIFF_FOOTER == (ENCUIFF_POSITION & field->flags))
+            {
+                RECT dlg_rect;
+                int  height = (windows_is_at_least_vista() || _has_syslink())
+                                  ? _set_text(ctl, field->data, true)
+                                  : _set_plain_text(ctl, field->data);
+                GetWindowRect(dlg, &dlg_rect);
+                MoveWindow(ctl, cx, dlg_rect.bottom - dlg_rect.top - height,
+                           rect.right - rect.left, height, TRUE);
+            }
+            else
+            {
+                cy += _set_text(ctl, field->data, true) + my;
+            }
         }
 
         if (ENCUIFT_TEXTBOX == field->type)
@@ -548,6 +665,25 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
         return 0;
     }
 
+    case WM_LBUTTONDOWN: {
+        POINT point = {GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam)};
+        HWND  ctl = ChildWindowFromPoint(dlg, point);
+
+        int ctl_id = GetDlgCtrlID(ctl);
+        if (0x100 <= ctl_id)
+        {
+            WCHAR ctl_cn[256];
+            GetClassNameW(ctl, ctl_cn, lengthof(ctl_cn));
+            if (0 == wcsicmp(ctl_cn, L"STATIC"))
+            {
+                _pages[_id].proc(ENCUIM_NOTIFY, (void *)(intptr_t)ctl_id,
+                                 _pages[_id].data);
+            }
+        }
+
+        return 0;
+    }
+
     case WM_NOTIFY: {
         int     id = PropSheet_HwndToIndex(GetParent(dlg), dlg);
         LPNMHDR notif = (LPNMHDR)lparam;
@@ -661,6 +797,16 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
         case PSN_QUERYCANCEL: {
             _value = 0;
             return FALSE;
+        }
+
+        case NM_CLICK: {
+            int ctl_id = GetDlgCtrlID(notif->hwndFrom);
+            if (0x100 <= ctl_id)
+            {
+                _pages[id].proc(ENCUIM_NOTIFY, (void *)(intptr_t)ctl_id,
+                                _pages[id].data);
+            }
+            break;
         }
         }
 

@@ -144,6 +144,9 @@ struct label : widget
 
     void
     draw() override;
+
+    int
+    click(int x, int y) override;
 };
 
 struct option : widget

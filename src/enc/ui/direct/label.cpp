@@ -4,6 +4,21 @@
 
 using namespace ui;
 
+int
+label::click(int x, int y)
+{
+    if (0 == (ENCUIFF_FOOTER & field_.flags))
+    {
+        return 0;
+    }
+
+    auto &page = *get_page();
+    page.proc(ENCUIM_NOTIFY,
+              reinterpret_cast<void *>(0x100 + (&field_ - page.fields)),
+              page.data);
+    return 0;
+}
+
 void
 label::draw()
 {
@@ -16,6 +31,35 @@ label::draw()
     else
     {
         pal_load_string(field_.data, buffer, sizeof(buffer));
+    }
+
+    if (ENCUIFF_FOOTER & field_.flags)
+    {
+        auto src = buffer;
+        auto dst = buffer;
+        bool skipping = false;
+
+        while (*src)
+        {
+            if ('<' == *src)
+            {
+                skipping = true;
+            }
+
+            if (!skipping)
+            {
+                *dst = *src;
+                dst++;
+            }
+
+            if ('>' == *src)
+            {
+                skipping = false;
+            }
+
+            src++;
+        }
+        *dst = 0;
     }
 
     rect_.width = GFX_COLUMNS - 2;

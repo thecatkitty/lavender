@@ -121,9 +121,17 @@ _create_controls(encui_page *page)
         if (ENCUIFT_LABEL == field->type)
         {
             auto &label = panel_->create<ui::label>(*field);
-            label.move(1, cy);
-            label.draw();
-            cy = ui::get_bottom(label.get_area());
+            if (ENCUIFF_FOOTER & field->flags)
+            {
+                label.move(1, GFX_LINES - 5);
+                label.draw();
+            }
+            else
+            {
+                label.move(1, cy);
+                label.draw();
+                cy = ui::get_bottom(label.get_area());
+            }
         }
 
         if (ENCUIFT_TEXTBOX == field->type)

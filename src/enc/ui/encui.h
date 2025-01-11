@@ -39,6 +39,10 @@ enum
 #define ENCUIFF_RIGHT  (2 << 1)
 #define ENCUIFF_ALIGN  (3 << 1)
 
+#define ENCUIFF_BODY     (0 << 3)
+#define ENCUIFF_FOOTER   (1 << 3)
+#define ENCUIFF_POSITION (1 << 3)
+
 #define ENCUIFF_UNCHECKED (0 << 3)
 #define ENCUIFF_CHECKED   (1 << 3)
 
