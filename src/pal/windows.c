@@ -1168,6 +1168,12 @@ pal_alert(const char *text, int error)
                 error ? MB_ICONERROR : MB_ICONEXCLAMATION);
 }
 
+void
+pal_open_url(const char *url)
+{
+    ShellExecuteA(NULL, NULL, url, NULL, NULL, SW_NORMAL);
+}
+
 HWND
 windows_get_hwnd(void)
 {

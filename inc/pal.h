@@ -160,6 +160,11 @@ pal_save_state(const char *name, const uint8_t *buffer, size_t size);
 extern void
 pal_alert(const char *text, int error);
 
+#if defined(_WIN32) || defined(__linux__)
+extern void
+pal_open_url(const char *url);
+#endif
+
 #ifndef UTF8_NATIVE
 extern char
 pal_wctoa(uint16_t wc);
