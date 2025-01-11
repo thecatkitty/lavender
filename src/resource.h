@@ -69,6 +69,7 @@
 #define IDS_METHOD_RCODE 0x6A
 #define IDS_METHOD_QR    0x6B
 #define IDS_QR_DESC      0x6D
+#define IDS_PRIVACY      0x6E
 
 #ifdef _WIN32
 #define IDS_METHOD_RCODE_HEAD (0x200 + IDS_METHOD_RCODE)

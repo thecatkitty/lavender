@@ -22,6 +22,11 @@ encr_qr_init(enc_context *enc)
         return;
     }
 
+#if defined(_WIN32) || defined(__linux__)
+    encr_pages[PAGE_METHOD].fields[2].flags &= ~ENCUIFF_DYNAMIC;
+    encr_pages[PAGE_METHOD].fields[2].data = IDS_PRIVACY;
+#endif
+
     encr_pages[PAGE_METHOD].fields[encr_pages[PAGE_METHOD].length++].data =
         IDS_METHOD_QR;
 

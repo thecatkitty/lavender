@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdio.h>
 #include <time.h>
 
 #include <pal.h>
@@ -147,6 +148,7 @@ _acode_page_proc(int msg, void *param, void *data)
 static encui_field _method_fields[] = {
     {ENCUIFT_LABEL, ENCUIFF_STATIC, IDS_METHOD_DESC},
     {ENCUIFT_SEPARATOR, 0, 1},
+    {ENCUIFT_LABEL, ENCUIFF_DYNAMIC | ENCUIFF_FOOTER, (intptr_t)""},
     {ENCUIFT_OPTION, ENCUIFF_STATIC | ENCUIFF_CHECKED},
     {ENCUIFT_OPTION, ENCUIFF_STATIC},
 };
@@ -157,8 +159,9 @@ _method_page_proc(int msg, void *param, void *data)
     switch (msg)
     {
     case ENCUIM_NEXT: {
-        encui_field *it = encr_pages[PAGE_METHOD].fields;
-        encui_field *end = it + encr_pages[PAGE_METHOD].length;
+        encui_field *it = encr_pages[PAGE_METHOD].fields + 3;
+        encui_field *end =
+            encr_pages[PAGE_METHOD].fields + encr_pages[PAGE_METHOD].length;
 
         while ((it < end) && (0 == (ENCUIFF_CHECKED & it->flags)))
         {
@@ -180,6 +183,20 @@ _method_page_proc(int msg, void *param, void *data)
             return -EINTR;
         }
     }
+
+#if defined(_WIN32) || defined(__linux__)
+    case ENCUIM_NOTIFY: {
+        if (0x102 == (intptr_t)param)
+        {
+            enc_context *enc = (enc_context *)data;
+            char         url[260];
+            snprintf(url, lengthof(url), "%s/privacy", (char *)enc->parameter);
+            pal_open_url(url);
+        }
+
+        return 0;
+    }
+#endif
     }
 
     return -ENOSYS;
@@ -233,7 +250,7 @@ __enc_remote_proc(int msg, enc_context *enc)
         _acode_textbox.length = 0;
 
         encr_pages[PAGE_METHOD].data = enc;
-        encr_pages[PAGE_METHOD].length = 2;
+        encr_pages[PAGE_METHOD].length = 3;
         encr_pages[PAGE_METHOD].fields = _method_fields;
 
         encr_qr_init(enc);

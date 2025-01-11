@@ -66,6 +66,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
     IDS_METHOD_RCODE, "I want to copy the request code manually"
     IDS_METHOD_QR, "Show me a QR code to proceed on a mobile device"
     IDS_QR_DESC, "Scan the QR code above to proceed on a mobile device, then enter the received confirmation code below. The QR code will expire after 15 minutes."
+    IDS_PRIVACY, "View the slideshow author's <a>Privacy Policy</a>."
 
 #ifdef _WIN32
     IDS_METHOD_RCODE_HEAD, "Copy a request code"
