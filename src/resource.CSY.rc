@@ -66,6 +66,7 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
     IDS_METHOD_RCODE, "Chci ručně přepsat kód požadavku"
     IDS_METHOD_QR, "Zobrazit QR kód pro použití s mobilním zařízením"
     IDS_QR_DESC, "Naskenujte výše uvedený QR kód a pokračujte na mobilním zařízení a poté zadejte přijatý potvrzovací kód níže. Platnost QR kódu vyprší po 15 minutách."
+    IDS_PRIVACY, "Zobrazit <a>zásady ochrany osobních údajů</a> autora prezentace."
 
 #ifdef _WIN32
     IDS_METHOD_RCODE_HEAD, "Přepište kód požadavku"

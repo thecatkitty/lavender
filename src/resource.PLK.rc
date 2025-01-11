@@ -66,6 +66,7 @@ LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
     IDS_METHOD_RCODE, "Chcę ręcznie przepisać kod żądania"
     IDS_METHOD_QR, "Pokaż mi kod QR do użycia z urządzeniem przenośnym"
     IDS_QR_DESC, "Zeskanuj powyższy kod QR, aby kontynuować na urządzeniu przenośnym, a następnie wpisz poniżej otrzymany kod potwierdzenia. Kod QR wygaśnie po 15 minutach."
+    IDS_PRIVACY, "Zapoznaj się z <a>Polityką prywatności</a> autora pokazu slajdów."
 
 #ifdef _WIN32
     IDS_METHOD_RCODE_HEAD, "Przepisz kod żądania"
