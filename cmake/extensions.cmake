@@ -27,6 +27,10 @@ if(NOT MSVC)
 endif()
 
 function(add_win32_strings target source_file)
+    if(LINUX)
+        set(win32_strings_args "-D__linux__")
+    endif()
+
     add_custom_command(
         OUTPUT ${target}.obj
         COMMAND ${CMAKE_RC_COMPILER}
@@ -34,6 +38,7 @@ function(add_win32_strings target source_file)
             ${target}.obj
             -c 65001
             -DSTRINGS_ONLY
+            ${win32_strings_args}
             -I${CMAKE_SOURCE_DIR}/inc/
             -I${CMAKE_BINARY_DIR}/inc/
         MAIN_DEPENDENCY ${source_file})
