@@ -99,9 +99,7 @@ encui_check_page(const encui_page *page, void *param);
 extern bool
 encui_refresh_field(encui_page *page, int id);
 
-#ifdef _WIN32
 extern bool
 encui_request_notify(int cookie);
-#endif
 
 #endif // _ENCUI_H_

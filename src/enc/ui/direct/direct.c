@@ -18,6 +18,9 @@ static int         _state = STATE_NONE;
 static encui_page *_pages = NULL;
 static int         _id;
 
+static bool _notify = false;
+static int  _cookie;
+
 bool
 encui_enter(encui_page *pages, int count)
 {
@@ -103,6 +106,13 @@ encui_handle(void)
         return ENCUI_INCOMPLETE;
     }
 
+    if (_notify)
+    {
+        _notify = false;
+        page->proc(ENCUIM_NOTIFY, (void *)(intptr_t)_cookie, page->data);
+        return ENCUI_INCOMPLETE;
+    }
+
     int      status = 0;
     uint16_t x, y;
     if (PAL_MOUSE_LBUTTON & pal_get_mouse(&x, &y))
@@ -165,4 +175,17 @@ int
 encui_check_page(const encui_page *page, void *param)
 {
     return page->proc(ENCUIM_CHECK, param, page->data);
+}
+
+bool
+encui_request_notify(int cookie)
+{
+    if (_notify)
+    {
+        return false;
+    }
+
+    _notify = true;
+    _cookie = cookie;
+    return true;
 }
