@@ -22,6 +22,15 @@ label::click(int x, int y)
 void
 label::draw()
 {
+    gfx_dimensions glyph;
+    gfx_get_glyph_dimensions(&glyph);
+    auto rect = get_position();
+    rect.left *= glyph.width;
+    rect.width *= glyph.width;
+    rect.top *= glyph.height;
+    rect.height *= glyph.height;
+    gfx_fill_rectangle(&rect, GFX_COLOR_WHITE);
+
     char buffer[GFX_COLUMNS * 4];
     if (ENCUIFF_DYNAMIC & field_.flags)
     {
