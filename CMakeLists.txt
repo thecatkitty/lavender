@@ -84,6 +84,7 @@ if(WIN32)
 endif()
 
 if(LINUX)
+    add_compile_definitions(CONFIG_INTERNET)
     add_compile_options(-g)
     set(CONFIG_SDL2 1)
 endif()
