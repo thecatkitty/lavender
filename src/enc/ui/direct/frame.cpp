@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cstring>
+#include <iterator>
 #include <memory>
 #include <vector>
 
@@ -309,4 +310,17 @@ encui_direct_set_error(char *message)
     {
         textbox->alert(message);
     }
+}
+
+bool
+encui_refresh_field(encui_page *page, int id)
+{
+    if (_page != page)
+    {
+        return false;
+    }
+
+    auto it = panel_->begin() + id;
+    (*it)->draw();
+    return true;
 }
