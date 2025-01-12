@@ -9,6 +9,14 @@ DEFINE_HANDLE(hasset);
 
 typedef bool (*pal_enum_assets_callback)(const char *, void *);
 
+#ifndef PATH_MAX
+#ifdef _MAX_PATH
+#define PATH_MAX _MAX_PATH
+#else
+#define PATH_MAX MAX_PATH
+#endif
+#endif
+
 #if defined(_WIN32)
 #define PAL_EXTERNAL_TICK 1
 #else
@@ -188,7 +196,7 @@ enum
 typedef struct
 {
     unsigned status;
-    char     status_text[_MAX_PATH];
+    char     status_text[PATH_MAX];
     unsigned content_length;
 } palinet_response_param;
 

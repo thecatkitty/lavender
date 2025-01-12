@@ -14,14 +14,6 @@
 #define O_ACCMODE (_O_RDONLY | _O_WRONLY | _O_RDWR)
 #endif
 
-#ifndef PATH_MAX
-#ifdef _MAX_PATH
-#define PATH_MAX _MAX_PATH
-#else
-#define PATH_MAX MAX_PATH
-#endif
-#endif
-
 pal_asset __pal_assets[MAX_OPEN_ASSETS];
 
 #ifdef __ia16__
