@@ -4,3 +4,6 @@
 [submodule "ext/QR-Code-generator"]
 	path = ext/QR-Code-generator
 	url = https://github.com/nayuki/QR-Code-generator.git
+[submodule "ext/jsmn"]
+	path = ext/jsmn
+	url = https://github.com/zserge/jsmn.git

@@ -151,6 +151,9 @@ static encui_field _method_fields[] = {
     {ENCUIFT_LABEL, ENCUIFF_DYNAMIC | ENCUIFF_FOOTER, (intptr_t)""},
     {ENCUIFT_OPTION, ENCUIFF_STATIC | ENCUIFF_CHECKED},
     {ENCUIFT_OPTION, ENCUIFF_STATIC},
+#if defined(CONFIG_INTERNET)
+    {ENCUIFT_OPTION, ENCUIFF_STATIC},
+#endif
 };
 
 static int
@@ -158,6 +161,14 @@ _method_page_proc(int msg, void *param, void *data)
 {
     switch (msg)
     {
+    case ENCUIM_INIT: {
+#if defined(CONFIG_INTERNET)
+        // in case when navigated back from PAGE_INET
+        encr_inet_cleanup();
+#endif
+        return 0;
+    }
+
     case ENCUIM_NEXT: {
         encui_field *it = encr_pages[PAGE_METHOD].fields + 3;
         encui_field *end =
@@ -170,6 +181,14 @@ _method_page_proc(int msg, void *param, void *data)
         assert(it < end);
 
         _stamp_request();
+
+#if defined(CONFIG_INTERNET)
+        if (IDS_METHOD_INET == it->data)
+        {
+            encui_set_page(PAGE_INET);
+            return -EINTR;
+        }
+#endif
 
         if (IDS_METHOD_QR == it->data)
         {
@@ -211,7 +230,11 @@ encui_page encr_pages[] = {
     {IDS_UNLOCK, encr_rcode_page_proc}, // PAGE_RCODE
     {0},                                //
     {IDS_UNLOCK, encr_qr_page_proc},    // PAGE_QR
-    {0}                                 //
+#if defined(CONFIG_INTERNET)
+    {0},                               //
+    {IDS_UNLOCK, encr_inet_page_proc}, // PAGE_INET
+#endif
+    {0} //
 };
 
 static uint64_t
@@ -253,6 +276,9 @@ __enc_remote_proc(int msg, enc_context *enc)
         encr_pages[PAGE_METHOD].length = 3;
         encr_pages[PAGE_METHOD].fields = _method_fields;
 
+#if defined(CONFIG_INTERNET)
+        encr_inet_init(enc);
+#endif
         encr_qr_init(enc);
         encr_rcode_init(enc);
 
@@ -270,6 +296,12 @@ __enc_remote_proc(int msg, enc_context *enc)
     }
 
     case ENCM_GET_ERROR_STRING: {
+#if defined(CONFIG_INTERNET)
+        if (200 == encr_inet_get_status())
+        {
+            return IDS_INET_CODEERR;
+        }
+#endif
         return IDS_INVALIDCCODE;
     }
 

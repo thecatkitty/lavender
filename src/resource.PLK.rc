@@ -68,14 +68,32 @@ LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
     IDS_QR_DESC, "Zeskanuj powyższy kod QR, aby kontynuować na urządzeniu przenośnym, a następnie wpisz poniżej otrzymany kod potwierdzenia. Kod QR wygaśnie po 15 minutach."
     IDS_PRIVACY, "Zapoznaj się z <a>Polityką prywatności</a> autora pokazu slajdów."
 
+#if defined(_WIN32) || defined(__linux__)
+    IDS_METHOD_INET, "Połącz z automatyczną usługą"
+    IDS_INET_CONN, "Łączenie z usługą..."
+    IDS_INET_SEND, "Wysyłanie żądania..."
+    IDS_INET_RECV, "Wczytywanie odpowiedzi..."
+    IDS_INET_SUCCESS, "Potwierdziliśmy twoje uprawnienia dostępu. Możesz teraz kontynuować przeglądanie treści."
+    IDS_INET_INITERR, "Aplikacji nie udało się uzyskać dostępu do sieci."
+    IDS_INET_CONNERR, "Aplikacji nie udało się połączyć z usługą automatyczną:"
+    IDS_INET_RESPERR, "Aplikacji nie udało się przetworzyć otrzymanej odpowiedzi:"
+    IDS_INET_SERVERR, "Usłudze nie udało się przetworzyć żądania:"
+    IDS_INET_AUTHERR, "Obecnie nie masz uprawnień dostępu do tej zawartości. Zapoznaj się ze szczegółami poniżej i skontaktuj się z autorem pokazu slajdów, aby uzyskać dalszą pomoc."
+    IDS_INET_CODEERR, "Dane dostępowe podane przez usługę są nieprawidłowe. Skontaktuj się z autorem pokazu slajdów, aby uzyskać pomoc."
+    IDS_INVALIDRESP, "Otrzymana odpowiedź jest niepoprawna"
+#endif
+
 #ifdef _WIN32
     IDS_METHOD_RCODE_HEAD, "Przepisz kod żądania"
     IDS_METHOD_QR_HEAD, "Zeskanuj kod QR"
 
     IDS_METHOD_RCODE_NOTE, "Zweryfikuj za pomocą kodu żądania udostępnionego ręcznie autorowi."
     IDS_METHOD_QR_NOTE, "Zweryfikuj za pomocą urządzenia mobilnego z aparatem i dostępem do Internetu."
-#endif
-#endif
+
+    IDS_METHOD_INET_HEAD, "Potwierdź online"
+    IDS_METHOD_INET_NOTE, "Zweryfikuj za pomocą automatycznej usługi przez Internet."
+#endif // _WIN32
+#endif // CONFIG_ENCRYPTED_CONTENT
 }
 
 #ifndef STRINGS_ONLY
