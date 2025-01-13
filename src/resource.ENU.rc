@@ -68,14 +68,32 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
     IDS_QR_DESC, "Scan the QR code above to proceed on a mobile device, then enter the received confirmation code below. The QR code will expire after 15 minutes."
     IDS_PRIVACY, "View the slideshow author's <a>Privacy Policy</a>."
 
+#if defined(_WIN32) || defined(__linux__)
+    IDS_METHOD_INET, "Let's connect to the automatic service"
+    IDS_INET_CONN, "Connecting to the service..."
+    IDS_INET_SEND, "Sending the request..."
+    IDS_INET_RECV, "Receiving the response..."
+    IDS_INET_SUCCESS, "We've confirmed your access rights. You can now continue viewing the content."
+    IDS_INET_INITERR, "The application couldn't access the network."
+    IDS_INET_CONNERR, "The application couldn't contact the automatic service:"
+    IDS_INET_RESPERR, "The application couldn't process the received response:"
+    IDS_INET_SERVERR, "The service couldn't process the request:"
+    IDS_INET_AUTHERR, "You currently do not have permission to access this content. Review the details below and contact the slideshow author for further assistance."
+    IDS_INET_CODEERR, "The access details provided by the service are incorrect. Contact the slideshow author for assistance."
+    IDS_INVALIDRESP, "The received response is invalid"
+#endif
+
 #ifdef _WIN32
     IDS_METHOD_RCODE_HEAD, "Copy a request code"
     IDS_METHOD_QR_HEAD, "Scan a QR code"
 
     IDS_METHOD_RCODE_NOTE, "Verify using a request code manually shared with the author."
     IDS_METHOD_QR_NOTE, "Verify using a mobile device with a camera and Internet access."
-#endif
-#endif
+
+    IDS_METHOD_INET_HEAD, "Check online"
+    IDS_METHOD_INET_NOTE, "Verify using the automatic service over the Internet."
+#endif // _WIN32
+#endif // CONFIG_ENCRYPTED_CONTENT
 }
 
 #ifndef STRINGS_ONLY

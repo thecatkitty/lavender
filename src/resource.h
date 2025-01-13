@@ -71,11 +71,29 @@
 #define IDS_QR_DESC      0x6D
 #define IDS_PRIVACY      0x6E
 
+#if defined(_WIN32) || defined(__linux__)
+#define IDS_METHOD_INET  0x70
+#define IDS_INET_CONN    0x71
+#define IDS_INET_SEND    0x72
+#define IDS_INET_RECV    0x73
+#define IDS_INET_SUCCESS 0x77
+#define IDS_INET_INITERR 0x78
+#define IDS_INET_CONNERR 0x79
+#define IDS_INET_RESPERR 0x7A
+#define IDS_INET_SERVERR 0x7B
+#define IDS_INET_AUTHERR 0x7C
+#define IDS_INET_CODEERR 0x7D
+#define IDS_INVALIDRESP  0x7E
+#endif
+
 #ifdef _WIN32
 #define IDS_METHOD_RCODE_HEAD (0x200 + IDS_METHOD_RCODE)
 #define IDS_METHOD_QR_HEAD    (0x200 + IDS_METHOD_QR)
 
 #define IDS_METHOD_RCODE_NOTE (0x300 + IDS_METHOD_RCODE)
 #define IDS_METHOD_QR_NOTE    (0x300 + IDS_METHOD_QR)
-#endif
-#endif
+
+#define IDS_METHOD_INET_HEAD  (0x200 + IDS_METHOD_INET)
+#define IDS_METHOD_INET_NOTE  (0x300 + IDS_METHOD_INET)
+#endif // _WIN32
+#endif // CONFIG_ENCRYPTED_CONTENT

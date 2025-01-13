@@ -11,6 +11,9 @@ enum
     PAGE_METHOD,
     PAGE_RCODE = PAGE_METHOD + 2,
     PAGE_QR = PAGE_RCODE + 2,
+#if defined(CONFIG_INTERNET)
+    PAGE_INET = PAGE_QR + 2,
+#endif
     PAGE_LAST
 };
 
@@ -46,5 +49,19 @@ encr_qr_enter(void *data);
 
 extern int
 encr_qr_page_proc(int msg, void *param, void *data);
+
+#if defined(CONFIG_INTERNET)
+extern void
+encr_inet_init(enc_context *enc);
+
+extern void
+encr_inet_cleanup(void);
+
+extern int
+encr_inet_get_status(void);
+
+extern int
+encr_inet_page_proc(int msg, void *param, void *data);
+#endif
 
 #endif

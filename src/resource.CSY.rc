@@ -68,14 +68,32 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
     IDS_QR_DESC, "Naskenujte výše uvedený QR kód a pokračujte na mobilním zařízení a poté zadejte přijatý potvrzovací kód níže. Platnost QR kódu vyprší po 15 minutách."
     IDS_PRIVACY, "Zobrazit <a>zásady ochrany osobních údajů</a> autora prezentace."
 
+#if defined(_WIN32) || defined(__linux__)
+    IDS_METHOD_INET, "Připojit k automatické službě"
+    IDS_INET_CONN, "Připojování ke službě..."
+    IDS_INET_SEND, "Odesílání požadavku..."
+    IDS_INET_RECV, "Načítání odpovědi..."
+    IDS_INET_SUCCESS, "Potvrdili jsme vaše přístupová práva. Nyní můžete pokračovat v prohlížení obsahu."
+    IDS_INET_INITERR, "Aplikace nemohla získat přístup k síti."
+    IDS_INET_CONNERR, "Aplikace nemohla kontaktovat automatickou službu:"
+    IDS_INET_RESPERR, "Aplikace nemohla zpracovat přijatou odpověď:"
+    IDS_INET_SERVERR, "Služba nemohla zpracovat požadavek:"
+    IDS_INET_AUTHERR, "Momentálně nemáte oprávnění k přístupu k tomuto obsahu. Projděte si podrobnosti níže a požádejte o další pomoc autora prezentace."
+    IDS_INET_CODEERR, "Přístupové údaje poskytnuté službou jsou nesprávné. Požádejte o pomoc autora prezentace."
+    IDS_INVALIDRESP, "Přijatá odpověď je neplatná"
+#endif
+
 #ifdef _WIN32
     IDS_METHOD_RCODE_HEAD, "Přepište kód požadavku"
     IDS_METHOD_QR_HEAD, "Naskenujte QR kód"
 
     IDS_METHOD_RCODE_NOTE, "Ověřte pomocí kódu požadavku ručně sdíleného s autorem."
     IDS_METHOD_QR_NOTE, "Ověřte pomocí mobilního zařízení s fotoaparátem a přístupem k internetu."
-#endif
-#endif
+
+    IDS_METHOD_INET_HEAD, "Potvrďte online"
+    IDS_METHOD_INET_NOTE, "Ověřte pomocí automatické služby přes internet."
+#endif // _WIN32
+#endif // CONFIG_ENCRYPTED_CONTENT
 }
 
 #ifndef STRINGS_ONLY
