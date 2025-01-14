@@ -13,17 +13,10 @@
 #define MAX_DEVICES 4
 
 #if defined(CONFIG_SOUND)
-extern snd_format_protocol __snd_fmidi;
-
-static device               _devices[MAX_DEVICES] = {{{0}}};
-static snd_format_protocol *_formats[] = {
-    &__snd_fmidi, // Standard MIDI File, type 0
-};
-
-static device             *_device = NULL;
-static snd_format_protocol _format;
-static hasset              _music = NULL;
-static uint32_t            _ts = 0;
+static device   _devices[MAX_DEVICES] = {{{0}}};
+static device  *_device = NULL;
+static hasset   _music = NULL;
+static uint32_t _ts = 0;
 
 #if defined(CONFIG_ANDREA)
 static uint16_t _driver = 0;
@@ -227,12 +220,12 @@ void
 snd_handle(void)
 {
 #if defined(CONFIG_SOUND)
-    if ((NULL == _device) || (NULL == _format.step) || (NULL == _music))
+    if ((NULL == _device) || (NULL == _music))
     {
         return;
     }
 
-    if (!_format.step())
+    if (!sndseq_step())
     {
         pal_close_asset(_music);
         _music = NULL;
@@ -254,14 +247,8 @@ bool
 snd_play(const char *name)
 {
 #if defined(CONFIG_SOUND)
-    snd_format_protocol **format;
-
     char *data;
     int   length;
-
-    _format.probe = 0;
-    _format.start = 0;
-    _format.step = 0;
 
     if (_music)
     {
@@ -281,18 +268,8 @@ snd_play(const char *name)
     }
 
     length = pal_get_asset_size(_music);
-    for (format = _formats; format < _formats + lengthof(_formats); format++)
+    if (sndseq_start(data, length))
     {
-        if ((*format)->probe(data, length))
-        {
-            _format = **format;
-            break;
-        }
-    }
-
-    if (_format.start)
-    {
-        _format.start(data, length);
         return true;
     }
 

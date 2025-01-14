@@ -11,19 +11,19 @@ static midi_event   _event = {0, 0, NULL, 0};
 static uint32_t _kilotick_rate;
 static uint32_t _next_event;
 
-static bool
-_fmidi_probe(void *music, uint16_t length)
-{
-    iff_head *head = (iff_head *)music;
-    return MIDI_FOURCC_MTHD.dw == head->type.dw;
-}
-
-static bool
-_fmidi_start(void *music, uint16_t length)
+bool
+sndseq_start(void *music, uint16_t length)
 {
     midi_mthd mthd = {0};
     iff_chunk mtrk_chunk = {0};
     iff_chunk it = {0};
+
+    iff_head *head = (iff_head *)music;
+    if (MIDI_FOURCC_MTHD.dw != head->type.dw)
+    {
+        errno = EFTYPE;
+        return false;
+    }
 
     _iff = iff_open(music, length);
     if (NULL == _iff)
@@ -76,8 +76,8 @@ _fmidi_start(void *music, uint16_t length)
     return true;
 }
 
-static bool
-_fmidi_step(void)
+bool
+sndseq_step(void)
 {
     uint32_t now;
     size_t   length;
@@ -139,5 +139,3 @@ _fmidi_step(void)
     _next_event = now + _event.delta * _kilotick_rate / 1000;
     return true;
 }
-
-snd_format_protocol __snd_fmidi = {_fmidi_probe, _fmidi_start, _fmidi_step};
