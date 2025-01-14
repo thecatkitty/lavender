@@ -14,12 +14,10 @@
 
 #if defined(CONFIG_SOUND)
 extern snd_format_protocol __snd_fmidi;
-extern snd_format_protocol __snd_fspk;
 
 static device               _devices[MAX_DEVICES] = {{{0}}};
 static snd_format_protocol *_formats[] = {
     &__snd_fmidi, // Standard MIDI File, type 0
-    &__snd_fspk   // length-divisor pairs for PC Speaker
 };
 
 static device             *_device = NULL;

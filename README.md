@@ -25,7 +25,7 @@ This is still work in progress, but I'm doing my best to separate working versio
 * drawing and filling rectangles
   * 16 colors on Windows, Linux, and DOS with EGA
   * mapped 5 monochrome patterns on DOS with CGA
-* MIDI Type 0 and [own mono format](docs/spk.md) music playback
+* MIDI Type 0 music playback
   * PC Speaker (with 3 simulated voices), Yamaha OPL2, Roland MPU-401 UART under DOS, with loadable driver support
   * Windows MME API
   * FluidSynth under Linux
