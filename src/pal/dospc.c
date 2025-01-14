@@ -201,6 +201,7 @@ _pal_enum_callback(const char *name, void *data)
 }
 #endif
 
+#if defined(CONFIG_SOUND)
 static bool
 _snd_enum_callback(device *dev, void *data)
 {
@@ -215,15 +216,18 @@ _snd_enum_callback(device *dev, void *data)
     fflush(stdout);
     return true;
 }
+#endif // CONFIG_SOUND
 
 static void
 _show_help(const char *self)
 {
+#if defined(CONFIG_SOUND)
 #if defined(CONFIG_ANDREA)
     uint16_t drivers[MAX_DRIVERS] = {0};
     pal_enum_assets(_pal_enum_callback, "snd*.sys", drivers);
 #endif
     snd_load_inbox_drivers();
+#endif // CONFIG_SOUND
 
     const char *name = strrchr(self, '\\');
     if (NULL == name)
@@ -247,9 +251,16 @@ _show_help(const char *self)
     puts("");
 
     fputs(name ? name : "LAVENDER", stdout);
-    puts(" [/? | /S<dev>]");
+    printf(" [/?");
+#if defined(CONFIG_SOUND)
+    printf(" | /S<dev>");
+#endif // CONFIG_SOUND
+    puts("]");
+
+#if defined(CONFIG_SOUND)
     puts("\ndev:");
     snd_enum_devices(_snd_enum_callback, NULL);
+#endif // CONFIG_SOUND
 
     puts("");
     pal_load_string(IDS_COPYRIGHT, msgu, sizeof(msgu));
@@ -321,7 +332,9 @@ pal_initialize(int argc, char *argv[])
     andrea_init();
 #endif
 
+#if defined(CONFIG_SOUND)
     const char *arg_snd = NULL;
+#endif // CONFIG_SOUND
     for (int i = 1; i < argc; i++)
     {
         if ('/' != argv[i][0])
@@ -329,10 +342,12 @@ pal_initialize(int argc, char *argv[])
             continue;
         }
 
+#if defined(CONFIG_SOUND)
         if ('s' == tolower(argv[i][1]))
         {
             arg_snd = argv[i] + 2;
         }
+#endif // CONFIG_SOUND
 
         if ('?' == argv[i][1])
         {
@@ -387,7 +402,9 @@ pal_initialize(int argc, char *argv[])
     gfx_get_glyph_dimensions(&_glyph);
     _has_mouse = msmouse_init();
 
+#if defined(CONFIG_SOUND)
     snd_initialize(arg_snd);
+#endif // CONFIG_SOUND
 }
 
 void
@@ -395,7 +412,10 @@ pal_cleanup(void)
 {
     ziparch_cleanup();
     gfx_cleanup();
+
+#if defined(CONFIG_SOUND)
     snd_cleanup();
+#endif // CONFIG_SOUND
 
     _dos_setvect(INT_PIT, __dospc_bios_isr);
     _pit_init_channel(0, PIT_MODE_RATE_GEN, 0);

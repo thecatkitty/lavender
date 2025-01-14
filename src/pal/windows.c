@@ -754,12 +754,14 @@ pal_initialize(int argc, char *argv[])
         SendMessageW(_wnd, WM_SETICON, ICON_SMALL, (LPARAM)_icon);
     }
 
+#if defined(CONFIG_SOUND)
     __mme_init();
 
     if (!snd_initialize(NULL))
     {
         LOG("cannot initialize sound");
     }
+#endif // CONFIG_SOUND
 }
 
 void

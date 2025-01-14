@@ -37,7 +37,10 @@ sdl2arch_cleanup(void)
 {
     LOG("entry");
 
+#if defined(CONFIG_SOUND)
     snd_cleanup();
+#endif // CONFIG_SOUND
+
     gfx_cleanup();
 
     SDL_Quit();

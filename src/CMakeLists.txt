@@ -12,14 +12,20 @@ if(LINUX)
     find_package(Fontconfig REQUIRED)
 endif()
 
-if(CONFIG_ENCRYPTED_CONTENT)
-    add_subdirectory(enc)
-endif()
 add_subdirectory(fmt)
 add_subdirectory(gfx)
 add_subdirectory(pal)
 add_subdirectory(sld)
-add_subdirectory(snd)
+
+if(CONFIG_ENCRYPTED_CONTENT)
+    add_subdirectory(enc)
+    target_link_libraries(lavender enc)
+endif()
+
+if(CONFIG_SOUND)
+    add_subdirectory(snd)
+    target_link_libraries(lavender snd)
+endif()
 
 if(DOS)
     target_include_directories(lavender SYSTEM BEFORE PRIVATE ../ext/nicetia16/include/c++/6.3.0)
@@ -42,7 +48,7 @@ target_sources(lavender PRIVATE main.c rstd.c)
 if(CONFIG_ENCRYPTED_CONTENT)
     target_link_libraries(lavender enc)
 endif()
-target_link_libraries(lavender fmt gfx pal sld snd)
+target_link_libraries(lavender fmt gfx pal sld)
 
 add_custom_target(version_text
     COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/../cmake/version.cmake)
