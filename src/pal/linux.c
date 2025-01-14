@@ -91,12 +91,14 @@ pal_initialize(int argc, char *argv[])
         abort();
     }
 
+#if defined(CONFIG_SOUND)
     __fluid_init();
 
     if (!snd_initialize(NULL))
     {
         LOG("cannot initialize sound");
     }
+#endif // CONFIG_SOUND
 }
 
 void
