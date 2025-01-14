@@ -20,13 +20,6 @@ typedef struct
 #define snd_device_tick(dev, ts)                                               \
     (((far snd_device_ops *)((dev)->ops))->tick((dev), (ts)))
 
-typedef struct
-{
-    bool (*probe)(void *, uint16_t);
-    bool (*start)(void *, uint16_t);
-    bool (*step)(void);
-} snd_format_protocol;
-
 typedef bool (*snd_enum_devices_callback)(device *device, void *data);
 
 // Load inbox drivers
@@ -64,5 +57,13 @@ snd_handle(void);
 // Send MIDI message
 extern bool
 snd_send(const midi_event *event);
+
+// Start MIDI sequence
+extern bool
+sndseq_start(void *music, uint16_t length);
+
+// Step MIDI sequence forward
+extern bool
+sndseq_step(void);
 
 #endif // _SND_H_

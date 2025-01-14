@@ -4,7 +4,7 @@ add_dependencies(snd config)
 target_sources(snd PRIVATE snd.c)
 
 if(CONFIG_SOUND)
-    target_sources(snd PRIVATE fmidi.c)
+    target_sources(snd PRIVATE seq.c)
 
     if(DOS)
         target_sources(snd PRIVATE dbeep.c)
