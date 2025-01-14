@@ -37,7 +37,7 @@ static struct curl_slist *_inet_headers = NULL;
 static bool               _inet_receiving;
 
 extern int
-__fluid_init(void);
+__fluid_init(bool beepemu);
 
 static void
 _show_help(const char *self)
@@ -64,6 +64,10 @@ pal_initialize(int argc, char *argv[])
 
     LOG("entry");
 
+#if defined(CONFIG_SOUND)
+    bool beepemu = false;
+#endif // CONFIG_SOUND
+
     for (int i = 1; i < argc; i++)
     {
         if ('-' != argv[i][0])
@@ -76,6 +80,13 @@ pal_initialize(int argc, char *argv[])
             _show_help(argv[0]);
             exit(0);
         }
+
+#if defined(CONFIG_SOUND)
+        if ('b' == argv[i][1])
+        {
+            beepemu = true;
+        }
+#endif // CONFIG_SOUND
     }
 
     if (!ziparch_initialize(argv[0]))
@@ -92,7 +103,7 @@ pal_initialize(int argc, char *argv[])
     }
 
 #if defined(CONFIG_SOUND)
-    __fluid_init();
+    __fluid_init(beepemu);
 
     if (!snd_initialize(NULL))
     {

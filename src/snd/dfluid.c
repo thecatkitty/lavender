@@ -73,8 +73,7 @@ fluid_open(device *dev)
         return false;
     }
 
-    _beep.ops = __beep_ops;
-    if (!snd_device_open(&_beep))
+    if ((NULL != _beep.ops) && !snd_device_open(&_beep))
     {
         _beep.ops = NULL;
     }
@@ -354,14 +353,18 @@ fluid_write(device *dev, const midi_event *event)
 static bool ddcall
 fluid_tick(device *dev, uint32_t ts)
 {
-    return snd_device_tick(&_beep, ts);
+    return (NULL == _beep.ops) || snd_device_tick(&_beep, ts);
 }
 
 static snd_device_ops _ops = {fluid_open, fluid_close, fluid_write, fluid_tick};
 
 int
-__fluid_init(void)
+__fluid_init(bool beepemu)
 {
+    LOG("entry, beepemu: %u", beepemu);
+
+    _beep.ops = beepemu ? __beep_ops : NULL;
+
     device dev = {"fluid", "FluidSynth", &_ops, NULL};
     return snd_register_device(&dev);
 }
