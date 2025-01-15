@@ -40,7 +40,6 @@ __cga_init(void);
 
 extern char __edata[], __sbss[], __ebss[];
 extern char _binary_obj_version_txt_start[];
-extern char __w32_rsrc_start[];
 
 extern uint16_t   __dospc_ds;
 volatile uint32_t __dospc_counter;
@@ -762,20 +761,6 @@ pal_get_mouse(uint16_t *x, uint16_t *y)
     *y = lowy / _glyph.height;
 
     return status;
-}
-
-int
-pal_load_string(unsigned id, char *buffer, int max_length)
-{
-    int length = exe_pe_load_string(__w32_rsrc_start, id, buffer, max_length);
-    if (0 > length)
-    {
-        const char msg[] = "!!! string missing !!!";
-        strncpy(buffer, msg, max_length);
-        return sizeof(msg) - 1;
-    }
-
-    return length;
 }
 
 size_t
