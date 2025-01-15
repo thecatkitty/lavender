@@ -45,10 +45,10 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
 
     IDS_DESCRIPTION, "Přehrávač prezentací"
     IDS_COPYRIGHT, "(C) 2021-2025 Mateusz Karcz.\nZpřístupněno pod Licencí MIT."
-    IDS_ABOUT, "O programu..."
-    IDS_ABOUT_LONG, "O programu Lavender"
 
 #ifdef _WIN32
+    IDS_ABOUT, "O programu..."
+    IDS_ABOUT_LONG, "O programu Lavender"
     IDS_SIZE, "Rozměr"
     IDS_FULL, "&Celá obrazovka\tF11"
 #endif

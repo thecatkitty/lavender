@@ -45,10 +45,10 @@ LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
 
     IDS_DESCRIPTION, "Odtwarzacz pokazu slajdów"
     IDS_COPYRIGHT, "(C) 2021-2025 Mateusz Karcz.\nUdostępniono na zasadach Licencji MIT."
-    IDS_ABOUT, "O programie..."
-    IDS_ABOUT_LONG, "O programie Lavender"
 
 #ifdef _WIN32
+    IDS_ABOUT, "O programie..."
+    IDS_ABOUT_LONG, "O programie Lavender"
     IDS_SIZE, "Rozmiar"
     IDS_FULL, "&Pełny ekran\tF11"
 #endif

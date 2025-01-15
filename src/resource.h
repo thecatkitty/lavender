@@ -1,8 +1,7 @@
 #ifdef _WIN32
 #include <winnt.rh>
-#endif
-
 #include <nls.h>
+#endif
 
 #include <generated/config.h>
 
@@ -48,12 +47,12 @@
 
 #define IDS_DESCRIPTION 0x40
 #define IDS_COPYRIGHT   0x41
-#define IDS_ABOUT       0x42
-#define IDS_ABOUT_LONG  0x43
 
 #ifdef _WIN32
-#define IDS_SIZE 0x50
-#define IDS_FULL 0x51
+#define IDS_ABOUT      0x50
+#define IDS_ABOUT_LONG 0x51
+#define IDS_SIZE       0x52
+#define IDS_FULL       0x53
 #endif
 
 #if defined(CONFIG_ENCRYPTED_CONTENT)

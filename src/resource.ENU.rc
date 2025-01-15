@@ -45,10 +45,10 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
     IDS_DESCRIPTION, "A slideshow player"
     IDS_COPYRIGHT, "(C) 2021-2025 Mateusz Karcz.\nShared under the MIT License."
-    IDS_ABOUT, "About..."
-    IDS_ABOUT_LONG, "About Lavender"
 
 #ifdef _WIN32
+    IDS_ABOUT, "About..."
+    IDS_ABOUT_LONG, "About Lavender"
     IDS_SIZE, "Size"
     IDS_FULL, "&Fullscreen\tF11"
 #endif
