@@ -23,8 +23,6 @@
 
 extern char _binary_obj_version_txt_start[];
 
-extern char __w32_rsrc_start[];
-
 static char *_font = NULL;
 static long  _start_msec;
 static char  _state_dir[PATH_MAX] = "";
@@ -269,25 +267,6 @@ end:
     LOG("exit, %04X-%04X", volume_sn_high, volume_sn_low);
     free(devname);
     return (volume_sn_high << 16) | volume_sn_low;
-}
-
-int
-pal_load_string(unsigned id, char *buffer, int max_length)
-{
-    LOG("entry, id: %u, buffer: %p, max_length: %d", id, buffer, max_length);
-
-    int length = exe_pe_load_string(__w32_rsrc_start, id, buffer, max_length);
-    if (0 > length)
-    {
-        const char msg[] = "!!! string missing !!!";
-        strncpy(buffer, msg, max_length);
-
-        LOG("exit, string missing");
-        return sizeof(msg) - 1;
-    }
-
-    LOG("exit, '%s'", buffer);
-    return length;
 }
 
 static void
