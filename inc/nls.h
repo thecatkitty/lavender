@@ -5,4 +5,10 @@
 #define LCID_ENU 1033
 #define LCID_PLK 1045
 
+typedef struct
+{
+    unsigned    id;
+    const char *str;
+} nls_locstr;
+
 #endif // _NLS_H_
