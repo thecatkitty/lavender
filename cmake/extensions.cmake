@@ -6,67 +6,32 @@ if(${compiler_name} MATCHES "-")
     string(REGEX REPLACE "-[a-z]+$" "-" compiler_prefix ${compiler_name})
 endif()
 
-if(${compiler_prefix} MATCHES "mingw")
-    string(REGEX REPLACE "-$" "" WIN32_TRIPLE ${compiler_prefix})
-elseif((${compiler_prefix} MATCHES "x86_64") OR (("${compiler_prefix}" STREQUAL "") AND ("${CMAKE_HOST_SYSTEM_PROCESSOR}" MATCHES "x86_64")))
-    set(WIN32_TRIPLE x86_64-w64-mingw32)
-    set(WIN32_OBJCOPY_FMT elf64-x86-64)
-    set(WIN32_STRINGS_SUFFIX ".obj")
+if((${compiler_prefix} MATCHES "x86_64") OR (("${compiler_prefix}" STREQUAL "") AND ("${CMAKE_HOST_SYSTEM_PROCESSOR}" MATCHES "x86_64")))
+    set(OBJCOPY_FMT elf64-x86-64)
 else()
-    set(WIN32_TRIPLE i686-w64-mingw32)
-    set(WIN32_OBJCOPY_FMT elf32-i386)
-    set(WIN32_STRINGS_SUFFIX ".o")
+    set(OBJCOPY_FMT elf32-i386)
 endif()
 
-cmake_path(GET CMAKE_C_COMPILER PARENT_PATH compiler_root)
-if(NOT MSVC)
-    find_program(win32_windres ${WIN32_TRIPLE}-windres PATHS ${compiler_root})
-    find_program(win32_objcopy ${WIN32_TRIPLE}-objcopy PATHS ${compiler_root})
-    set(CMAKE_RC_COMPILER ${win32_windres})
-    set(CMAKE_WIN32_OBJCOPY ${win32_objcopy})
-endif()
-
-function(add_win32_strings target source_file)
+function(target_link_win32_strings target source_file)
     if(LINUX)
         set(win32_strings_args "-D__linux__")
     endif()
 
     add_custom_command(
-        OUTPUT ${target}.obj
-        COMMAND ${CMAKE_RC_COMPILER}
+        OUTPUT ${source_file}.c
+        COMMAND python3 ${CMAKE_SOURCE_DIR}/tools/strconv.py
             ${CMAKE_CURRENT_SOURCE_DIR}/${source_file}
-            ${target}.obj
-            -c 65001
+            ${source_file}.c
+            ${CMAKE_C_COMPILER}
+            --
             -DSTRINGS_ONLY
             ${win32_strings_args}
             -I${CMAKE_SOURCE_DIR}/inc/
             -I${CMAKE_BINARY_DIR}/inc/
         MAIN_DEPENDENCY ${source_file})
 
-    add_custom_command(
-        OUTPUT ${target}.o
-        COMMAND ${CMAKE_WIN32_OBJCOPY}
-            ${target}.obj
-            ${target}.o
-            -O ${WIN32_OBJCOPY_FMT}
-            --rename-section .rsrc=.rodata.rsrc
-            --add-symbol __w32_rsrc_start=.rodata.rsrc:0
-            --weaken
-        MAIN_DEPENDENCY ${target}.obj)
-
-    add_custom_target(
-        ${target} ALL
-        DEPENDS ${target}${WIN32_STRINGS_SUFFIX})
-
-    set_property(
-        TARGET ${target}
-        PROPERTY PATH
-        ${CMAKE_CURRENT_BINARY_DIR}/${target}${WIN32_STRINGS_SUFFIX})
-endfunction()
-
-function(target_link_win32_strings target strings)
-    add_dependencies(${target} ${strings})
-    target_link_libraries(${target} $<TARGET_PROPERTY:${strings},PATH>)
+    target_sources(${target} PRIVATE ${source_file}.c)
+    set_source_files_properties(${source_file}.c PROPERTIES COMPILE_FLAGS -Wno-pedantic)
 endfunction()
 
 
@@ -76,7 +41,7 @@ function(add_binary_object target source_file object_prefix)
         OUTPUT ${target}${CMAKE_C_OUTPUT_EXTENSION}
         COMMAND ${CMAKE_OBJCOPY}
             -I binary
-            -O ${WIN32_OBJCOPY_FMT}
+            -O ${OBJCOPY_FMT}
             --rename-section .data=.rodata
             ${source_file}
             ${target}${CMAKE_C_OUTPUT_EXTENSION}

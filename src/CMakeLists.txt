@@ -1,4 +1,5 @@
 add_executable(lavender WIN32)
+add_dependencies(lavender config)
 
 if(CONFIG_SDL2)
     find_package(SDL2 REQUIRED PATHS ../ext)
@@ -63,8 +64,7 @@ else()
     add_binary_object(version version.bin _binary_obj_version_txt)
     target_link_binary_object(lavender version)
 
-    add_win32_strings(strings resource.${LAV_LANG}.rc)
-    target_link_win32_strings(lavender strings)
+    target_link_win32_strings(lavender resource.${LAV_LANG}.rc)
 endif()
 
 if(DOS)
