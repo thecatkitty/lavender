@@ -95,55 +95,8 @@ typedef struct
     DWORD Size;
 } exe_pe_data_directory;
 
-typedef struct
-{
-    DWORD Characteristics;
-    DWORD TimeDateStamp;
-    WORD  MajorVersion;
-    WORD  MinorVersion;
-    WORD  NumberOfNamedEntries;
-    WORD  NumberOfIdEntries;
-    //   IMAGE_RESOURCE_DIRECTORY_ENTRY DirectoryEntries[];
-} exe_pe_resource_directory;
-
-typedef struct
-{
-    union {
-        struct
-        {
-            DWORD NameOffset : 31;
-            DWORD NameIsString : 1;
-        } name;
-        DWORD Name;
-        WORD  Id;
-    };
-    union {
-        DWORD OffsetToData;
-        struct
-        {
-            DWORD OffsetToDirectory : 31;
-            DWORD DataIsDirectory : 1;
-        } dir;
-    };
-} exe_pe_resource_directory_entry;
-
-typedef struct
-{
-    DWORD OffsetToData;
-    DWORD Size;
-    DWORD CodePage;
-    DWORD Reserved;
-} exe_pe_resource_data_entry;
 #pragma pack(pop)
 
 #define EXE_PE_DIRECTORY_ENTRY_SECURITY 4
-
-#define EXE_PE_RT_STRING 6
-
-extern const char *
-exe_pe_get_resource(void *rsrc, WORD type, WORD id);
-
-extern int
-exe_pe_load_string(void *rsrc, unsigned id, char *buffer, int max_length);
 
 #endif // _FMT_EXE_H_
