@@ -37,13 +37,14 @@ This is still work in progress, but I'm doing my best to separate working versio
 * multiple language support (Czech, English, Polish)
 
 ## Building
-Building requires x86_64 Linux with *CMake*, *GNU Make*, *GNU Binutils*, and `zip`.
-Windows target is built using [LLVM-MinGW](https://github.com/mstorsjo/llvm-mingw) for i686, x86_64, armv7, and aarch64, but can be built using Visual C++.
-Linux builds relies on *SDL2* and *SDL2_ttf* libraries, also requiring Fontconfig, FluidSynth, and libblkid.
+Building requires *CMake*, *Python 3* and `zip` on all hosts.
+On Linux hosts, *GNU Make* and *GNU Binutils* are also required.
+Cross-compilation for Windows is done using [LLVM-MinGW](https://github.com/mstorsjo/llvm-mingw) for i586, x86_64, armv7, and aarch64.
+Native compilation on Windows requires at least Microsoft Visual C++ 2010 with Windows SDK 7.1.
+Linux builds rely on *SDL2*, *SDL2_ttf*, *cURL*, *Fontconfig*, *FluidSynth*, and *libblkid* libraries.
 MS-DOS builds require [GCC for IA-16](https://github.com/tkchia/gcc-ia16/) with [libi86](https://github.com/tkchia/libi86/).
-Script encryption tools are written in *Python 3*.
 
-If you have it all, you can configure the environment:
+After acquiring all prerequisities, you can configure the Linux host environment, e. g.:
 ```sh
 # Native (diagnostic) Linux build, either GCC or Clang is fine
 cmake -S . -B build
