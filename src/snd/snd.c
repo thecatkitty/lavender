@@ -220,7 +220,7 @@ bool
 snd_play(const char *name)
 {
     char *data;
-    int   length;
+    long  length;
 
     if (_music)
     {
