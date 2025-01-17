@@ -19,7 +19,7 @@ _find_best_bitmap(char *pattern)
 
     par = (int)gfx_get_pixel_aspect();
     offset = 0;
-    while ((0 <= (par + offset)) || (255 >= (par + offset)))
+    while ((0 <= (par + offset)) && (255 >= (par + offset)))
     {
         if ((0 <= (par + offset)) && (255 >= (par + offset)))
         {
@@ -29,7 +29,13 @@ _find_best_bitmap(char *pattern)
             asset = pal_open_asset(pattern, O_RDONLY);
             if (NULL != asset)
             {
-                return asset;
+                if (INTPTR_MAX > pal_get_asset_size(asset))
+                {
+                    return asset;
+                }
+
+                pal_close_asset(asset);
+                asset = NULL;
             }
         }
 
