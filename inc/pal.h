@@ -132,7 +132,7 @@ pal_close_asset(hasset asset);
 extern char *
 pal_get_asset_data(hasset asset);
 
-extern int
+extern long
 pal_get_asset_size(hasset asset);
 
 extern const char *

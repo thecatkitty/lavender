@@ -294,7 +294,7 @@ pal_get_asset_data(hasset asset)
     return ptr->data;
 }
 
-int
+long
 pal_get_asset_size(hasset asset)
 {
     pal_asset *ptr = (pal_asset *)asset;

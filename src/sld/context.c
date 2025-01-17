@@ -29,7 +29,7 @@ sld_create_context(const char *name, int flags)
         return NULL;
     }
 
-    ctx->size = pal_get_asset_size(ctx->script);
+    ctx->size = (int)pal_get_asset_size(ctx->script);
     ctx->offset = 0;
     ctx->state = SLD_STATE_STOP;
     memset(ctx->message, 0, sizeof(ctx->message));
