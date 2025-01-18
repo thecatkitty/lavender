@@ -256,15 +256,36 @@ cga_draw_bitmap(device *dev, gfx_bitmap *bm, int x, int y)
     plane0 += offset;
     plane1 += offset;
 
-    for (uint16_t line = 0; line < bm->height; line += 2)
+    int line_span = CGA_HIMONO_LINE;
+    int lines = bm->height;
+    int width = (bm->width + 7) / 8;
+    if (0 > bm->height)
     {
-        _fmemcpy(plane0, bits, bm->opl);
-        plane0 += CGA_HIMONO_LINE;
+        plane0 -= (bm->height + 1) / 2 * CGA_HIMONO_LINE;
+        plane1 -= (bm->height + 1) / 2 * CGA_HIMONO_LINE;
+        line_span = -CGA_HIMONO_LINE;
+        lines = -bm->height;
+    }
+
+    for (uint16_t line = 0; line < lines; line += 2)
+    {
+        if (0 < line_span)
+        {
+            _fmemcpy(plane0, bits, width);
+            plane0 += line_span;
+            bits += bm->opl;
+        }
+
+        _fmemcpy(plane1, bits, width);
+        plane1 += line_span;
         bits += bm->opl;
 
-        _fmemcpy(plane1, bits, bm->opl);
-        plane1 += CGA_HIMONO_LINE;
-        bits += bm->opl;
+        if (0 > line_span)
+        {
+            _fmemcpy(plane0, bits, width);
+            plane0 += line_span;
+            bits += bm->opl;
+        }
     }
 
     return true;

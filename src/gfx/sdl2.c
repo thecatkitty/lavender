@@ -253,7 +253,7 @@ gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
     if (1 == bm->bpp)
     {
         char *bits = (char *)bm->bits;
-        char *end = bits + bm->opl * bm->height;
+        char *end = bits + bm->opl * abs(bm->height);
         while (bits < end)
         {
             *bits = ~*bits;

@@ -20,7 +20,7 @@ This is still work in progress, but I'm doing my best to separate working versio
   * under DOS, supports Czech, Polish, and Spanish diacritics, and 0x00-0x1F, 0x7F CP437 special characters
 * displaying bitmap images
   * monochrome binary Portable BitMap (P4) files
-  * 16-color Windows Device Independent Bitmaps (BMP)
+  * monochrome and 16-color Windows Device Independent Bitmaps (BMP)
   * XRGB8888 Windows Device Independent Bitmaps (BMP) under Windows and Linux
 * drawing and filling rectangles
   * 16 colors on Windows, Linux, and DOS with EGA

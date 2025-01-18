@@ -54,7 +54,7 @@ bmp_load_bitmap(gfx_bitmap *bm, hasset asset)
     bm->bpp = ih->bit_count;
     LOG("%dx%d, %u planes, %u bpp", bm->width, bm->height, bm->planes, bm->bpp);
 
-    if ((4 != bm->bpp) && (32 != bm->bpp))
+    if ((1 != bm->bpp) && (4 != bm->bpp) && (32 != bm->bpp))
     {
         LOG("exit, %d bit depth not supported!", bm->bpp);
         errno = EFTYPE;
