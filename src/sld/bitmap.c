@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include <fmt/bmp.h>
 #include <fmt/pbm.h>
 #include <pal.h>
@@ -5,49 +7,88 @@
 
 #include "sld_impl.h"
 
+typedef struct
+{
+    size_t position;
+    int    system_par;
+    hasset asset;
+    int    par;
+} search_ctx;
+
+static bool
+_enum_assets_callback(const char *name, void *data)
+{
+    search_ctx *ctx = (search_ctx *)data;
+
+    hasset asset;
+    int    par;
+
+    LOG("entry, name: '%s'", name);
+
+    par = xtob(name + ctx->position);
+    if (abs(ctx->par - ctx->system_par) <= abs(par - ctx->system_par))
+    {
+        LOG("exit, PAR %.2f worse than current %.2f", (float)par / 64.0f,
+            (float)ctx->par / 64.0f);
+        return true;
+    }
+
+    asset = pal_open_asset(name, O_RDONLY);
+    if (NULL == asset)
+    {
+        LOG("exit, cannot open");
+        return true;
+    }
+
+#if INTPTR_MAX < LONG_MAX
+    if (INTPTR_MAX < pal_get_asset_size(asset))
+    {
+        LOG("exit, too large");
+        pal_close_asset(asset);
+        return true;
+    }
+#endif
+
+    if (NULL != ctx->asset)
+    {
+        pal_close_asset(ctx->asset);
+    }
+
+    LOG("exit, new best PAR %.2f", (float)par / 64.0f);
+    ctx->asset = asset;
+    ctx->par = par;
+    return true;
+}
+
 static hasset
 _find_best_bitmap(char *pattern)
 {
-    int par, offset;
+    search_ctx ctx = {0};
+    char      *placeholder;
 
-    const char *hex = "0123456789ABCDEF";
-    char       *placeholder = strstr(pattern, "<>");
-    if (NULL == placeholder)
+    LOG("entry, pattern: '%s'", pattern);
+
+    if (NULL == (placeholder = strstr(pattern, "<>")))
     {
         return pal_open_asset(pattern, O_RDONLY);
     }
 
-    par = (int)gfx_get_pixel_aspect();
-    offset = 0;
-    while ((0 <= (par + offset)) && (255 >= (par + offset)))
+    placeholder[0] = placeholder[1] = '?';
+    ctx.position = placeholder - pattern;
+    ctx.system_par = (int)gfx_get_pixel_aspect();
+    ctx.par = INT_MAX;
+    if (0 > pal_enum_assets(_enum_assets_callback, pattern, &ctx))
     {
-        if ((0 <= (par + offset)) && (255 >= (par + offset)))
-        {
-            hasset asset;
-            placeholder[0] = hex[(par + offset) / 16];
-            placeholder[1] = hex[(par + offset) % 16];
-            asset = pal_open_asset(pattern, O_RDONLY);
-            if (NULL != asset)
-            {
-                if (INTPTR_MAX > pal_get_asset_size(asset))
-                {
-                    return asset;
-                }
-
-                pal_close_asset(asset);
-                asset = NULL;
-            }
-        }
-
-        if (0 <= offset)
-        {
-            offset++;
-        }
-        offset = -offset;
+        return NULL;
     }
 
-    errno = ENOENT;
-    return NULL;
+    if (NULL == ctx.asset)
+    {
+        errno = ENOENT;
+        return NULL;
+    }
+
+    return ctx.asset;
 }
 
 int
