@@ -127,11 +127,13 @@ ega_draw_bitmap(device *dev, gfx_bitmap *bm, int x, int y)
     if (1 == bm->bpp)
     {
         _write_planes(0xF);
-        for (int line = 0; line < bm->height; line++)
+
+        int width = (bm->width + 7) / 8;
+        for (int line = 0; line < lines; line++)
         {
-            _fmemcpy(fb, bits, bm->opl);
+            _fmemcpy(fb, bits, width);
             bits += bm->opl;
-            fb += EGA_HIRES_LINE;
+            fb += line_span;
         }
 
         return true;
