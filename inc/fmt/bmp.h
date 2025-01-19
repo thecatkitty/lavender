@@ -65,9 +65,6 @@ enum
 };
 
 extern bool
-bmp_is_format(hasset asset);
-
-extern bool
 bmp_load_bitmap(gfx_bitmap *bm, hasset asset);
 
 #endif
