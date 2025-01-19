@@ -33,6 +33,10 @@ if(DOS)
     target_link_directories(lavender BEFORE PRIVATE ../ext/nicetia16/lib)
 endif()
 
+if(DOS_TARGET_COM)
+    target_link_options(lavender PRIVATE -Tbss=${COM_MAX_SIZE})
+endif()
+
 if(NOT WIN32)
     set_property(TARGET lavender PROPERTY CXX_STANDARD 14)
     target_link_libraries(lavender -lstdc++)
