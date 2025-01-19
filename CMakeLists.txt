@@ -99,13 +99,28 @@ include_directories(BEFORE inc)
 add_subdirectory(src)
 add_dependencies(lavender config)
 
+if(DOS_TARGET_COM)
+    add_custom_command(
+        OUTPUT slides.txt
+        COMMAND
+            tail -n +2 ${CMAKE_CURRENT_SOURCE_DIR}/data/slides.txt > slides.txt
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/data/slides.txt)
+
+    set(ASSETS
+        slides.txt
+        ${CMAKE_CURRENT_SOURCE_DIR}/data/lavndr73.bmp
+        ${CMAKE_CURRENT_SOURCE_DIR}/data/lavndr99.bmp)
+else()
+    set(ASSETS ${CMAKE_CURRENT_SOURCE_DIR}/data/*)
+endif()
+
 add_custom_command(
     OUTPUT data.zip
     COMMAND
         zip -0 -r -j data.zip
-        ${CMAKE_CURRENT_SOURCE_DIR}/data/*
+        ${ASSETS}
         ${DRIVERS}
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/data/*)
+    DEPENDS ${ASSETS})
 
 if(DOS_TARGET_COM)
     add_custom_command(
