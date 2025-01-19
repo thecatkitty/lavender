@@ -6,14 +6,6 @@
 #define XRGB_BLUE_MASK  0x000000FFUL
 
 bool
-bmp_is_format(hasset asset)
-{
-    const bmp_file_header *fh =
-        (const bmp_file_header *)pal_get_asset_data(asset);
-    return BMP_MAGIC == fh->type;
-}
-
-bool
 bmp_load_bitmap(gfx_bitmap *bm, hasset asset)
 {
     const bmp_file_header *fh;
@@ -21,16 +13,16 @@ bmp_load_bitmap(gfx_bitmap *bm, hasset asset)
     char                  *data;
 
     LOG("entry, bm: %p, asset: %p", (void *)bm, (void *)asset);
-    if (!bmp_is_format(asset))
+
+    data = pal_get_asset_data(asset);
+    fh = (const bmp_file_header *)data;
+    if (BMP_MAGIC != fh->type)
     {
         LOG("exit, not a BMP!");
         errno = EFTYPE;
         return false;
     }
 
-    data = pal_get_asset_data(asset);
-
-    fh = (const bmp_file_header *)data;
     bm->bits = data + fh->off_bits;
 
     ih = (const bmp_info_header *)(data + sizeof(bmp_file_header));
