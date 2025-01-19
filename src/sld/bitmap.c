@@ -1,7 +1,6 @@
 #include <stdlib.h>
 
 #include <fmt/bmp.h>
-#include <fmt/pbm.h>
 #include <pal.h>
 #include <sld.h>
 
@@ -107,14 +106,7 @@ __sld_execute_bitmap(sld_entry *sld)
         return SLD_SYSERR;
     }
 
-    if (bmp_is_format(bitmap))
-    {
-        if (!bmp_load_bitmap(&bm, bitmap))
-        {
-            return SLD_SYSERR;
-        }
-    }
-    else if (!pbm_load_bitmap(&bm, bitmap))
+    if (!bmp_load_bitmap(&bm, bitmap))
     {
         return SLD_SYSERR;
     }
