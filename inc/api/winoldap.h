@@ -24,4 +24,37 @@ winoldap_set_title(far const char *title)
     return ax;
 }
 
+static inline short
+winoldap_set_closable(unsigned state)
+{
+    unsigned ax;
+    asm volatile("int $0x2F"
+                 : "=a"(ax)
+                 : "a"(0x168F), "d"(0x0000 | (state & 0xFF))
+                 : "memory", "cc");
+    return ax;
+}
+
+static inline short
+winoldap_query_close(void)
+{
+    unsigned ax;
+    asm volatile("int $0x2F"
+                 : "=a"(ax)
+                 : "a"(0x168F), "d"(0x0100)
+                 : "memory", "cc");
+    return ax;
+}
+
+static inline short
+winoldap_acknowledge_close(void)
+{
+    unsigned ax;
+    asm volatile("int $0x2F"
+                 : "=a"(ax)
+                 : "a"(0x168F), "d"(0x0200)
+                 : "memory", "cc");
+    return ax;
+}
+
 #endif // _API_WINOLDAP_H_
