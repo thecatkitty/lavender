@@ -11,6 +11,7 @@
 #include <api/bios.h>
 #include <api/dos.h>
 #include <api/msmouse.h>
+#include <api/winoldap.h>
 #include <fmt/exe.h>
 #include <fmt/fat.h>
 #include <fmt/utf8.h>
@@ -51,6 +52,7 @@ __dospc_pit_isr(void);
 static gfx_glyph_data _font = NULL;
 static gfx_dimensions _glyph;
 static bool           _has_mouse = false;
+static short          _winoldap_version = 0;
 
 #ifdef STACK_PROFILING
 static uint64_t      *_stack_start;
@@ -852,6 +854,17 @@ bool ddcall
 dospc_is_dosbox(void)
 {
     return 0 == _fmemcmp((const char far *)0xF000E061, "DOSBox", 6);
+}
+
+bool
+dospc_is_windows(void)
+{
+    if (0 == _winoldap_version)
+    {
+        _winoldap_version = winoldap_get_version();
+    }
+
+    return 0x1700 != _winoldap_version;
 }
 
 #ifdef CONFIG_ANDREA
