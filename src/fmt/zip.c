@@ -198,6 +198,14 @@ zip_open(zip_archive archive)
     return true;
 }
 
+void
+zip_close(void)
+{
+#ifndef ZIP_PIGGYBACK
+    close(_fd);
+#endif
+}
+
 int
 zip_enum_files(zip_enum_files_callback callback, void *data)
 {
