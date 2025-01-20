@@ -100,6 +100,8 @@ ziparch_cleanup(void)
             zip_free_data(__pal_assets[i].data);
         }
     }
+
+    zip_close();
 }
 
 typedef struct

@@ -179,6 +179,10 @@ typedef bool (*zip_enum_files_callback)(zip_cdir_file_header *cfh, void *data);
 extern bool
 zip_open(zip_archive archive);
 
+// Close the working archive
+extern void
+zip_close(void);
+
 // Enumerate all files present in the archive
 int
 zip_enum_files(zip_enum_files_callback callback, void *data);
