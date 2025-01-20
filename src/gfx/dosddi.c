@@ -1,6 +1,7 @@
 #ifdef CONFIG_ANDREA
 #include <andrea.h>
 #endif
+#include <api/winoldap.h>
 #include <gfx.h>
 #include <pal.h>
 #include <platform/dospc.h>
@@ -144,5 +145,12 @@ gfx_cleanup(void)
 bool
 gfx_set_title(const char *title)
 {
-    return false;
+    if (!dospc_is_windows())
+    {
+        return false;
+    }
+
+    char buffer[80];
+    utf8_encode(title, buffer, pal_wctoa);
+    return 1 == winoldap_set_title(buffer);
 }
