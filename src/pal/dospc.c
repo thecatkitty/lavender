@@ -403,6 +403,11 @@ pal_initialize(int argc, char *argv[])
     gfx_get_glyph_dimensions(&_glyph);
     _has_mouse = msmouse_init();
 
+    if (dospc_is_windows())
+    {
+        winoldap_set_closable(1);
+    }
+
 #if defined(CONFIG_SOUND)
     snd_initialize(arg_snd);
 #endif // CONFIG_SOUND
@@ -447,6 +452,17 @@ pal_cleanup(void)
 bool
 pal_handle(void)
 {
+    if (!dospc_is_windows())
+    {
+        return true;
+    }
+
+    if (0 == winoldap_query_close())
+    {
+        winoldap_acknowledge_close();
+        return false;
+    }
+
     return true;
 }
 
