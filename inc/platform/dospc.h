@@ -15,6 +15,9 @@ typedef void interrupt far (*dospc_isr)(void);
 extern bool ddcall
 dospc_is_dosbox(void);
 
+extern bool
+dospc_is_windows(void);
+
 #ifdef CONFIG_ANDREA
 extern uint16_t
 dospc_load_driver(const char *name);
