@@ -437,14 +437,52 @@ cga_fill_rectangle(device *dev, const gfx_rect *rect, gfx_color color)
     return true;
 }
 
+static void
+_load_cell(char *buffer, uint16_t x, uint16_t y)
+{
+    size_t offset = y * 8 / 2 * CGA_HIMONO_LINE + x;
+    for (int i = 0; i < 8; i += 2)
+    {
+        buffer[i] = CGA_PLANE0[offset];
+        buffer[i + 1] = CGA_PLANE1[offset];
+        offset += CGA_HIMONO_LINE;
+    }
+}
+
+static void
+_combine_cell(const char *buffer, uint16_t x, uint16_t y)
+{
+    size_t offset = y * 8 / 2 * CGA_HIMONO_LINE + x;
+    for (int i = 0; i < 8; i += 2)
+    {
+        CGA_PLANE0[offset] ^= buffer[i];
+        CGA_PLANE1[offset] ^= buffer[i + 1];
+        offset += CGA_HIMONO_LINE;
+    }
+}
+
 bool ddcall
 cga_draw_text(device *dev, const char *str, uint16_t x, uint16_t y)
 {
     while (*str)
     {
-        bios_set_cursor_position(0, (y << 8) | x++);
-        bios_write_character(0, *str, 0x80, 1);
+        bios_set_cursor_position(0, (y << 8) | x);
+        if (((y == GFX_LINES - 1) &&      // use BIOS to prevent scrolling
+             (x == GFX_COLUMNS - 1)) ||   // on the last cell
+            strchr("\a\b\e\n\r\t", *str)) // and for special character
+        {
+            bios_write_character(0, *str, 0x80, 1);
+        }
+        else
+        {
+            char cell[8];
+            _load_cell(cell, x, y);
+            dos_putc(*str);
+            _combine_cell(cell, x, y);
+        }
+
         str++;
+        x++;
     }
 
     return true;
