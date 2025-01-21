@@ -652,6 +652,18 @@ _die(unsigned ids)
     exit(1);
 }
 
+#if defined(CONFIG_SOUND)
+static bool
+_snd_enum_callback(device *dev, void *data)
+{
+    wchar_t line[MAX_PATH];
+    swprintf(line, MAX_PATH, FMT_AS L"\t" FMT_AS L"\n", dev->name,
+             dev->description);
+    _append((wchar_t *)data, line, HELP_MAX_LENGTH);
+    return true;
+}
+#endif // CONFIG_SOUND
+
 static void
 _show_help(const char *self)
 {
@@ -678,7 +690,20 @@ _show_help(const char *self)
     {
         _append(message, L"LAVENDER", lengthof(message));
     }
-    _append(message, L" [/? | /K]\n", lengthof(message));
+    _append(message,
+            L" [/? | /K"
+#if defined(CONFIG_SOUND)
+            L" | /S<dev>"
+#endif // CONFIG_SOUND
+            L"]\n",
+            lengthof(message));
+
+#if defined(CONFIG_SOUND)
+    __mme_init();
+
+    _append(message, L"\ndev:\n", lengthof(message));
+    snd_enum_devices(_snd_enum_callback, message);
+#endif // CONFIG_SOUND
 
     _append(message, L"\n", lengthof(message));
     _about(L"Lavender", message);
@@ -694,6 +719,10 @@ pal_initialize(int argc, char *argv[])
     bool   arg_kiosk;
     int    i;
     hasset icon;
+
+#if defined(CONFIG_SOUND)
+    const char *arg_snd = NULL;
+#endif // CONFIG_SOUND
 
     _start_time = timeGetTime();
     _version = __builtin_bswap16(LOWORD(GetVersion()));
@@ -718,6 +747,13 @@ pal_initialize(int argc, char *argv[])
         {
             arg_kiosk = true;
         }
+
+#if defined(CONFIG_SOUND)
+        if ('s' == tolower(argv[i][1]))
+        {
+            arg_snd = argv[i] + 2;
+        }
+#endif // CONFIG_SOUND
 
         if ('?' == argv[i][1])
         {
@@ -816,7 +852,7 @@ pal_initialize(int argc, char *argv[])
 #if defined(CONFIG_SOUND)
     __mme_init();
 
-    if (!snd_initialize(NULL))
+    if (!snd_initialize(arg_snd))
     {
         LOG("cannot initialize sound");
     }
