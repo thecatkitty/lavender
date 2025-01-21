@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <windows.h>
 
 #include <pal.h>
@@ -19,35 +20,12 @@ _time_callback(UINT id, UINT msg, DWORD_PTR user, DWORD_PTR dw1, DWORD_PTR dw2)
 static bool ddcall
 mme_open(device *dev)
 {
-    UINT devices, id;
 #if PAL_EXTERNAL_TICK
     TIMECAPS tc;
     unsigned period;
 #endif
 
     LOG("entry");
-
-    devices = midiOutGetNumDevs();
-    if (0 == devices)
-    {
-        LOG("no MIDI output devices");
-        return false;
-    }
-
-    for (id = 0; id < devices; id++)
-    {
-        MIDIOUTCAPSW caps;
-
-        if (MMSYSERR_NOERROR != midiOutGetDevCapsW(id, &caps, sizeof(caps)))
-        {
-            LOG("out %u: cannot get capabilities", id);
-            continue;
-        }
-
-        LOG("out %u: %04x:%04x %u.%u %ls", id, caps.wMid, caps.wPid,
-            HIBYTE(caps.vDriverVersion), LOBYTE(caps.vDriverVersion),
-            caps.szPname);
-    }
 
 #if PAL_EXTERNAL_TICK
     if (TIMERR_NOERROR != timeGetDevCaps(&tc, sizeof(TIMECAPS)))
@@ -58,9 +36,9 @@ mme_open(device *dev)
 #endif
 
     if (MMSYSERR_NOERROR !=
-        midiOutOpen(&_out, MIDI_MAPPER, 0, 0, CALLBACK_NULL))
+        midiOutOpen(&_out, (UINT)(UINT_PTR)dev->data, 0, 0, CALLBACK_NULL))
     {
-        LOG("cannot open MIDI mapper device");
+        LOG("cannot open MIDI device");
         return false;
     }
 
@@ -164,6 +142,37 @@ static snd_device_ops _ops = {mme_open, mme_close, mme_write};
 int
 __mme_init(void)
 {
-    device dev = {"mme", "Windows MME", &_ops, NULL};
-    return snd_register_device(&dev);
+    UINT devices, id;
+
+    devices = midiOutGetNumDevs();
+    if (0 == devices)
+    {
+        LOG("no MIDI output devices");
+        return ENODEV;
+    }
+
+    for (id = 0; id < devices; id++)
+    {
+        MIDIOUTCAPSW caps;
+        device       dev;
+
+        if (MMSYSERR_NOERROR != midiOutGetDevCapsW(id, &caps, sizeof(caps)))
+        {
+            LOG("out %u: cannot get capabilities", id);
+            continue;
+        }
+
+        LOG("out %u: %04x:%04x %u.%u %ls", id, caps.wMid, caps.wPid,
+            HIBYTE(caps.vDriverVersion), LOBYTE(caps.vDriverVersion),
+            caps.szPname);
+
+        snprintf(dev.name, DEV_MAX_NAME, "mme%u", id);
+        WideCharToMultiByte(CP_UTF8, 0, caps.szPname, -1, dev.description, 32,
+                            NULL, NULL);
+        dev.ops = &_ops;
+        dev.data = (void *)(UINT_PTR)id;
+        snd_register_device(&dev);
+    }
+
+    return 0;
 }
