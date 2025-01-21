@@ -33,6 +33,8 @@
 #define ID_SCALE 0x2000
 #define ID_FULL  0x2100
 
+#define HELP_MAX_LENGTH 1024
+
 // See DEVICE_SCALE_FACTOR in shtypes.h
 static const float SCALES[] = {1.00f, 1.20f, 1.25f, 1.40f, 1.50f, 1.60f,
                                1.75f, 1.80f, 2.00f, 2.25f, 2.50f, 3.00f,
@@ -650,6 +652,38 @@ _die(unsigned ids)
     exit(1);
 }
 
+static void
+_show_help(const char *self)
+{
+    const char *name = NULL;
+
+    wchar_t message[HELP_MAX_LENGTH] = L"";
+    wchar_t part[MAX_PATH];
+
+    if (NULL == (name = strrchr(self, '\\')))
+    {
+        name = self;
+    }
+    else
+    {
+        name++;
+    }
+
+    if (name)
+    {
+        MultiByteToWideChar(CP_UTF8, 0, name, -1, part, lengthof(part));
+        _append(message, part, lengthof(message));
+    }
+    else
+    {
+        _append(message, L"LAVENDER", lengthof(message));
+    }
+    _append(message, L" [/? | /K]\n", lengthof(message));
+
+    _append(message, L"\n", lengthof(message));
+    _about(L"Lavender", message);
+}
+
 void
 pal_initialize(int argc, char *argv[])
 {
@@ -683,6 +717,12 @@ pal_initialize(int argc, char *argv[])
         if ('k' == tolower(argv[i][1]))
         {
             arg_kiosk = true;
+        }
+
+        if ('?' == argv[i][1])
+        {
+            _show_help(argv[0]);
+            exit(1);
         }
     }
 
