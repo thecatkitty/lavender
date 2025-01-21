@@ -160,17 +160,21 @@ _about_hook_wnd_proc(HWND wnd, UINT message, WPARAM wparam, LPARAM lparam)
         RECT parent_rect, msgbox_rect;
         LONG parent_width, parent_height, msgbox_width, msgbox_height;
 
-        GetWindowRect(windows_get_hwnd(), &parent_rect);
-        parent_width = parent_rect.right - parent_rect.left;
-        parent_height = parent_rect.bottom - parent_rect.top;
+        if (NULL != windows_get_hwnd())
+        {
+            GetWindowRect(windows_get_hwnd(), &parent_rect);
+            parent_width = parent_rect.right - parent_rect.left;
+            parent_height = parent_rect.bottom - parent_rect.top;
 
-        GetWindowRect(wnd, &msgbox_rect);
-        msgbox_width = msgbox_rect.right - msgbox_rect.left;
-        msgbox_height = msgbox_rect.bottom - msgbox_rect.top;
+            GetWindowRect(wnd, &msgbox_rect);
+            msgbox_width = msgbox_rect.right - msgbox_rect.left;
+            msgbox_height = msgbox_rect.bottom - msgbox_rect.top;
 
-        MoveWindow(wnd, parent_rect.left + (parent_width - msgbox_width) / 2,
-                   parent_rect.top + (parent_height - msgbox_height) / 2,
-                   msgbox_width, msgbox_height, FALSE);
+            MoveWindow(wnd,
+                       parent_rect.left + (parent_width - msgbox_width) / 2,
+                       parent_rect.top + (parent_height - msgbox_height) / 2,
+                       msgbox_width, msgbox_height, FALSE);
+        }
 
         EnumChildWindows(wnd, _about_enum_child_proc, (LPARAM)&icon_wnd);
         if (NULL != icon_wnd)
@@ -210,6 +214,39 @@ static void
 _append(wchar_t *dst, const wchar_t *src, size_t size)
 {
     wcsncat(dst, src, size - wcslen(dst));
+}
+
+static void
+_about(const wchar_t *title, const wchar_t *text)
+{
+    const char *version = pal_get_version_string();
+    wchar_t     message[1024];
+    wchar_t     part[MAX_PATH];
+
+    MultiByteToWideChar(CP_UTF8, 0, version, -1, message, lengthof(message));
+    _append(message, L"\n", lengthof(message));
+    LoadStringW(_instance, IDS_DESCRIPTION, part, lengthof(part));
+    _append(message, part, lengthof(message));
+    _append(message, L"\n\n", lengthof(message));
+
+    if (NULL != text)
+    {
+        _append(message, text, lengthof(message));
+    }
+
+    LoadStringW(_instance, IDS_COPYRIGHT, part, lengthof(part));
+    _append(message, part, lengthof(message));
+    _append(message, L"\n\nhttps://celones.pl/lavender", lengthof(message));
+
+    _hook = SetWindowsHookExW(WH_CALLWNDPROC, _about_hook_proc, NULL,
+                              GetCurrentThreadId());
+
+    if (NULL == title)
+    {
+        LoadStringW(_instance, IDS_ABOUT_LONG, part, lengthof(part));
+        title = part;
+    }
+    MessageBoxW(windows_get_hwnd(), message, title, MB_ICONQUESTION);
 }
 
 static int
@@ -437,25 +474,7 @@ _wnd_proc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
     case WM_SYSCOMMAND: {
         if (ID_ABOUT == wparam)
         {
-            const char *version = pal_get_version_string();
-            wchar_t     message[1024];
-            wchar_t     part[MAX_PATH];
-
-            MultiByteToWideChar(CP_UTF8, 0, version, -1, message,
-                                lengthof(message));
-            _append(message, L"\n", lengthof(message));
-            LoadStringW(_instance, IDS_DESCRIPTION, part, lengthof(part));
-            _append(message, part, lengthof(message));
-            _append(message, L"\n\n", lengthof(message));
-            LoadStringW(_instance, IDS_COPYRIGHT, part, lengthof(part));
-            _append(message, part, lengthof(message));
-            _append(message, L"\n\nhttps://celones.pl/lavender",
-                    lengthof(message));
-
-            _hook = SetWindowsHookExW(WH_CALLWNDPROC, _about_hook_proc, NULL,
-                                      GetCurrentThreadId());
-            LoadStringW(_instance, IDS_ABOUT_LONG, part, lengthof(part));
-            MessageBoxW(wnd, message, part, MB_ICONQUESTION);
+            _about(NULL, NULL);
             return 0;
         }
 
