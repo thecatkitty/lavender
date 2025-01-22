@@ -97,7 +97,7 @@ beepemu_stop(void)
 }
 
 void ddcall
-dospc_beep(uint16_t divisor)
+dos_beep(uint16_t divisor)
 {
     _flush();
     _divisor = divisor;
@@ -105,7 +105,7 @@ dospc_beep(uint16_t divisor)
 }
 
 void ddcall
-dospc_silence(void)
+dos_silence(void)
 {
     _flush();
     _enabled = false;

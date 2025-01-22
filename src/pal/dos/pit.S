@@ -4,24 +4,24 @@
 
 	.text
 
-	.global	__dospc_pit_isr
-	.type	__dospc_pit_isr, @function
-__dospc_pit_isr:
+	.global	__dos_pit_isr
+	.type	__dos_pit_isr, @function
+__dos_pit_isr:
     push    ax
     push    bx
     push    ds
 
     /* Load program data segment */
-    mov     ax, word ptr cs:[__dospc_ds]
+    mov     ax, word ptr cs:[__dos_ds]
     mov     ds, ax
 
     /* Increment main counter */
-    mov     ax, word ptr [__dospc_counter]
-    mov     bx, word ptr [__dospc_counter+2]
+    mov     ax, word ptr [__dos_counter]
+    mov     bx, word ptr [__dos_counter+2]
     add     ax, 1
     adc     bx, 0
-    mov     word ptr [__dospc_counter], ax
-    mov     word ptr [__dospc_counter+2], bx
+    mov     word ptr [__dos_counter], ax
+    mov     word ptr [__dos_counter+2], bx
 
     /* Call BIOS ISR every 32nd time */
     and     ax, 0b11111
@@ -31,7 +31,7 @@ __dospc_pit_isr:
     jmp     .end
 .call_bios:
 	pushf
-	call	dword ptr [__dospc_bios_isr]
+	call	dword ptr [__dos_bios_isr]
 
 .end:
     pop     ds
@@ -39,7 +39,7 @@ __dospc_pit_isr:
     pop     ax
     iret
 
-	.global	__dospc_ds
-	.type	__dospc_ds, @object
-__dospc_ds:
+	.global	__dos_ds
+	.type	__dos_ds, @object
+__dos_ds:
     .fill   2

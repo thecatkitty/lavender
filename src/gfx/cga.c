@@ -2,11 +2,11 @@
 #include <graph.h>
 #include <libi86/string.h>
 
-#include <api/bios.h>
-#include <api/dos.h>
+#include <arch/dos.h>
+#include <arch/dos/bios.h>
+#include <arch/dos/msdos.h>
 #include <drv.h>
 #include <gfx.h>
-#include <platform/dospc.h>
 
 #include "glyph.h"
 
@@ -76,7 +76,7 @@ typedef struct
 {
     far void *font;
     uint16_t  old_mode;
-    dospc_isr old_font;
+    dos_isr   old_font;
 } cga_data;
 
 #define get_data(dev) ((far cga_data *)((dev)->data))
@@ -145,7 +145,7 @@ cga_open(device *dev)
 #pragma GCC diagnostic ignored "-Wpedantic"
     _disable();
     data->old_font = _dos_getvect(INT_CGA_EXTENDED_FONT_PTR);
-    _dos_setvect(INT_CGA_EXTENDED_FONT_PTR, (dospc_isr)data->font);
+    _dos_setvect(INT_CGA_EXTENDED_FONT_PTR, (dos_isr)data->font);
     _enable();
 #pragma GCC diagnostic pop
 
@@ -154,7 +154,7 @@ cga_open(device *dev)
         MK_FP(CGA_BASIC_FONT_SEGMENT, CGA_BASIC_FONT_OFFSET);
     far char            *xfont = (far char *)data->font;
     far const gfx_glyph *fdata = __gfx_font_8x8;
-    bool                 is_dosbox = dospc_is_dosbox();
+    bool                 is_dosbox = dos_is_dosbox();
 
     if (is_dosbox)
     {
@@ -477,7 +477,7 @@ cga_draw_text(device *dev, const char *str, uint16_t x, uint16_t y)
         {
             char cell[8];
             _load_cell(cell, x, y);
-            dos_putc(*str);
+            msdos_putc(*str);
             _combine_cell(cell, x, y);
         }
 
@@ -493,7 +493,7 @@ cga_close(device *dev)
 {
     far cga_data *data = get_data(dev);
 
-    _dos_setvect(INT_CGA_EXTENDED_FONT_PTR, (dospc_isr)data->old_font);
+    _dos_setvect(INT_CGA_EXTENDED_FONT_PTR, (dos_isr)data->old_font);
     bios_set_video_mode(data->old_mode);
     _ffree(data->font);
     _ffree(dev->data);

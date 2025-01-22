@@ -1,7 +1,7 @@
 #include <conio.h>
 #include <graph.h>
 
-#include <api/bios.h>
+#include <arch/dos/bios.h>
 #include <drv.h>
 #include <gfx.h>
 

@@ -1,6 +1,6 @@
+#include <arch/dos.h>
 #include <drv.h>
 #include <pal.h>
-#include <platform/dospc.h>
 #include <snd.h>
 
 #define KEY_NONE         255
@@ -182,7 +182,7 @@ beep_tick(device *dev, uint32_t ts)
 
     if (is_silent)
     {
-        dospc_silence();
+        dos_silence();
         data->voice = 0;
         return true;
     }
@@ -193,7 +193,7 @@ beep_tick(device *dev, uint32_t ts)
     }
 
     data->last_ts = ts;
-    dospc_beep(data->div[data->voice]);
+    dos_beep(data->div[data->voice]);
     do
     {
         data->voice = (data->voice + 1) % VOICES;

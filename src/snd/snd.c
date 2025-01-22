@@ -2,7 +2,7 @@
 
 #ifdef CONFIG_ANDREA
 #include <andrea.h>
-#include <platform/dospc.h>
+#include <arch/dos.h>
 #endif
 
 #include <generated/config.h>
@@ -127,7 +127,7 @@ _try_open(device *dev, void *data)
 static bool
 _try_driver(const char *name, void *data)
 {
-    uint16_t driver = dospc_load_driver(name);
+    uint16_t driver = dos_load_driver(name);
     if (0 == driver)
     {
         return true;
@@ -140,7 +140,7 @@ _try_driver(const char *name, void *data)
         return false;
     }
 
-    dospc_unload_driver(driver);
+    dos_unload_driver(driver);
     return true;
 }
 #endif // CONFIG_ANDREA
@@ -175,7 +175,7 @@ snd_cleanup(void)
 #if defined(CONFIG_ANDREA)
     if (0 != _driver)
     {
-        dospc_unload_driver(_driver);
+        dos_unload_driver(_driver);
     }
 #endif // CONFIG_ANDREA
 }

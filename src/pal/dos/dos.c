@@ -8,26 +8,26 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <api/bios.h>
-#include <api/dos.h>
-#include <api/msmouse.h>
-#include <api/winoldap.h>
+#include <arch/dos.h>
+#include <arch/dos/bios.h>
+#include <arch/dos/msdos.h>
+#include <arch/dos/msmouse.h>
+#include <arch/dos/winoldap.h>
 #include <fmt/exe.h>
 #include <fmt/fat.h>
 #include <fmt/utf8.h>
 #include <fmt/zip.h>
 #include <gfx.h>
 #include <pal.h>
-#include <platform/dospc.h>
 #include <snd.h>
 
 #ifdef CONFIG_ANDREA
 #include <andrea.h>
 #endif
 
-#include "../resource.h"
-#include "dospc.h"
-#include "pal_impl.h"
+#include "../../resource.h"
+#include "../pal_impl.h"
+#include "dos.h"
 
 #ifdef CONFIG_ANDREA
 #define MAX_DRIVERS 4
@@ -42,12 +42,12 @@ __cga_init(void);
 extern char __edata[], __sbss[], __ebss[];
 extern char _binary_obj_version_txt_start[];
 
-extern uint16_t   __dospc_ds;
-volatile uint32_t __dospc_counter;
-dospc_isr         __dospc_bios_isr;
+extern uint16_t   __dos_ds;
+volatile uint32_t __dos_counter;
+dos_isr           __dos_bios_isr;
 
 extern void
-__dospc_pit_isr(void);
+__dos_pit_isr(void);
 
 static gfx_glyph_data _font = NULL;
 static gfx_dimensions _glyph;
@@ -100,14 +100,14 @@ _die_incompatible(void)
     char msg[GFX_COLUMNS];
     pal_load_string(IDS_UNSUPPENV, msg, sizeof(msg));
     msg[strlen(msg)] = '$';
-    dos_puts(msg);
+    msdos_puts(msg);
 }
 
 static bool
 _is_dos(uint8_t major)
 {
-    uint8_t dosMajor = dos_get_version() & 0xFF;
-    return (1 == major) ? (0 == dosMajor) : (major == dosMajor);
+    uint8_t dos_major = msdos_get_version() & 0xFF;
+    return (1 == major) ? (0 == dos_major) : (major == dos_major);
 }
 
 static bool
@@ -193,7 +193,7 @@ _pal_enum_callback(const char *name, void *data)
     {
         if (0 == drivers[i])
         {
-            drivers[i] = dospc_load_driver(name);
+            drivers[i] = dos_load_driver(name);
             return true;
         }
     }
@@ -275,7 +275,7 @@ _show_help(const char *self)
     {
         if (0 != drivers[i])
         {
-            dospc_unload_driver(drivers[i]);
+            dos_unload_driver(drivers[i]);
         }
     }
 #endif
@@ -299,16 +299,16 @@ pal_initialize(int argc, char *argv[])
         pal_load_string(IDS_NOARCHIVE, msg + strlen(msg),
                         sizeof(msg) - strlen(msg));
         pal_alert(msg, 0);
-        dos_exit(1);
+        msdos_exit(1);
     }
 
     if (!zip_open(cdir))
 #else
     if (_is_dos(2))
     {
-        dos_puts("EXE \x1A DOS 3+\r\n$");
+        msdos_puts("EXE \x1A DOS 3+\r\n$");
         _die_incompatible();
-        dos_exit(1);
+        msdos_exit(1);
     }
 
     if (!zip_open(argv[0]))
@@ -319,7 +319,7 @@ pal_initialize(int argc, char *argv[])
         pal_load_string(IDS_NOARCHIVE, msg + strlen(msg),
                         sizeof(msg) - strlen(msg));
         pal_alert(msg, errno);
-        dos_exit(1);
+        msdos_exit(1);
     }
 
     for (int i = 0; i < MAX_OPEN_ASSETS; ++i)
@@ -353,7 +353,7 @@ pal_initialize(int argc, char *argv[])
         if ('?' == argv[i][1])
         {
             _show_help(argv[0]);
-            dos_exit(1);
+            msdos_exit(1);
         }
     }
 
@@ -363,28 +363,28 @@ pal_initialize(int argc, char *argv[])
         if (NULL == support)
         {
             _die_incompatible();
-            dos_exit(1);
+            msdos_exit(1);
         }
 
         char *data = pal_get_asset_data(support);
         if (NULL == data)
         {
-            dos_exit(1);
+            msdos_exit(1);
         }
 
-        dos_puts(data);
+        msdos_puts(data);
         bios_get_keystroke();
-        dos_exit(1);
+        msdos_exit(1);
     }
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
     _disable();
-    __dospc_bios_isr = _dos_getvect(INT_PIT);
-    _dos_setvect(INT_PIT, MK_FP(__libi86_get_cs(), __dospc_pit_isr));
+    __dos_bios_isr = _dos_getvect(INT_PIT);
+    _dos_setvect(INT_PIT, MK_FP(__libi86_get_cs(), __dos_pit_isr));
 
-    asm volatile("movw %%ds, %%cs:%0" : "=rm"(__dospc_ds));
-    __dospc_counter = 0;
+    asm volatile("movw %%ds, %%cs:%0" : "=rm"(__dos_ds));
+    __dos_counter = 0;
     _pit_init_channel(0, PIT_MODE_RATE_GEN, PIT_FREQ_DIVISOR);
     _enable();
 #pragma GCC diagnostic pop
@@ -392,7 +392,7 @@ pal_initialize(int argc, char *argv[])
     if (!gfx_initialize())
     {
         pal_alert("", errno);
-        _dos_setvect(INT_PIT, __dospc_bios_isr);
+        _dos_setvect(INT_PIT, __dos_bios_isr);
 
         _disable();
         _pit_init_channel(0, PIT_MODE_RATE_GEN, 0);
@@ -403,7 +403,7 @@ pal_initialize(int argc, char *argv[])
     gfx_get_glyph_dimensions(&_glyph);
     _has_mouse = msmouse_init();
 
-    if (dospc_is_windows())
+    if (dos_is_windows())
     {
         winoldap_set_closable(1);
     }
@@ -423,7 +423,7 @@ pal_cleanup(void)
     snd_cleanup();
 #endif // CONFIG_SOUND
 
-    _dos_setvect(INT_PIT, __dospc_bios_isr);
+    _dos_setvect(INT_PIT, __dos_bios_isr);
     _pit_init_channel(0, PIT_MODE_RATE_GEN, 0);
 
     nosound();
@@ -438,21 +438,21 @@ pal_cleanup(void)
 
     int stack_size = (int)(0x10000UL - (uint16_t)untouched);
 
-    dos_puts("Stack usage: $");
+    msdos_puts("Stack usage: $");
 
     char buffer[6];
     itoa(stack_size, buffer, 10);
     for (int i = 0; buffer[i]; i++)
-        dos_putc(buffer[i]);
+        msdos_putc(buffer[i]);
 
-    dos_puts("\r\n$");
+    msdos_puts("\r\n$");
 #endif // STACK_PROFILING
 }
 
 bool
 pal_handle(void)
 {
-    if (!dospc_is_windows())
+    if (!dos_is_windows())
     {
         return true;
     }
@@ -477,7 +477,7 @@ pal_get_counter(void)
     count |= inp(PIT_DATA(0)) << 8;
     _enable();
 
-    return (__dospc_counter << PIT_FREQ_POWER) |
+    return (__dos_counter << PIT_FREQ_POWER) |
            (count & ((1 << PIT_FREQ_POWER) - 1));
 }
 
@@ -867,13 +867,13 @@ pal_wctob(uint16_t wc)
 }
 
 bool ddcall
-dospc_is_dosbox(void)
+dos_is_dosbox(void)
 {
     return 0 == _fmemcmp((const char far *)0xF000E061, "DOSBox", 6);
 }
 
 bool
-dospc_is_windows(void)
+dos_is_windows(void)
 {
     if (0 == _winoldap_version)
     {
@@ -885,7 +885,7 @@ dospc_is_windows(void)
 
 #ifdef CONFIG_ANDREA
 uint16_t
-dospc_load_driver(const char *name)
+dos_load_driver(const char *name)
 {
     char path[_MAX_PATH];
     if (0 > pal_extract_asset(name, path))
@@ -916,7 +916,7 @@ dospc_load_driver(const char *name)
 }
 
 void
-dospc_unload_driver(uint16_t driver)
+dos_unload_driver(uint16_t driver)
 {
     pf_drvdeinit deinit =
         (pf_drvdeinit)andrea_get_procedure(driver, "drv_deinit");
@@ -930,22 +930,22 @@ dospc_unload_driver(uint16_t driver)
 #endif // CONFIG_ANDREA
 
 void ddcall
-dospc_beep(uint16_t divisor)
+dos_beep(uint16_t divisor)
 {
     _pit_init_channel(2, PIT_MODE_SQUARE_WAVE_GEN, divisor);
     _outp(0x61, _inp(0x61) | SPKR_ENABLE);
 }
 
 void ddcall
-dospc_silence(void)
+dos_silence(void)
 {
     _outp(0x61, _inp(0x61) & ~SPKR_ENABLE);
 }
 
 #ifdef CONFIG_ANDREA
-ANDREA_EXPORT(dospc_is_dosbox);
-ANDREA_EXPORT(dospc_beep);
-ANDREA_EXPORT(dospc_silence);
+ANDREA_EXPORT(dos_is_dosbox);
+ANDREA_EXPORT(dos_beep);
+ANDREA_EXPORT(dos_silence);
 #endif
 
 static unsigned long

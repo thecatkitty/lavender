@@ -1,5 +1,5 @@
-#ifndef _PLATFORM_DOSPC_H_
-#define _PLATFORM_DOSPC_H_
+#ifndef _ARCH_DOS_H_
+#define _ARCH_DOS_H_
 
 #include <base.h>
 
@@ -8,28 +8,28 @@
 #ifndef __linux__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
-typedef void interrupt far (*dospc_isr)(void);
+typedef void interrupt far (*dos_isr)(void);
 #pragma GCC diagnostic pop
 #endif
 
 extern bool ddcall
-dospc_is_dosbox(void);
+dos_is_dosbox(void);
 
 extern bool
-dospc_is_windows(void);
+dos_is_windows(void);
 
 #ifdef CONFIG_ANDREA
 extern uint16_t
-dospc_load_driver(const char *name);
+dos_load_driver(const char *name);
 
 extern void
-dospc_unload_driver(uint16_t driver);
+dos_unload_driver(uint16_t driver);
 #endif
 
 extern void ddcall
-dospc_beep(uint16_t divisor);
+dos_beep(uint16_t divisor);
 
 extern void ddcall
-dospc_silence(void);
+dos_silence(void);
 
-#endif // _PLATFORM_DOSPC_H_
+#endif // _ARCH_DOS_H_
