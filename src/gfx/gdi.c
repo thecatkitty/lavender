@@ -1,8 +1,8 @@
 #include <math.h>
 #include <windows.h>
 
+#include <arch/windows.h>
 #include <gfx.h>
-#include <platform/windows.h>
 
 static HFONT _font = NULL;
 static HWND  _wnd = NULL;
