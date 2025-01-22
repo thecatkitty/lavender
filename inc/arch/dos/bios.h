@@ -1,5 +1,5 @@
-#ifndef _API_BIOS_H
-#define _API_BIOS_H
+#ifndef _ARCH_DOS_BIOS_H_
+#define _ARCH_DOS_BIOS_H_
 
 #include <assert.h>
 #include <i86.h>
@@ -161,4 +161,4 @@ bios_read_sectors(uint8_t   drive,
     return ax;
 }
 
-#endif // _API_BIOS_H
+#endif // _ARCH_DOS_BIOS_H_

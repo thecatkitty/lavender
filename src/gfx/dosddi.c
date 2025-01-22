@@ -1,10 +1,10 @@
 #ifdef CONFIG_ANDREA
 #include <andrea.h>
 #endif
-#include <api/winoldap.h>
+#include <arch/dos.h>
+#include <arch/dos/winoldap.h>
 #include <gfx.h>
 #include <pal.h>
-#include <platform/dospc.h>
 
 #define MAX_DEVICES 1
 
@@ -42,7 +42,7 @@ ANDREA_EXPORT(gfx_register_device);
 static bool
 _try_driver(const char *name, void *data)
 {
-    uint16_t driver = dospc_load_driver(name);
+    uint16_t driver = dos_load_driver(name);
     if (0 == driver)
     {
         return true;
@@ -54,7 +54,7 @@ _try_driver(const char *name, void *data)
         return false;
     }
 
-    dospc_unload_driver(driver);
+    dos_unload_driver(driver);
     return true;
 }
 #endif // CONFIG_ANDREA
@@ -145,7 +145,7 @@ gfx_cleanup(void)
 bool
 gfx_set_title(const char *title)
 {
-    if (!dospc_is_windows())
+    if (!dos_is_windows())
     {
         return false;
     }

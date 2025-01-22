@@ -1,5 +1,5 @@
-#ifndef _API_WINOLDAP_H_
-#define _API_WINOLDAP_H_
+#ifndef _ARCH_DOS_WINOLDAP_H_
+#define _ARCH_DOS_WINOLDAP_H_
 
 #include <i86.h>
 
@@ -57,4 +57,4 @@ winoldap_acknowledge_close(void)
     return ax;
 }
 
-#endif // _API_WINOLDAP_H_
+#endif // _ARCH_DOS_WINOLDAP_H_

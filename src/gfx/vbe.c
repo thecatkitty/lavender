@@ -1,4 +1,4 @@
-#include <api/bios.h>
+#include <arch/dos/bios.h>
 #include <gfx.h>
 
 #define _par(dx, dy, sx, sy)                                                   \

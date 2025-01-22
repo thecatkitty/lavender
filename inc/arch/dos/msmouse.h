@@ -1,5 +1,5 @@
-#ifndef _API_MSMOUSE_H
-#define _API_MSMOUSE_H
+#ifndef _ARCH_DOS_MSMOUSE_H_
+#define _ARCH_DOS_MSMOUSE_H_
 
 #include <base.h>
 
@@ -34,4 +34,4 @@ msmouse_get_status(uint16_t *x, uint16_t *y)
     return bx;
 }
 
-#endif // _API_MSMOUSE_H
+#endif // _ARCH_DOS_MSMOUSE_H_

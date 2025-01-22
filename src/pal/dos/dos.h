@@ -1,5 +1,5 @@
-#ifndef _DOSPC_H_
-#define _DOSPC_H_
+#ifndef _PAL_DOS_H_
+#define _PAL_DOS_H_
 
 // Programmable Interrupt Controller definitions
 #define PIC1_IO         0x20
@@ -43,4 +43,4 @@
 // PC Speaker definitions
 #define SPKR_ENABLE 3
 
-#endif // _DOSPC_H_
+#endif // _PAL_DOS_H_
