@@ -9,14 +9,14 @@
 #include <windowsx.h>
 #include <wininet.h>
 
+#include <arch/windows.h>
 #include <fmt/utf8.h>
 #include <pal.h>
-#include <platform/windows.h>
 #include <snd.h>
 
-#include "../resource.h"
-#include "evtmouse.h"
-#include "pal_impl.h"
+#include "../../resource.h"
+#include "../evtmouse.h"
+#include "../pal_impl.h"
 
 #if defined(_MSC_VER) ||                                                       \
     (defined(__USE_MINGW_ANSI_STDIO) && !__USE_MINGW_ANSI_STDIO)

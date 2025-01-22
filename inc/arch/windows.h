@@ -1,5 +1,5 @@
-#ifndef _PLATFORM_WINDOWS_H_
-#define _PLATFORM_WINDOWS_H_
+#ifndef _ARCH_WINDOWS_H_
+#define _ARCH_WINDOWS_H_
 
 #include <windows.h>
 
@@ -54,4 +54,4 @@ __inline
 #define windows_is_at_least_vista() winver_or_windows_is_at_least(0x0600)
 #define windows_is_at_least_7()     winver_or_windows_is_at_least(0x0601)
 
-#endif // _PLATFORM_WINDOWS_H_
+#endif // _ARCH_WINDOWS_H_
