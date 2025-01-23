@@ -7,15 +7,14 @@
 #include <time.h>
 #include <unistd.h>
 
-#include <SDL2/SDL.h>
 #include <blkid/blkid.h>
 #include <curl/curl.h>
 #include <fontconfig/fontconfig.h>
 
+#include <arch/sdl2.h>
 #include <fmt/exe.h>
 #include <gfx.h>
 #include <pal.h>
-#include <platform/sdl2arch.h>
 #include <snd.h>
 
 #include "../resource.h"
@@ -93,7 +92,7 @@ pal_initialize(int argc, char *argv[])
         abort();
     }
 
-    if (!sdl2arch_initialize())
+    if (!sdl2_initialize())
     {
         LOG("SDL2 architecture initialization failed");
         pal_cleanup();
@@ -122,7 +121,7 @@ pal_cleanup(void)
 
     curl_global_cleanup();
 
-    sdl2arch_cleanup();
+    sdl2_cleanup();
     ziparch_cleanup();
 }
 
@@ -476,7 +475,7 @@ pal_open_url(const char *url)
 }
 
 const char *
-sdl2arch_get_font(void)
+sdl2_get_font(void)
 {
     if (_font)
     {

@@ -11,7 +11,7 @@ if(DOS)
 endif()
 
 if(CONFIG_SDL2)
-    target_sources(pal PRIVATE sdl2arch.c)
+    target_sources(pal PRIVATE sdl2.c)
 endif()
 
 if(WIN32)

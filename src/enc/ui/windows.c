@@ -13,7 +13,6 @@
 #include <arch/windows.h>
 #include <fmt/utf8.h>
 #include <pal.h>
-#include <platform/sdl2arch.h>
 
 #include "../../resource.h"
 #include "../ui/encui.h"

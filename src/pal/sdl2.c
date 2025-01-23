@@ -2,9 +2,9 @@
 
 #include <SDL2/SDL.h>
 
+#include <arch/sdl2.h>
 #include <gfx.h>
 #include <pal.h>
-#include <platform/sdl2arch.h>
 #include <snd.h>
 
 #include "evtmouse.h"
@@ -14,7 +14,7 @@ static gfx_dimensions _mouse_cell;
 static SDL_Renderer  *_renderer = NULL;
 
 bool
-sdl2arch_initialize(void)
+sdl2_initialize(void)
 {
     if (0 > SDL_Init(0))
     {
@@ -33,7 +33,7 @@ sdl2arch_initialize(void)
 }
 
 void
-sdl2arch_cleanup(void)
+sdl2_cleanup(void)
 {
     LOG("entry");
 
@@ -47,7 +47,7 @@ sdl2arch_cleanup(void)
 }
 
 void
-sdl2arch_present(SDL_Renderer *renderer)
+sdl2_present(SDL_Renderer *renderer)
 {
     _renderer = renderer;
 }
@@ -83,7 +83,7 @@ pal_handle(void)
             if ((SDLK_PLUS == e.key.keysym.sym) ||
                 (SDLK_KP_PLUS == e.key.keysym.sym))
             {
-                sdl2arch_set_scale(gfx_get_scale() + 1);
+                sdl2_set_scale(gfx_get_scale() + 1);
                 gfx_get_glyph_dimensions(&_mouse_cell);
                 break;
             }
@@ -91,7 +91,7 @@ pal_handle(void)
             if ((SDLK_MINUS == e.key.keysym.sym) ||
                 (SDLK_KP_MINUS == e.key.keysym.sym))
             {
-                sdl2arch_set_scale(gfx_get_scale() - 1);
+                sdl2_set_scale(gfx_get_scale() - 1);
                 gfx_get_glyph_dimensions(&_mouse_cell);
                 break;
             }
