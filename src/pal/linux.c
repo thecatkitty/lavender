@@ -29,6 +29,9 @@ static char  _state_dir[PATH_MAX] = "";
 extern int
 __fluid_init(bool beepemu);
 
+static char *
+_get_font(void);
+
 static void
 _show_help(const char *self)
 {
@@ -85,7 +88,8 @@ pal_initialize(int argc, char *argv[])
         abort();
     }
 
-    if (!sdl2_initialize())
+    _font = _get_font();
+    if (!sdl2_initialize(_font))
     {
         LOG("SDL2 architecture initialization failed");
         pal_cleanup();
@@ -466,8 +470,8 @@ pal_open_url(const char *url)
     LOG("exit, failed");
 }
 
-const char *
-sdl2_get_font(void)
+static char *
+_get_font(void)
 {
     if (_font)
     {
