@@ -1,6 +1,7 @@
 #include <SDL2/SDL.h>
 #include <fluidsynth.h>
 
+#include <arch/linux.h>
 #include <pal.h>
 #include <snd.h>
 
@@ -358,12 +359,12 @@ fluid_tick(device *dev, uint32_t ts)
 
 static snd_device_ops _ops = {fluid_open, fluid_close, fluid_write, fluid_tick};
 
-int
-__fluid_init(bool beepemu)
+int ddcall
+__fluid_init(void)
 {
-    LOG("entry, beepemu: %u", beepemu);
+    LOG("entry");
 
-    _beep.ops = beepemu ? __beep_ops : NULL;
+    _beep.ops = linux_beepemu_enabled() ? __beep_ops : NULL;
 
     device dev = {"fluid", "FluidSynth", &_ops, NULL};
     return snd_register_device(&dev);
