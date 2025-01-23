@@ -28,9 +28,6 @@ static char  _state_dir[PATH_MAX] = "";
 
 #if defined(CONFIG_SOUND)
 static bool _beepemu = false;
-
-extern int
-__fluid_init(void);
 #endif // CONFIG_SOUND
 
 static char *
@@ -97,8 +94,6 @@ pal_initialize(int argc, char *argv[])
     }
 
 #if defined(CONFIG_SOUND)
-    __fluid_init();
-
     if (!snd_initialize(NULL))
     {
         LOG("cannot initialize sound");

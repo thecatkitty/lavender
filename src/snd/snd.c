@@ -19,28 +19,7 @@ static uint32_t _ts = 0;
 
 #if defined(CONFIG_ANDREA)
 static uint16_t _driver = 0;
-#else
-extern int ddcall
-__mpu401_init(void);
-
-extern int ddcall
-__opl2_init(void);
 #endif
-
-extern int ddcall
-__beep_init(void);
-
-void
-snd_load_inbox_drivers(void)
-{
-#if defined(__ia16__)
-#if !defined(CONFIG_ANDREA)
-    __mpu401_init();
-    __opl2_init();
-#endif // CONFIG_ANDREA
-    __beep_init();
-#endif // __ia16__
-}
 
 void
 snd_enum_devices(snd_enum_devices_callback callback, void *data)
