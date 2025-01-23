@@ -76,9 +76,6 @@ static WINDOWPLACEMENT _placement = {sizeof(WINDOWPLACEMENT)};
 static float           _window_scale = 0.f;
 
 extern int
-__mme_init(void);
-
-extern int
 main(int argc, char *argv[]);
 
 int WINAPI
@@ -692,7 +689,7 @@ _show_help(const char *self)
             lengthof(message));
 
 #if defined(CONFIG_SOUND)
-    __mme_init();
+    snd_load_inbox_drivers();
 
     _append(message, L"\ndev:\n", lengthof(message));
     snd_enum_devices(_snd_enum_callback, message);
@@ -843,8 +840,6 @@ pal_initialize(int argc, char *argv[])
     }
 
 #if defined(CONFIG_SOUND)
-    __mme_init();
-
     if (!snd_initialize(arg_snd))
     {
         LOG("cannot initialize sound");
