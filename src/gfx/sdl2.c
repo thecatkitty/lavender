@@ -5,9 +5,9 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
+#include <arch/sdl2.h>
 #include <gfx.h>
 #include <pal.h>
-#include <platform/sdl2arch.h>
 
 SDL_Window *_window = NULL;
 
@@ -29,7 +29,7 @@ static const SDL_Color COLORS[] = {
     [GFX_COLOR_YELLOW] = {255, 255, 0}, [GFX_COLOR_WHITE] = {255, 255, 255}};
 
 extern void
-sdl2arch_present(SDL_Renderer *renderer);
+sdl2_present(SDL_Renderer *renderer);
 
 static void
 _set_color(gfx_color color)
@@ -68,13 +68,13 @@ _blend_subtractive(SDL_Surface *surface, SDL_Rect *rect)
 }
 
 bool
-sdl2arch_set_scale(int scale)
+sdl2_set_scale(int scale)
 {
     LOG("entry, scale: %d", scale);
 
     _scale = (scale < 1) ? 1 : scale;
 
-    const char *font_path = sdl2arch_get_font();
+    const char *font_path = sdl2_get_font();
     if (NULL == font_path)
     {
         LOG("cannot determine font");
@@ -152,9 +152,9 @@ gfx_initialize(void)
         return false;
     }
 
-    sdl2arch_set_scale(1);
+    sdl2_set_scale(1);
     SDL_RenderClear(_renderer);
-    sdl2arch_present(_renderer);
+    sdl2_present(_renderer);
     return true;
 }
 
@@ -307,7 +307,7 @@ gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
     }
     SDL_FreeSurface(surface);
 
-    sdl2arch_present(_renderer);
+    sdl2_present(_renderer);
     return true;
 }
 
@@ -337,7 +337,7 @@ gfx_draw_line(const gfx_rect *rect, gfx_color color)
         }
     }
 
-    sdl2arch_present(_renderer);
+    sdl2_present(_renderer);
     return true;
 }
 
@@ -360,7 +360,7 @@ gfx_draw_rectangle(const gfx_rect *rect, gfx_color color)
         SDL_RenderDrawRect(_renderer, &sdl_rect);
     }
 
-    sdl2arch_present(_renderer);
+    sdl2_present(_renderer);
     return true;
 }
 
@@ -374,7 +374,7 @@ gfx_fill_rectangle(const gfx_rect *rect, gfx_color color)
     SDL_Rect sdl_rect = {rect->left, rect->top, rect->width, rect->height};
     _set_color(color);
     SDL_RenderFillRect(_renderer, &sdl_rect);
-    sdl2arch_present(_renderer);
+    sdl2_present(_renderer);
     return true;
 }
 
@@ -400,7 +400,7 @@ gfx_draw_text(const char *str, uint16_t x, uint16_t y)
     _blend_subtractive(surface, &rect);
     SDL_Texture *texture = SDL_CreateTextureFromSurface(_renderer, surface);
     SDL_RenderCopy(_renderer, texture, NULL, &rect);
-    sdl2arch_present(_renderer);
+    sdl2_present(_renderer);
     SDL_DestroyTexture(texture);
     SDL_FreeSurface(surface);
     return true;
