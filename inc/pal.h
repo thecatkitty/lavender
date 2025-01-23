@@ -181,44 +181,4 @@ extern char
 pal_wctob(uint16_t wc);
 #endif
 
-#if defined(CONFIG_INTERNET)
-enum
-{
-    PALINETM_CONNECTED,
-    PALINETM_GETHEADERS,
-    PALINETM_GETPAYLOAD,
-    PALINETM_RESPONSE,
-    PALINETM_RECEIVED,
-    PALINETM_COMPLETE,
-    PALINETM_ERROR,
-};
-
-typedef struct
-{
-    unsigned status;
-    char     status_text[PATH_MAX];
-    unsigned content_length;
-} palinet_response_param;
-
-typedef struct
-{
-    size_t         size;
-    const uint8_t *data;
-} palinet_received_param;
-
-typedef int(palinet_proc)(int msg, void *param, void *data);
-
-extern bool
-palinet_start(void);
-
-extern bool
-palinet_connect(const char *url, palinet_proc *proc, void *data);
-
-extern bool
-palinet_request(const char *method, const char *url);
-
-void
-palinet_close(void);
-#endif
-
 #endif // _PAL_H_

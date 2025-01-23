@@ -8,12 +8,12 @@
 #include <unistd.h>
 
 #include <blkid/blkid.h>
-#include <curl/curl.h>
 #include <fontconfig/fontconfig.h>
 
 #include <arch/sdl2.h>
 #include <fmt/exe.h>
 #include <gfx.h>
+#include <net.h>
 #include <pal.h>
 #include <snd.h>
 
@@ -25,13 +25,6 @@ extern char _binary_obj_version_txt_start[];
 static char *_font = NULL;
 static long  _start_msec;
 static char  _state_dir[PATH_MAX] = "";
-
-static CURL              *_curl = NULL;
-static palinet_proc      *_inet_proc = NULL;
-static void              *_inet_data = 0;
-static char               _inet_error[CURL_ERROR_SIZE];
-static struct curl_slist *_inet_headers = NULL;
-static bool               _inet_receiving;
 
 extern int
 __fluid_init(bool beepemu);
@@ -119,8 +112,7 @@ pal_cleanup(void)
         free(_font);
     }
 
-    curl_global_cleanup();
-
+    net_stop();
     sdl2_cleanup();
     ziparch_cleanup();
 }
@@ -511,199 +503,4 @@ sdl2_get_font(void)
     FcPatternDestroy(match);
     LOG("matched: '%s'", _font);
     return _font;
-}
-
-bool
-palinet_start(void)
-{
-    LOG("entry");
-
-    CURLcode status = curl_global_init(CURL_GLOBAL_DEFAULT);
-    if (0 != status)
-    {
-        LOG("exit, curl_global_init failed!");
-        return false;
-    }
-
-    LOG("exit");
-    return true;
-}
-
-bool
-palinet_connect(const char *url, palinet_proc *proc, void *data)
-{
-    LOG("entry, '%s'", url);
-
-    if (NULL != _curl)
-    {
-        LOG("exit, already connected!");
-    }
-
-    _curl = curl_easy_init();
-    if (NULL == _curl)
-    {
-        LOG("exit, curl_easy_init failed!");
-        return false;
-    }
-
-    _inet_proc = proc;
-    _inet_data = data;
-    curl_easy_setopt(_curl, CURLOPT_ERRORBUFFER, _inet_error);
-
-    // ----- User-Agent string
-    char  user_agent[PATH_MAX] = "";
-    char *ptr = NULL;
-
-    strcpy(user_agent, pal_get_version_string());
-    ptr = strrchr(user_agent, ' ');
-    if (ptr)
-    {
-        *ptr = '/';
-    }
-
-    strcat(user_agent, " (");
-    ptr = user_agent + strlen(user_agent);
-
-    ptr += sprintf(ptr, "Linux");
-
-    strcpy(ptr, "; ");
-    ptr += 2;
-    {
-#if defined(__i386__)
-        ptr += sprintf(ptr, "ia32");
-#elif defined(__amd64__)
-        ptr += sprintf(ptr, "x64");
-#else
-#error "Unknown architecture!"
-#endif
-    }
-
-    strcpy(ptr, ")");
-
-    if (0 != curl_easy_setopt(_curl, CURLOPT_USERAGENT, user_agent))
-    {
-        _inet_proc(PALINETM_ERROR, _inet_error, _inet_data);
-        LOG("exit, CURLOPT_USERAGENT failed!");
-        return false;
-    }
-    LOG("User-Agent: %s", user_agent);
-
-    LOG("exit, ok");
-    return true;
-}
-
-#define REQUIRE_ZERO(x)                                                        \
-    if (0 != (x))                                                              \
-    {                                                                          \
-        _inet_proc(PALINETM_ERROR, _inet_error, _inet_data);                   \
-        status = false;                                                        \
-        goto end;                                                              \
-    }
-
-static size_t
-_inet_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata)
-{
-    bool status = true;
-
-    if (!_inet_receiving)
-    {
-        long status_code;
-        REQUIRE_ZERO(
-            curl_easy_getinfo(_curl, CURLINFO_RESPONSE_CODE, &status_code));
-
-        curl_off_t content_length;
-        REQUIRE_ZERO(curl_easy_getinfo(_curl, CURLINFO_SIZE_DOWNLOAD_T,
-                                       &content_length));
-
-        palinet_response_param response_param = {status_code, "",
-                                                 content_length};
-        sprintf(response_param.status_text, "HTTP %d", response_param.status);
-        _inet_proc(PALINETM_RESPONSE, &response_param, _inet_data);
-
-        _inet_receiving = true;
-    }
-
-    if (status)
-    {
-        palinet_received_param param = {nmemb, (uint8_t *)ptr};
-        _inet_proc(PALINETM_RECEIVED, &param, _inet_data);
-    }
-
-end:
-    return size * nmemb;
-}
-
-bool
-palinet_request(const char *method, const char *url)
-{
-    LOG("entry, %s %s", method, url);
-
-    bool status = true;
-
-    REQUIRE_ZERO(curl_easy_setopt(_curl, CURLOPT_CUSTOMREQUEST, method));
-    REQUIRE_ZERO(curl_easy_setopt(_curl, CURLOPT_URL, url));
-    REQUIRE_ZERO(
-        curl_easy_setopt(_curl, CURLOPT_WRITEFUNCTION, _inet_write_callback));
-
-    char *headers = NULL;
-    if (0 ==
-        _inet_proc(PALINETM_GETHEADERS, (void *)&headers, (void *)_inet_data))
-    {
-        char  header[PATH_MAX];
-        char *start = headers, *end;
-
-        while (NULL != (end = strstr(start, "\r\n")))
-        {
-            memcpy(header, start, end - start);
-            header[end - start] = 0;
-            start = end + 2;
-
-            LOG("%s", header);
-            _inet_headers = curl_slist_append(_inet_headers, header);
-        }
-
-        REQUIRE_ZERO(
-            curl_easy_setopt(_curl, CURLOPT_HTTPHEADER, _inet_headers));
-    }
-
-    char *payload = NULL;
-    int   payload_length =
-        _inet_proc(PALINETM_GETPAYLOAD, (void *)&payload, _inet_data);
-    if (0 < payload_length)
-    {
-        REQUIRE_ZERO(
-            curl_easy_setopt(_curl, CURLOPT_POSTFIELDSIZE, payload_length));
-        REQUIRE_ZERO(curl_easy_setopt(_curl, CURLOPT_COPYPOSTFIELDS, payload));
-    }
-
-    _inet_receiving = false;
-    REQUIRE_ZERO(curl_easy_perform(_curl));
-
-    _inet_proc(PALINETM_COMPLETE, NULL, _inet_data);
-
-end:
-    if (NULL != _inet_headers)
-    {
-        curl_slist_free_all(_inet_headers);
-        _inet_headers = NULL;
-    }
-
-    LOG("exit, %s", status ? "ok" : "failed");
-    return status;
-}
-
-void
-palinet_close(void)
-{
-    LOG("entry");
-
-    if (NULL != _curl)
-    {
-        curl_easy_cleanup(_curl);
-        _curl = NULL;
-        _inet_proc = 0;
-        _inet_data = 0;
-    }
-
-    LOG("exit");
 }

@@ -1,5 +1,7 @@
 #include <stdio.h>
 
+#include <net.h>
+
 #include "remote.h"
 #include "json/encjson.h"
 
@@ -7,10 +9,10 @@ static const char *REQUEST_HEADERS =
     "Content-Type: application/x-www-form-urlencoded\r\n"
     "Accept-Types: application/json\r\n";
 
-static char                   _payload[64];
-static palinet_response_param _response;
-static char                  *_response_data = NULL;
-static size_t                 _response_processed;
+static char               _payload[64];
+static net_response_param _response;
+static char              *_response_data = NULL;
+static size_t             _response_processed;
 
 // ----- Internet-based verification
 
@@ -49,7 +51,7 @@ encr_inet_init(enc_context *enc)
 void
 encr_inet_cleanup(void)
 {
-    palinet_close();
+    net_close();
     free(_response_data);
     _response_data = NULL;
 }
@@ -77,7 +79,7 @@ _inet_error(int head, intptr_t desc, bool dynamic)
     _inet_fields[1].data = desc;
     encui_refresh_field(encr_pages + PAGE_INET, 1);
 
-    palinet_close();
+    net_close();
     free(_response_data);
     _response_data = NULL;
 }
@@ -87,19 +89,19 @@ _verify_inet_proc(int msg, void *param, void *data)
 {
     switch (msg)
     {
-    case PALINETM_CONNECTED: {
+    case NETM_CONNECTED: {
         _inet_fields[0].data &= ~ENCUIFF_DYNAMIC;
         _inet_fields[0].data = IDS_INET_SEND;
         encui_refresh_field(encr_pages + PAGE_INET, 0);
         break;
     }
 
-    case PALINETM_GETHEADERS: {
+    case NETM_GETHEADERS: {
         *(const char **)param = REQUEST_HEADERS;
         return 0;
     }
 
-    case PALINETM_GETPAYLOAD: {
+    case NETM_GETPAYLOAD: {
         uint8_t rbytes[lengthof(encr_request)];
         char   *ppayload = _payload;
         int     i;
@@ -116,7 +118,7 @@ _verify_inet_proc(int msg, void *param, void *data)
         return ppayload - _payload;
     }
 
-    case PALINETM_RESPONSE: {
+    case NETM_RESPONSE: {
         _inet_fields[0].data = IDS_INET_RECV;
         encui_refresh_field(encr_pages + PAGE_INET, 0);
 
@@ -134,9 +136,8 @@ _verify_inet_proc(int msg, void *param, void *data)
         break;
     }
 
-    case PALINETM_RECEIVED: {
-        palinet_received_param *received_param =
-            (palinet_received_param *)param;
+    case NETM_RECEIVED: {
+        net_received_param *received_param = (net_received_param *)param;
         if (NULL == _response_data)
         {
             break;
@@ -156,7 +157,7 @@ _verify_inet_proc(int msg, void *param, void *data)
         break;
     }
 
-    case PALINETM_COMPLETE: {
+    case NETM_COMPLETE: {
         int         i;
         size_t      message_length = 0;
         const char *message = NULL;
@@ -218,13 +219,13 @@ _verify_inet_proc(int msg, void *param, void *data)
         encui_refresh_field(encr_pages + PAGE_INET, 0);
         encui_check_page(encr_pages + PAGE_INET, (void *)1);
 
-        palinet_close();
+        net_close();
         free(_response_data);
         _response_data = NULL;
         break;
     }
 
-    case PALINETM_ERROR: {
+    case NETM_ERROR: {
         _inet_fields[0].data = IDS_INET_CONNERR;
         encui_refresh_field(encr_pages + PAGE_INET, 0);
 
@@ -276,7 +277,7 @@ encr_inet_page_proc(int msg, void *param, void *data)
         if (NOTIFY_START == notify)
         {
             _inet_fields[0].flags &= ~ENCUIFF_DYNAMIC;
-            if (palinet_start())
+            if (net_start())
             {
                 _inet_fields[0].data = IDS_INET_CONN;
                 encui_refresh_field(encr_pages + PAGE_INET, 0);
@@ -295,12 +296,12 @@ encr_inet_page_proc(int msg, void *param, void *data)
         {
             enc_context *enc = (enc_context *)data;
 
-            if (palinet_connect((const char *)enc->parameter, _verify_inet_proc,
-                                (void *)1))
+            if (net_connect((const char *)enc->parameter, _verify_inet_proc,
+                            (void *)1))
             {
                 encui_request_notify(NOTIFY_REQUEST);
             }
-            // palinet_connect errors handled in _verify_inet_proc
+            // net_connect errors handled in _verify_inet_proc
 
             return 0;
         }
@@ -312,8 +313,8 @@ encr_inet_page_proc(int msg, void *param, void *data)
             char endpoint[PATH_MAX];
             sprintf(endpoint, "%s/verify", (const char *)enc->parameter);
 
-            palinet_request("POST", endpoint);
-            // palinet_request errors handled in _verify_inet_proc
+            net_request("POST", endpoint);
+            // net_request errors handled in _verify_inet_proc
 
             return 0;
         }

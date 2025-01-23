@@ -23,6 +23,11 @@ if(CONFIG_ENCRYPTED_CONTENT)
     target_link_libraries(lavender enc)
 endif()
 
+if(CONFIG_INTERNET)
+    add_subdirectory(net)
+    target_link_libraries(lavender net)
+endif()
+
 if(CONFIG_SOUND)
     add_subdirectory(snd)
     target_link_libraries(lavender snd)
@@ -50,9 +55,6 @@ endif()
 include_directories(lavender ${CMAKE_CURRENT_BINARY_DIR})
 
 target_sources(lavender PRIVATE main.c rstd.c)
-if(CONFIG_ENCRYPTED_CONTENT)
-    target_link_libraries(lavender enc)
-endif()
 target_link_libraries(lavender fmt gfx pal sld)
 
 add_custom_target(version_text
