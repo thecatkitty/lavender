@@ -28,9 +28,6 @@ static const SDL_Color COLORS[] = {
     [GFX_COLOR_RED] = {255, 0, 0},      [GFX_COLOR_FUCHSIA] = {255, 0, 255},
     [GFX_COLOR_YELLOW] = {255, 255, 0}, [GFX_COLOR_WHITE] = {255, 255, 255}};
 
-extern void
-sdl2_present(SDL_Renderer *renderer);
-
 static void
 _set_color(gfx_color color)
 {

@@ -49,9 +49,9 @@ sdl2_cleanup(void)
 }
 
 void
-sdl2_present(SDL_Renderer *renderer)
+sdl2_present(void *renderer)
 {
-    _renderer = renderer;
+    _renderer = (SDL_Renderer *)renderer;
 }
 
 const char *
