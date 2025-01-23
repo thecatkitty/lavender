@@ -4,7 +4,7 @@
 #include <base.h>
 
 extern bool
-sdl2_initialize(void);
+sdl2_initialize(const char *font);
 
 extern void
 sdl2_cleanup(void);

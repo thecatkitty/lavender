@@ -9,12 +9,13 @@
 
 #include "evtmouse.h"
 
+static const char    *_font = NULL;
 static SDL_Keycode    _keycode;
 static gfx_dimensions _mouse_cell;
 static SDL_Renderer  *_renderer = NULL;
 
 bool
-sdl2_initialize(void)
+sdl2_initialize(const char *font)
 {
     if (0 > SDL_Init(0))
     {
@@ -22,6 +23,7 @@ sdl2_initialize(void)
         return false;
     }
 
+    _font = font;
     if (!gfx_initialize())
     {
         LOG("cannot initialize graphics");
@@ -50,6 +52,12 @@ void
 sdl2_present(SDL_Renderer *renderer)
 {
     _renderer = renderer;
+}
+
+const char *
+sdl2_get_font(void)
+{
+    return _font;
 }
 
 bool
