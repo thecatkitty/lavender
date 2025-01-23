@@ -12,6 +12,9 @@ sdl2_cleanup(void);
 extern const char *
 sdl2_get_font(void);
 
+extern void
+sdl2_present(void *renderer);
+
 extern bool
 sdl2_set_scale(int scale);
 
