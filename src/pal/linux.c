@@ -26,8 +26,12 @@ static char *_font = NULL;
 static long  _start_msec;
 static char  _state_dir[PATH_MAX] = "";
 
+#if defined(CONFIG_SOUND)
+static bool _beepemu = false;
+
 extern int
-__fluid_init(bool beepemu);
+__fluid_init(void);
+#endif // CONFIG_SOUND
 
 static char *
 _get_font(void);
@@ -57,10 +61,6 @@ pal_initialize(int argc, char *argv[])
 
     LOG("entry");
 
-#if defined(CONFIG_SOUND)
-    bool beepemu = false;
-#endif // CONFIG_SOUND
-
     for (int i = 1; i < argc; i++)
     {
         if ('-' != argv[i][0])
@@ -77,7 +77,7 @@ pal_initialize(int argc, char *argv[])
 #if defined(CONFIG_SOUND)
         if ('b' == argv[i][1])
         {
-            beepemu = true;
+            _beepemu = true;
         }
 #endif // CONFIG_SOUND
     }
@@ -97,7 +97,7 @@ pal_initialize(int argc, char *argv[])
     }
 
 #if defined(CONFIG_SOUND)
-    __fluid_init(beepemu);
+    __fluid_init();
 
     if (!snd_initialize(NULL))
     {
@@ -507,4 +507,11 @@ _get_font(void)
     FcPatternDestroy(match);
     LOG("matched: '%s'", _font);
     return _font;
+}
+
+bool
+linux_beepemu_enabled(void)
+{
+    LOG(_beepemu ? "yes" : "no");
+    return _beepemu;
 }
