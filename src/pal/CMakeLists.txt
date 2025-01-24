@@ -5,9 +5,7 @@ target_sources(pal PRIVATE strings.c)
 target_sources(pal PRIVATE ziparch.c)
 
 if(DOS)
-    target_sources(pal PRIVATE dos/dos.c)
-    target_sources(pal PRIVATE dos/pit.S)
-    target_sources(pal PRIVATE dos/pp.c)
+    add_subdirectory(dos)
 endif()
 
 if(CONFIG_SDL2)
