@@ -1,5 +1,5 @@
-#ifndef _PAL_DOS_H_
-#define _PAL_DOS_H_
+#ifndef _PAL_DOS_HW_H_
+#define _PAL_DOS_HW_H_
 
 // Programmable Interrupt Controller definitions
 #define PIC1_IO         0x20
@@ -43,4 +43,13 @@
 // PC Speaker definitions
 #define SPKR_ENABLE 3
 
-#endif // _PAL_DOS_H_
+extern void
+pit_initialize(void);
+
+extern void
+pit_cleanup(void);
+
+extern void
+pit_init_channel(unsigned channel, unsigned mode, unsigned divisor);
+
+#endif // _PAL_DOS_HW_H_
