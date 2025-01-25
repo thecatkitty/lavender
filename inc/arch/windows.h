@@ -1,6 +1,7 @@
 #ifndef _ARCH_WINDOWS_H_
 #define _ARCH_WINDOWS_H_
 
+#define UNICODE
 #include <windows.h>
 
 #include <base.h>
