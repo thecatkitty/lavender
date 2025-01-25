@@ -13,7 +13,7 @@ if(CONFIG_SDL2)
 endif()
 
 if(WIN32)
-    target_sources(pal PRIVATE windows/windows.c)
+    add_subdirectory(windows)
 endif()
 
 if(LINUX)
