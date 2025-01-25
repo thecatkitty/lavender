@@ -17,6 +17,6 @@ if(WIN32)
 endif()
 
 if(LINUX)
+    add_subdirectory(linux)
     target_sources(pal PRIVATE log.c)
-    target_sources(pal PRIVATE linux.c)
 endif()
