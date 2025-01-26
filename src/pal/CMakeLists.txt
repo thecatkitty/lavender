@@ -2,7 +2,7 @@ add_library(pal OBJECT)
 add_dependencies(pal config)
 target_include_directories(pal PRIVATE inc)
 
-target_sources(pal PRIVATE ziparch.c)
+add_subdirectory(_zip)
 
 if(DOS)
     add_subdirectory(dos)

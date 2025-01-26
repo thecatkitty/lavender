@@ -7,12 +7,12 @@
 #include <commctrl.h>
 // clang-format on
 
+#include <arch/zip.h>
 #include <gfx.h>
 #include <pal.h>
 #include <snd.h>
 
 #include "../../resource.h"
-#include "../pal_impl.h"
 #include "impl.h"
 
 #define HELP_MAX_LENGTH 1024

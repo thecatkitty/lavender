@@ -8,6 +8,7 @@
 #include <arch/dos/msdos.h>
 #include <arch/dos/msmouse.h>
 #include <arch/dos/winoldap.h>
+#include <arch/zip.h>
 #include <fmt/exe.h>
 #include <fmt/zip.h>
 #include <gfx.h>
@@ -19,7 +20,6 @@
 #endif
 
 #include "../../resource.h"
-#include "../pal_impl.h"
 #include "hw.h"
 #include "impl.h"
 
@@ -269,7 +269,7 @@ pal_initialize(int argc, char *argv[])
         msdos_exit(1);
     }
 
-    if (!zip_open(cdir))
+    if (!ziparch_initialize(cdir))
 #else
     if (is_dos_major(2))
     {
@@ -278,7 +278,7 @@ pal_initialize(int argc, char *argv[])
         msdos_exit(1);
     }
 
-    if (!zip_open(argv[0]))
+    if (!ziparch_initialize(argv[0]))
 #endif
     {
         char msg[GFX_COLUMNS];
@@ -287,13 +287,6 @@ pal_initialize(int argc, char *argv[])
                         sizeof(msg) - strlen(msg));
         pal_alert(msg, errno);
         msdos_exit(1);
-    }
-
-    for (int i = 0; i < MAX_OPEN_ASSETS; ++i)
-    {
-        __pal_assets[i].inzip = -1;
-        __pal_assets[i].flags = 0;
-        __pal_assets[i].data = NULL;
     }
 
 #ifdef CONFIG_ANDREA
