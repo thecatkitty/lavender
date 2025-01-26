@@ -1,5 +1,6 @@
 add_subdirectory(../_sdl2 sdl2)
 target_sources(pal PRIVATE ../shared/p-strings.c)
+target_sources(pal PRIVATE ../shared/p-version.c)
 
 target_sources(pal PRIVATE p-alert.c)
 target_sources(pal PRIVATE p-id.c)
