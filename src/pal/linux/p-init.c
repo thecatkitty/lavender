@@ -2,6 +2,7 @@
 #include <time.h>
 
 #include <arch/sdl2.h>
+#include <arch/zip.h>
 #include <gfx.h>
 #include <net.h>
 #include <pal.h>
@@ -10,7 +11,6 @@
 #include <fontconfig/fontconfig.h>
 
 #include "../../resource.h"
-#include "../pal_impl.h"
 #include "impl.h"
 
 static char *font_ = NULL;
