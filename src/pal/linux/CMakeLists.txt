@@ -1,4 +1,4 @@
-target_sources(pal PRIVATE ../shared/p-mouse.c)
+add_subdirectory(../_sdl2 sdl2)
 target_sources(pal PRIVATE ../shared/p-strings.c)
 
 target_sources(pal PRIVATE p-alert.c)

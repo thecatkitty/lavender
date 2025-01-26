@@ -8,10 +8,6 @@ if(DOS)
     add_subdirectory(dos)
 endif()
 
-if(CONFIG_SDL2)
-    target_sources(pal PRIVATE sdl2.c)
-endif()
-
 if(WIN32)
     add_subdirectory(windows)
 endif()
