@@ -6,9 +6,9 @@
 #include <arch/windows.h>
 #include <pal.h>
 
-#include <evtmouse.h>
 #include "../../resource.h"
 #include "impl.h"
+#include <evtmouse.h>
 
 #ifndef INFINITY
 #define INFINITY 1000.f
@@ -128,63 +128,176 @@ windows_toggle_fullscreen(HWND wnd)
     }
 }
 
+static void
+init_menus(HWND wnd)
+{
+    HDC     wnd_dc = GetDC(wnd);
+    float   min_scale = (float)GetDeviceCaps(wnd_dc, LOGPIXELSX) / 96.f;
+    wchar_t str[MAX_PATH];
+    size_t  i;
+
+    sys_menu_ = GetSystemMenu(wnd, FALSE);
+    if (NULL == sys_menu_)
+    {
+        return;
+    }
+
+    size_menu_ = CreatePopupMenu();
+
+    ReleaseDC(wnd, wnd_dc);
+
+    LoadStringW(windows_instance, IDS_FULL, str, lengthof(str));
+    AppendMenuW(size_menu_, MF_STRING, ID_FULL, str);
+
+    AppendMenuW(size_menu_, MF_SEPARATOR, 0, NULL);
+
+    for (i = 0; i < lengthof(SCALES); i++)
+    {
+        int percent;
+
+        if (min_scale > SCALES[i])
+        {
+            continue;
+        }
+
+        if (0 == scale_min_id_)
+        {
+            scale_min_id_ = ID_SCALE + i;
+        }
+
+        percent = (int)(SCALES[i] * 100.f / min_scale);
+        wsprintfW(str, L"%d%%", percent);
+        AppendMenuW(size_menu_, MF_STRING | MFS_CHECKED, ID_SCALE + i, str);
+    }
+
+    CheckMenuRadioItem(size_menu_, scale_min_id_,
+                       ID_SCALE + lengthof(SCALES) - 1, scale_min_id_,
+                       MF_BYCOMMAND);
+
+    AppendMenuW(sys_menu_, MF_SEPARATOR, 0, NULL);
+
+    LoadStringW(windows_instance, IDS_SIZE, str, lengthof(str));
+    AppendMenuW(sys_menu_, MF_POPUP, (uintptr_t)size_menu_, str);
+
+    AppendMenuW(sys_menu_, MF_SEPARATOR, 0, NULL);
+
+    LoadStringW(windows_instance, IDS_ABOUT, str, lengthof(str));
+    AppendMenuW(sys_menu_, MF_STRING, ID_ABOUT, str);
+}
+
+static void
+show_context_menu(HWND wnd, int x, int y)
+{
+    unsigned flags = TPM_LEFTALIGN;
+    if ((-1 == x) || (-1 == y))
+    {
+        RECT wnd_rect;
+        GetWindowRect(wnd, &wnd_rect);
+        x = (wnd_rect.left + wnd_rect.right) / 2;
+        y = (wnd_rect.top + wnd_rect.bottom) / 2;
+        flags = TPM_CENTERALIGN | TPM_VCENTERALIGN;
+    }
+    TrackPopupMenu(size_menu_, flags | TPM_RIGHTBUTTON, x, y, 0, wnd, NULL);
+}
+
+static void
+key_down(HWND wnd, WPARAM wparam)
+{
+    switch (wparam)
+    {
+    case VK_OEM_PLUS:
+    case VK_OEM_MINUS:
+    case VK_ADD:
+    case VK_SUBTRACT: {
+        if (0x8000 & GetKeyState(VK_CONTROL))
+        {
+            int scale_idx = match_scale(
+                gfx_get_scale(),
+                ((VK_OEM_PLUS == wparam) || (VK_ADD == wparam)) ? +1 : -1);
+            select_scale(scale_idx);
+            break;
+        }
+
+        // Fall through
+    }
+
+    case VK_BACK:
+    case VK_TAB:
+    case VK_RETURN:
+    case VK_ESCAPE:
+    case VK_PRIOR:
+    case VK_NEXT:
+    case VK_END:
+    case VK_HOME:
+    case VK_LEFT:
+    case VK_UP:
+    case VK_RIGHT:
+    case VK_DOWN:
+    case VK_INSERT:
+    case VK_DELETE:
+    case VK_F1:
+    case VK_F2:
+    case VK_F3:
+    case VK_F4:
+    case VK_F5:
+    case VK_F6:
+    case VK_F7:
+    case VK_F8:
+    case VK_F9:
+    case VK_F10:
+    case VK_F12: {
+        windows_keycode = wparam;
+        break;
+    }
+
+    case VK_F11: {
+        windows_toggle_fullscreen(wnd);
+        break;
+    }
+
+    default: {
+        if ((('0' <= wparam) && ('9' >= wparam)) ||
+            (('A' <= wparam) && ('Z' >= wparam)))
+        {
+            windows_keycode = wparam;
+        }
+
+        break;
+    }
+    }
+}
+
+static void
+paint(HWND wnd)
+{
+    PAINTSTRUCT ps;
+    POINT       origin;
+    HDC         dc = BeginPaint(wnd, &ps);
+
+    // All painting occurs here, between BeginPaint and EndPaint.
+    HDC src_dc = windows_get_dc();
+
+    RECT wnd_rect;
+    GetClientRect(wnd, &wnd_rect);
+    SetDCBrushColor(dc, windows_get_bg());
+    FillRect(dc, &ps.rcPaint, GetStockObject(DC_BRUSH));
+
+    windows_get_origin(&origin);
+    BitBlt(dc, ps.rcPaint.left, ps.rcPaint.top,
+           ps.rcPaint.right - ps.rcPaint.left,
+           ps.rcPaint.bottom - ps.rcPaint.top, src_dc,
+           ps.rcPaint.left - origin.x, ps.rcPaint.top - origin.y, SRCCOPY);
+
+    EndPaint(wnd, &ps);
+}
+
 LRESULT CALLBACK
 windows_wndproc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     switch (msg)
     {
     case WM_CREATE: {
-        sys_menu_ = GetSystemMenu(wnd, FALSE);
-        if (NULL != sys_menu_)
-        {
-            HDC     wnd_dc = GetDC(wnd);
-            float   min_scale = (float)GetDeviceCaps(wnd_dc, LOGPIXELSX) / 96.f;
-            wchar_t str[MAX_PATH];
-            size_t  i;
-
-            size_menu_ = CreatePopupMenu();
-
-            ReleaseDC(wnd, wnd_dc);
-
-            LoadStringW(windows_instance, IDS_FULL, str, lengthof(str));
-            AppendMenuW(size_menu_, MF_STRING, ID_FULL, str);
-
-            AppendMenuW(size_menu_, MF_SEPARATOR, 0, NULL);
-
-            for (i = 0; i < lengthof(SCALES); i++)
-            {
-                int percent;
-
-                if (min_scale > SCALES[i])
-                {
-                    continue;
-                }
-
-                if (0 == scale_min_id_)
-                {
-                    scale_min_id_ = ID_SCALE + i;
-                }
-
-                percent = (int)(SCALES[i] * 100.f / min_scale);
-                wsprintfW(str, L"%d%%", percent);
-                AppendMenuW(size_menu_, MF_STRING | MFS_CHECKED, ID_SCALE + i,
-                            str);
-            }
-
-            CheckMenuRadioItem(size_menu_, scale_min_id_,
-                               ID_SCALE + lengthof(SCALES) - 1, scale_min_id_,
-                               MF_BYCOMMAND);
-
-            AppendMenuW(sys_menu_, MF_SEPARATOR, 0, NULL);
-
-            LoadStringW(windows_instance, IDS_SIZE, str, lengthof(str));
-            AppendMenuW(sys_menu_, MF_POPUP, (uintptr_t)size_menu_, str);
-
-            AppendMenuW(sys_menu_, MF_SEPARATOR, 0, NULL);
-
-            LoadStringW(windows_instance, IDS_ABOUT, str, lengthof(str));
-            AppendMenuW(sys_menu_, MF_STRING, ID_ABOUT, str);
-        }
+        init_menus(wnd);
         break;
     }
 
@@ -213,84 +326,13 @@ windows_wndproc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
     }
 
     case WM_CONTEXTMENU: {
-        int      x = GET_X_LPARAM(lparam);
-        int      y = GET_Y_LPARAM(lparam);
-        unsigned flags = TPM_LEFTALIGN;
-        if ((-1 == x) || (-1 == y))
-        {
-            RECT wnd_rect;
-            GetWindowRect(wnd, &wnd_rect);
-            x = (wnd_rect.left + wnd_rect.right) / 2;
-            y = (wnd_rect.top + wnd_rect.bottom) / 2;
-            flags = TPM_CENTERALIGN | TPM_VCENTERALIGN;
-        }
-        TrackPopupMenu(size_menu_, flags | TPM_RIGHTBUTTON, x, y, 0, wnd, NULL);
+        show_context_menu(wnd, GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
         return 0;
     }
 
     case WM_KEYDOWN: {
-        switch (wparam)
-        {
-        case VK_OEM_PLUS:
-        case VK_OEM_MINUS:
-        case VK_ADD:
-        case VK_SUBTRACT: {
-            if (0x8000 & GetKeyState(VK_CONTROL))
-            {
-                int scale_idx = match_scale(
-                    gfx_get_scale(),
-                    ((VK_OEM_PLUS == wparam) || (VK_ADD == wparam)) ? +1 : -1);
-                select_scale(scale_idx);
-                return 0;
-            }
-
-            // Fall through
-        }
-
-        case VK_F11: {
-            windows_toggle_fullscreen(wnd);
-            return 0;
-        }
-
-        case VK_BACK:
-        case VK_TAB:
-        case VK_RETURN:
-        case VK_ESCAPE:
-        case VK_PRIOR:
-        case VK_NEXT:
-        case VK_END:
-        case VK_HOME:
-        case VK_LEFT:
-        case VK_UP:
-        case VK_RIGHT:
-        case VK_DOWN:
-        case VK_INSERT:
-        case VK_DELETE:
-        case VK_F1:
-        case VK_F2:
-        case VK_F3:
-        case VK_F4:
-        case VK_F5:
-        case VK_F6:
-        case VK_F7:
-        case VK_F8:
-        case VK_F9:
-        case VK_F10:
-        case VK_F12: {
-            windows_keycode = wparam;
-            return 0;
-        }
-
-        default: {
-            if ((('0' <= wparam) && ('9' >= wparam)) ||
-                (('A' <= wparam) && ('Z' >= wparam)))
-            {
-                windows_keycode = wparam;
-            }
-
-            return 0;
-        }
-        }
+        key_down(wnd, wparam);
+        break;
     }
 
     case WM_KEYUP: {
@@ -317,32 +359,14 @@ windows_wndproc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
         return 0;
     }
 
-    case WM_DESTROY:
+    case WM_DESTROY: {
         DestroyMenu(size_menu_);
         PostQuitMessage(0);
         return 0;
+    }
 
     case WM_PAINT: {
-        PAINTSTRUCT ps;
-        POINT       origin;
-        HDC         dc = BeginPaint(wnd, &ps);
-
-        // All painting occurs here, between BeginPaint and EndPaint.
-        HDC src_dc = windows_get_dc();
-
-        RECT wnd_rect;
-        GetClientRect(wnd, &wnd_rect);
-        SetDCBrushColor(dc, windows_get_bg());
-        FillRect(dc, &ps.rcPaint, GetStockObject(DC_BRUSH));
-
-        windows_get_origin(&origin);
-        BitBlt(dc, ps.rcPaint.left, ps.rcPaint.top,
-               ps.rcPaint.right - ps.rcPaint.left,
-               ps.rcPaint.bottom - ps.rcPaint.top, src_dc,
-               ps.rcPaint.left - origin.x, ps.rcPaint.top - origin.y, SRCCOPY);
-
-        EndPaint(wnd, &ps);
-
+        paint(wnd);
         return 0;
     }
     }
