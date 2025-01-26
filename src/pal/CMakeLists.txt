@@ -1,5 +1,6 @@
 add_library(pal OBJECT)
 add_dependencies(pal config)
+target_include_directories(pal PRIVATE inc)
 
 target_sources(pal PRIVATE strings.c)
 target_sources(pal PRIVATE ziparch.c)

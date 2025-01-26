@@ -116,25 +116,20 @@ pal_handle(void)
 
     case SDL_MOUSEMOTION: {
         LOG("mouse x: %d, y: %d", e.motion.x, e.motion.y);
-        _mouse_x = e.motion.x / _mouse_cell.width;
-        _mouse_y = e.motion.y / _mouse_cell.height;
+        evtmouse_set_position(e.motion.x / _mouse_cell.width,
+                              e.motion.y / _mouse_cell.height);
         break;
     }
 
     case SDL_MOUSEBUTTONDOWN: {
-        if (!_mouse_enabled)
-        {
-            break;
-        }
-
         LOG("mouse button %u down", e.button.button);
         if (SDL_BUTTON_LEFT == e.button.button)
         {
-            _mouse_buttons |= PAL_MOUSE_LBUTTON;
+            evtmouse_press(PAL_MOUSE_LBUTTON);
         }
         else if (SDL_BUTTON_RIGHT == e.button.button)
         {
-            _mouse_buttons |= PAL_MOUSE_RBUTTON;
+            evtmouse_press(PAL_MOUSE_RBUTTON);
         }
         break;
     }
@@ -143,11 +138,11 @@ pal_handle(void)
         LOG("mouse button %u up", e.button.button);
         if (SDL_BUTTON_LEFT == e.button.button)
         {
-            _mouse_buttons &= ~PAL_MOUSE_LBUTTON;
+            evtmouse_release(PAL_MOUSE_LBUTTON);
         }
         else if (SDL_BUTTON_RIGHT == e.button.button)
         {
-            _mouse_buttons &= ~PAL_MOUSE_RBUTTON;
+            evtmouse_release(PAL_MOUSE_RBUTTON);
         }
         break;
     }

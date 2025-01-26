@@ -6,8 +6,8 @@
 #include <arch/windows.h>
 #include <pal.h>
 
+#include <evtmouse.h>
 #include "../../resource.h"
-#include "../evtmouse.h"
 #include "impl.h"
 
 #ifndef INFINITY
@@ -301,24 +301,19 @@ windows_wndproc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
     case WM_MOUSEMOVE: {
         POINT origin;
         windows_get_origin(&origin);
-
-        _mouse_x = (GET_X_LPARAM(lparam) - origin.x) / windows_cell.width;
-        _mouse_y = (GET_Y_LPARAM(lparam) - origin.y) / windows_cell.height;
+        evtmouse_set_position(
+            (GET_X_LPARAM(lparam) - origin.x) / windows_cell.width,
+            (GET_Y_LPARAM(lparam) - origin.y) / windows_cell.height);
         return 0;
     }
 
     case WM_LBUTTONDOWN: {
-        if (!_mouse_enabled)
-        {
-            return 0;
-        }
-
-        _mouse_buttons |= PAL_MOUSE_LBUTTON;
+        evtmouse_press(PAL_MOUSE_LBUTTON);
         return 0;
     }
 
     case WM_LBUTTONUP: {
-        _mouse_buttons &= ~PAL_MOUSE_LBUTTON;
+        evtmouse_release(PAL_MOUSE_LBUTTON);
         return 0;
     }
 
