@@ -3,7 +3,6 @@
 #include <nls.h>
 #include <pal.h>
 
-#if defined(__ia16__) || defined(__linux__)
 extern nls_locstr STRINGS[];
 
 int
@@ -34,4 +33,3 @@ pal_load_string(unsigned id, char *buffer, int max_length)
     LOG("exit, '%s'", buffer);
     return strlen(buffer);
 }
-#endif
