@@ -9,6 +9,7 @@
 #include <fmt/exe.h>
 #include <fmt/utf8.h>
 #include <fmt/zip.h>
+#include <pal.h>
 
 #ifndef ZIP_PIGGYBACK
 static off_t _fbase = 0;
@@ -391,6 +392,38 @@ zip_free_data(char *data)
     free(data);
 #endif
     return;
+}
+
+zip_cached
+zip_cache(zip_item item)
+{
+    uint32_t size = 0, crc32 = 0;
+    off_t    odata = _get_data(item, &size, &crc32);
+
+#ifndef ZIP_PIGGYBACK
+    return pal_cache(_fd, _fbase + odata, size);
+#else
+    return odata;
+#endif
+}
+
+void
+zip_read(zip_cached handle, char *buff, off_t at, size_t size)
+{
+#ifndef ZIP_PIGGYBACK
+    pal_read(handle, buff, at, size);
+#else
+    char *base = (char *)_cdir - _cden->cdir_offset;
+    memcpy(buff, base + handle + at, size);
+#endif
+}
+
+void
+zip_discard(zip_cached handle)
+{
+#ifndef ZIP_PIGGYBACK
+    pal_discard(handle);
+#endif
 }
 
 bool

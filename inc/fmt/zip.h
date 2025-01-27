@@ -172,6 +172,7 @@ typedef const char *zip_archive;
 #endif
 
 typedef off_t zip_item;
+typedef long  zip_cached;
 
 typedef bool (*zip_enum_files_callback)(zip_cdir_file_header *cfh, void *data);
 
@@ -201,6 +202,18 @@ zip_load_data(zip_item item);
 // Dispose ZIP file data
 extern void
 zip_free_data(char *data);
+
+// Cache ZIP file data
+extern zip_cached
+zip_cache(zip_item item);
+
+// Reads from cached ZIP file data
+extern void
+zip_read(zip_cached handle, char *buff, off_t at, size_t size);
+
+// Discard cached ZIP file data
+extern void
+zip_discard(zip_cached handle);
 
 // Write file data to a file
 bool
