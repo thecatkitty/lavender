@@ -18,9 +18,8 @@ ziparch_initialize(zip_archive self)
 
     for (i = 0; i < MAX_OPEN_ASSETS; ++i)
     {
+        memset(pal_assets + i, 0, sizeof(pal_asset));
         pal_assets[i].inzip = -1;
-        pal_assets[i].flags = 0;
-        pal_assets[i].data = NULL;
     }
 
     if (!zip_open(self))

@@ -46,5 +46,7 @@ pal_open_asset(const char *name, int flags)
     LOG("exit, opened a new asset: %p", (void *)(pal_assets + slot));
     pal_assets[slot].inzip = lfh;
     pal_assets[slot].flags = flags;
+    pal_assets[slot].opts = 0;
+    pal_assets[slot].data = NULL;
     return (hasset)(pal_assets + slot);
 }
