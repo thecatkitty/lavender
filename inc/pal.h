@@ -6,6 +6,7 @@
 #include <fmt/utf8.h>
 
 DEFINE_HANDLE(hasset);
+typedef long hcache;
 
 typedef bool (*pal_enum_assets_callback)(const char *, void *);
 
@@ -134,6 +135,15 @@ pal_load_asset(hasset asset);
 
 extern long
 pal_get_asset_size(hasset asset);
+
+extern hcache
+pal_cache(int fd, off_t at, size_t size);
+
+extern void
+pal_read(hcache handle, char *buff, off_t at, size_t size);
+
+extern void
+pal_discard(hcache handle);
 
 extern const char *
 pal_get_version_string(void);

@@ -2,6 +2,7 @@ target_sources(pal PRIVATE ../shared/p-strings.c)
 target_sources(pal PRIVATE ../shared/p-version.c)
 
 target_sources(pal PRIVATE p-alert.c)
+target_sources(pal PRIVATE p-cache.c)
 target_sources(pal PRIVATE p-handle.c)
 target_sources(pal PRIVATE p-id.c)
 target_sources(pal PRIVATE p-init.c)
