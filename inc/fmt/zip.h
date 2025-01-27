@@ -196,7 +196,7 @@ zip_search(const char *name, uint16_t length);
 // Retrieve ZIP file data
 // Returns NULL on error
 extern char *
-zip_get_data(zip_item item);
+zip_load_data(zip_item item);
 
 // Dispose ZIP file data
 extern void
