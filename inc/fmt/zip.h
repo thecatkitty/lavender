@@ -171,6 +171,8 @@ typedef zip_cdir_end_header *zip_archive;
 typedef const char *zip_archive;
 #endif
 
+typedef off_t zip_item;
+
 typedef bool (*zip_enum_files_callback)(zip_cdir_file_header *cfh, void *data);
 
 // Set working archive
@@ -188,13 +190,13 @@ int
 zip_enum_files(zip_enum_files_callback callback, void *data);
 
 // Locate ZIP local file header structure
-extern off_t
+extern zip_item
 zip_search(const char *name, uint16_t length);
 
 // Retrieve ZIP file data
 // Returns NULL on error
 extern char *
-zip_get_data(off_t olfh);
+zip_get_data(zip_item item);
 
 // Dispose ZIP file data
 extern void
@@ -202,11 +204,11 @@ zip_free_data(char *data);
 
 // Write file data to a file
 bool
-zip_extract_data(off_t olfh, FILE *out);
+zip_extract_data(zip_item item, FILE *out);
 
 // Get ZIP file size
 extern uint32_t
-zip_get_size(off_t olfh);
+zip_get_size(zip_item item);
 
 // Calculate ZIP-compatible CRC-32 checksum of a buffer
 // Returns checksum value

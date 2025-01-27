@@ -290,7 +290,7 @@ zip_search(const char *name, uint16_t length)
 }
 
 static off_t
-_get_data(off_t olfh, uint32_t *size, uint32_t *crc32)
+_get_data(zip_item olfh, uint32_t *size, uint32_t *crc32)
 {
     zip_local_file_header *lfh;
 #ifndef ZIP_PIGGYBACK
@@ -344,11 +344,11 @@ _get_data(off_t olfh, uint32_t *size, uint32_t *crc32)
 }
 
 char *
-zip_get_data(off_t olfh)
+zip_get_data(zip_item item)
 {
     char    *buffer;
     uint32_t size = 0, crc32 = 0;
-    off_t    odata = _get_data(olfh, &size, &crc32);
+    off_t    odata = _get_data(item, &size, &crc32);
 
     if (0 > odata)
     {
@@ -394,13 +394,13 @@ zip_free_data(char *data)
 }
 
 bool
-zip_extract_data(off_t olfh, FILE *out)
+zip_extract_data(zip_item item, FILE *out)
 {
 #ifndef ZIP_PIGGYBACK
     char buffer[512];
 #endif
     uint32_t size = 0;
-    off_t    odata = _get_data(olfh, &size, NULL);
+    off_t    odata = _get_data(item, &size, NULL);
 
     if (0 > odata)
     {
@@ -442,10 +442,10 @@ zip_extract_data(off_t olfh, FILE *out)
 }
 
 uint32_t
-zip_get_size(off_t olfh)
+zip_get_size(zip_item item)
 {
     uint32_t size;
-    _get_data(olfh, &size, NULL);
+    _get_data(item, &size, NULL);
     return size;
 }
 
