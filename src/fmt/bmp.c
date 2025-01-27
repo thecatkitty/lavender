@@ -14,7 +14,7 @@ bmp_load_bitmap(gfx_bitmap *bm, hasset asset)
 
     LOG("entry, bm: %p, asset: %p", (void *)bm, (void *)asset);
 
-    data = pal_get_asset_data(asset);
+    data = pal_load_asset(asset);
     fh = (const bmp_file_header *)data;
     if (BMP_MAGIC != fh->type)
     {

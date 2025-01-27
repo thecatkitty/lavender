@@ -326,7 +326,7 @@ pal_initialize(int argc, char *argv[])
             msdos_exit(1);
         }
 
-        char *data = pal_get_asset_data(support);
+        char *data = pal_load_asset(support);
         if (NULL == data)
         {
             msdos_exit(1);
