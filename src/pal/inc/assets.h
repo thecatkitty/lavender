@@ -1,13 +1,14 @@
 #ifndef _PAL_IMPL_H_
 #define _PAL_IMPL_H_
 
+#include <fmt/zip.h>
 #include <pal.h>
 
 typedef struct
 {
-    off_t inzip;
-    int   flags;
-    char *data;
+    zip_item inzip;
+    int      flags;
+    char    *data;
 } pal_asset;
 
 #ifndef O_ACCMODE
