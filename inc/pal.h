@@ -130,6 +130,9 @@ pal_open_asset(const char *name, int flags);
 extern bool
 pal_close_asset(hasset asset);
 
+extern bool
+pal_read_asset(hasset asset, char *buff, off_t at, size_t size);
+
 extern char *
 pal_load_asset(hasset asset);
 

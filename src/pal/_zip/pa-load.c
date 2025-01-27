@@ -16,6 +16,13 @@ pal_load_asset(hasset asset)
         return NULL;
     }
 
+    if (PALOPT_CACHE == (ptr->opts & PALOPT_WHERE))
+    {
+        errno = EINVAL;
+        LOG("exit, already opened in another mode");
+        return false;
+    }
+
     if (NULL == ptr->data)
     {
         LOG("retrieving data for the first time");

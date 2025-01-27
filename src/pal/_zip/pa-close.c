@@ -25,9 +25,15 @@ pal_close_asset(hasset asset)
 
     ptr->inzip = -1;
 
-    if (NULL != ptr->data)
+    if ((PALOPT_LOCAL == (ptr->opts & PALOPT_WHERE)) && (NULL != ptr->data))
     {
         zip_free_data(ptr->data);
+        ptr->data = NULL;
+    }
+
+    if ((PALOPT_CACHE == (ptr->opts & PALOPT_WHERE)) && (0 != ptr->handle))
+    {
+        zip_discard(ptr->handle);
         ptr->data = NULL;
     }
 
