@@ -344,7 +344,7 @@ _get_data(zip_item olfh, uint32_t *size, uint32_t *crc32)
 }
 
 char *
-zip_get_data(zip_item item)
+zip_load_data(zip_item item)
 {
     char    *buffer;
     uint32_t size = 0, crc32 = 0;

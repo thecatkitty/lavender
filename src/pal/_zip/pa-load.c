@@ -19,7 +19,7 @@ pal_load_asset(hasset asset)
     if (NULL == ptr->data)
     {
         LOG("retrieving data for the first time");
-        ptr->data = zip_get_data(ptr->inzip);
+        ptr->data = zip_load_data(ptr->inzip);
     }
 
     LOG("exit, %p", ptr->data);
