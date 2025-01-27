@@ -212,7 +212,7 @@ snd_play(const char *name)
         return false;
     }
 
-    data = pal_get_asset_data(_music);
+    data = pal_load_asset(_music);
     if (NULL == data)
     {
         return false;

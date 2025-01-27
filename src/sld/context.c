@@ -21,7 +21,7 @@ sld_create_context(const char *name, int flags)
         return NULL;
     }
 
-    ctx->data = pal_get_asset_data(ctx->script);
+    ctx->data = pal_load_asset(ctx->script);
     if (NULL == ctx->data)
     {
         pal_close_asset(ctx->script);

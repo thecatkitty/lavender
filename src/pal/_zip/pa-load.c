@@ -3,7 +3,7 @@
 #include <assets.h>
 
 char *
-pal_get_asset_data(hasset asset)
+pal_load_asset(hasset asset)
 {
     pal_asset *ptr = (pal_asset *)asset;
 

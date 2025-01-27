@@ -202,7 +202,7 @@ pal_initialize(int argc, char *argv[])
     {
         int   small_size = GetSystemMetrics(SM_CYSMICON);
         int   large_size = GetSystemMetrics(SM_CYICON);
-        char *data = pal_get_asset_data(icon);
+        char *data = pal_load_asset(icon);
         int   size = pal_get_asset_size(icon);
 
         int small_offset = LookupIconIdFromDirectoryEx(
