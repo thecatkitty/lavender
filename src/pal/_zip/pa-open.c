@@ -43,6 +43,15 @@ pal_open_asset(const char *name, int flags)
         }
     }
 
+#if SIZE_MAX < UINT32_MAX
+    if (SIZE_MAX < zip_get_size(lfh))
+    {
+        LOG("exit, too large");
+        errno = EFBIG;
+        return NULL;
+    }
+#endif
+
     LOG("exit, opened a new asset: %p", (void *)(pal_assets + slot));
     pal_assets[slot].inzip = lfh;
     pal_assets[slot].flags = flags;

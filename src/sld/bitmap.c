@@ -39,15 +39,6 @@ _enum_assets_callback(const char *name, void *data)
         return true;
     }
 
-#if INTPTR_MAX < LONG_MAX
-    if (INTPTR_MAX < pal_get_asset_size(asset))
-    {
-        LOG("exit, too large");
-        pal_close_asset(asset);
-        return true;
-    }
-#endif
-
     if (NULL != ctx->asset)
     {
         pal_close_asset(ctx->asset);

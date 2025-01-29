@@ -10,7 +10,7 @@ pal_get_asset_size(hasset asset)
 
     LOG("entry, asset: %p", (void *)asset);
 
-    if (-1 == ptr->inzip)
+    if ((NULL == asset) || (-1 == ptr->inzip))
     {
         LOG("exit, wrong handle");
         errno = EBADF;
