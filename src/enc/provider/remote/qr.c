@@ -5,7 +5,7 @@
 
 #define QR_SIZE 128
 
-static gfx_bitmap _qr_bitmap = {QR_SIZE, QR_SIZE, QR_SIZE / 8, 1, 1};
+static gfx_bitmap _qr_bitmap = {QR_SIZE, QR_SIZE, QR_SIZE / 8, 1};
 
 static encui_field _qr_fields[] = {
     {ENCUIFT_BITMAP, ENCUIFF_DYNAMIC | ENCUIFF_CENTER, (intptr_t)&_qr_bitmap},

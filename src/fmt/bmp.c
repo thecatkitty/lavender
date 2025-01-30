@@ -42,9 +42,15 @@ bmp_load_bitmap(gfx_bitmap *bm, hasset asset)
 
     bm->width = ih->width;
     bm->height = -ih->height;
-    bm->planes = ih->planes;
     bm->bpp = ih->bit_count;
-    LOG("%dx%d, %u planes, %u bpp", bm->width, bm->height, bm->planes, bm->bpp);
+    LOG("%dx%d, %u bpp", bm->width, bm->height, bm->bpp);
+
+    if (1 != ih->planes)
+    {
+        LOG("exit, %d planes not supported!", ih->planes);
+        errno = EFTYPE;
+        return false;
+    }
 
     if ((1 != bm->bpp) && (4 != bm->bpp) && (32 != bm->bpp))
     {

@@ -223,15 +223,8 @@ gfx_get_color_depth(void)
 bool
 gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
 {
-    LOG("entry, bm: %dx%d %ubpp (%u planes, %u octets per scanline), x: %u,"
-        " y: %u",
-        bm->width, bm->height, bm->bpp, bm->planes, bm->opl, x, y);
-
-    if (1 != bm->planes)
-    {
-        errno = EFTYPE;
-        return false;
-    }
+    LOG("entry, bm: %dx%d %ubpp (%u octets per scanline), x: %u, y: %u",
+        bm->width, bm->height, bm->bpp, bm->opl, x, y);
 
     if ((1 != bm->bpp) && (4 != bm->bpp) && (32 != bm->bpp))
     {

@@ -240,7 +240,7 @@ cga_get_property(device *dev, gfx_property property, void *out)
 bool ddcall
 cga_draw_bitmap(device *dev, gfx_bitmap *bm, int x, int y)
 {
-    if ((1 != bm->planes) || (1 != bm->bpp))
+    if (1 != bm->bpp)
     {
         errno = EFTYPE;
         return false;
