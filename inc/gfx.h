@@ -8,7 +8,6 @@ typedef struct
     int16_t  width;
     int16_t  height;
     uint16_t opl;
-    uint8_t  planes;
     uint8_t  bpp;
     void    *bits;
 } gfx_bitmap;

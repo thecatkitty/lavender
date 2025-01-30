@@ -98,12 +98,6 @@ _set_plane(unsigned i)
 bool ddcall
 ega_draw_bitmap(device *dev, gfx_bitmap *bm, int x, int y)
 {
-    if (1 != bm->planes)
-    {
-        errno = EFTYPE;
-        return false;
-    }
-
     if ((1 != bm->bpp) && (4 != bm->bpp))
     {
         errno = EFTYPE;

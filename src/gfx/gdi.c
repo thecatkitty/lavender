@@ -199,7 +199,7 @@ windows_create_dib(HDC dc, gfx_bitmap *bm)
     bmi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
     bmi->bmiHeader.biWidth = bm->width;
     bmi->bmiHeader.biHeight = -bm->height;
-    bmi->bmiHeader.biPlanes = bm->planes;
+    bmi->bmiHeader.biPlanes = 1;
     bmi->bmiHeader.biBitCount = bm->bpp;
     bmi->bmiHeader.biCompression = BI_RGB;
 
