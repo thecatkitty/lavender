@@ -5,6 +5,14 @@
 #define XRGB_GREEN_MASK 0x0000FF00UL
 #define XRGB_BLUE_MASK  0x000000FFUL
 
+static bool
+deallocate(gfx_bitmap *bm, int reason)
+{
+    bm->bits = NULL;
+    errno = reason ? reason : errno;
+    return false;
+}
+
 bool
 bmp_load_bitmap(gfx_bitmap *bm, hasset asset)
 {
@@ -19,8 +27,7 @@ bmp_load_bitmap(gfx_bitmap *bm, hasset asset)
     if (BMP_MAGIC != fh->type)
     {
         LOG("exit, not a BMP!");
-        errno = EFTYPE;
-        return false;
+        return deallocate(bm, EFTYPE);
     }
 
     bm->bits = data + fh->off_bits;
@@ -36,8 +43,7 @@ bmp_load_bitmap(gfx_bitmap *bm, hasset asset)
         break;
     default:
         LOG("exit, unknown bitmap header of size %u!", ih->size);
-        errno = EFTYPE;
-        return false;
+        return deallocate(bm, EFTYPE);
     }
 
     bm->width = ih->width;
@@ -48,15 +54,13 @@ bmp_load_bitmap(gfx_bitmap *bm, hasset asset)
     if (1 != ih->planes)
     {
         LOG("exit, %d planes not supported!", ih->planes);
-        errno = EFTYPE;
-        return false;
+        return deallocate(bm, EFTYPE);
     }
 
     if ((1 != bm->bpp) && (4 != bm->bpp) && (32 != bm->bpp))
     {
         LOG("exit, %d bit depth not supported!", bm->bpp);
-        errno = EFTYPE;
-        return false;
+        return deallocate(bm, EFTYPE);
     }
 
     if (BMP_COMPRESSION_BITFIELDS == ih->compression)
@@ -68,15 +72,13 @@ bmp_load_bitmap(gfx_bitmap *bm, hasset asset)
         {
             LOG("exit, %08x %08x %08x bitmask not supported!", v5->red_mask,
                 v5->green_mask, v5->blue_mask);
-            errno = EFTYPE;
-            return false;
+            return deallocate(bm, EFTYPE);
         }
     }
     else if (BMP_COMPRESSION_RGB != ih->compression)
     {
         LOG("exit, compression %u not supported!", ih->compression);
-        errno = EFTYPE;
-        return false;
+        return deallocate(bm, EFTYPE);
     }
 
     bm->opl = (((bm->width * bm->bpp) + 31) & ~31) >> 3;
