@@ -223,8 +223,9 @@ gfx_get_color_depth(void)
 bool
 gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
 {
-    LOG("entry, bm: %dx%d %ubpp (%u octets per scanline), x: %u, y: %u",
-        bm->width, bm->height, bm->bpp, bm->opl, x, y);
+    LOG("entry, bm: %dx%d(%d@%d) %ubpp (%u octets per scanline), x: %u, y: %u",
+        bm->width, bm->height, bm->chunk_height, bm->chunk_top, bm->bpp,
+        bm->opl, x, y);
 
     if ((1 != bm->bpp) && (4 != bm->bpp) && (32 != bm->bpp))
     {
@@ -234,8 +235,9 @@ gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
 
     SDL_Surface *screen = SDL_GetWindowSurface(_window);
 
-    SDL_Rect src_rect = {0, 0, bm->width, abs(bm->height)};
-    SDL_Rect dst_rect = {x, y, _scale * bm->width, _scale * abs(bm->height)};
+    int      lines = bm->chunk_height ? bm->chunk_height : abs(bm->height);
+    SDL_Rect src_rect = {0, 0, bm->width, lines};
+    SDL_Rect dst_rect = {x, y, _scale * bm->width, _scale * lines};
     uint32_t format = SDL_PIXELFORMAT_XRGB8888;
 
     SDL_Surface *surface = NULL;
@@ -243,7 +245,7 @@ gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
     if (1 == bm->bpp)
     {
         char *bits = (char *)bm->bits;
-        char *end = bits + bm->opl * abs(bm->height);
+        char *end = bits + bm->opl * lines;
         while (bits < end)
         {
             *bits = ~*bits;
@@ -255,8 +257,8 @@ gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
 
     if (4 == bm->bpp)
     {
-        surface = SDL_CreateRGBSurfaceWithFormat(0, bm->width, abs(bm->height),
-                                                 32, SDL_PIXELFORMAT_XRGB8888);
+        surface = SDL_CreateRGBSurfaceWithFormat(0, bm->width, lines, 32,
+                                                 SDL_PIXELFORMAT_XRGB8888);
         SDL_LockSurface(surface);
 
         uint8_t  *src = (uint8_t *)bm->bits;
@@ -280,8 +282,8 @@ gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
     }
     else
     {
-        surface = SDL_CreateRGBSurfaceWithFormatFrom(
-            bm->bits, bm->width, abs(bm->height), bm->bpp, bm->opl, format);
+        surface = SDL_CreateRGBSurfaceWithFormatFrom(bm->bits, bm->width, lines,
+                                                     bm->bpp, bm->opl, format);
     }
 
     if (0 > bm->height)

@@ -197,7 +197,7 @@ windows_create_dib(HDC dc, gfx_bitmap *bm)
 
     bmi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
     bmi->bmiHeader.biWidth = bm->width;
-    bmi->bmiHeader.biHeight = -bm->height;
+    bmi->bmiHeader.biHeight = bm->chunk_height ? bm->chunk_height : -bm->height;
     bmi->bmiHeader.biPlanes = 1;
     bmi->bmiHeader.biBitCount = bm->bpp;
     bmi->bmiHeader.biCompression = BI_RGB;
@@ -243,10 +243,10 @@ gfx_draw_bitmap(gfx_bitmap *bm, int x, int y)
     }
 
     width = _scale * bm->width;
-    height = _scale * abs(bm->height);
+    height = _scale * bm->chunk_height;
     SelectObject(bmp_dc, bmp);
     StretchBlt(_dc, x, y, width, height, bmp_dc, 0, 0, bm->width,
-               abs(bm->height), SRCCOPY);
+               bm->chunk_height, SRCCOPY);
 
     rect.left = x;
     rect.top = y;

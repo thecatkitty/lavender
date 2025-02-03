@@ -1,6 +1,7 @@
 #include <dos.h>
 #include <graph.h>
 #include <libi86/string.h>
+#include <stdlib.h>
 
 #include <arch/dos.h>
 #include <arch/dos/bios.h>
@@ -257,14 +258,13 @@ cga_draw_bitmap(device *dev, gfx_bitmap *bm, int x, int y)
     plane1 += offset;
 
     int line_span = CGA_HIMONO_LINE;
-    int lines = bm->height;
+    int lines = bm->chunk_height ? bm->chunk_height : abs(bm->height);
     int width = (bm->width + 7) / 8;
     if (0 > bm->height)
     {
-        plane0 -= (bm->height + 1) / 2 * CGA_HIMONO_LINE;
-        plane1 -= (bm->height + 1) / 2 * CGA_HIMONO_LINE;
+        plane0 += (lines - 1) / 2 * CGA_HIMONO_LINE;
+        plane1 += (lines - 1) / 2 * CGA_HIMONO_LINE;
         line_span = -CGA_HIMONO_LINE;
-        lines = -bm->height;
     }
 
     for (uint16_t line = 0; line < lines; line += 2)
