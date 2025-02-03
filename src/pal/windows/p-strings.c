@@ -18,6 +18,11 @@ pal_load_string(unsigned id, char *buffer, int max_length)
     }
 
     length = LoadStringW(NULL, id, wbuffer, max_length);
+    if (windows_is_less_than_2000() && (0 >= length))
+    {
+        length = 4096;
+    }
+
     if (0 > length)
     {
         const char msg[] = "!!! string missing !!!";

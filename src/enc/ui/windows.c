@@ -69,6 +69,10 @@ _set_text(HWND wnd, uintptr_t ids, bool measure)
     if (0x10000 > ids)
     {
         length = LoadStringW(NULL, ids, (LPWSTR)&text, 0);
+        if (windows_is_less_than_2000() && (0 >= length))
+        {
+            length = 4096;
+        }
     }
     else
     {
