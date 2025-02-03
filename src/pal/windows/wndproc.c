@@ -275,12 +275,12 @@ paint(HWND wnd)
     HDC         dc = BeginPaint(wnd, &ps);
 
     // All painting occurs here, between BeginPaint and EndPaint.
-    HDC src_dc = windows_get_dc();
+    HDC    src_dc = windows_get_dc();
+    HBRUSH brush = CreateSolidBrush(windows_get_bg());
 
     RECT wnd_rect;
     GetClientRect(wnd, &wnd_rect);
-    SetDCBrushColor(dc, windows_get_bg());
-    FillRect(dc, &ps.rcPaint, GetStockObject(DC_BRUSH));
+    FillRect(dc, &ps.rcPaint, brush);
 
     windows_get_origin(&origin);
     BitBlt(dc, ps.rcPaint.left, ps.rcPaint.top,
@@ -288,6 +288,7 @@ paint(HWND wnd)
            ps.rcPaint.bottom - ps.rcPaint.top, src_dc,
            ps.rcPaint.left - origin.x, ps.rcPaint.top - origin.y, SRCCOPY);
 
+    DeleteObject(brush);
     EndPaint(wnd, &ps);
 }
 

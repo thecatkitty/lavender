@@ -321,20 +321,20 @@ gfx_draw_rectangle(const gfx_rect *rect, gfx_color color)
 bool
 gfx_fill_rectangle(const gfx_rect *rect, gfx_color color)
 {
+    HBRUSH brush = CreateSolidBrush(COLORS[color]);
+
     RECT wrect;
     _to_wrect(rect, &wrect);
 
-    SetDCBrushColor(_dc, COLORS[color]);
-    FillRect(_dc, &wrect, GetStockObject(DC_BRUSH));
+    FillRect(_dc, &wrect, brush);
 
     if ((_screen.cx == rect->width) && (_screen.cy == rect->height))
     {
         RECT wnd_rect;
         HDC  wnd_dc = GetDC(_wnd);
-        SetDCBrushColor(wnd_dc, COLORS[color]);
 
         GetClientRect(_wnd, &wnd_rect);
-        FillRect(wnd_dc, &wnd_rect, GetStockObject(DC_BRUSH));
+        FillRect(wnd_dc, &wnd_rect, brush);
 
         ReleaseDC(_wnd, wnd_dc);
         _bg = COLORS[color];
@@ -344,6 +344,8 @@ gfx_fill_rectangle(const gfx_rect *rect, gfx_color color)
         OffsetRect(&wrect, _origin.x, _origin.y);
         InvalidateRect(_wnd, &wrect, FALSE);
     }
+
+    DeleteObject(brush);
     return true;
 }
 
