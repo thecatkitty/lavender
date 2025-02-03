@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdlib.h>
 
 #include <fmt/bmp.h>
@@ -5,6 +6,28 @@
 #include <sld.h>
 
 #include "sld_impl.h"
+
+typedef struct
+{
+    gfx_bitmap bm;
+    hasset     asset;
+    int        x, y, height;
+    float      scale;
+    char _padding[SLD_ENTRY_MAX_LENGTH - ((sizeof(gfx_bitmap) + sizeof(hasset) +
+                                           3 * sizeof(int) + sizeof(float)))];
+    uint8_t state;
+} bitmap_content;
+
+#define CONTENT(sld) ((bitmap_content *)(&sld->content))
+static_assert(sizeof(bitmap_content) <= sizeofm(sld_entry, content),
+              "Bitmap context larger than available space");
+
+enum
+{
+    STATE_START,
+    STATE_READ,
+    STATE_COMPLETE,
+};
 
 typedef struct
 {
@@ -81,8 +104,11 @@ _find_best_bitmap(char *pattern)
     return ctx.asset;
 }
 
-int
-__sld_execute_bitmap(sld_entry *sld)
+static int
+execute_complete(sld_entry *sld);
+
+static int
+execute_start(sld_entry *sld)
 {
 #if defined(GFX_HAS_SCALE)
     float scale;
@@ -91,7 +117,6 @@ __sld_execute_bitmap(sld_entry *sld)
     gfx_dimensions screen;
     hasset         bitmap = _find_best_bitmap(sld->content);
     int            x, y;
-    int            status = 0, height;
 
     if (NULL == bitmap)
     {
@@ -139,44 +164,91 @@ __sld_execute_bitmap(sld_entry *sld)
 #endif
     }
 
-    height = 0;
-    while (height < abs(bm.height))
+    memcpy(&CONTENT(sld)->bm, &bm, sizeof(gfx_bitmap));
+    CONTENT(sld)->asset = bitmap;
+    CONTENT(sld)->x = x;
+    CONTENT(sld)->y = y;
+    CONTENT(sld)->height = 0;
+#if defined(GFX_HAS_SCALE)
+    CONTENT(sld)->scale = scale;
+#endif
+    CONTENT(sld)->state = STATE_READ;
+
+    return CONTINUE;
+}
+
+static int
+execute_read(sld_entry *sld)
+{
+    bitmap_content *ctx = CONTENT(sld);
+
+    if (ctx->height >= abs(ctx->bm.height))
     {
-        if (0 > bm.height)
-        {
-#if defined(GFX_HAS_SCALE)
-            y -= (float)bm.chunk_height * scale;
-#else
-            y -= bm.chunk_height;
-#endif
-        }
-
-        if (!gfx_draw_bitmap(&bm, x, y))
-        {
-            status = SLD_SYSERR;
-            break;
-        }
-
-        height += bm.chunk_height;
-        if (0 <= bm.height)
-        {
-#if defined(GFX_HAS_SCALE)
-            y += (float)bm.chunk_height * scale;
-#else
-            y += bm.chunk_height;
-#endif
-        }
-
-        if ((height < abs(bm.height)) && !bmp_load_bitmap(&bm, bitmap))
-        {
-            status = SLD_SYSERR;
-            break;
-        }
+        ctx->state = STATE_COMPLETE;
+        return CONTINUE;
     }
 
-    bmp_dispose_bitmap(&bm);
-    pal_close_asset(bitmap);
-    return status;
+    if (0 > ctx->bm.height)
+    {
+#if defined(GFX_HAS_SCALE)
+        ctx->y -= (float)ctx->bm.chunk_height * ctx->scale;
+#else
+        ctx->y -= ctx->bm.chunk_height;
+#endif
+    }
+
+    if (!gfx_draw_bitmap(&ctx->bm, ctx->x, ctx->y))
+    {
+        execute_complete(sld);
+        return SLD_SYSERR;
+    }
+
+    ctx->height += ctx->bm.chunk_height;
+    if (0 <= ctx->bm.height)
+    {
+#if defined(GFX_HAS_SCALE)
+        ctx->y += (float)ctx->bm.chunk_height * ctx->scale;
+#else
+        ctx->y += ctx->bm.chunk_height;
+#endif
+    }
+
+    if ((ctx->height < abs(ctx->bm.height)) &&
+        !bmp_load_bitmap(&ctx->bm, ctx->asset))
+    {
+        execute_complete(sld);
+        return SLD_SYSERR;
+    }
+
+    return CONTINUE;
+}
+
+static int
+execute_complete(sld_entry *sld)
+{
+    bmp_dispose_bitmap(&CONTENT(sld)->bm);
+    pal_close_asset(CONTENT(sld)->asset);
+    return 0;
+}
+
+int
+__sld_execute_bitmap(sld_entry *sld)
+{
+    switch (CONTENT(sld)->state)
+    {
+    case STATE_START:
+        return execute_start(sld);
+
+    case STATE_READ:
+        return execute_read(sld);
+
+    case STATE_COMPLETE:
+        return execute_complete(sld);
+    }
+
+    assert(false && "wrong state");
+    errno = -ENOSYS;
+    return SLD_SYSERR;
 }
 
 int
@@ -186,6 +258,8 @@ __sld_load_bitmap(const char *str, sld_entry *out)
 
     __sld_try_load(__sld_load_position, cur, out);
     __sld_try_load(__sld_load_content, cur, out);
+
+    CONTENT(out)->state = STATE_START;
 
     return cur - str;
 }
