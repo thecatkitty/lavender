@@ -1,5 +1,6 @@
 #include <conio.h>
 #include <graph.h>
+#include <stdlib.h>
 
 #include <arch/dos/bios.h>
 #include <drv.h>
@@ -110,12 +111,11 @@ ega_draw_bitmap(device *dev, gfx_bitmap *bm, int x, int y)
     far uint8_t   *fb = MK_FP(EGA_HIRES_MEM, y * EGA_HIRES_LINE + x);
 
     int line_span = EGA_HIRES_LINE;
-    int lines = bm->height;
+    int lines = bm->chunk_height ? bm->chunk_height : abs(bm->height);
     if (0 > bm->height)
     {
-        fb -= (bm->height + 1) * EGA_HIRES_LINE;
+        fb += (lines - 1) * EGA_HIRES_LINE;
         line_span = -EGA_HIRES_LINE;
-        lines = -bm->height;
     }
 
     if (1 == bm->bpp)

@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include <fmt/bmp.h>
 #include <pal.h>
 
@@ -5,34 +7,49 @@
 #define XRGB_GREEN_MASK 0x0000FF00UL
 #define XRGB_BLUE_MASK  0x000000FFUL
 
+#if SIZE_MAX <= UINT16_MAX
+#define MAX_CHUNK 5120 // 640x2 @ 32bpp, 640x16 @ 4bpp, 640x48 @ 1bpp
+#else
+#define MAX_CHUNK UINT16_MAX
+#endif
+
 static bool
 deallocate(gfx_bitmap *bm, int reason)
 {
+    free(bm->bits);
     bm->bits = NULL;
     errno = reason ? reason : errno;
     return false;
 }
 
-bool
-bmp_load_bitmap(gfx_bitmap *bm, hasset asset)
+static bool
+prepare(gfx_bitmap *bm, hasset asset)
 {
     const bmp_file_header *fh;
     const bmp_info_header *ih;
-    char                  *data;
 
     LOG("entry, bm: %p, asset: %p", (void *)bm, (void *)asset);
 
-    data = pal_load_asset(asset);
-    fh = (const bmp_file_header *)data;
+    bm->bits = malloc(MAX_CHUNK);
+    if (NULL == bm->bits)
+    {
+        return false;
+    }
+
+    if (!pal_read_asset(asset, bm->bits, 0,
+                        sizeof(bmp_file_header) + sizeof(bmp_v5_header)))
+    {
+        return deallocate(bm, 0);
+    }
+
+    fh = (const bmp_file_header *)bm->bits;
     if (BMP_MAGIC != fh->type)
     {
         LOG("exit, not a BMP!");
         return deallocate(bm, EFTYPE);
     }
 
-    bm->bits = data + fh->off_bits;
-
-    ih = (const bmp_info_header *)(data + sizeof(bmp_file_header));
+    ih = (const bmp_info_header *)((char *)bm->bits + sizeof(bmp_file_header));
     switch (ih->size)
     {
     case sizeof(bmp_info_header):
@@ -82,5 +99,48 @@ bmp_load_bitmap(gfx_bitmap *bm, hasset asset)
     }
 
     bm->opl = (((bm->width * bm->bpp) + 31) & ~31) >> 3;
+    if (MAX_CHUNK < bm->opl)
+    {
+        LOG("exit, %u octets per line not supported!", bm->opl);
+        return deallocate(bm, EFTYPE);
+    }
+
+    bm->offset = fh->off_bits;
+    bm->chunk_top = 0;
+    bm->chunk_height = MAX_CHUNK / bm->opl;
+    LOG("exit, %d lines per chunk", bm->chunk_height);
     return true;
+}
+
+bool
+bmp_load_bitmap(gfx_bitmap *bm, hasset asset)
+{
+    LOG("entry, bm: %p, asset: %p", (void *)bm, (void *)asset);
+
+    if (NULL != bm->bits)
+    {
+        bm->offset += bm->opl * bm->chunk_height;
+        bm->chunk_top += bm->chunk_height;
+    }
+    else if (!prepare(bm, asset))
+    {
+        return false;
+    }
+
+    if (abs(bm->height) < (bm->chunk_top + bm->chunk_height))
+    {
+        bm->chunk_height = abs(bm->height) - bm->chunk_top;
+    }
+
+    pal_read_asset(asset, bm->bits, bm->offset, bm->opl * bm->chunk_height);
+    return true;
+}
+
+void
+bmp_dispose_bitmap(gfx_bitmap *bm)
+{
+    LOG("entry, bm: %p", (void *)bm);
+
+    free(bm->bits);
+    bm->bits = NULL;
 }

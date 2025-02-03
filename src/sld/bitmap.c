@@ -91,12 +91,14 @@ __sld_execute_bitmap(sld_entry *sld)
     gfx_dimensions screen;
     hasset         bitmap = _find_best_bitmap(sld->content);
     int            x, y;
+    int            status = 0, height;
 
     if (NULL == bitmap)
     {
         return SLD_SYSERR;
     }
 
+    memset(&bm, 0, sizeof(bm));
     if (!bmp_load_bitmap(&bm, bitmap))
     {
         return SLD_SYSERR;
@@ -128,14 +130,53 @@ __sld_execute_bitmap(sld_entry *sld)
     }
 
     y = (int)((int32_t)sld->posy * screen.height / SLD_VIEWBOX_HEIGHT);
-
-    if (!gfx_draw_bitmap(&bm, x, y))
+    if (0 > bm.height)
     {
-        return SLD_SYSERR;
+#if defined(GFX_HAS_SCALE)
+        y -= (float)bm.height * scale;
+#else
+        y -= bm.height;
+#endif
     }
 
+    height = 0;
+    while (height < abs(bm.height))
+    {
+        if (0 > bm.height)
+        {
+#if defined(GFX_HAS_SCALE)
+            y -= (float)bm.chunk_height * scale;
+#else
+            y -= bm.chunk_height;
+#endif
+        }
+
+        if (!gfx_draw_bitmap(&bm, x, y))
+        {
+            status = SLD_SYSERR;
+            break;
+        }
+
+        height += bm.chunk_height;
+        if (0 <= bm.height)
+        {
+#if defined(GFX_HAS_SCALE)
+            y += (float)bm.chunk_height * scale;
+#else
+            y += bm.chunk_height;
+#endif
+        }
+
+        if ((height < abs(bm.height)) && !bmp_load_bitmap(&bm, bitmap))
+        {
+            status = SLD_SYSERR;
+            break;
+        }
+    }
+
+    bmp_dispose_bitmap(&bm);
     pal_close_asset(bitmap);
-    return 0;
+    return status;
 }
 
 int

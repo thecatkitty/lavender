@@ -10,6 +10,9 @@ typedef struct
     uint16_t opl;
     uint8_t  bpp;
     void    *bits;
+    off_t    offset;
+    int16_t  chunk_top;
+    int16_t  chunk_height;
 } gfx_bitmap;
 
 typedef struct

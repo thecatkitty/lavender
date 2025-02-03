@@ -67,4 +67,7 @@ enum
 extern bool
 bmp_load_bitmap(gfx_bitmap *bm, hasset asset);
 
+extern void
+bmp_dispose_bitmap(gfx_bitmap *bm);
+
 #endif
