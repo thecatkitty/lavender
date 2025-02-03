@@ -6,11 +6,11 @@
 uint32_t
 pal_get_medium_id(const char *tag)
 {
-    wchar_t self[MAX_PATH];
-    wchar_t volume_name[MAX_PATH];
-    wchar_t volume_path[MAX_PATH];
-    DWORD   volume_sn = 0;
-    wchar_t wide_tag[12];
+    wchar_t  self[MAX_PATH];
+    wchar_t *backslash;
+    wchar_t  volume_name[MAX_PATH];
+    DWORD    volume_sn = 0;
+    wchar_t  wide_tag[12];
 
     LOG("entry");
 
@@ -20,16 +20,17 @@ pal_get_medium_id(const char *tag)
         goto end;
     }
 
-    if (!GetVolumePathNameW(self, volume_path, MAX_PATH))
+    if (NULL == (backslash = wcsstr(self, L":\\")))
     {
         LOG("cannot get volume path for '%ls'!", self);
         goto end;
     }
+    backslash[2] = 0;
 
-    if (!GetVolumeInformationW(volume_path, volume_name, MAX_PATH, &volume_sn,
-                               NULL, NULL, NULL, 0))
+    if (!GetVolumeInformationW(self, volume_name, MAX_PATH, &volume_sn, NULL,
+                               NULL, NULL, 0))
     {
-        LOG("cannot get volume information for '%ls'!", volume_path);
+        LOG("cannot get volume information for '%ls'!", self);
         goto end;
     }
 
