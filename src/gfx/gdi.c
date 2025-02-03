@@ -188,7 +188,6 @@ HBITMAP
 windows_create_dib(HDC dc, gfx_bitmap *bm)
 {
     HBITMAP     bmp = NULL;
-    const void *bits = bm->bits;
     BITMAPINFO *bmi = (BITMAPINFO *)calloc(1, sizeof(BITMAPINFOHEADER) +
                                                   16 * sizeof(COLORREF));
     if (NULL == bmi)
@@ -206,34 +205,6 @@ windows_create_dib(HDC dc, gfx_bitmap *bm)
     // Prepare pixel data
     if (1 == bm->bpp)
     {
-        // Prepare a DWORD-aligned buffer for 1bpp bitmaps
-        if (bm->opl % 4)
-        {
-            size_t aligned_opl = align(bm->opl, 4);
-            size_t lines = abs(bm->height);
-            size_t i;
-
-            const char *src;
-            char       *dst;
-
-            char *aligned_bits = malloc(aligned_opl * lines);
-            if (NULL == aligned_bits)
-            {
-                goto end;
-            }
-
-            src = bm->bits;
-            dst = aligned_bits;
-            for (i = 0; i < lines; i++)
-            {
-                memcpy(dst, src, bm->opl);
-                src += bm->opl;
-                dst += aligned_opl;
-            }
-
-            bits = aligned_bits;
-        }
-
         // Initialize the palette for 1bpp bitmaps
         bmi->bmiColors[1].rgbRed = 255;
         bmi->bmiColors[1].rgbGreen = 255;
@@ -245,14 +216,9 @@ windows_create_dib(HDC dc, gfx_bitmap *bm)
         memcpy(bmi->bmiColors, COLORS, 16 * sizeof(COLORREF));
     }
 
-    bmp = CreateDIBitmap(_dc, &bmi->bmiHeader, CBM_INIT, bits, bmi,
+    bmp = CreateDIBitmap(_dc, &bmi->bmiHeader, CBM_INIT, bm->bits, bmi,
                          DIB_RGB_COLORS);
-end:
     free(bmi);
-    if (bm->bits != bits)
-    {
-        free((void *)bits);
-    }
     return bmp;
 }
 
