@@ -38,6 +38,20 @@ net_start(void)
         if (0x80000000 & version)
         {
             ptr += sprintf(ptr, "Windows");
+            switch (LOWORD(version))
+            {
+            case 0x0004:
+                ptr += sprintf(ptr, " 95");
+                break;
+
+            case 0x0A04:
+                ptr += sprintf(ptr, " 98");
+                break;
+
+            case 0x5A04:
+                ptr += sprintf(ptr, " Me");
+                break;
+            }
         }
         else if (10 == LOBYTE(version))
         {
