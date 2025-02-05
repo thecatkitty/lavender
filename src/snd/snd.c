@@ -198,33 +198,37 @@ snd_handle(void)
 bool
 snd_play(const char *name)
 {
-    char *data;
-    long  length;
+    char  *data;
+    long   length;
+    hasset music;
 
     if (_music)
     {
-        pal_close_asset(_music);
+        music = _music;
+        _music = NULL;
+        pal_close_asset(music);
     }
 
-    _music = pal_open_asset(name, O_RDONLY);
-    if (NULL == _music)
+    music = pal_open_asset(name, O_RDONLY);
+    if (NULL == music)
     {
         return false;
     }
 
-    data = pal_load_asset(_music);
+    data = pal_load_asset(music);
     if (NULL == data)
     {
         return false;
     }
 
-    length = pal_get_asset_size(_music);
+    length = pal_get_asset_size(music);
     if (sndseq_start(data, length))
     {
+        _music = music;
         return true;
     }
 
-    pal_close_asset(_music);
-    _music = NULL;
+    pal_close_asset(music);
+    music = NULL;
     return false;
 }
