@@ -18,6 +18,10 @@
 #include "../ui/encui.h"
 #include "resource.h"
 
+typedef HRESULT(STDAPICALLTYPE *pf_shgetstockiconinfo)(SHSTOCKICONID,
+                                                       UINT,
+                                                       SHSTOCKICONINFO *);
+
 #ifndef PSH_AEROWIZARD
 #define PSH_AEROWIZARD 0x00004000
 #endif
@@ -876,6 +880,44 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
     return FALSE;
 }
 
+static HICON
+_find_bang(void)
+{
+    if (NULL != _bang)
+    {
+        return _bang;
+    }
+
+    // Vista or newer - icon from the Shell API
+    if (windows_is_at_least_vista())
+    {
+        SHSTOCKICONINFO       info = {sizeof(SHSTOCKICONINFO)};
+        pf_shgetstockiconinfo fn = NULL;
+
+#if WINVER >= 0x0600
+        fn = SHGetStockIconInfo;
+#else
+        fn = windows_get_proc("shell32.dll", "SHGetStockIconInfo",
+                              pf_shgetstockiconinfo);
+#endif
+        if (fn &&
+            SUCCEEDED(fn(SIID_WARNING, SHGSI_ICON | SHGSI_SMALLICON, &info)))
+        {
+            if (NULL != info.hIcon)
+            {
+                return info.hIcon;
+            }
+        }
+    }
+
+    // XP and 2003 (Common Controls 6.0) - shaded
+    // 98 SE, Me and 2000 (Common Controls 5.x) - flat
+    return (HICON)LoadImageA(GetModuleHandleA("comctl32.dll"),
+                             MAKEINTRESOURCEA(20482), IMAGE_ICON,
+                             GetSystemMetrics(SM_CXSMICON),
+                             GetSystemMetrics(SM_CYSMICON), LR_DEFAULTCOLOR);
+}
+
 bool
 encui_enter(encui_page *pages, int count)
 {
@@ -950,10 +992,7 @@ encui_enter(encui_page *pages, int count)
     _pages = pages;
     _id = -1;
 
-    _bang = (HICON)LoadImageW(GetModuleHandleW(L"user32.dll"),
-                              MAKEINTRESOURCEW(101), IMAGE_ICON,
-                              GetSystemMetrics(SM_CXSMICON),
-                              GetSystemMetrics(SM_CYSMICON), LR_DEFAULTCOLOR);
+    _bang = _find_bang();
     return true;
 }
 
