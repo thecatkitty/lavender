@@ -61,6 +61,11 @@ static PROPSHEETHEADERW _psh = {sizeof(PROPSHEETHEADERW)};
 static HWND             _wnd = NULL;
 static HWND             _active_dlg = NULL;
 
+static HFONT _font = NULL;
+static HFONT _prev_font = NULL;
+static bool  _allocated_font = false;
+static LONG  _avg_width = 1, _prev_avg_width = 1;
+
 static int _value;
 
 static int
@@ -102,11 +107,10 @@ _set_text(HWND wnd, uintptr_t ids, bool measure)
 
     if (measure)
     {
-        HDC   dc = GetDC(wnd);
-        HFONT font = (HFONT)SendMessageW(wnd, WM_GETFONT, 0, 0);
-        RECT  rect;
+        HDC  dc = GetDC(wnd);
+        RECT rect;
         GetClientRect(wnd, &rect);
-        SelectObject(dc, font);
+        SelectObject(dc, _font);
         DrawTextW(dc, text, -1, &rect, DT_CALCRECT | DT_WORDBREAK);
         ReleaseDC(wnd, dc);
         height = rect.bottom;
@@ -292,13 +296,11 @@ _set_scaled_bitmap(HWND ctl, gfx_bitmap *bm, int new_width, int new_height)
 static void
 _create_controls(HWND dlg, encui_page *page)
 {
-    HFONT font;
-    RECT  rect;
-    int   cx, cy, my, i;
-    bool  has_checkbox = false, has_textbox = false, has_options = false;
+    RECT rect;
+    int  cx, cy, my, i;
+    bool has_checkbox = false, has_textbox = false, has_options = false;
 
-    font = (HFONT)SendDlgItemMessageW(dlg, IDC_TEXT, WM_GETFONT, 0, 0);
-    my = _get_separator_height(dlg, font);
+    my = _get_separator_height(dlg, _font);
     SetWindowTextW(GetDlgItem(dlg, IDC_TEXT), L"");
     SetWindowTextW(GetDlgItem(dlg, IDC_ALERT), L"");
 
@@ -348,7 +350,7 @@ _create_controls(HWND dlg, encui_page *page)
                                     GetModuleHandleW(NULL), NULL);
             }
 
-            SendMessageW(ctl, WM_SETFONT, (WPARAM)font, TRUE);
+            SendMessageW(ctl, WM_SETFONT, (WPARAM)_font, TRUE);
             if (ENCUIFF_FOOTER == (ENCUIFF_POSITION & field->flags))
             {
                 RECT dlg_rect;
@@ -379,8 +381,10 @@ _create_controls(HWND dlg, encui_page *page)
 
             box = GetDlgItem(dlg, IDC_EDITBOX);
             GetWindowRect(box, &box_rect);
-            MoveWindow(box, cx, cy, box_rect.right - box_rect.left,
-                       box_rect.bottom - box_rect.top, TRUE);
+            MoveWindow(
+                box, cx, cy,
+                min(box_rect.right - box_rect.left, rect.right - rect.left),
+                box_rect.bottom - box_rect.top, TRUE);
 
             ctl = GetDlgItem(dlg, IDC_BANG);
             GetWindowRect(ctl, &ctl_rect);
@@ -395,6 +399,7 @@ _create_controls(HWND dlg, encui_page *page)
                        cy + ctl_rect.top - box_rect.top,
                        ctl_rect.right - ctl_rect.left,
                        ctl_rect.bottom - ctl_rect.top, TRUE);
+            SendMessageW(ctl, WM_SETFONT, (WPARAM)_font, TRUE);
 
             cy += ctl_rect.bottom - box_rect.top + my;
         }
@@ -426,7 +431,7 @@ _create_controls(HWND dlg, encui_page *page)
                                          GetModuleHandleW(NULL), NULL);
 
                 has_options = true;
-                SendMessageW(ctl, WM_SETFONT, (WPARAM)font, TRUE);
+                SendMessageW(ctl, WM_SETFONT, (WPARAM)_font, TRUE);
                 cy += _set_text(ctl, field->data, true) + my;
                 if (ENCUIFF_CHECKED & field->flags)
                 {
@@ -626,8 +631,47 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
                 cl_width + border_width, cl_height + border_height,
                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOREDRAW);
 
+            // Update dialog font
+            if (windows_is_less_than_2000() && (NULL == _font))
+            {
+                NONCLIENTMETRICSA nc_metrics = {sizeof(NONCLIENTMETRICSA)};
+                if (SystemParametersInfoA(SPI_GETNONCLIENTMETRICS,
+                                          sizeof(nc_metrics), &nc_metrics, 0))
+                {
+                    _prev_font = (HFONT)SendMessageA(dlg, WM_GETFONT, 0, 0);
+                    _font = CreateFontIndirectA(&nc_metrics.lfMessageFont);
+                    if (NULL != _font)
+                    {
+                        HDC dc;
+
+                        _allocated_font = true;
+                        SendMessageW(dlg, WM_SETFONT, (WPARAM)_font, FALSE);
+
+                        if (NULL != (dc = GetDC(dlg)))
+                        {
+                            TEXTMETRICA txt_metrics = {0};
+
+                            SelectObject(dc, _prev_font);
+                            GetTextMetricsA(dc, &txt_metrics);
+                            _prev_avg_width = txt_metrics.tmAveCharWidth;
+
+                            SelectObject(dc, _font);
+                            GetTextMetricsA(dc, &txt_metrics);
+                            _avg_width = txt_metrics.tmAveCharWidth;
+
+                            ReleaseDC(dlg, dc);
+                        }
+                    }
+                }
+            }
+
             // Apply padding
             MapDialogRect(dlg, &padding);
+            padding.left = padding.left * _avg_width / _prev_avg_width;
+            padding.top = padding.top * _avg_width / _prev_avg_width;
+            padding.right = padding.right * _avg_width / _prev_avg_width;
+            padding.bottom = padding.bottom * _avg_width / _prev_avg_width;
+
             ctl = GetWindow(dlg, GW_CHILD);
             while (ctl)
             {
@@ -636,11 +680,18 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
                 MapWindowPoints(NULL, dlg, (LPPOINT)&ctl_rect, 2);
 
                 SetWindowPos(ctl, NULL, ctl_rect.left + padding.left,
-                             ctl_rect.top + padding.top, 0, 0,
-                             SWP_NOZORDER | SWP_NOSIZE);
+                             ctl_rect.top + padding.top,
+                             (ctl_rect.right - ctl_rect.left) * _avg_width /
+                                 _prev_avg_width,
+                             ctl_rect.bottom - ctl_rect.top, SWP_NOZORDER);
 
                 ctl = GetWindow(ctl, GW_HWNDNEXT);
             }
+        }
+
+        if (NULL == _font)
+        {
+            _font = (HFONT)SendMessageA(dlg, WM_GETFONT, 0, 0);
         }
 
         _active_dlg = dlg;
@@ -1015,6 +1066,12 @@ encui_exit(void)
     {
         DestroyIcon(_bang);
         _bang = NULL;
+    }
+
+    if (_allocated_font)
+    {
+        DeleteObject(_font);
+        _font = NULL;
     }
 
     return true;
