@@ -85,9 +85,9 @@ jobs:
       - name: Fetch Windows (IA32) dependencies
         if: matrix.platform.target == 'windows-ia32'
         run: |
-          wget -nv -P ext/ https://github.com/thecatkitty/bulwa/releases/download/REL-20241013/bulwa-REL-20241013.zip
+          wget -nv -P ext/ https://github.com/thecatkitty/bulwa/releases/download/REL-20250208/bulwa-REL-20250208-i486.zip
           wget -nv -P ext/ http://prdownloads.sourceforge.net/libunicows/libunicows-1.1.1-mingw32.zip
-          unzip ext/bulwa-REL-20241013.zip -d ext/bulwa
+          unzip ext/bulwa-REL-20250208-i486 -d ext/bulwa
           unzip -j ext/libunicows-1.1.1-mingw32.zip -d ext/libunicows
 
       - name: Fetch Windows (IA64) dependencies

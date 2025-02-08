@@ -85,7 +85,7 @@ if(WIN32)
     set(CONFIG_INTERNET 1)
     add_compile_definitions(CONFIG_INTERNET)
     if(${COMPILER_NAME} MATCHES "i686")
-        add_compile_options(-march=i586)
+        add_compile_options(-march=i486)
     endif()
 endif()
 
