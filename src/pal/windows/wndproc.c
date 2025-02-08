@@ -10,6 +10,9 @@
 #include "impl.h"
 #include <evtmouse.h>
 
+typedef BOOL(WINAPI *pf_getmonitorinfoa)(HMONITOR, LPMONITORINFO);
+typedef HMONITOR(WINAPI *pf_monitorfromwindow)(HWND, DWORD);
+
 #ifndef INFINITY
 #define INFINITY 1000.f
 #endif
@@ -75,6 +78,45 @@ select_scale(int idx)
     return true;
 }
 
+static bool
+get_fullscreen_rect(HWND wnd, RECT *rect)
+{
+    MONITORINFO mi = {sizeof(mi)};
+
+    pf_getmonitorinfoa   fn_gmi;
+    pf_monitorfromwindow fn_mfw;
+
+    if (windows_is_less_than_98())
+    {
+        rect->left = 0;
+        rect->top = 0;
+        rect->right = GetSystemMetrics(SM_CXSCREEN);
+        rect->bottom = GetSystemMetrics(SM_CYSCREEN);
+        return true;
+    }
+
+#if WINVER >= 0x040A
+    fn_gmi = GetMonitorInfoA;
+    fn_mfw = MonitorFromWindow;
+#else
+    fn_gmi =
+        windows_get_proc("user32.dll", "GetMonitorInfoA", pf_getmonitorinfoa);
+    fn_mfw = windows_get_proc("user32.dll", "MonitorFromWindow",
+                              pf_monitorfromwindow);
+#endif
+
+    if (fn_gmi && fn_mfw && fn_gmi(fn_mfw(wnd, MONITOR_DEFAULTTOPRIMARY), &mi))
+    {
+        rect->left = mi.rcMonitor.left;
+        rect->top = mi.rcMonitor.top;
+        rect->right = mi.rcMonitor.right;
+        rect->bottom = mi.rcMonitor.bottom;
+        return true;
+    }
+
+    return false;
+}
+
 void
 windows_toggle_fullscreen(HWND wnd)
 {
@@ -92,24 +134,19 @@ windows_toggle_fullscreen(HWND wnd)
     }
     else
     {
-        MONITORINFO mi = {sizeof(mi)};
+        RECT rect;
         if (GetWindowPlacement(wnd, &placement_) &&
-            GetMonitorInfoW(MonitorFromWindow(wnd, MONITOR_DEFAULTTOPRIMARY),
-                            &mi))
+            get_fullscreen_rect(wnd, &rect))
         {
-            int max_width =
-                (mi.rcMonitor.right - mi.rcMonitor.left) / GFX_COLUMNS;
-            int max_height =
-                (mi.rcMonitor.bottom - mi.rcMonitor.top) / GFX_LINES;
+            int max_width = (rect.right - rect.left) / GFX_COLUMNS;
+            int max_height = (rect.bottom - rect.top) / GFX_LINES;
 
             scale_ = gfx_get_scale();
             windows_set_font(windows_find_font(max_width, max_height));
-            windows_set_box(mi.rcMonitor.right - mi.rcMonitor.left,
-                            mi.rcMonitor.bottom - mi.rcMonitor.top);
+            windows_set_box(rect.right - rect.left, rect.bottom - rect.top);
             SetWindowLongW(wnd, GWL_STYLE, style & ~WS_OVERLAPPEDWINDOW);
-            SetWindowPos(wnd, HWND_TOP, mi.rcMonitor.left, mi.rcMonitor.top,
-                         mi.rcMonitor.right - mi.rcMonitor.left,
-                         mi.rcMonitor.bottom - mi.rcMonitor.top,
+            SetWindowPos(wnd, HWND_TOP, rect.left, rect.top,
+                         rect.right - rect.left, rect.bottom - rect.top,
                          SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
         }
     }

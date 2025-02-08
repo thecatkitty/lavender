@@ -63,6 +63,7 @@ windows_is_less_than(uint16_t ver)
 #define windows_is_at_least_vista() winver_or_windows_is_at_least(0x0600)
 #define windows_is_at_least_7()     winver_or_windows_is_at_least(0x0601)
 
+#define windows_is_less_than_98()   winver_and_windows_is_less_than(0x040A)
 #define windows_is_less_than_2000() winver_and_windows_is_less_than(0x0500)
 
 #define windows_get_proc(module, name, type)                                   \
