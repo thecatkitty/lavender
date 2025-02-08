@@ -5,57 +5,51 @@
 
 #include "impl.h"
 
-static LPVOID resource_ = NULL;
+static LPVOID info_ = NULL;
 static WORD  *translation_ = NULL;
 static char   version_[MAX_PATH] = {0};
 
 static bool
 load_version_info(void)
 {
-    DWORD   resource_size;
-    HGLOBAL resource_data;
-    LPVOID  resource;
-    WORD   *translation = NULL;
-    UINT    translation_len = 0;
+    WCHAR self[126]; // Length limited by 9x
+    DWORD size = 0;
+    WORD *translation = NULL;
+    UINT  translation_len = 0;
 
-    HRSRC resource_info = FindResourceW(NULL, MAKEINTRESOURCEW(1), RT_VERSION);
-    if (NULL == resource_info)
+    if (!GetModuleFileNameW(NULL, self, lengthof(self)))
     {
-        LOG("cannot find version resource");
+        LOG("cannot get the module name of self");
         return false;
     }
 
-    resource_size = SizeofResource(NULL, resource_info);
-    resource_data = LoadResource(NULL, resource_info);
-    if (NULL == resource_data)
+    if (0 == (size = GetFileVersionInfoSizeW(self, NULL)))
     {
-        LOG("cannot load version resource");
+        LOG("cannot get the version info size");
         return false;
     }
 
-    resource = LockResource(resource_data);
-    if (NULL == resource)
+    info_ = LocalAlloc(LMEM_FIXED, size);
+    if (NULL == info_)
     {
-        LOG("cannot lock version resource");
-        FreeResource(resource_data);
+        LOG("cannot allocate memory for version info");
         return false;
     }
 
-    resource_ = LocalAlloc(LMEM_FIXED, resource_size);
-    if (NULL == resource_)
+    if (!GetFileVersionInfoW(self, 0, size, info_))
     {
-        LOG("cannot allocate memory for version resource");
-        FreeResource(resource_data);
+        LOG("cannot access version info");
+        LocalFree(info_);
+        info_ = NULL;
         return false;
     }
 
-    CopyMemory(resource_, resource, resource_size);
-    FreeResource(resource_data);
-
-    if (!VerQueryValueW(resource_, L"\\VarFileInfo\\Translation",
+    if (!VerQueryValueW(info_, L"\\VarFileInfo\\Translation",
                         (LPVOID *)&translation, &translation_len))
     {
         LOG("cannot query Translation");
+        LocalFree(info_);
+        info_ = NULL;
         return false;
     }
 
@@ -73,7 +67,7 @@ load_string_file_info(const char *name)
     swprintf(path, MAX_PATH, L"\\StringFileInfo\\%04X%04X\\" FMT_AS,
              translation_[0], translation_[1], name);
 
-    if (!VerQueryValueW(resource_, path, (LPVOID *)&string, &string_len))
+    if (!VerQueryValueW(info_, path, (LPVOID *)&string, &string_len))
     {
         LOG("cannot query %s", name);
         return NULL;
@@ -85,7 +79,7 @@ load_string_file_info(const char *name)
 const char *
 pal_get_version_string(void)
 {
-    LPCWSTR name, version;
+    LPCWSTR part;
     LOG("entry");
 
     if (version_[0])
@@ -100,26 +94,29 @@ pal_get_version_string(void)
         return "Lavender";
     }
 
-    name = load_string_file_info("ProductName");
-    if (NULL == name)
+    part = load_string_file_info("ProductName");
+    if (NULL == part)
     {
         LOG("cannot load product name string");
-        return "Lavender";
+        strcpy(version_, "Lavender");
+        goto end;
     }
+    WideCharToMultiByte(CP_UTF8, 0, part, -1, version_, lengthof(version_),
+                        NULL, NULL);
 
-    version = load_string_file_info("ProductVersion");
-    if (NULL == version)
+    part = load_string_file_info("ProductVersion");
+    if (NULL == part)
     {
         LOG("cannot load product version string");
-        WideCharToMultiByte(CP_UTF8, 0, name, -1, version_, MAX_PATH, NULL,
-                            NULL);
-    }
-    else
-    {
-        snprintf(version_, MAX_PATH, "%ls %ls", name, version);
+        goto end;
     }
 
-    LocalFree(resource_);
+    strncat(version_, " ", lengthof(version_) - strlen(version_));
+    WideCharToMultiByte(CP_UTF8, 0, part, -1, version_ + strlen(version_),
+                        lengthof(version_) - strlen(version_), NULL, NULL);
+
+end:
+    LocalFree(info_);
     LOG("exit, '%s'", version_);
     return version_;
 }
