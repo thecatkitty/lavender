@@ -1,6 +1,6 @@
 # Lavender ![Build status badge](https://github.com/thecatkitty/lavender/actions/workflows/build.yml/badge.svg?event=push)
 
-A simple configurable slideshow program for DOS 2.0+ and Windows 2000+ written mainly in C. It shows slides consisting of text and graphics contained in the ZIP file appended to the executable.
+A simple configurable slideshow program for DOS 2.0+ and Windows 95/NT4+ written mainly in C. It shows slides consisting of text and graphics contained in the ZIP file appended to the executable.
 
 This is still work in progress, but I'm doing my best to separate working version (`main` branch) from progressing code (PRs).
 
@@ -39,6 +39,7 @@ This is still work in progress, but I'm doing my best to separate working versio
 Building requires *CMake*, *Python 3* and `zip` on all hosts.
 On Linux hosts, *GNU Make* and *GNU Binutils* are also required.
 Cross-compilation for Windows is done using [LLVM-MinGW](https://github.com/mstorsjo/llvm-mingw) for i586, x86_64, armv7, and aarch64.
+Cross-compiled i586 Windows target links against [libunicows](https://libunicows.sourceforge.net/) and requires Internet Explorer 5 or newer.
 Native compilation on Windows requires at least Microsoft Visual C++ 2010 with Windows SDK 7.1.
 Linux builds rely on *SDL2*, *SDL2_ttf*, *cURL*, *Fontconfig*, *FluidSynth*, and *libblkid* libraries.
 MS-DOS builds require [GCC for IA-16](https://github.com/tkchia/gcc-ia16/) with [libi86](https://github.com/tkchia/libi86/).
@@ -54,7 +55,7 @@ cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=cmake/DOS-GCC-IA16.cmake -DDOS_TARGET
 # MS-DOS build, EXE file (DOS 3+)
 cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=cmake/DOS-GCC-IA16.cmake
 
-# Windows build, IA-32 (Windows 2000+)
+# Windows build, IA-32 (Windows 95+)
 CC=i686-w64-mingw32-gcc cmake -S . -B build -DCMAKE_SYSTEM_NAME=Windows
 
 # Windows build, x64 (Windows XP+)
