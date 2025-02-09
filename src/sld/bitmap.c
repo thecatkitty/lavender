@@ -181,6 +181,7 @@ static int
 execute_read(sld_entry *sld)
 {
     bitmap_content *ctx = CONTENT(sld);
+    int             y = ctx->y;
 
     if (ctx->height >= abs(ctx->bm.height))
     {
@@ -191,28 +192,27 @@ execute_read(sld_entry *sld)
     if (0 > ctx->bm.height)
     {
 #if defined(GFX_HAS_SCALE)
-        ctx->y -= (float)ctx->bm.chunk_height * ctx->scale;
+        y -= (float)(ctx->bm.chunk_top + ctx->bm.chunk_height) * ctx->scale;
 #else
-        ctx->y -= ctx->bm.chunk_height;
+        y -= ctx->bm.chunk_top + ctx->bm.chunk_height;
+#endif
+    }
+    else
+    {
+#if defined(GFX_HAS_SCALE)
+        y += (float)ctx->bm.chunk_top * ctx->scale;
+#else
+        y += ctx->bm.chunk_top;
 #endif
     }
 
-    if (!gfx_draw_bitmap(&ctx->bm, ctx->x, ctx->y))
+    if (!gfx_draw_bitmap(&ctx->bm, ctx->x, y))
     {
         execute_complete(sld);
         return SLD_SYSERR;
     }
 
     ctx->height += ctx->bm.chunk_height;
-    if (0 <= ctx->bm.height)
-    {
-#if defined(GFX_HAS_SCALE)
-        ctx->y += (float)ctx->bm.chunk_height * ctx->scale;
-#else
-        ctx->y += ctx->bm.chunk_height;
-#endif
-    }
-
     if ((ctx->height < abs(ctx->bm.height)) &&
         !bmp_load_bitmap(&ctx->bm, ctx->asset))
     {
