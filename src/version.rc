@@ -1,21 +1,5 @@
-#include <winver.h>
-
-#include <generated/version.h>
-
-#define VER_FILEFLAGSMASK           VS_FFI_FILEFLAGSMASK
-#define VER_FILEFLAGS               0
-#define VER_FILEOS                  VOS_NT
-#define VER_FILETYPE                VFT_APP
-#define VER_FILESUBTYPE             0
 #define VER_INTERNALNAME_STR        "lavender.exe"
-
-#define VER_PRODUCTVERSION          VER_FILEVERSION
-#define VER_PRODUCTVERSION_STR      VER_FILEVERSION_STR
-
-#define VER_COMPANYNAME_STR         "Celones"
-#define VER_PRODUCTNAME_STR         "Lavender"
-
-#include <common.ver>
+#include <version.rh>
 
 1 ICON "lavender.ico"
 2 ICON "secondary.ico"
