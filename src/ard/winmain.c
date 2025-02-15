@@ -9,6 +9,27 @@
 
 #include "resource.h"
 
+static int
+die_with_rundos(_Inout_z_ char *message, _In_ const ardc_config *cfg)
+{
+    bool has_rundos = arda_rundos_available(cfg);
+    if (has_rundos)
+    {
+        size_t length = strlen(message);
+        message[length++] = ' ';
+        LoadString(NULL, IDS_DIERUNDOS, message + length,
+                   ARDC_LENGTH_LONG - length - 1);
+    }
+
+    if (IDYES == ardui_msgbox(message, has_rundos ? (MB_ICONWARNING | MB_YESNO)
+                                                  : (MB_ICONERROR | MB_OK)))
+    {
+        return arda_rundos(cfg);
+    }
+
+    return 0;
+}
+
 int WINAPI
 WinMain(_In_ HINSTANCE     instance,
         _In_opt_ HINSTANCE prev_instance,
@@ -45,8 +66,7 @@ WinMain(_In_ HINSTANCE     instance,
                    cpu_desc, ARRAYSIZE(cpu_desc));
         sprintf(message, format, cfg->name, cpu_desc);
 
-        ardui_msgbox(message, MB_ICONERROR | MB_OK);
-        return 0;
+        return die_with_rundos(message, cfg);
     }
 
     // check the operating system version
@@ -69,8 +89,7 @@ WinMain(_In_ HINSTANCE     instance,
                     ardv_windows_get_name(cfg->winnt, true));
         }
 
-        ardui_msgbox(message, MB_ICONERROR | MB_OK);
-        return 0;
+        return die_with_rundos(message, cfg);
     }
 
     // check the service pack version
@@ -86,8 +105,7 @@ WinMain(_In_ HINSTANCE     instance,
                 ardv_windows_get_spname(winver, cfg->ossp, is_nt),
                 ardv_windows_get_name(winver, is_nt));
 
-        ardui_msgbox(message, MB_ICONERROR | MB_OK);
-        return 0;
+        return die_with_rundos(message, cfg);
     }
 
     arda_run(cfg);
