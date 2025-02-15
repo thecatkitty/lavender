@@ -1,0 +1,12 @@
+#include "../resource.h"
+
+STRINGTABLE
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+{
+    IDS_DEFNAME, "Lavender"
+    IDS_DEFRUN, "ia32\\sshow.exe"
+    IDS_DEFCPU, "i486"
+}
+
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+1 ICON "../../secondary.ico"

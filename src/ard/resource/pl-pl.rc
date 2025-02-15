@@ -1,0 +1,29 @@
+#include "../resource.h"
+
+#define VER_FILEDESCRIPTION_STR     "Narzędzie do sprawdzania zależności autoodtwarzania programu Lavender"
+#define VER_LEGALCOPYRIGHT_STR      "(C) 2025 Mateusz Karcz. Udostępniono na zasadach Licencji MIT."
+#define VER_VERSION_UNICODE_LANG    "041504B0"
+#define VER_VERSION_TRANSLATION     0x0415, 0x04B0
+
+STRINGTABLE
+LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
+{
+    IDS_OLDCPU, "%s wymaga procesora %s."
+
+    IDS_CPUI486, "i486 lub nowszego"
+    IDS_CPUP5, "Pentium lub nowszego"
+    IDS_CPUP6, "Pentium Pro lub nowszego"
+    IDS_CPUSSE, "z obsługą SSE"
+    IDS_CPUSSE2, "z obsługą SSE2"
+    IDS_CPUX64, "o architekturze 64-bitowej"
+
+    IDS_ECONFIG, "Nie udało się załadować konfiguracji."
+    IDS_EEXECNORES, "Nie udało się uruchomić programu %s z powodu braku zasobów w systemie."
+    IDS_EEXECBADF, "Nie udało się uruchomić programu %s, ponieważ plik '%s' jest niepoprawny."
+    IDS_EEXECNOF, "Nie udało się uruchomić programu %s, ponieważ nie znaleziono pliku '%s'."
+}
+
+LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
+
+#define VER_INTERNALNAME_STR        "lard.exe"
+#include <version.rh>
