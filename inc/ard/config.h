@@ -19,6 +19,7 @@ typedef struct
     char     cpu[ARDC_LENGTH_SHORT];
     uint16_t win;
     uint16_t winnt;
+    uint16_t ossp;
 } ardc_config;
 
 extern ardc_config *

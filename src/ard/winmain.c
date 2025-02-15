@@ -80,6 +80,23 @@ WinMain(_In_ HINSTANCE     instance,
         return 0;
     }
 
+    // check the service pack version
+    if (cfg->ossp > ardv_windows_get_servicepack())
+    {
+        char     format[ARDC_LENGTH_MID] = "";
+        bool     is_nt = ardv_windows_get_version();
+        uint16_t winver = ardv_windows_get_version();
+
+        LoadString(NULL, is_nt ? IDS_OLDSP : IDS_OLDOSR, format,
+                   ARRAYSIZE(format));
+        sprintf(message, format, cfg->name,
+                ardv_windows_get_spname(winver, cfg->ossp, is_nt),
+                ardv_windows_get_name(winver, is_nt));
+
+        show_msgbox(message, MB_ICONERROR | MB_OK);
+        return 0;
+    }
+
     sprintf(cmd, "\"%s\"", cfg->run);
     if (32 > (status = WinExec(cmd, SW_SHOWNORMAL)))
     {

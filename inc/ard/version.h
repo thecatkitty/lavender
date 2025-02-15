@@ -29,7 +29,15 @@ ardv_windows_is_nt(void);
 extern WORD
 ardv_windows_get_version(void);
 
+extern WORD
+ardv_windows_get_servicepack(void);
+
 extern const char *
 ardv_windows_get_name(_In_ WORD version, _In_ bool is_nt);
+
+extern const char *
+ardv_windows_get_spname(_In_ WORD os_version,
+                        _In_ WORD sp_version,
+                        _In_ bool is_nt);
 
 #endif // _ARD_VERSION_H_
