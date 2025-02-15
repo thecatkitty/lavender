@@ -9,6 +9,8 @@ STRINGTABLE
 LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
 {
     IDS_OLDCPU, "%s wymaga procesora %s."
+    IDS_OLDWIN, "%s wymaga systemu operacyjnego Windows %s, Windows %s lub nowszego."
+    IDS_OLDWINNT, "%s wymaga systemu operacyjnego Windows %s lub nowszego."
 
     IDS_CPUI486, "i486 lub nowszego"
     IDS_CPUP5, "Pentium lub nowszego"

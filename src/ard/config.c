@@ -14,6 +14,35 @@ static const char SEC_SYSTEM[] = "system";
 
 static ardc_config config_;
 
+static WORD
+load_short_version(_In_z_ const char *section,
+                   _In_z_ const char *key,
+                   _In_ WORD          default_val)
+{
+    char buffer[ARDC_LENGTH_SHORT], *ptr;
+    WORD value;
+    int  part;
+
+    if (0 == GetPrivateProfileString(section, key, NULL, buffer,
+                                     ARDC_LENGTH_SHORT, LARD_INI))
+    {
+        return default_val;
+    }
+
+    ptr = buffer;
+    part = atoi(ptr);
+    value = (WORD)(min(0xFF, part) << 8);
+
+    part = 0;
+    if (NULL != (ptr = strchr(ptr, '.')))
+    {
+        part = atoi(++ptr);
+    }
+    value |= (WORD)min(0xFF, part);
+
+    return value;
+}
+
 static void
 load_string(_In_z_ const char         *section,
             _In_z_ const char         *key,
@@ -42,6 +71,8 @@ ardc_load(void)
 
     // [system]
     LOAD_STRING(SEC_SYSTEM, cpu, IDS_DEFCPU);
+    config_.win = load_short_version(SEC_SYSTEM, "win", 0x0400);
+    config_.winnt = load_short_version(SEC_SYSTEM, "winnt", 0x0400);
 
     return &config_;
 }

@@ -9,6 +9,8 @@ STRINGTABLE
 LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
 {
     IDS_OLDCPU, "%s vyžaduje procesor %s."
+    IDS_OLDWIN, "%s vyžaduje Windows %s, Windows %s nebo novější operační systém."
+    IDS_OLDWINNT, "%s vyžaduje operační systém Windows %s nebo novější."
 
     IDS_CPUI486, "i486 nebo novější"
     IDS_CPUP5, "Pentium nebo novější"

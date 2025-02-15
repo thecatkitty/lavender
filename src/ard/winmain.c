@@ -56,6 +56,30 @@ WinMain(_In_ HINSTANCE     instance,
         return 0;
     }
 
+    // check the operating system version
+    if ((ardv_windows_is_nt() ? cfg->winnt : cfg->win) >
+        ardv_windows_get_version())
+    {
+        char format[ARDC_LENGTH_MID] = "";
+
+        if (cfg->win)
+        {
+            LoadString(NULL, IDS_OLDWIN, format, ARRAYSIZE(format));
+            sprintf(message, format, cfg->name,
+                    ardv_windows_get_name(cfg->win, false),
+                    ardv_windows_get_name(cfg->winnt, true));
+        }
+        else
+        {
+            LoadString(NULL, IDS_OLDWINNT, format, ARRAYSIZE(format));
+            sprintf(message, format, cfg->name,
+                    ardv_windows_get_name(cfg->winnt, true));
+        }
+
+        show_msgbox(message, MB_ICONERROR | MB_OK);
+        return 0;
+    }
+
     sprintf(cmd, "\"%s\"", cfg->run);
     if (32 > (status = WinExec(cmd, SW_SHOWNORMAL)))
     {
