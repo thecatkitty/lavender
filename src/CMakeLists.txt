@@ -18,6 +18,10 @@ add_subdirectory(gfx)
 add_subdirectory(pal)
 add_subdirectory(sld)
 
+if(WIN32)
+    add_subdirectory(ard)
+endif()
+
 if(CONFIG_ENCRYPTED_CONTENT)
     add_subdirectory(enc)
     target_link_libraries(lavender enc)

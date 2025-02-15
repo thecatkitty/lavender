@@ -1,0 +1,36 @@
+add_executable(lard WIN32)
+add_dependencies(lard config version_text)
+
+file(GLOB RESOURCES resource/*.rc)
+
+target_sources(lard PRIVATE config.c)
+target_sources(lard PRIVATE winmain.c)
+target_sources(lard PRIVATE version/cpu.c)
+target_sources(lard PRIVATE version/windows.c)
+target_sources(lard PRIVATE ${RESOURCES})
+
+set(LARD_WINVER 0x030A)
+math(EXPR LARD_WINVER_MAJOR "${LARD_WINVER} >> 8")
+math(EXPR LARD_WINVER_MINOR "${LARD_WINVER} & 0xFF")
+
+remove_definitions(-DWINVER=${WINVER})
+
+target_compile_definitions(lard PRIVATE WINVER=0x0400) # 0x030A breaks MinGW's winreg.h
+if(${COMPILER_NAME} MATCHES "i686")
+    target_compile_options(lard PRIVATE -march=i386)
+endif()
+
+if (NOT MSVC)
+    target_compile_definitions(lard PRIVATE __USE_MINGW_ANSI_STDIO=0)
+    target_link_options(lard PRIVATE -nostdlib -nodefaultlibs)
+    target_link_options(lard PRIVATE -mwindows -s)
+    target_link_options(lard PRIVATE -lcrtdll)
+    target_link_options(lard PRIVATE -Wl,-e,WinMain)
+    target_link_options(lard PRIVATE -Wl,--major-os-version,${LARD_WINVER_MAJOR})
+    target_link_options(lard PRIVATE -Wl,--minor-os-version,${LARD_WINVER_MINOR})
+    target_link_options(lard PRIVATE -Wl,--major-subsystem-version,${LARD_WINVER_MAJOR})
+    target_link_options(lard PRIVATE -Wl,--minor-subsystem-version,${LARD_WINVER_MINOR})
+    target_link_options(lard PRIVATE -Wl,-Map=lard.map)
+else()
+    target_link_options(lard PRIVATE /subsystem:windows,${LARD_WINVER_MAJOR}.${LARD_WINVER_MINOR})
+endif()

@@ -1,0 +1,29 @@
+#include "../resource.h"
+
+#define VER_FILEDESCRIPTION_STR     "Lavender AutoRun Dependency Checker"
+#define VER_LEGALCOPYRIGHT_STR      "(C) 2025 Mateusz Karcz. Shared under the MIT License."
+#define VER_VERSION_UNICODE_LANG    "040904B0"
+#define VER_VERSION_TRANSLATION     0x0409, 0x04B0
+
+STRINGTABLE
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+{
+    IDS_OLDCPU, "%s requires %s processor."
+
+    IDS_CPUI486, "an i486 or newer"
+    IDS_CPUP5, "a Pentium or newer"
+    IDS_CPUP6, "a Pentium Pro or newer"
+    IDS_CPUSSE, "an SSE capable"
+    IDS_CPUSSE2, "an SSE2 capable"
+    IDS_CPUX64, "a 64-bit"
+
+    IDS_ECONFIG, "Cannot load configuration."
+    IDS_EEXECNORES, "%s cannot run because the system is out of resources."
+    IDS_EEXECBADF, "%s cannot run because the file '%s' is invalid."
+    IDS_EEXECNOF, "%s cannot run because the file '%s' was not found."
+}
+
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+
+#define VER_INTERNALNAME_STR        "lard.exe"
+#include <version.rh>
