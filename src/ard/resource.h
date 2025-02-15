@@ -5,6 +5,8 @@
 #define IDS_DEFCPU       0x48
 
 #define IDS_OLDCPU       0x60
+#define IDS_OLDWIN       0x61
+#define IDS_OLDWINNT     0x62
 
 #define IDS_CPUBASE      0x70
 #define IDS_CPUI486      0x71

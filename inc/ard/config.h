@@ -16,7 +16,9 @@ typedef struct
     char run[ARDC_LENGTH_LONG];
 
     // [system]
-    char cpu[ARDC_LENGTH_SHORT];
+    char     cpu[ARDC_LENGTH_SHORT];
+    uint16_t win;
+    uint16_t winnt;
 } ardc_config;
 
 extern ardc_config *
