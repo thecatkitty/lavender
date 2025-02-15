@@ -73,6 +73,18 @@ ardc_load(void)
     LOAD_STRING(SEC_SYSTEM, cpu, IDS_DEFCPU);
     config_.win = load_short_version(SEC_SYSTEM, "win", 0x0400);
     config_.winnt = load_short_version(SEC_SYSTEM, "winnt", 0x0400);
+    {
+        char ossp_key[ARDC_LENGTH_SHORT];
+        WORD version = ardv_windows_get_version();
+
+        config_.ossp = 0;
+        if (0 < sprintf(ossp_key,
+                        ardv_windows_is_nt() ? "winspnt%u.%u" : "winsp%u.%u",
+                        HIBYTE(version), LOBYTE(version)))
+        {
+            config_.ossp = load_short_version(SEC_SYSTEM, ossp_key, 0);
+        }
+    }
 
     return &config_;
 }
