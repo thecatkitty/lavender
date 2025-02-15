@@ -2,6 +2,7 @@
 
 #define IDS_DEFNAME      0x40
 #define IDS_DEFRUN       0x41
+#define IDS_DEFRUNDOS    0x42
 #define IDS_DEFCPU       0x48
 
 #define IDS_OLDCPU       0x60
@@ -9,6 +10,7 @@
 #define IDS_OLDWINNT     0x62
 #define IDS_OLDSP        0x63
 #define IDS_OLDOSR       0x64
+#define IDS_DIERUNDOS    0x6F
 
 #define IDS_CPUBASE      0x70
 #define IDS_CPUI486      0x71

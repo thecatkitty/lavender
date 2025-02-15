@@ -13,6 +13,7 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
     IDS_OLDWINNT, "%s vyžaduje operační systém Windows %s nebo novější."
     IDS_OLDSP, "%s vyžaduje aktualizaci %s pro systém Windows %s."
     IDS_OLDOSR, "%s vyžaduje vydání %s systému Windows %s."
+    IDS_DIERUNDOS, "Chcete místo toho spustit verzi s omezenou funkčností pro systém MS-DOS?"
 
     IDS_CPUI486, "i486 nebo novější"
     IDS_CPUP5, "Pentium nebo novější"

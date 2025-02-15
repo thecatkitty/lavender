@@ -5,6 +5,7 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 {
     IDS_DEFNAME, "Lavender"
     IDS_DEFRUN, "ia32\\sshow.exe"
+    IDS_DEFRUNDOS, ""
     IDS_DEFCPU, "i486"
 }
 
