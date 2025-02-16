@@ -14,6 +14,7 @@ LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
     IDS_OLDSP, "%s wymaga aktualizacji %s dla systemu Windows %s."
     IDS_OLDOSR, "%s wymaga wydania %s systemu Windows %s."
     IDS_NODLL, "%s wymaga biblioteki %s w wersji %u.%u."
+    IDS_REDIST, "%s wymaga zainstalowania dodatkowych komponentów"
     IDS_DIERUNDOS, "Czy chcesz zamiast tego uruchomić wersję o ograniczonej funkcjonalności dla systemu MS-DOS?"
 
     IDS_CPUI486, "i486 lub nowszego"
@@ -27,6 +28,7 @@ LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
     IDS_EEXECNORES, "Nie udało się uruchomić programu %s z powodu braku zasobów w systemie."
     IDS_EEXECBADF, "Nie udało się uruchomić programu %s, ponieważ plik '%s' jest niepoprawny."
     IDS_EEXECNOF, "Nie udało się uruchomić programu %s, ponieważ nie znaleziono pliku '%s'."
+    IDS_EBADDEPS, "Nie udało się przetworzyć bazy danych o zależnościach."
 }
 
 LANGUAGE LANG_POLISH, SUBLANG_DEFAULT

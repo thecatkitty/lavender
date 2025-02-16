@@ -110,6 +110,8 @@ load_dependencies(_In_z_ const char *deps)
         const char *sep = strchr(str, '=');
         strncpy(config_.deps[i].name, str, sep - str);
         config_.deps[i].version = parse_short_version(sep + 1);
+        config_.deps[i].srcs_count = 0;
+        memset(config_.deps[i].srcs, 0xFF, sizeof(config_.deps[i].srcs));
         str = sep + strlen(sep) + 1;
         i++;
     }
@@ -117,11 +119,132 @@ load_dependencies(_In_z_ const char *deps)
     return true;
 }
 
+static int
+load_source(_In_z_ const char *name)
+{
+    char section[7 + ARDC_LENGTH_SHORT] = "source.";
+    int  idx;
+
+    for (idx = 0; idx < config_.srcs_count; idx++)
+    {
+        if (0 == strcmp(config_.srcs[idx].name, name))
+        {
+            return idx;
+        }
+    }
+
+    strncat(section, name, ARDC_LENGTH_SHORT);
+    load_string(section, "path", config_.srcs[idx].path,
+                ARRAYSIZE(config_.srcs[idx].path), IDS_DEFRUNDOS);
+    if (0 == config_.srcs[idx].path[0])
+    {
+        return -1;
+    }
+
+    load_string(section, "description", config_.srcs[idx].description,
+                ARRAYSIZE(config_.srcs[idx].description), IDS_DEFRUNDOS);
+    if (0 == config_.srcs[idx].description[0])
+    {
+        char *begin, *end;
+        char  saved;
+
+        // extract the base name from the path
+        end = strchr(config_.srcs[idx].path, ' ');
+        end = end ? end : strchr(config_.srcs[idx].path, 0);
+
+        saved = *end;
+        *end = 0;
+        begin = strrchr(config_.srcs[idx].path, '\\');
+        *end = saved;
+        begin = begin ? (begin + 1) : config_.srcs[idx].path;
+
+        memcpy(config_.srcs[idx].description, begin, end - begin);
+        *end = saved;
+    }
+
+    strcpy(config_.srcs[idx].name, name);
+    config_.srcs_count++;
+    return idx;
+}
+
+static void
+load_sources(_In_z_ char *deps)
+{
+    char  *str = deps;
+    size_t i;
+
+    int max_sources = config_.deps_count * ARDC_DEPENDENCY_MAX_SOURCES;
+    config_.srcs = (ardc_source *)LocalAlloc(LMEM_FIXED | LMEM_ZEROINIT,
+                                             max_sources * sizeof(ardc_source));
+    if (NULL == config_.srcs)
+    {
+        // lack of sources is nonfatal - we'll just inform the user
+        return;
+    }
+
+    // for each item in the dependency list
+    i = 0;
+    while (*str && (i < config_.deps_count))
+    {
+        ardc_dependency *dep = config_.deps + i;
+        char            *part = str;
+
+        // populate the sources list of the current dependency
+        while ((NULL != (part = strchr(part, ','))) &&
+               (ARDC_DEPENDENCY_MAX_SOURCES > dep->srcs_count))
+        {
+            char  saved;
+            char *end;
+
+            // extract the trimmed source name
+            part += 1 + strspn(part + 1, " ");
+            if (0 == *part)
+            {
+                continue;
+            }
+
+            end = strchr(part, ',');
+            end = end ? end : (part + strlen(part));
+
+            // add a source index to the dependency
+            // possibly loading the source description as well
+            saved = *end;
+            *end = 0;
+            dep->srcs[dep->srcs_count++] = load_source(part);
+            *end = saved;
+        }
+
+        str += strlen(str) + 1;
+        i++;
+    }
+
+    // free the sources list if empty
+    if (0 == config_.srcs_count)
+    {
+        LocalFree(config_.srcs);
+        config_.srcs = NULL;
+        return;
+    }
+
+    // resize the sources list
+    if (max_sources > config_.srcs_count)
+    {
+        HLOCAL srcs = LocalReAlloc(
+            config_.srcs, config_.srcs_count * sizeof(ardc_source), LMEM_FIXED);
+        if (srcs)
+        {
+            config_.srcs = srcs;
+        }
+    }
+}
+
 ardc_config *
 ardc_load(void)
 {
     char  deps[ARDC_LENGTH_MID * 5];
     DWORD deps_size;
+
+    ZeroMemory(&config_, sizeof(config_));
 
     // [lard]
     LOAD_STRING(SEC_LARD, name, IDS_DEFNAME);
@@ -153,6 +276,9 @@ ardc_load(void)
         return NULL;
     }
 
+    // [sources.*] pointed to by [dependencies]
+    load_sources(deps);
+
     return &config_;
 }
 
@@ -164,5 +290,12 @@ ardc_cleanup(void)
         LocalFree(config_.deps);
         config_.deps = NULL;
         config_.deps_count = 0;
+    }
+
+    if (0 < config_.srcs_count)
+    {
+        LocalFree(config_.srcs);
+        config_.srcs = NULL;
+        config_.srcs_count = 0;
     }
 }

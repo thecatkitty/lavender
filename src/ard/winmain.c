@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <stdio.h>
 #include <string.h>
 #include <windows.h>
@@ -9,16 +10,30 @@
 
 #include "resource.h"
 
+extern int
+ard_check_dependencies(_Inout_ ardc_config *cfg);
+
+extern _Ret_maybenull_ ardc_dependency *
+ard_check_sources(_Inout_ ardc_config *cfg);
+
+extern _Ret_maybenull_ ardc_source **
+ard_get_sources(_Inout_ ardc_config *cfg);
+
 static int
-die_with_rundos(_Inout_z_ char *message, _In_ const ardc_config *cfg)
+die_with_rundos_buff(_Inout_ char           *message,
+                     _In_ size_t             capacity,
+                     _In_ const ardc_config *cfg)
 {
     bool has_rundos = arda_rundos_available(cfg);
     if (has_rundos)
     {
         size_t length = strlen(message);
-        message[length++] = ' ';
+        if (!isspace(message[length - 1]))
+        {
+            message[length++] = ' ';
+        }
         LoadString(NULL, IDS_DIERUNDOS, message + length,
-                   ARDC_LENGTH_LONG - length - 1);
+                   capacity - length - 1);
     }
 
     ardc_cleanup();
@@ -31,6 +46,12 @@ die_with_rundos(_Inout_z_ char *message, _In_ const ardc_config *cfg)
     return 0;
 }
 
+static int
+die_with_rundos(_Inout_ char *message, _In_ const ardc_config *cfg)
+{
+    return die_with_rundos_buff(message, ARDC_LENGTH_LONG, cfg);
+}
+
 int WINAPI
 WinMain(_In_ HINSTANCE     instance,
         _In_opt_ HINSTANCE prev_instance,
@@ -39,7 +60,6 @@ WinMain(_In_ HINSTANCE     instance,
 {
     ardc_config *cfg = NULL;
     char         message[ARDC_LENGTH_LONG] = "";
-    size_t       i;
 
     MSG msg;
 
@@ -111,20 +131,57 @@ WinMain(_In_ HINSTANCE     instance,
     }
 
     // check library dependencies
-    for (i = 0; i < cfg->deps_count; i++)
+    if (0 != ard_check_dependencies(cfg))
     {
-        ardc_dependency *dep = cfg->deps + i;
+        char   format[ARDC_LENGTH_MID] = "";
+        char  *sources_message;
+        size_t sources_length;
 
-        if (dep->version > ardv_dll_get_version(dep->name))
+        ardc_dependency *dep = ard_check_sources(cfg);
+        ardc_source    **sources, **src;
+
+        if (dep)
         {
-            char format[ARDC_LENGTH_MID] = "";
 
             LoadString(NULL, IDS_NODLL, format, ARRAYSIZE(format));
-            sprintf(message, format, cfg->name, cfg->deps[i].name,
-                    dep->version >> 8, dep->version & 0xFF);
+            sprintf(message, format, cfg->name, dep->name, HIBYTE(dep->version),
+                    LOBYTE(dep->version));
 
             return die_with_rundos(message, cfg);
         }
+
+        if (NULL == (sources = ard_get_sources(cfg)))
+        {
+            LoadString(NULL, IDS_EBADDEPS, message, ARRAYSIZE(message));
+            return die_with_rundos(message, cfg);
+        }
+
+        sources_length =
+            (ARDC_LENGTH_MID + ARDC_LENGTH_LONG) * (cfg->srcs_count + 2);
+        sources_message = (char *)LocalAlloc(LMEM_FIXED, sources_length);
+        if (NULL == sources_message)
+        {
+            LoadString(NULL, IDS_REDIST, message, ARRAYSIZE(message));
+            strcat(message, ".");
+            return die_with_rundos(message, cfg);
+        }
+
+        LoadString(NULL, IDS_REDIST, format, ARRAYSIZE(format));
+        sprintf(sources_message, format, cfg->name);
+
+        strcat(sources_message, ":\n");
+        for (src = sources; *src; src++)
+        {
+            strcat(sources_message, (*src)->description);
+            strcat(sources_message, " - ");
+            strcat(sources_message, (*src)->path);
+            strcat(sources_message, "\n");
+        }
+
+        die_with_rundos_buff(sources_message, sources_length, cfg);
+        LocalFree(sources);
+        LocalFree(sources_message);
+        return 0;
     }
 
     arda_run(cfg);

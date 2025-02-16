@@ -9,10 +9,22 @@
 #define ARDC_LENGTH_MID   80
 #define ARDC_LENGTH_SHORT 20
 
+#define ARDC_DEPENDENCY_MAX_SOURCES 3
+#define ARDC_DEPENDENCY_RESOLVED    -1
+
+typedef struct
+{
+    char name[ARDC_LENGTH_SHORT];
+    char description[ARDC_LENGTH_MID];
+    char path[ARDC_LENGTH_LONG];
+} ardc_source;
+
 typedef struct
 {
     char     name[ARDC_LENGTH_SHORT];
     uint16_t version;
+    int      srcs_count;
+    int      srcs[ARDC_DEPENDENCY_MAX_SOURCES + 1];
 } ardc_dependency;
 
 typedef struct
@@ -31,6 +43,10 @@ typedef struct
     // [dependencies]
     size_t           deps_count;
     ardc_dependency *deps;
+
+    // [source.*]
+    size_t       srcs_count;
+    ardc_source *srcs;
 } ardc_config;
 
 extern ardc_config *
