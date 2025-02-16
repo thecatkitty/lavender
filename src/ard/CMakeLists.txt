@@ -4,6 +4,7 @@ add_dependencies(lard config version_text)
 file(GLOB RESOURCES resource/*.rc)
 
 target_sources(lard PRIVATE config.c)
+target_sources(lard PRIVATE deps.c)
 target_sources(lard PRIVATE ui.c)
 target_sources(lard PRIVATE winmain.c)
 target_sources(lard PRIVATE action/_exec.c)

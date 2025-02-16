@@ -14,6 +14,7 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
     IDS_OLDSP, "%s vyžaduje aktualizaci %s pro systém Windows %s."
     IDS_OLDOSR, "%s vyžaduje vydání %s systému Windows %s."
     IDS_NODLL, "%s vyžaduje knihovnu %s ve verzi %u.%u."
+    IDS_REDIST, "%s vyžaduje instalaci dalších součástí"
     IDS_DIERUNDOS, "Chcete místo toho spustit verzi s omezenou funkčností pro systém MS-DOS?"
 
     IDS_CPUI486, "i486 nebo novější"
@@ -27,6 +28,7 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
     IDS_EEXECNORES, "%s nelze spustit, protože systému došly prostředky."
     IDS_EEXECBADF, "%s nelze spustit, protože soubor '%s' je neplatný."
     IDS_EEXECNOF, "%s nelze spustit, protože soubor '%s' nebyl nalezen."
+    IDS_EBADDEPS, "Nelze zpracovat databázi závislostí."
 }
 
 LANGUAGE LANG_CZECH, SUBLANG_DEFAULT

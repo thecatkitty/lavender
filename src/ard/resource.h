@@ -11,6 +11,7 @@
 #define IDS_OLDSP        0x63
 #define IDS_OLDOSR       0x64
 #define IDS_NODLL        0x65
+#define IDS_REDIST       0x66
 #define IDS_DIERUNDOS    0x6F
 
 #define IDS_CPUBASE      0x70
@@ -25,3 +26,4 @@
 #define IDS_EEXECNORES   0x102
 #define IDS_EEXECBADF    0x103
 #define IDS_EEXECNOF     0x104
+#define IDS_EBADDEPS     0x105
