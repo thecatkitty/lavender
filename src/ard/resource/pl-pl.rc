@@ -13,6 +13,7 @@ LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
     IDS_OLDWINNT, "%s wymaga systemu operacyjnego Windows %s lub nowszego."
     IDS_OLDSP, "%s wymaga aktualizacji %s dla systemu Windows %s."
     IDS_OLDOSR, "%s wymaga wydania %s systemu Windows %s."
+    IDS_NODLL, "%s wymaga biblioteki %s w wersji %u.%u."
     IDS_DIERUNDOS, "Czy chcesz zamiast tego uruchomić wersję o ograniczonej funkcjonalności dla systemu MS-DOS?"
 
     IDS_CPUI486, "i486 lub nowszego"

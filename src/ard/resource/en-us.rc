@@ -13,6 +13,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
     IDS_OLDWINNT, "%s requires Windows %s or newer operating system."
     IDS_OLDSP, "%s requires %s for Windows %s."
     IDS_OLDOSR, "%s requires %s edition of Windows %s."
+    IDS_NODLL, "%s requires %s library version %u.%u."
     IDS_DIERUNDOS, "Would you like to run the MS-DOS version with limited functionality instead?"
 
     IDS_CPUI486, "an i486 or newer"
