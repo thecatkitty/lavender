@@ -23,6 +23,9 @@ ardv_cpu_get_level(void);
 extern ardv_cpu_level
 ardv_cpu_from_string(_In_z_ const char *str, _In_ ardv_cpu_level default_val);
 
+extern WORD
+ardv_dll_get_version(_In_z_ const char *name);
+
 extern bool
 ardv_windows_is_nt(void);
 

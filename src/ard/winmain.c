@@ -21,6 +21,7 @@ die_with_rundos(_Inout_z_ char *message, _In_ const ardc_config *cfg)
                    ARDC_LENGTH_LONG - length - 1);
     }
 
+    ardc_cleanup();
     if (IDYES == ardui_msgbox(message, has_rundos ? (MB_ICONWARNING | MB_YESNO)
                                                   : (MB_ICONERROR | MB_OK)))
     {
@@ -38,6 +39,7 @@ WinMain(_In_ HINSTANCE     instance,
 {
     ardc_config *cfg = NULL;
     char         message[ARDC_LENGTH_LONG] = "";
+    size_t       i;
 
     MSG msg;
 
@@ -108,6 +110,23 @@ WinMain(_In_ HINSTANCE     instance,
         return die_with_rundos(message, cfg);
     }
 
+    // check library dependencies
+    for (i = 0; i < cfg->deps_count; i++)
+    {
+        ardc_dependency *dep = cfg->deps + i;
+
+        if (dep->version > ardv_dll_get_version(dep->name))
+        {
+            char format[ARDC_LENGTH_MID] = "";
+
+            LoadString(NULL, IDS_NODLL, format, ARRAYSIZE(format));
+            sprintf(message, format, cfg->name, cfg->deps[i].name,
+                    dep->version >> 8, dep->version & 0xFF);
+
+            return die_with_rundos(message, cfg);
+        }
+    }
+
     arda_run(cfg);
 
     while (GetMessage(&msg, NULL, 0, 0))
@@ -116,5 +135,6 @@ WinMain(_In_ HINSTANCE     instance,
         DispatchMessage(&msg);
     }
 
+    ardc_cleanup();
     return msg.wParam;
 }
