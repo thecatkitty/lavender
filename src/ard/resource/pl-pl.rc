@@ -8,6 +8,15 @@
 STRINGTABLE
 LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
 {
+    IDS_INFORMATION, "%s wymaga uaktualnienia niektórych komponentów systemu Windows przed uruchomieniem. Co chcesz zrobić?"
+    IDS_INSTREDIST, "Zainstaluj wymagane uaktualnienia"
+    IDS_INSTREDISTD, "Instaluje %s."
+    IDS_INSTREDISTS, "Instaluje: "
+    IDS_RUNDOS, "Uruchom wersję dla systemu MS-DOS"
+    IDS_RUNDOSD, "Uruchamia wersję o ograniczonej funkcjonalności dla systemu MS-DOS, korzystając z warstwy zgodności systemu Windows."
+
+    IDS_DEFCOPYRIGHT, VER_LEGALCOPYRIGHT_STR
+
     IDS_OLDCPU, "%s wymaga procesora %s."
     IDS_OLDWIN, "%s wymaga systemu operacyjnego Windows %s, Windows %s lub nowszego."
     IDS_OLDWINNT, "%s wymaga systemu operacyjnego Windows %s lub nowszego."
@@ -29,6 +38,10 @@ LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
     IDS_EEXECBADF, "Nie udało się uruchomić programu %s, ponieważ plik '%s' jest niepoprawny."
     IDS_EEXECNOF, "Nie udało się uruchomić programu %s, ponieważ nie znaleziono pliku '%s'."
     IDS_EBADDEPS, "Nie udało się przetworzyć bazy danych o zależnościach."
+    IDS_EBADHWND, "Nie udało się zainicjalizować okna."
+    IDS_EINSTNOF, "Nie udało się uruchomić instalatora komponentu %s."
+    IDS_EINSTBAD, "Instalator komponentu %s zgłosił błąd."
+    IDS_EINSTAGAIN, "Instalacja komponentów została już rozpoczęta."
 }
 
 LANGUAGE LANG_POLISH, SUBLANG_DEFAULT

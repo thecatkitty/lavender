@@ -10,4 +10,10 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 }
 
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
-1 ICON "../../secondary.ico"
+
+IDB_BG          BITMAP  "bg.bmp"
+IDB_BG16        BITMAP  "bg16.bmp"
+
+IDI_APPICON     ICON    "../../secondary.ico"
+IDI_INSTREDIST  ICON    "instredist.ico"
+IDI_RUNDOS      ICON    "rundos.ico"

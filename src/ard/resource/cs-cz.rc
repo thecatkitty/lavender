@@ -8,6 +8,15 @@
 STRINGTABLE
 LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
 {
+    IDS_INFORMATION, "%s vyžaduje před spuštěním aktualizaci některých součástí systému Windows. Co byste chtěli dělat?"
+    IDS_INSTREDIST, "Nainstalovat požadované aktualizace"
+    IDS_INSTREDISTD, "Instaluje %s."
+    IDS_INSTREDISTS, "Instaluje: "
+    IDS_RUNDOS, "Spustit verzi pro systém MS-DOS"
+    IDS_RUNDOSD, "Spustí verzi s omezenou funkčností pro systém MS-DOS, pomocí vrstvy kompatibility systému Windows."
+
+    IDS_DEFCOPYRIGHT, VER_LEGALCOPYRIGHT_STR
+
     IDS_OLDCPU, "%s vyžaduje procesor %s."
     IDS_OLDWIN, "%s vyžaduje Windows %s, Windows %s nebo novější operační systém."
     IDS_OLDWINNT, "%s vyžaduje operační systém Windows %s nebo novější."
@@ -29,6 +38,10 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
     IDS_EEXECBADF, "%s nelze spustit, protože soubor '%s' je neplatný."
     IDS_EEXECNOF, "%s nelze spustit, protože soubor '%s' nebyl nalezen."
     IDS_EBADDEPS, "Nelze zpracovat databázi závislostí."
+    IDS_EBADHWND, "Nelze inicializovat okno."
+    IDS_EINSTNOF, "Nelze spustit instalační program součásti %s."
+    IDS_EINSTBAD, "Instalační program součásti %s ohlásil chybu."
+    IDS_EINSTAGAIN, "Instalace součástí již začala."
 }
 
 LANGUAGE LANG_CZECH, SUBLANG_DEFAULT

@@ -8,6 +8,15 @@
 STRINGTABLE
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 {
+    IDS_INFORMATION, "%s requires some Windows components to be updated before running. What would you like to do?"
+    IDS_INSTREDIST, "Install required updates"
+    IDS_INSTREDISTD, "Installs %s."
+    IDS_INSTREDISTS, "Installs: "
+    IDS_RUNDOS, "Run MS-DOS version"
+    IDS_RUNDOSD, "Launches the MS-DOS version with limited functionality using the Windows compatibility layer."
+
+    IDS_DEFCOPYRIGHT, VER_LEGALCOPYRIGHT_STR
+
     IDS_OLDCPU, "%s requires %s processor."
     IDS_OLDWIN, "%s requires Windows %s, Windows %s, or newer operating system."
     IDS_OLDWINNT, "%s requires Windows %s or newer operating system."
@@ -29,6 +38,10 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
     IDS_EEXECBADF, "%s cannot run because the file '%s' is invalid."
     IDS_EEXECNOF, "%s cannot run because the file '%s' was not found."
     IDS_EBADDEPS, "Cannot process the dependency database."
+    IDS_EBADHWND, "Cannot initialize the window."
+    IDS_EINSTNOF, "Cannot run the installer of %s."
+    IDS_EINSTBAD, "The installer of %s reported an error."
+    IDS_EINSTAGAIN, "The installation of components has already begun."
 }
 
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
