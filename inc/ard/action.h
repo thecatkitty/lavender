@@ -6,6 +6,13 @@
 
 #include <ard/config.h>
 
+enum
+{
+    ARDA_SUCCESS,
+    ARDA_CONTINUE,
+    ARDA_ERROR = -1,
+};
+
 extern int
 arda_exec(_In_ const ardc_config *cfg, _In_z_ const char *path);
 
@@ -21,5 +28,20 @@ arda_rundos_available(_In_ const ardc_config *cfg);
 
 extern int
 arda_rundos(_In_ const ardc_config *cfg);
+
+extern int
+arda_select(_In_ const ardc_config *cfg, _In_ ardc_source **sources);
+
+extern void
+arda_select_cleanup(void);
+
+extern HWND
+arda_select_get_window(void);
+
+extern int
+arda_instredist(_In_ const ardc_config *cfg, _In_ ardc_source **sources);
+
+extern int
+arda_instredist_handle(void);
 
 #endif // _ARD_ACTION_H_

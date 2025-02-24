@@ -250,6 +250,7 @@ ardc_load(void)
     LOAD_STRING(SEC_LARD, name, IDS_DEFNAME);
     LOAD_STRING(SEC_LARD, run, IDS_DEFRUN);
     LOAD_STRING(SEC_LARD, rundos, IDS_DEFRUNDOS);
+    LOAD_STRING(SEC_LARD, copyright, IDS_DEFCOPYRIGHT);
 
     // [system]
     LOAD_STRING(SEC_SYSTEM, cpu, IDS_DEFCPU);
