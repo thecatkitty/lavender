@@ -1,3 +1,7 @@
+#ifdef UNICODE
+#undef UNICODE
+#endif
+
 #include <stdio.h>
 
 #include <windows.h>
@@ -180,7 +184,7 @@ inet_callback(HINTERNET inet,
             }
 
             set_error(proc_, result->dwError, (void *)context);
-            InternetSetStatusCallbackA(session_, NULL);
+            InternetSetStatusCallback(session_, NULL);
             InternetCloseHandle(request_);
             InternetCloseHandle(connection_);
             request_ = connection_ = NULL;
@@ -237,7 +241,7 @@ inet_callback(HINTERNET inet,
 
         proc_(NETM_COMPLETE, NULL, (void *)context);
 
-        InternetSetStatusCallbackA(session_, NULL);
+        InternetSetStatusCallback(session_, NULL);
         InternetCloseHandle(request_);
         InternetCloseHandle(connection_);
         request_ = connection_ = NULL;
@@ -271,7 +275,7 @@ net_connect(const char *url, net_proc *proc, void *data)
 
     data_ = (DWORD_PTR)data;
     proc_ = proc;
-    InternetSetStatusCallbackA(session_, inet_callback);
+    InternetSetStatusCallback(session_, inet_callback);
 
     if (NULL == (connection_ = InternetConnectA(
                      session_, parts.lpszHostName, parts.nPort, NULL, NULL,
