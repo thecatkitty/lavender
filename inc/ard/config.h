@@ -33,6 +33,7 @@ typedef struct
     char name[ARDC_LENGTH_MID];
     char run[ARDC_LENGTH_LONG];
     char rundos[ARDC_LENGTH_LONG];
+    char copyright[ARDC_LENGTH_LONG];
 
     // [system]
     char     cpu[ARDC_LENGTH_SHORT];

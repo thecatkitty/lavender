@@ -10,6 +10,8 @@
 
 #include "resource.h"
 
+static HWND frame_;
+
 extern int
 ard_check_dependencies(_Inout_ ardc_config *cfg);
 
@@ -133,12 +135,10 @@ WinMain(_In_ HINSTANCE     instance,
     // check library dependencies
     if (0 != ard_check_dependencies(cfg))
     {
-        char   format[ARDC_LENGTH_MID] = "";
-        char  *sources_message;
-        size_t sources_length;
+        char format[ARDC_LENGTH_MID] = "";
 
         ardc_dependency *dep = ard_check_sources(cfg);
-        ardc_source    **sources, **src;
+        ardc_source    **sources;
 
         if (dep)
         {
@@ -156,42 +156,29 @@ WinMain(_In_ HINSTANCE     instance,
             return die_with_rundos(message, cfg);
         }
 
-        sources_length =
-            (ARDC_LENGTH_MID + ARDC_LENGTH_LONG) * (cfg->srcs_count + 2);
-        sources_message = (char *)LocalAlloc(LMEM_FIXED, sources_length);
-        if (NULL == sources_message)
-        {
-            LoadString(NULL, IDS_REDIST, message, ARRAYSIZE(message));
-            strcat(message, ".");
-            return die_with_rundos(message, cfg);
-        }
-
-        LoadString(NULL, IDS_REDIST, format, ARRAYSIZE(format));
-        sprintf(sources_message, format, cfg->name);
-
-        strcat(sources_message, ":\n");
-        for (src = sources; *src; src++)
-        {
-            strcat(sources_message, (*src)->description);
-            strcat(sources_message, " - ");
-            strcat(sources_message, (*src)->path);
-            strcat(sources_message, "\n");
-        }
-
-        die_with_rundos_buff(sources_message, sources_length, cfg);
-        LocalFree(sources);
-        LocalFree(sources_message);
-        return 0;
+        arda_select(cfg, sources);
+        frame_ = arda_select_get_window();
     }
-
-    arda_run(cfg);
+    else
+    {
+        arda_run(cfg);
+    }
 
     while (GetMessage(&msg, NULL, 0, 0))
     {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
+        if (!msg.hwnd || (NULL == frame_) || !IsDialogMessage(frame_, &msg))
+        {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+
+        if (0 > arda_instredist_handle())
+        {
+            PostQuitMessage(1);
+        }
     }
 
+    arda_select_cleanup();
     ardc_cleanup();
     return msg.wParam;
 }
