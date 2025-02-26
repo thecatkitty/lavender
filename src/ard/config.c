@@ -3,6 +3,14 @@
 #include <stdlib.h>
 #include <windows.h>
 
+#if defined(_MSC_VER)
+#include <intrin.h>
+
+#define BSWAP32(x) _byteswap_ulong(x)
+#else
+#define BSWAP32(x) __builtin_bswap32(x)
+#endif
+
 #include <ard/config.h>
 #include <ard/version.h>
 
@@ -10,6 +18,7 @@
 
 static const char LARD_INI[] = ".\\lard.ini";
 static const char SEC_LARD[] = "lard";
+static const char SEC_COLORS[] = "colors";
 static const char SEC_SYSTEM[] = "system";
 static const char SEC_DEPS[] = "dependencies";
 
@@ -68,6 +77,41 @@ load_string(_In_z_ const char         *section,
 
 #define LOAD_STRING(section, key, default_id)                                  \
     load_string(section, #key, config_.key, ARRAYSIZE(config_.key), default_id)
+
+static COLORREF
+load_color(_In_z_ const char *section,
+           _In_z_ const char *key,
+           _In_ COLORREF      default_val)
+{
+    char     buffer[ARDC_LENGTH_SHORT], *ptr;
+    COLORREF color = default_val;
+
+    if (0 == GetPrivateProfileString(section, key, NULL, buffer,
+                                     ARRAYSIZE(buffer), LARD_INI))
+    {
+        return color;
+    }
+
+    if ('#' != buffer[0])
+    {
+        return color;
+    }
+
+    color = 0;
+    ptr = buffer + 1;
+    while (*ptr)
+    {
+        int digit = ('9' < *ptr) ? (tolower(*ptr) - 'a' + 10) : (*ptr - '0');
+        color <<= 4;
+        color |= digit;
+        ptr++;
+    }
+
+    return BSWAP32(color << 8);
+}
+
+#define LOAD_COLOR(section, key, default_val)                                  \
+    config_.key##_color = load_color(section, #key, default_val)
 
 static size_t
 count_values(_In_z_ const char *values)
@@ -251,6 +295,12 @@ ardc_load(void)
     LOAD_STRING(SEC_LARD, run, IDS_DEFRUN);
     LOAD_STRING(SEC_LARD, rundos, IDS_DEFRUNDOS);
     LOAD_STRING(SEC_LARD, copyright, IDS_DEFCOPYRIGHT);
+
+    // [colors]
+    LOAD_COLOR(SEC_COLORS, intro, 0xFFFFFF);
+    LOAD_COLOR(SEC_COLORS, title, 0xFFFFFF);
+    LOAD_COLOR(SEC_COLORS, text, 0xFFFFFF);
+    LOAD_COLOR(SEC_COLORS, footer, 0xFFFFFF);
 
     // [system]
     LOAD_STRING(SEC_SYSTEM, cpu, IDS_DEFCPU);
