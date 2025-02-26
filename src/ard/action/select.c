@@ -20,14 +20,24 @@
 
 #define ID_INSTREDIST 101
 #define ID_RUNDOS     102
+#define ID_INTRO      201
+#define ID_TITLE      202
+#define ID_TEXT       203
+#define ID_FOOTER     204
 
 typedef BOOL(WINAPI *pf_systemparametersinfo)(UINT, UINT, PVOID, UINT);
+typedef HANDLE(WINAPI *pf_loadimage)(HINSTANCE, LPCSTR, UINT, int, int, UINT);
 
 // Window class names
 static const char WC_LARD[] = "LARD Window Class";
 
 static const char WC_BUTTON[] = "Button";
 static const char WC_STATIC[] = "Static";
+
+// External file paths
+static const char FP_BG[] = "bg.bmp";
+static const char FP_BG16[] = "bg16.bmp";
+static const char FP_ICON[] = "icon.ico";
 
 // Model
 static const ardc_config *config_;
@@ -43,6 +53,38 @@ static HINSTANCE        instance_;
 static NONCLIENTMETRICS nc_metrics_ = {sizeof(NONCLIENTMETRICS)};
 static HWND             wnd_;
 static RECT             wnd_rect_ = {0, 0, WINDOW_WIDTH, WINDOW_HEIGHT};
+
+static HBITMAP
+load_bitmap_from_file(_In_z_ const char *path)
+{
+    HMODULE      user32;
+    pf_loadimage fn_li;
+
+    user32 = GetModuleHandle("user32.dll");
+    fn_li =
+        (pf_loadimage)(user32 ? GetProcAddress(user32, "LoadImageA") : NULL);
+
+    return fn_li ? (HBITMAP)fn_li(NULL, path, IMAGE_BITMAP, 0, 0,
+                                  LR_CREATEDIBSECTION | LR_DEFAULTSIZE |
+                                      LR_LOADFROMFILE)
+                 : NULL;
+}
+
+static HICON
+load_icon_from_file(_In_z_ const char *path, _In_ int cx, _In_ int cy)
+{
+    HMODULE      user32;
+    pf_loadimage fn_li;
+
+    user32 = GetModuleHandle("user32.dll");
+    fn_li =
+        (pf_loadimage)(user32 ? GetProcAddress(user32, "LoadImageA") : NULL);
+
+    return fn_li ? (HICON)fn_li(NULL, path, IMAGE_ICON, cx, cy,
+                                ((cx || cy) ? 0 : LR_DEFAULTSIZE) |
+                                    LR_LOADFROMFILE)
+                 : NULL;
+}
 
 static void
 load_fonts(void)
@@ -122,7 +164,7 @@ create_option(_In_ unsigned      id,
 
     ctl = CreateWindow(WC_STATIC, title, WS_VISIBLE | WS_CHILD | SS_LEFT, cx,
                        cy, WINDOW_MAXW - cx - WINDOW_MARGIN, BUTTON_SIZE,
-                       parent, (HMENU)id, instance_, 0);
+                       parent, (HMENU)ID_TITLE, instance_, 0);
     SendMessage(ctl, WM_SETFONT, (WPARAM)font_bold_, TRUE);
     measure_text(ctl, title, font_bold_, &rect);
     resize_control(ctl, rect.right, rect.bottom);
@@ -130,7 +172,7 @@ create_option(_In_ unsigned      id,
 
     ctl = CreateWindow(WC_STATIC, description, WS_VISIBLE | WS_CHILD | SS_LEFT,
                        cx, cy, WINDOW_MAXW - cx - WINDOW_MARGIN, BUTTON_SIZE,
-                       parent, (HMENU)id, instance_, 0);
+                       parent, (HMENU)ID_TEXT, instance_, 0);
     SendMessage(ctl, WM_SETFONT, (WPARAM)font_, TRUE);
     measure_text(ctl, description, font_, &rect);
     resize_control(ctl, rect.right, rect.bottom);
@@ -202,15 +244,22 @@ wndproc_create(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
     {
         HDC dc = GetDC(wnd);
         int bpp = GetDeviceCaps(dc, BITSPIXEL) * GetDeviceCaps(dc, PLANES);
-
-        bg_ = LoadBitmap(GetModuleHandle(NULL), (8 > bpp)
-                                                    ? MAKEINTRESOURCE(IDB_BG16)
-                                                    : MAKEINTRESOURCE(IDB_BG));
-
         ReleaseDC(wnd, dc);
+
+        if (8 > bpp)
+        {
+            bg_ = load_bitmap_from_file(FP_BG16);
+        }
+        bg_ = bg_ ? bg_ : load_bitmap_from_file(FP_BG);
+        bg_ = bg_ ? bg_
+                  : LoadBitmap(GetModuleHandle(NULL),
+                               (8 > bpp) ? MAKEINTRESOURCE(IDB_BG16)
+                                         : MAKEINTRESOURCE(IDB_BG));
     }
 
-    icon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_APPICON));
+    icon = load_icon_from_file(FP_ICON, 0, 0);
+    icon = icon ? icon
+                : LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_APPICON));
     SendMessageW(wnd, WM_SETICON, ICON_BIG, (LPARAM)icon);
     SendMessageW(wnd, WM_SETICON, ICON_SMALL, (LPARAM)icon);
     DestroyIcon(icon);
@@ -220,7 +269,7 @@ wndproc_create(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
     ctl =
         CreateWindow(WC_STATIC, message, WS_VISIBLE | WS_CHILD | SS_LEFT,
                      WINDOW_MARGIN + BUTTON_LEFT, cy, WINDOW_MAXW - BUTTON_LEFT,
-                     BUTTON_SIZE, wnd, 0, instance_, 0);
+                     BUTTON_SIZE, wnd, (HMENU)ID_INTRO, instance_, 0);
     SendMessage(ctl, WM_SETFONT, (WPARAM)font_, TRUE);
     measure_text(ctl, message, font_, &rect);
     resize_control(ctl, rect.right, rect.bottom);
@@ -238,7 +287,7 @@ wndproc_create(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
     ctl = CreateWindow(WC_STATIC, config_->copyright,
                        WS_VISIBLE | WS_CHILD | SS_LEFT, WINDOW_MARGIN,
                        WINDOW_HEIGHT - WINDOW_MARGIN, WINDOW_MAXW, BUTTON_SIZE,
-                       wnd, 0, instance_, 0);
+                       wnd, (HMENU)ID_FOOTER, instance_, 0);
     SendMessage(ctl, WM_SETFONT, (WPARAM)font_, TRUE);
     measure_text(ctl, config_->copyright, font_, &rect);
     MoveWindow(ctl, WINDOW_MARGIN, WINDOW_HEIGHT - WINDOW_MARGIN - rect.bottom,
@@ -314,8 +363,16 @@ wndproc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
     case WM_CTLCOLORSTATIC: {
         HDC dc = (HDC)wparam;
+        int id = GetDlgCtrlID((HWND)lparam);
+
         SetBkMode(dc, TRANSPARENT);
-        SetTextColor(dc, 0xFFFFFF);
+
+        COLORREF color = (ID_TITLE == id)    ? config_->title_color
+                         : (ID_FOOTER == id) ? config_->footer_color
+                         : (ID_INTRO == id)  ? config_->intro_color
+                                             : config_->text_color;
+        SetTextColor(dc, color);
+
         return (LRESULT)GetStockObject(NULL_BRUSH);
     }
     }

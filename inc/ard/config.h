@@ -35,6 +35,12 @@ typedef struct
     char rundos[ARDC_LENGTH_LONG];
     char copyright[ARDC_LENGTH_LONG];
 
+    // [colors]
+    COLORREF intro_color;
+    COLORREF title_color;
+    COLORREF text_color;
+    COLORREF footer_color;
+
     // [system]
     char     cpu[ARDC_LENGTH_SHORT];
     uint16_t win;
