@@ -47,6 +47,9 @@ typedef struct
     uint16_t winnt;
     uint16_t ossp;
 
+    // [ie]
+    uint32_t ie_complete;
+
     // [dependencies]
     size_t           deps_count;
     ardc_dependency *deps;
@@ -64,5 +67,8 @@ ardc_cleanup(void);
 
 extern const char *
 ardc_get_root(void);
+
+extern DWORD
+ardc_parse_version(_In_z_ const char *str);
 
 #endif // _ARD_CONFIG_H_

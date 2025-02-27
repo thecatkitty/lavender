@@ -24,6 +24,7 @@ GetThreadLocale(void);
 static const char SEC_LARD[] = "lard";
 static const char SEC_COLORS[] = "colors";
 static const char SEC_SYSTEM[] = "system";
+static const char SEC_IE[] = "ie";
 static const char SEC_DEPS[] = "dependencies";
 
 static ardc_config config_;
@@ -55,29 +56,36 @@ get_profile_string(_In_z_ const char      *section,
     return GetPrivateProfileString(section, key, "", buffer, size, global_ini_);
 }
 
-static WORD
-parse_short_version(_In_z_ const char *str)
+DWORD
+ardc_parse_version(_In_z_ const char *str)
 {
-    WORD value;
-    int  part;
+    DWORD value;
+    int   part;
 
     part = atoi(str);
-    value = (WORD)(min(0xFF, part) << 8);
+    value = (DWORD)(min(0xFF, part) << 24);
 
     part = 0;
     if (NULL != (str = strchr(str, '.')))
     {
         part = atoi(++str);
     }
-    value |= (WORD)min(0xFF, part);
+    value |= (DWORD)(min(0xFF, part) << 16);
+
+    part = 0;
+    if (str && (NULL != (str = strchr(str, '.'))))
+    {
+        part = atoi(++str);
+    }
+    value |= (DWORD)min(0xFFFF, part);
 
     return value;
 }
 
-static WORD
-load_short_version(_In_z_ const char *section,
-                   _In_z_ const char *key,
-                   _In_ WORD          default_val)
+static DWORD
+load_long_version(_In_z_ const char *section,
+                  _In_z_ const char *key,
+                  _In_ DWORD         default_val)
 {
     char buffer[ARDC_LENGTH_SHORT];
 
@@ -86,7 +94,15 @@ load_short_version(_In_z_ const char *section,
         return default_val;
     }
 
-    return parse_short_version(buffer);
+    return ardc_parse_version(buffer);
+}
+
+static WORD
+load_short_version(_In_z_ const char *section,
+                   _In_z_ const char *key,
+                   _In_ WORD          default_val)
+{
+    return HIWORD(load_long_version(section, key, default_val << 16));
 }
 
 static void
@@ -181,7 +197,7 @@ load_dependencies(_In_z_ const char *deps)
     {
         const char *sep = strchr(str, '=');
         strncpy(config_.deps[i].name, str, sep - str);
-        config_.deps[i].version = parse_short_version(sep + 1);
+        config_.deps[i].version = HIWORD(ardc_parse_version(sep + 1));
         config_.deps[i].srcs_count = 0;
         memset(config_.deps[i].srcs, 0xFF, sizeof(config_.deps[i].srcs));
         str = sep + strlen(sep) + 1;
@@ -346,6 +362,9 @@ ardc_load(void)
             config_.ossp = load_short_version(SEC_SYSTEM, ossp_key, 0);
         }
     }
+
+    // [ie]
+    config_.ie_complete = load_long_version(SEC_IE, "complete", 0);
 
     // [dependencies]
     deps_size =
