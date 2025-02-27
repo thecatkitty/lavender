@@ -61,6 +61,7 @@ WinMain(_In_ HINSTANCE     instance,
         _In_ int           cmd_show)
 {
     ardc_config *cfg = NULL;
+    bool         complete = false;
     char         message[ARDC_LENGTH_LONG] = "";
 
     MSG msg;
@@ -93,9 +94,16 @@ WinMain(_In_ HINSTANCE     instance,
         return die_with_rundos(message, cfg);
     }
 
+    // check Internet Explorer version - suppresses further checks
+    if (cfg->ie_complete && ardv_ie_available() &&
+        (cfg->ie_complete <= ardv_ie_get_version()))
+    {
+        complete = true;
+    }
+
     // check the operating system version
-    if ((ardv_windows_is_nt() ? cfg->winnt : cfg->win) >
-        ardv_windows_get_version())
+    if (!complete && ((ardv_windows_is_nt() ? cfg->winnt : cfg->win) >
+                      ardv_windows_get_version()))
     {
         char format[ARDC_LENGTH_MID] = "";
 
@@ -117,7 +125,7 @@ WinMain(_In_ HINSTANCE     instance,
     }
 
     // check the service pack version
-    if (cfg->ossp > ardv_windows_get_servicepack())
+    if (!complete && (cfg->ossp > ardv_windows_get_servicepack()))
     {
         char     format[ARDC_LENGTH_MID] = "";
         bool     is_nt = ardv_windows_get_version();
@@ -133,7 +141,7 @@ WinMain(_In_ HINSTANCE     instance,
     }
 
     // check library dependencies
-    if (0 != ard_check_dependencies(cfg))
+    if (!complete && (0 != ard_check_dependencies(cfg)))
     {
         char format[ARDC_LENGTH_MID] = "";
 
