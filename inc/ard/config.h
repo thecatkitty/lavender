@@ -62,4 +62,7 @@ ardc_load(void);
 extern void
 ardc_cleanup(void);
 
+extern const char *
+ardc_get_root(void);
+
 #endif // _ARD_CONFIG_H_

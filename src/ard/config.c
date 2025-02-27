@@ -16,13 +16,44 @@
 
 #include "resource.h"
 
-static const char LARD_INI[] = ".\\lard.ini";
+WINBASEAPI LCID WINAPI
+GetThreadLocale(void);
+
+#define LARD_INI "lard.ini"
+
 static const char SEC_LARD[] = "lard";
 static const char SEC_COLORS[] = "colors";
 static const char SEC_SYSTEM[] = "system";
 static const char SEC_DEPS[] = "dependencies";
 
 static ardc_config config_;
+static char        global_ini_[MAX_PATH] = "";
+static char        local_ini_[MAX_PATH] = "";
+static char        root_[MAX_PATH] = "";
+
+static WORD
+get_profile_string(_In_z_ const char      *section,
+                   _In_z_ const char      *key,
+                   _Out_z_cap_(size) char *buffer,
+                   _In_ DWORD              size)
+{
+    WORD length;
+
+    if (0 == global_ini_[0])
+    {
+        sprintf(global_ini_, "%s" LARD_INI, ardc_get_root());
+        sprintf(local_ini_, "%s%04x\\" LARD_INI, ardc_get_root(),
+                LOWORD(GetThreadLocale()));
+    }
+
+    if (0 != (length = GetPrivateProfileString(section, key, "", buffer, size,
+                                               local_ini_)))
+    {
+        return length;
+    }
+
+    return GetPrivateProfileString(section, key, "", buffer, size, global_ini_);
+}
 
 static WORD
 parse_short_version(_In_z_ const char *str)
@@ -50,8 +81,7 @@ load_short_version(_In_z_ const char *section,
 {
     char buffer[ARDC_LENGTH_SHORT];
 
-    if (0 == GetPrivateProfileString(section, key, NULL, buffer,
-                                     ARDC_LENGTH_SHORT, LARD_INI))
+    if (0 == get_profile_string(section, key, buffer, ARDC_LENGTH_SHORT))
     {
         return default_val;
     }
@@ -66,8 +96,7 @@ load_string(_In_z_ const char         *section,
             _In_ int                   size,
             _In_ int                   default_id)
 {
-    if (0 != GetPrivateProfileString(section, key, NULL, buffer, (DWORD)size,
-                                     LARD_INI))
+    if (0 != get_profile_string(section, key, buffer, (DWORD)size))
     {
         return;
     }
@@ -86,8 +115,7 @@ load_color(_In_z_ const char *section,
     char     buffer[ARDC_LENGTH_SHORT], *ptr;
     COLORREF color = default_val;
 
-    if (0 == GetPrivateProfileString(section, key, NULL, buffer,
-                                     ARRAYSIZE(buffer), LARD_INI))
+    if (0 == get_profile_string(section, key, buffer, ARRAYSIZE(buffer)))
     {
         return color;
     }
@@ -321,7 +349,7 @@ ardc_load(void)
 
     // [dependencies]
     deps_size =
-        GetPrivateProfileSection(SEC_DEPS, deps, ARRAYSIZE(deps), LARD_INI);
+        GetPrivateProfileSection(SEC_DEPS, deps, ARRAYSIZE(deps), global_ini_);
     if (((ARRAYSIZE(deps) - 2) == deps_size) || !load_dependencies(deps))
     {
         return NULL;
@@ -349,4 +377,25 @@ ardc_cleanup(void)
         config_.srcs = NULL;
         config_.srcs_count = 0;
     }
+}
+
+const char *
+ardc_get_root(void)
+{
+    char *ptr;
+
+    if (0 != root_[0])
+    {
+        return root_;
+    }
+
+    GetModuleFileName(NULL, root_, ARRAYSIZE(root_));
+    ptr = strrchr(root_, '\\');
+    if (ptr)
+    {
+        ptr[1] = 0;
+        return root_;
+    }
+
+    return strcpy(root_, ".\\");
 }
