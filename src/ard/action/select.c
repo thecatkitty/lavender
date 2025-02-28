@@ -262,7 +262,7 @@ create_option_ie(_In_ int cy, _In_ HWND parent)
                ARRAYSIZE(format));
     sprintf(description, format, config_->ie_description);
 
-    icon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_INSTREDIST));
+    icon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_INSTIE));
     return create_option(ID_INSTIE, icon, title, description, cy, parent);
 }
 
