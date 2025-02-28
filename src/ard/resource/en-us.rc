@@ -12,8 +12,13 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
     IDS_INSTREDIST, "Install required updates"
     IDS_INSTREDISTD, "Installs %s."
     IDS_INSTREDISTS, "Installs: "
+    IDS_INSTREDISTO, "Install only required updates"
     IDS_RUNDOS, "Run MS-DOS version"
     IDS_RUNDOSD, "Launches the MS-DOS version with limited functionality using the Windows compatibility layer."
+    IDS_INSTIE, "Install Internet Explorer (recommended)"
+    IDS_INSTIED, "Installs Internet Explorer %s."
+    IDS_INSTIEUP, "Update Internet Explorer (recommended)"
+    IDS_INSTIEUPD, "Installs Internet Explorer update to version %s."
 
     IDS_DEFCOPYRIGHT, VER_LEGALCOPYRIGHT_STR
 

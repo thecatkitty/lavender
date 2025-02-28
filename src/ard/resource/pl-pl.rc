@@ -12,8 +12,13 @@ LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
     IDS_INSTREDIST, "Zainstaluj wymagane uaktualnienia"
     IDS_INSTREDISTD, "Instaluje %s."
     IDS_INSTREDISTS, "Instaluje: "
+    IDS_INSTREDISTO, "Zainstaluj wyłącznie wymagane uaktualnienia"
     IDS_RUNDOS, "Uruchom wersję dla systemu MS-DOS"
     IDS_RUNDOSD, "Uruchamia wersję o ograniczonej funkcjonalności dla systemu MS-DOS, korzystając z warstwy zgodności systemu Windows."
+    IDS_INSTIE, "Zainstaluj Internet Explorer (zalecane)"
+    IDS_INSTIED, "Instaluje przeglądarkę Internet Explorer w wersji %s."
+    IDS_INSTIEUP, "Zaktualizuj Internet Explorer (zalecane)"
+    IDS_INSTIEUPD, "Instaluje uaktualnienie przeglądarki Internet Explorer do wersji %s."
 
     IDS_DEFCOPYRIGHT, VER_LEGALCOPYRIGHT_STR
 

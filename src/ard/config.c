@@ -365,6 +365,11 @@ ardc_load(void)
 
     // [ie]
     config_.ie_complete = load_long_version(SEC_IE, "complete", 0);
+    config_.ie_offer = load_long_version(SEC_IE, "offer", 0);
+    get_profile_string(SEC_IE, "description", config_.ie_description,
+                       ARRAYSIZE(config_.ie_description));
+    get_profile_string(SEC_IE, "install", config_.ie_install,
+                       ARRAYSIZE(config_.ie_install));
 
     // [dependencies]
     deps_size =

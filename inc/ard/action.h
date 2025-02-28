@@ -44,4 +44,7 @@ arda_instredist(_In_ const ardc_config *cfg, _In_ ardc_source **sources);
 extern int
 arda_instredist_handle(void);
 
+extern int
+arda_instie(_In_ const ardc_config *cfg);
+
 #endif // _ARD_ACTION_H_
