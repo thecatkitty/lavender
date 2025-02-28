@@ -8,6 +8,7 @@
 #define IDI_APPICON      1
 #define IDI_INSTREDIST   2
 #define IDI_RUNDOS       3
+#define IDI_INSTIE       4
 
 // Strings
 #define IDS_INFORMATION  0x10
