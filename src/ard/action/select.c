@@ -6,6 +6,7 @@
 
 #include <ard/action.h>
 #include <ard/ui.h>
+#include <ard/version.h>
 
 #include "../resource.h"
 
@@ -20,6 +21,7 @@
 
 #define ID_INSTREDIST 101
 #define ID_RUNDOS     102
+#define ID_INSTIE     103
 #define ID_INTRO      201
 #define ID_TITLE      202
 #define ID_TEXT       203
@@ -202,7 +204,8 @@ create_option_redists(_In_ int cy, _In_ HWND parent, _In_ ardc_source **sources)
     ardc_source **src;
     HICON         icon;
 
-    LoadString(NULL, IDS_INSTREDIST, message, ARRAYSIZE(message));
+    LoadString(NULL, config_->ie_offer ? IDS_INSTREDISTO : IDS_INSTREDIST,
+               message, ARRAYSIZE(message));
 
     if (1 == count_sources(sources_))
     {
@@ -242,6 +245,25 @@ create_option_rundos(_In_ int cy, _In_ HWND parent)
 
     icon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_RUNDOS));
     return create_option(ID_RUNDOS, icon, title, description, cy, parent);
+}
+
+static int
+create_option_ie(_In_ int cy, _In_ HWND parent)
+{
+    char  title[ARDC_LENGTH_MID] = "";
+    char  description[ARDC_LENGTH_LONG] = "";
+    char  format[ARDC_LENGTH_LONG] = "";
+    HICON icon;
+    bool  has_ie = ardv_ie_available();
+
+    LoadString(NULL, has_ie ? IDS_INSTIEUP : IDS_INSTIE, title,
+               ARRAYSIZE(title));
+    LoadString(NULL, has_ie ? IDS_INSTIEUPD : IDS_INSTIED, format,
+               ARRAYSIZE(format));
+    sprintf(description, format, config_->ie_description);
+
+    icon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_INSTREDIST));
+    return create_option(ID_INSTIE, icon, title, description, cy, parent);
 }
 
 static LRESULT
@@ -293,6 +315,12 @@ wndproc_create(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
     measure_text(ctl, message, font_, &rect);
     resize_control(ctl, rect.right, rect.bottom);
     cy += rect.bottom + 2 * WINDOW_MARGIN;
+
+    if (config_->ie_offer > ardv_ie_get_version())
+    {
+        cy_new = create_option_ie(cy, wnd);
+        cy = max(cy_new, cy + BUTTON_SIZE) + 2 * WINDOW_MARGIN;
+    }
 
     cy_new = create_option_redists(cy, wnd, sources_);
     cy = max(cy_new, cy + BUTTON_SIZE) + 2 * WINDOW_MARGIN;
@@ -357,6 +385,12 @@ wndproc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
             if (ID_RUNDOS == id)
             {
                 arda_rundos(config_);
+                break;
+            }
+
+            if (ID_INSTIE == id)
+            {
+                arda_instie(config_);
                 break;
             }
         }

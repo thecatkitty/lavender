@@ -12,8 +12,13 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
     IDS_INSTREDIST, "Nainstalovat požadované aktualizace"
     IDS_INSTREDISTD, "Instaluje %s."
     IDS_INSTREDISTS, "Instaluje: "
+    IDS_INSTREDISTO, "Nainstalovat pouze požadované aktualizace"
     IDS_RUNDOS, "Spustit verzi pro systém MS-DOS"
     IDS_RUNDOSD, "Spustí verzi s omezenou funkčností pro systém MS-DOS, pomocí vrstvy kompatibility systému Windows."
+    IDS_INSTIE, "Nainstalovat Internet Explorer (doporučeno)"
+    IDS_INSTIED, "Nainstaluje prohlížeč Internet Explorer ve verzi %s."
+    IDS_INSTIEUP, "Aktualizovat Internet Explorer (doporučeno)"
+    IDS_INSTIEUPD, "Nainstaluje aktualizaci prohlížeče Internet Explorer na verzi %s."
 
     IDS_DEFCOPYRIGHT, VER_LEGALCOPYRIGHT_STR
 

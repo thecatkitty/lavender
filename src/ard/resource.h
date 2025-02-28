@@ -16,6 +16,11 @@
 #define IDS_INSTREDISTS  0x13
 #define IDS_RUNDOS       0x14
 #define IDS_RUNDOSD      0x15
+#define IDS_INSTIE       0x16
+#define IDS_INSTIED      0x17
+#define IDS_INSTIEUP     0x18
+#define IDS_INSTIEUPD    0x19
+#define IDS_INSTREDISTO  0x1A
 
 #define IDS_DEFNAME      0x40
 #define IDS_DEFRUN       0x41

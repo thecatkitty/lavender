@@ -49,6 +49,9 @@ typedef struct
 
     // [ie]
     uint32_t ie_complete;
+    uint32_t ie_offer;
+    char     ie_description[ARDC_LENGTH_MID];
+    char     ie_install[ARDC_LENGTH_LONG];
 
     // [dependencies]
     size_t           deps_count;
