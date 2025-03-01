@@ -30,7 +30,7 @@ jobs:
           - name: Windows (IA32)
             target: windows-ia32
             cc: i686-w64-mingw32-gcc
-            flags: -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_EXE_LINKER_FLAGS=-L$GITHUB_WORKSPACE/ext/bulwa/i686-w64-mingw32/lib
+            flags: -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_EXE_LINKER_FLAGS=-L$GITHUB_WORKSPACE/ext/bulwa/i686-w64-mingw32/lib -DLAV_ARD=1
             host: ubuntu-latest
           - name: Windows (x64)
             target: windows-x64
