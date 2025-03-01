@@ -18,7 +18,7 @@ add_subdirectory(gfx)
 add_subdirectory(pal)
 add_subdirectory(sld)
 
-if(WIN32)
+if(${LAV_ARD})
     add_subdirectory(ard)
 endif()
 
