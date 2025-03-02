@@ -34,6 +34,7 @@ This is still work in progress, but I'm doing my best to separate working versio
   * decryption key stored locally, entered manually, or retrieved remotely (using request and confirmation code, QR and confirmation code, or over HTTP)
 * navigation and user input using key presses and mouse clicks
 * multiple language support (Czech, English, Polish)
+* [configurable and localizable](docs/lard.md) AutoRun application for checking Lavender run-time dependecies
 
 ## Building
 Building requires *CMake*, *Python 3* and `zip` on all hosts.
