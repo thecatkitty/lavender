@@ -21,10 +21,10 @@ pal_cache(int fd, off_t at, size_t size)
     {
         return -errno;
     }
-    _fmemcpy(MK_FP(segment, pos), buff, sizeof(buff));
+    _fmemcpy(MK_FP(segment, pos), buff, head);
     pos += head;
 
-    while (pos < size)
+    while ((pos + sizeof(buff)) < size)
     {
         if (sizeof(buff) != read(fd, buff, sizeof(buff)))
         {
@@ -40,7 +40,7 @@ pal_cache(int fd, off_t at, size_t size)
         {
             return -errno;
         }
-        _fmemcpy(MK_FP(segment, pos), buff, sizeof(buff));
+        _fmemcpy(MK_FP(segment, pos), buff, size - pos);
     }
 
     return segment;
