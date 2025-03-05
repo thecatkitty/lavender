@@ -38,8 +38,8 @@ if(CONFIG_SOUND)
 endif()
 
 if(DOS)
-    target_include_directories(lavender SYSTEM BEFORE PRIVATE ../ext/nicetia16/include/c++/6.3.0)
-    target_link_directories(lavender BEFORE PRIVATE ../ext/nicetia16/lib)
+    target_include_directories(lavender SYSTEM BEFORE PRIVATE ../ext/nicetia16-${ARCH}/include/c++/6.3.0)
+    target_link_directories(lavender BEFORE PRIVATE ../ext/nicetia16-${ARCH}/lib)
 endif()
 
 if(DOS_TARGET_COM)

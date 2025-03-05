@@ -44,7 +44,8 @@ if(NOT DEFINED LAV_LANG)
 endif()
 
 if(DOS)
-    add_compile_options(-march=i8088)
+    set(ARCH "i8088")
+    add_compile_options(-march=${ARCH})
     add_link_options(-Wl,--nmagic)
 
     if(DOS_TARGET_COM)
