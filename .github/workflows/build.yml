@@ -24,6 +24,11 @@ jobs:
             flags: -DCMAKE_TOOLCHAIN_FILE=ext/nicetia16/cmake/DOS-GCC-IA16.cmake
             nicetia16-arch: i8088
             host: ubuntu-22.04
+          - name: DOS 3.0+ (IA16 with XMS)
+            target: dos-ia16x
+            flags: -DCMAKE_TOOLCHAIN_FILE=ext/nicetia16/cmake/DOS-GCC-IA16.cmake -DDOS_TARGET_XMS=1
+            nicetia16-arch: i286
+            host: ubuntu-22.04
           - name: Linux
             target: linux
             apts: libsdl2-dev libsdl2-ttf-dev libfontconfig-dev libfluidsynth-dev libblkid-dev libcurl4-openssl-dev
