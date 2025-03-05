@@ -16,12 +16,13 @@ jobs:
         platform:
           - name: DOS 2.0+ (IA16, COM)
             target: dos-ia16-com
-            flags: -DCMAKE_TOOLCHAIN_FILE=ext/nicetia16/cmake/DOS-GCC-IA16.cmake -DDOS_TARGET_COM=1
+            flags: -DCMAKE_TOOLCHAIN_FILE=ext/nicetia16-i8088/cmake/DOS-GCC-IA16.cmake -DDOS_TARGET_COM=1
             config: tiny
             host: ubuntu-22.04
           - name: DOS 3.0+ (IA16, EXE)
             target: dos-ia16-exe
-            flags: -DCMAKE_TOOLCHAIN_FILE=ext/nicetia16/cmake/DOS-GCC-IA16.cmake
+            flags: -DCMAKE_TOOLCHAIN_FILE=ext/nicetia16-i8088/cmake/DOS-GCC-IA16.cmake
+            nicetia16-arch: i8088
             host: ubuntu-22.04
           - name: Linux
             target: linux
@@ -77,9 +78,9 @@ jobs:
           sudo add-apt-repository ppa:tkchia/build-ia16
           sudo apt update
           sudo apt install gcc-ia16-elf libi86-ia16-elf -y
-          wget -nv -P ext/ https://github.com/thecatkitty/nicetia16/releases/download/REL-20240425/nicetia16-REL-20240425.zip
+          wget -nv -P ext/ https://github.com/thecatkitty/nicetia16/releases/download/REL-20250305/nicetia16-REL-20250305-${{matrix.platform.nicetia16-arch}}.zip
           wget -nv -P ext/ https://github.com/thecatkitty/andrea/releases/download/0.1.1/andrea-0.1.1.zip
-          unzip ext/nicetia16-REL-20240425.zip -d ext/nicetia16
+          unzip ext/nicetia16-REL-20250305-${{matrix.platform.nicetia16-arch}}.zip -d ext/nicetia16-${{matrix.platform.nicetia16-arch}}
           unzip ext/andrea-0.1.1.zip -d ext/andrea
 
       - name: Fetch Windows (IA32) dependencies
