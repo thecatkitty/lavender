@@ -64,8 +64,12 @@ locate_cdir(void *from, void *to)
 static void
 die_incompatible(void)
 {
+    __cga_init();
+    gfx_get_font_data(&dos_font);
+
     char msg[GFX_COLUMNS];
     pal_load_string(IDS_UNSUPPENV, msg, sizeof(msg));
+    utf8_encode(msg, msg, pal_wctoa);
     msg[strlen(msg)] = '$';
     msdos_puts(msg);
 }
