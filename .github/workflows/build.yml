@@ -19,10 +19,16 @@ jobs:
             flags: -DCMAKE_TOOLCHAIN_FILE=ext/nicetia16-i8088/cmake/DOS-GCC-IA16.cmake -DDOS_TARGET_COM=1
             config: tiny
             host: ubuntu-22.04
+            nicetia16-arch: i8088
           - name: DOS 3.0+ (IA16, EXE)
             target: dos-ia16-exe
             flags: -DCMAKE_TOOLCHAIN_FILE=ext/nicetia16-i8088/cmake/DOS-GCC-IA16.cmake
             nicetia16-arch: i8088
+            host: ubuntu-22.04
+          - name: DOS 3.0+ (IA16 with XMS)
+            target: dos-ia16x
+            flags: -DCMAKE_TOOLCHAIN_FILE=ext/nicetia16-i286/cmake/DOS-GCC-IA16.cmake -DDOS_TARGET_XMS=1
+            nicetia16-arch: i286
             host: ubuntu-22.04
           - name: Linux
             target: linux
@@ -159,6 +165,7 @@ jobs:
         run: |
           cd lavender-dos-ia16-com  && zip -r ../lavender-${{ github.ref_name }}-dos-com.zip       * && cd ..
           cd lavender-dos-ia16-exe  && zip -r ../lavender-${{ github.ref_name }}-dos-exe.zip       * && cd ..
+          cd lavender-dos-ia16x     && zip -r ../lavender-${{ github.ref_name }}-dos-ia16x.zip     * && cd ..
           cd lavender-windows-ia32  && zip -r ../lavender-${{ github.ref_name }}-windows-ia32.zip  * && cd ..
           cd lavender-windows-x64   && zip -r ../lavender-${{ github.ref_name }}-windows-x64.zip   * && cd ..
           cd lavender-windows-arm   && zip -r ../lavender-${{ github.ref_name }}-windows-arm.zip   * && cd ..
@@ -173,6 +180,7 @@ jobs:
           files: |
             lavender-${{ github.ref_name }}-dos-com.zip
             lavender-${{ github.ref_name }}-dos-exe.zip
+            lavender-${{ github.ref_name }}-dos-ia16x.zip
             lavender-${{ github.ref_name }}-windows-ia32.zip
             lavender-${{ github.ref_name }}-windows-x64.zip
             lavender-${{ github.ref_name }}-windows-arm.zip
