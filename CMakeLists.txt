@@ -44,7 +44,13 @@ if(NOT DEFINED LAV_LANG)
 endif()
 
 if(DOS)
-    set(ARCH "i8088")
+    if(DOS_TARGET_XMS)
+        set(ARCH "i286")
+        add_compile_definitions(CONFIG_IA16X)
+    else()
+        set(ARCH "i8088")
+    endif()
+
     add_compile_options(-march=${ARCH})
     add_link_options(-Wl,--nmagic)
 
