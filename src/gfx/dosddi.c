@@ -145,6 +145,7 @@ gfx_cleanup(void)
 bool
 gfx_set_title(const char *title)
 {
+#ifdef CONFIG_IA16X
     if (!dos_is_windows())
     {
         return false;
@@ -153,4 +154,7 @@ gfx_set_title(const char *title)
     char buffer[80];
     utf8_encode(title, buffer, pal_wctoa);
     return 1 == winoldap_set_title(buffer);
+#else
+    return false;
+#endif
 }
