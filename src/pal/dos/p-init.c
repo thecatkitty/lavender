@@ -348,10 +348,12 @@ pal_initialize(int argc, char *argv[])
     gfx_get_glyph_dimensions(&dos_cell);
     dos_mouse = msmouse_init();
 
+#ifdef CONFIG_IA16X
     if (dos_is_windows())
     {
         winoldap_set_closable(1);
     }
+#endif
 
 #if defined(CONFIG_SOUND)
     snd_initialize(arg_snd);

@@ -1,6 +1,8 @@
 #ifndef _ARCH_DOS_WINOLDAP_H_
 #define _ARCH_DOS_WINOLDAP_H_
 
+#ifdef CONFIG_IA16X
+
 #include <i86.h>
 
 #include <base.h>
@@ -56,5 +58,7 @@ winoldap_acknowledge_close(void)
                  : "memory", "cc");
     return ax;
 }
+
+#endif
 
 #endif // _ARCH_DOS_WINOLDAP_H_
