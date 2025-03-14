@@ -282,6 +282,15 @@ pal_initialize(int argc, char *argv[])
         msdos_exit(1);
     }
 
+#ifdef CONFIG_IA16X
+    if (0x200 > dosxm_init())
+    {
+        msdos_puts("XMS \x1A HIMEM\r\n$");
+        die_incompatible();
+        msdos_exit(1);
+    }
+#endif
+
     if (!ziparch_initialize(argv[0]))
 #endif
     {

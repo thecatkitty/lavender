@@ -32,4 +32,26 @@ dos_beep(uint16_t divisor);
 extern void ddcall
 dos_silence(void);
 
+#ifdef CONFIG_IA16X
+DEFINE_HANDLE(hdosxm);
+
+extern uint16_t
+dosxm_init(void);
+
+extern uint16_t
+dosxm_getmaxfree(void);
+
+extern hdosxm
+dosxm_alloc(uint16_t size_kb);
+
+extern bool
+dosxm_free(hdosxm block);
+
+extern bool
+dosxm_load(far void *dst, hdosxm src, uint32_t offset, uint32_t length);
+
+extern bool
+dosxm_store(hdosxm dst, uint32_t offset, far void *src, uint32_t length);
+#endif
+
 #endif // _ARCH_DOS_H_
