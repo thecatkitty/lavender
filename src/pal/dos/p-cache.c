@@ -1,43 +1,77 @@
 #include <dos.h>
 #include <unistd.h>
 
+#include <arch/dos.h>
 #include <pal.h>
 
-typedef unsigned  cacheblk;
+typedef unsigned cacheblk;
+
+#ifdef CONFIG_IA16X
+typedef uint64_t cacheptr;
+
+inline cacheptr
+MK_XP(hdosxm hnd, uint32_t off)
+{
+    uint32_t xp[2] = {off, (uintptr_t)hnd};
+    return *(cacheptr *)xp;
+}
+
+#define MK_CACHEPTR(hnd, off) MK_XP((hdosxm)(cacheblk)(hnd), (off))
+
+#define XP_HND(xp) ((hdosxm)(intptr_t)((const uint32_t *)(&(xp)))[1])
+#define XP_OFF(xp) ((uint32_t)(xp))
+#else
 typedef far void *cacheptr;
 
 #define MK_CACHEPTR(hnd, off) MK_FP((cacheblk)(hnd), (off))
+#endif
 
 static cacheblk
 allocate_cache(size_t length)
 {
+#ifdef CONFIG_IA16X
+    return (cacheblk)dosxm_alloc((length + 1023) / 1024);
+#else
     unsigned segment;
     if (0 != _dos_allocmem((length + 15) / 16, &segment))
     {
         return 0;
     }
     return segment;
+#endif
 }
 
 static bool
 free_cache(cacheblk handle)
 {
+#ifdef CONFIG_IA16X
+    return dosxm_free((hdosxm)handle);
+#else
     _dos_freemem(handle);
     return true;
+#endif
 }
 
 static bool
 load_cache(void *dst, cacheptr src, size_t length)
 {
+#ifdef CONFIG_IA16X
+    return dosxm_load(dst, XP_HND(src), XP_OFF(src), length);
+#else
     _fmemcpy(dst, src, length);
     return true;
+#endif
 }
 
 static bool
 store_cache(cacheptr dst, void *src, size_t length)
 {
+#ifdef CONFIG_IA16X
+    return dosxm_store(XP_HND(dst), XP_OFF(dst), src, length);
+#else
     _fmemcpy(dst, src, length);
     return true;
+#endif
 }
 
 static int
