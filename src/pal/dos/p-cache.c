@@ -3,15 +3,46 @@
 
 #include <pal.h>
 
-hcache
-pal_cache(int fd, off_t at, size_t size)
+typedef unsigned  cacheblk;
+typedef far void *cacheptr;
+
+#define MK_CACHEPTR(hnd, off) MK_FP((cacheblk)(hnd), (off))
+
+static cacheblk
+allocate_cache(size_t length)
 {
     unsigned segment;
-    if (0 != _dos_allocmem((size + 15) >> 4, &segment))
+    if (0 != _dos_allocmem((length + 15) / 16, &segment))
     {
-        return -ENOMEM;
+        return 0;
     }
+    return segment;
+}
 
+static bool
+free_cache(cacheblk handle)
+{
+    _dos_freemem(handle);
+    return true;
+}
+
+static bool
+load_cache(void *dst, cacheptr src, size_t length)
+{
+    _fmemcpy(dst, src, length);
+    return true;
+}
+
+static bool
+store_cache(cacheptr dst, void *src, size_t length)
+{
+    _fmemcpy(dst, src, length);
+    return true;
+}
+
+static int
+load_data(int fd, off_t at, size_t size, cacheptr output)
+{
     char   buff[512];
     size_t pos = 0;
     lseek(fd, at, SEEK_SET);
@@ -21,7 +52,7 @@ pal_cache(int fd, off_t at, size_t size)
     {
         return -errno;
     }
-    _fmemcpy(MK_FP(segment, pos), buff, head);
+    store_cache(output + pos, buff, head);
     pos += head;
 
     while ((pos + sizeof(buff)) < size)
@@ -30,7 +61,7 @@ pal_cache(int fd, off_t at, size_t size)
         {
             return -errno;
         }
-        _fmemcpy(MK_FP(segment, pos), buff, sizeof(buff));
+        store_cache(output + pos, buff, sizeof(buff));
         pos += sizeof(buff);
     }
 
@@ -40,20 +71,38 @@ pal_cache(int fd, off_t at, size_t size)
         {
             return -errno;
         }
-        _fmemcpy(MK_FP(segment, pos), buff, size - pos);
+        store_cache(output + pos, buff, size - pos);
     }
 
-    return segment;
+    return 0;
+}
+
+hcache
+pal_cache(int fd, off_t at, size_t size)
+{
+    cacheblk block = allocate_cache(size);
+    if (0 == block)
+    {
+        return 0;
+    }
+
+    if (0 != load_data(fd, at, size, MK_CACHEPTR(block, 0)))
+    {
+        free_cache(block);
+        return 0;
+    }
+
+    return block;
 }
 
 void
 pal_discard(hcache handle)
 {
-    _dos_freemem(handle);
+    free_cache((cacheblk)handle);
 }
 
 void
 pal_read(hcache handle, char *buff, off_t at, size_t size)
 {
-    _fmemcpy(buff, MK_FP(handle, at), size);
+    load_cache(buff, MK_CACHEPTR(handle, at), size);
 }
