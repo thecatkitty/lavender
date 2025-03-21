@@ -4,6 +4,8 @@
 #include <arch/dos.h>
 #include <pal.h>
 
+#include "impl.h"
+
 typedef unsigned cacheblk;
 
 #ifdef CONFIG_IA16X
@@ -22,10 +24,71 @@ MK_XP(hdosxm hnd, uint32_t off)
 
 #define XP_HND(xp) MK_HDOSXM(((const uint32_t *)(&(xp)))[1])
 #define XP_OFF(xp) ((uint32_t)(xp))
+
+#define MAX_CACHE_ITEMS 16
+
+typedef struct
+{
+    int      fd;
+    off_t    base;
+    size_t   size;
+    cacheblk handle;
+} cache_item;
+
+static cache_item cache_[MAX_CACHE_ITEMS];
 #else
 typedef far void *cacheptr;
 
 #define MK_CACHEPTR(hnd, off) MK_FP((cacheblk)(hnd), (off))
+#endif
+
+static cacheblk
+retrieve_cache(int fd, off_t at, size_t size)
+{
+#ifdef CONFIG_IA16X
+    for (int i = 0; i < MAX_CACHE_ITEMS; i++)
+    {
+        if ((fd == cache_[i].fd) && (at == cache_[i].base) &&
+            (size == cache_[i].size))
+        {
+            return cache_[i].handle;
+        }
+    }
+#endif
+
+    return 0;
+}
+
+#ifdef CONFIG_IA16X
+static cache_item *
+find_cache(cacheblk handle)
+{
+    for (int i = 0; i < MAX_CACHE_ITEMS; i++)
+    {
+        if (handle == cache_[i].handle)
+        {
+            return cache_ + i;
+        }
+    }
+
+    return NULL;
+}
+
+static bool
+remember_cache(int fd, off_t at, size_t size, cacheblk handle)
+{
+    cache_item *slot = find_cache(0);
+    if (NULL == slot)
+    {
+        return false;
+    }
+
+    slot->fd = fd;
+    slot->base = at;
+    slot->size = size;
+    slot->handle = handle;
+    return true;
+}
 #endif
 
 static cacheblk
@@ -116,10 +179,22 @@ load_data(int fd, off_t at, size_t size, cacheptr output)
 hcache
 pal_cache(int fd, off_t at, size_t size)
 {
-    cacheblk block = allocate_cache(size);
+    cacheblk block = retrieve_cache(fd, at, size);
     if (0 == block)
     {
-        return 0;
+        block = allocate_cache(size);
+        if (0 == block)
+        {
+            return 0;
+        }
+
+#ifdef CONFIG_IA16X
+        if (!remember_cache(fd, at, size, block))
+        {
+            free_cache(block);
+            return 0;
+        }
+#endif
     }
 
     if (0 != load_data(fd, at, size, MK_CACHEPTR(block, 0)))
@@ -134,7 +209,9 @@ pal_cache(int fd, off_t at, size_t size)
 void
 pal_discard(hcache handle)
 {
+#ifndef CONFIG_IA16X
     free_cache((cacheblk)handle);
+#endif
 }
 
 void
@@ -142,3 +219,23 @@ pal_read(hcache handle, char *buff, off_t at, size_t size)
 {
     load_cache(buff, MK_CACHEPTR(handle, at), size);
 }
+
+#ifdef CONFIG_IA16X
+void
+dos_initialize_cache(void)
+{
+    memset(cache_, 0, sizeof(cache_));
+}
+
+void
+dos_cleanup_cache(void)
+{
+    for (int i = 0; i < MAX_CACHE_ITEMS; i++)
+    {
+        if (cache_[i].handle)
+        {
+            free_cache(cache_[i].handle);
+        }
+    }
+}
+#endif

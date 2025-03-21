@@ -289,6 +289,8 @@ pal_initialize(int argc, char *argv[])
         die_incompatible();
         msdos_exit(1);
     }
+
+    dos_initialize_cache();
 #endif
 
     if (!ziparch_initialize(argv[0]))
@@ -377,6 +379,9 @@ void
 pal_cleanup(void)
 {
     ziparch_cleanup();
+#ifdef CONFIG_IA16X
+    dos_cleanup_cache();
+#endif
     gfx_cleanup();
 
 #if defined(CONFIG_SOUND)
