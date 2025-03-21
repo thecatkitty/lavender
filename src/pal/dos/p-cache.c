@@ -31,6 +31,7 @@ typedef struct
     off_t    base;
     size_t   size;
     cacheblk handle;
+    int      locks; // negative - age
 } cache_item;
 
 static cache_item cache_[MAX_CACHE_ITEMS];
@@ -56,21 +57,53 @@ find_cache(cacheblk handle)
     return NULL;
 }
 
+static void
+lock_cache(cacheblk handle)
+{
+    cache_item *item = handle ? find_cache(handle) : 0;
+    if (item)
+    {
+        if (0 > item->locks)
+        {
+            item->locks = 0;
+        }
+
+        item->locks++;
+    }
+}
+
+static void
+unlock_cache(cacheblk handle)
+{
+    cache_item *item = handle ? find_cache(handle) : 0;
+    if (item && (0 < item->locks))
+    {
+        item->locks--;
+    }
+}
+
 static cacheblk
 retrieve_cache(int fd, off_t at, size_t size)
 {
+    cacheblk handle = 0;
+
 #ifdef CONFIG_IA16X
     for (int i = 0; i < MAX_CACHE_ITEMS; i++)
     {
-        if ((fd == cache_[i].fd) && (at == cache_[i].base) &&
+        if ((0 == handle) && (fd == cache_[i].fd) && (at == cache_[i].base) &&
             (size == cache_[i].size))
         {
-            return cache_[i].handle;
+            handle = cache_[i].handle;
+        }
+
+        if (cache_[i].handle && (0 >= cache_[i].locks))
+        {
+            cache_[i].locks--;
         }
     }
 #endif
 
-    return 0;
+    return handle;
 }
 
 static bool
@@ -86,6 +119,7 @@ remember_cache(int fd, off_t at, size_t size, cacheblk handle)
     slot->base = at;
     slot->size = size;
     slot->handle = handle;
+    slot->locks = 0;
     return true;
 }
 
@@ -101,6 +135,42 @@ allocate_cache(size_t length)
         return 0;
     }
     return segment;
+#endif
+}
+
+static bool
+evict(size_t length)
+{
+#ifdef CONFIG_IA16X
+    int      best_age = 0;
+    cacheblk best_handle = 0;
+    size_t   best_size = SIZE_MAX;
+
+    for (int i = 0; i < MAX_CACHE_ITEMS; i++)
+    {
+        if ((0 == cache_[i].handle) || (best_age < cache_[i].locks))
+        {
+            continue;
+        }
+
+        size_t aligned_size =
+            (0xFC00 < cache_[i].size) ? SIZE_MAX : align(cache_[i].size, 1024);
+        if (length > aligned_size)
+        {
+            continue;
+        }
+
+        if (best_age == cache_[i].locks)
+        {
+            if (best_size > aligned_size)
+            {
+                best_handle = cache_[i].handle;
+                best_size = aligned_size;
+            }
+        }
+    }
+#else
+    return false;
 #endif
 }
 
@@ -178,7 +248,11 @@ hcache
 pal_cache(int fd, off_t at, size_t size)
 {
     cacheblk block = retrieve_cache(fd, at, size);
-    if (0 == block)
+    if (block)
+    {
+        lock_cache(block);
+    }
+    else
     {
         block = allocate_cache(size);
         if (0 == block)
@@ -186,7 +260,11 @@ pal_cache(int fd, off_t at, size_t size)
             return 0;
         }
 
-        if (!remember_cache(fd, at, size, block))
+        if (remember_cache(fd, at, size, block))
+        {
+            lock_cache(block);
+        }
+        else
         {
             free_cache(block);
             return 0;
@@ -205,6 +283,7 @@ pal_cache(int fd, off_t at, size_t size)
 void
 pal_discard(hcache handle)
 {
+    unlock_cache(handle);
 }
 
 void
