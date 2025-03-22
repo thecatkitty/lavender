@@ -33,6 +33,7 @@ typedef struct
     off_t    base;
     size_t   size;
     cacheblk handle;
+    int      locks; // negative - age
 } cache_item;
 
 static cache_item cache_[MAX_CACHE_ITEMS];
@@ -45,18 +46,26 @@ typedef far void *cacheptr;
 static cacheblk
 retrieve_cache(int fd, off_t at, size_t size)
 {
+    cacheblk handle = 0;
+
 #ifdef CONFIG_IA16X
     for (int i = 0; i < MAX_CACHE_ITEMS; i++)
     {
-        if ((fd == cache_[i].fd) && (at == cache_[i].base) &&
+        if ((0 == handle) && (fd == cache_[i].fd) && (at == cache_[i].base) &&
             (size == cache_[i].size))
         {
-            return cache_[i].handle;
+            handle = cache_[i].handle;
+        }
+
+        if (cache_[i].handle && (0 >= cache_[i].locks) &&
+            (INT_MIN < cache_[i].locks))
+        {
+            cache_[i].locks--;
         }
     }
 #endif
 
-    return 0;
+    return handle;
 }
 
 #ifdef CONFIG_IA16X
@@ -74,6 +83,31 @@ find_cache(cacheblk handle)
     return NULL;
 }
 
+static void
+lock_cache(cacheblk handle)
+{
+    cache_item *item = handle ? find_cache(handle) : 0;
+    if (item)
+    {
+        if (0 > item->locks)
+        {
+            item->locks = 0;
+        }
+
+        item->locks++;
+    }
+}
+
+static void
+unlock_cache(cacheblk handle)
+{
+    cache_item *item = handle ? find_cache(handle) : 0;
+    if (item && (0 < item->locks))
+    {
+        item->locks--;
+    }
+}
+
 static bool
 remember_cache(int fd, off_t at, size_t size, cacheblk handle)
 {
@@ -87,6 +121,67 @@ remember_cache(int fd, off_t at, size_t size, cacheblk handle)
     slot->base = at;
     slot->size = size;
     slot->handle = handle;
+    slot->locks = 0;
+    return true;
+}
+
+static bool
+evict(size_t length)
+{
+    int      best_i = 0;
+    int      best_age = 0;
+    cacheblk best_handle = 0;
+    size_t   best_size = SIZE_MAX;
+
+    for (int i = 0; i < MAX_CACHE_ITEMS; i++)
+    {
+        if ((0 == cache_[i].handle) || (best_age < cache_[i].locks))
+        {
+            // unallocated, locked, or younger than best
+            continue;
+        }
+
+        // extended memory blocks are kilobyte-aligned, prevent overflow
+        size_t aligned_size =
+            (0xFC00 < cache_[i].size) ? SIZE_MAX : align(cache_[i].size, 1024);
+        if (length > aligned_size)
+        {
+            // too small
+            continue;
+        }
+
+        if (best_age == cache_[i].locks)
+        {
+            // same age as best, check size
+            if (best_size > aligned_size)
+            {
+                // smaller than best - new best
+                best_i = i;
+                best_handle = cache_[i].handle;
+                best_size = aligned_size;
+            }
+
+            continue;
+        }
+
+        // older than best - new best
+        best_i = i;
+        best_age = cache_[i].locks;
+        best_handle = cache_[i].handle;
+        best_size = aligned_size;
+    }
+
+    if (0 == best_handle)
+    {
+        return false;
+    }
+
+    if (!dosxm_free(MK_HDOSXM(best_handle)))
+    {
+        return false;
+    }
+
+    cache_[best_i].handle = 0;
     return true;
 }
 #endif
@@ -95,7 +190,13 @@ static cacheblk
 allocate_cache(size_t length)
 {
 #ifdef CONFIG_IA16X
-    return MK_CACHEBLK(dosxm_alloc((length + 1023) / 1024));
+    hdosxm xm = dosxm_alloc((length + 1023) / 1024);
+    if (!xm && !evict(length))
+    {
+        return 0;
+    }
+
+    return MK_CACHEBLK(xm ? xm : dosxm_alloc((length + 1023) / 1024));
 #else
     unsigned segment;
     if (0 != _dos_allocmem((length + 15) / 16, &segment))
@@ -180,7 +281,13 @@ hcache
 pal_cache(int fd, off_t at, size_t size)
 {
     cacheblk block = retrieve_cache(fd, at, size);
-    if (0 == block)
+    if (block)
+    {
+#ifdef CONFIG_IA16X
+        lock_cache(block);
+#endif
+    }
+    else
     {
         block = allocate_cache(size);
         if (0 == block)
@@ -189,7 +296,11 @@ pal_cache(int fd, off_t at, size_t size)
         }
 
 #ifdef CONFIG_IA16X
-        if (!remember_cache(fd, at, size, block))
+        if (remember_cache(fd, at, size, block))
+        {
+            lock_cache(block);
+        }
+        else
         {
             free_cache(block);
             return 0;
@@ -209,7 +320,9 @@ pal_cache(int fd, off_t at, size_t size)
 void
 pal_discard(hcache handle)
 {
-#ifndef CONFIG_IA16X
+#ifdef CONFIG_IA16X
+    unlock_cache(handle);
+#else
     free_cache((cacheblk)handle);
 #endif
 }
