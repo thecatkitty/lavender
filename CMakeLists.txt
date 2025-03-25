@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
+enable_testing()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     project(Lavender C CXX RC)
