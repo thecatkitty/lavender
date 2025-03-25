@@ -122,3 +122,7 @@ if(LINUX)
     target_link_libraries(lavender ${SDL2_LIBRARIES} SDL2_ttf)
     target_link_libraries(lavender fluidsynth)
 endif()
+
+if(LINUX)
+    add_subdirectory(pal/dos/test)
+endif()

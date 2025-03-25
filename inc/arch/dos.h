@@ -3,12 +3,10 @@
 
 #include <base.h>
 
-#define interrupt __attribute__((interrupt))
-
-#ifndef __linux__
+#ifdef __ia16__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
-typedef void interrupt far (*dos_isr)(void);
+typedef void __attribute__((interrupt)) far (*dos_isr)(void);
 #pragma GCC diagnostic pop
 #endif
 
