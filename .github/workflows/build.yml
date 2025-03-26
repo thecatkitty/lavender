@@ -6,6 +6,9 @@ on:
   push:
     tags: [0.*]
 
+env:
+  LINUX_APTS: libsdl2-dev libsdl2-ttf-dev libfontconfig-dev libfluidsynth-dev libblkid-dev libcurl4-openssl-dev
+
 jobs:
   Build:
     name: Build for ${{ matrix.platform.name }}
@@ -32,7 +35,7 @@ jobs:
             host: ubuntu-22.04
           - name: Linux
             target: linux
-            apts: libsdl2-dev libsdl2-ttf-dev libfontconfig-dev libfluidsynth-dev libblkid-dev libcurl4-openssl-dev
+            apts: $LINUX_APTS
             host: ubuntu-latest
           - name: Windows (IA32)
             target: windows-ia32
@@ -150,6 +153,23 @@ jobs:
           name: lavender-${{ matrix.platform.target }}
           path: |
             bin
+
+  Test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Linux host dependencies
+        run: |
+          sudo apt update
+          sudo apt install $LINUX_APTS -y
+
+      - name: Run unit tests
+        run: |
+          cmake -S . -B build
+          cmake --build build -t test
 
   Release:
 
