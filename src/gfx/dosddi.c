@@ -139,7 +139,15 @@ gfx_draw_text(const char *str, uint16_t x, uint16_t y)
 void
 gfx_cleanup(void)
 {
-    return gfx_device_close(_dev);
+    gfx_device_close(_dev);
+
+#if defined(CONFIG_ANDREA)
+    if (0 != _driver)
+    {
+        dos_unload_driver(_driver);
+        _driver = 0;
+    }
+#endif
 }
 
 bool
