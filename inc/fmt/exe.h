@@ -1,7 +1,7 @@
 #ifndef _FMT_EXE_H_
 #define _FMT_EXE_H_
 
-#include <stdint.h>
+#include <inttypes.h>
 
 #ifndef VOID
 typedef uint8_t  UCHAR;

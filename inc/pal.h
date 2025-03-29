@@ -68,6 +68,13 @@ pal_print_log(const char *location, const char *format, ...);
 
 #define LOG(...) pal_print_log(__func__, __VA_ARGS__)
 
+#elif defined(_MSC_VER) && (_MSC_VER < 1500)
+
+static __inline void
+LOG(const char *fmt, ...)
+{
+}
+
 #else
 
 #define LOG(...)

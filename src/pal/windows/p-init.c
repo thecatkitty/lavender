@@ -38,8 +38,11 @@ static bool
 snddev_enum_callback(device *dev, void *data)
 {
     wchar_t line[MAX_PATH];
-    swprintf(line, MAX_PATH, FMT_AS L"\t" FMT_AS L"\n", dev->name,
-             dev->description);
+    swprintf(line,
+#if !defined(_MSC_VER) || (_MSC_VER > 1400)
+             MAX_PATH,
+#endif
+             FMT_AS L"\t" FMT_AS L"\n", dev->name, dev->description);
     windows_append((wchar_t *)data, line, HELP_MAX_LENGTH);
     return true;
 }

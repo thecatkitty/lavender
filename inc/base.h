@@ -27,7 +27,9 @@
 #endif
 
 #if defined(_MSC_VER)
+#if _MSC_VER >= 1600
 #include <intrin.h>
+#endif
 
 #define __builtin_bswap16(x) _byteswap_ushort(x)
 #define __builtin_bswap32(x) _byteswap_ulong(x)
@@ -63,9 +65,21 @@
         int unused;                                                            \
     } *x
 
-#define align(p, a)           (((intptr_t)(p) + (a)-1) / (a) * (a))
+#define align(p, a)           (((intptr_t)(p) + (a) - 1) / (a) * (a))
 #define lengthof(x)           (sizeof(x) / sizeof((x)[0]))
 #define sizeofm(type, member) sizeof(((type *)0)->member)
+
+#if !defined(__cplusplus) && !defined(static_assert)
+#define static_assert(expr, msg)
+#endif
+
+#ifndef SIZE_MAX
+#if defined(_WIN64)
+#define SIZE_MAX _UI64_MAX
+#else
+#define SIZE_MAX UINT_MAX
+#endif
+#endif
 
 extern uint64_t
 rstrtoull(const char *str, int base);
