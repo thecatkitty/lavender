@@ -11,7 +11,11 @@ pal_alert(const char *text, int error)
     WCHAR msg[MAX_PATH];
     if (error)
     {
-        swprintf(msg, MAX_PATH, L"" FMT_AS L"\nerror %d", text, error);
+        swprintf(msg,
+#if !defined(_MSC_VER) || (_MSC_VER > 1400)
+                 MAX_PATH,
+#endif
+                 L"" FMT_AS L"\nerror %d", text, error);
     }
     else
     {

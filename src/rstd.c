@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,7 +18,7 @@
             if (num < prev)                                                    \
             {                                                                  \
                 errno = ERANGE;                                                \
-                return ULLONG_MAX;                                             \
+                return UINT64_MAX;                                             \
             }                                                                  \
         }                                                                      \
         return num;                                                            \
@@ -53,7 +54,7 @@ rstrtoull(const char *str, int base)
 
     default:
         errno = EINVAL;
-        return ULLONG_MAX;
+        return UINT64_MAX;
     }
 }
 
