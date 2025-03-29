@@ -18,7 +18,22 @@
 #include "../ui/encui.h"
 #include "resource.h"
 
-typedef HRESULT(STDAPICALLTYPE *pf_shgetstockiconinfo)(SHSTOCKICONID,
+#if defined(_MSC_VER) && (_MSC_VER < 1600)
+typedef struct
+{
+    DWORD cbSize;
+    HICON hIcon;
+    int   iSysImageIndex;
+    int   iIcon;
+    WCHAR szPath[MAX_PATH];
+} SHSTOCKICONINFO;
+
+#define SIID_WARNING    78
+#define SHGSI_ICON      0x000000100
+#define SHGSI_SMALLICON 0x000000001
+#endif
+
+typedef HRESULT(STDAPICALLTYPE *pf_shgetstockiconinfo)(UINT,
                                                        UINT,
                                                        SHSTOCKICONINFO *);
 
@@ -33,6 +48,11 @@ typedef HRESULT(STDAPICALLTYPE *pf_shgetstockiconinfo)(SHSTOCKICONID,
 #define BCM_FIRST        0x1600
 #define BCM_GETIDEALSIZE (BCM_FIRST + 0x0001)
 #define BCM_SETNOTE      (BCM_FIRST + 0x0009)
+#endif
+
+#ifndef ICC_LINK_CLASS
+#define ICC_LINK_CLASS 0x8000
+#define WC_LINK        L"SysLink"
 #endif
 
 #ifndef LWS_RIGHT

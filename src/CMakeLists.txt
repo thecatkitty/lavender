@@ -113,6 +113,12 @@ if(WIN32)
         target_link_options(lavender PRIVATE /subsystem:windows,${WINVER_MAJOR}.${WINVER_MINOR})
     endif()
     target_link_libraries(lavender comctl32 version wininet winmm)
+
+    if(MSVC)
+        if(MSVC_VERSION LESS 1500)
+            target_link_libraries(lavender bufferoverflowU)
+        endif()
+    endif()
 endif()
 
 if(LINUX)
