@@ -1,5 +1,4 @@
-include(CheckTypeSize)
-check_type_size("void *" POINTER_SIZE)
+include(CheckIncludeFile)
 
 cmake_path(GET CMAKE_C_COMPILER FILENAME compiler_name)
 if(${compiler_name} MATCHES "-")
@@ -127,4 +126,11 @@ function(add_test_executable name)
     add_test(NAME build-test-${name} COMMAND "${CMAKE_COMMAND}" --build ${CMAKE_BINARY_DIR} --target test-${name})
     add_test(NAME run-test-${name} COMMAND $<TARGET_FILE:test-${name}>)
     set_tests_properties(run-test-${name} PROPERTIES DEPENDS build-test-${name})
+endfunction()
+
+function(supply_c99_header name)
+    check_include_file(${name}.h has_c99_header)
+    if(NOT has_c99_header)
+        include_directories(inc/c99/${name})
+    endif()
 endfunction()
