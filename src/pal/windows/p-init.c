@@ -17,6 +17,10 @@
 
 #define HELP_MAX_LENGTH 1024
 
+#ifndef ICC_STANDARD_CLASSES
+#define ICC_STANDARD_CLASSES 0x00004000
+#endif
+
 static HICON icon_ = NULL;
 
 #if defined(_MSC_VER)

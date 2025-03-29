@@ -3,6 +3,10 @@
 
 #include "impl.h"
 
+#ifndef HKEY_CURRENT_USER_LOCAL_SETTINGS
+#define HKEY_CURRENT_USER_LOCAL_SETTINGS ((HKEY)(ULONG_PTR)((LONG)0x80000007))
+#endif
+
 static HKEY
 open_state(void)
 {
