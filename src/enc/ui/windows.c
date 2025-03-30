@@ -709,7 +709,7 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
             }
         }
 
-        if (NULL == _font)
+        if (windows_is_at_least_vista() || (NULL == _font))
         {
             _font = (HFONT)SendMessageA(dlg, WM_GETFONT, 0, 0);
         }
@@ -1091,8 +1091,9 @@ encui_exit(void)
     if (_allocated_font)
     {
         DeleteObject(_font);
-        _font = NULL;
+        _allocated_font = false;
     }
+    _font = NULL;
 
     return true;
 }
