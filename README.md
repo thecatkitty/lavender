@@ -41,7 +41,7 @@ Building requires *CMake*, *Python 3* and `zip` on all hosts.
 On Linux hosts, *GNU Make* and *GNU Binutils* are also required.
 Cross-compilation for Windows is done using [LLVM-MinGW](https://github.com/mstorsjo/llvm-mingw) for i486, x86_64, armv7, and aarch64.
 Cross-compiled i486 Windows target links against [libunicows](https://libunicows.sourceforge.net/) and requires Internet Explorer 5 or newer.
-Native compilation on Windows requires at least Microsoft Visual C++ 2010 with Windows SDK 7.1.
+Native compilation on Windows requires at least Microsoft Visual C++ 2005 with Windows Server 2003 SP1 Platform SDK.
 Linux builds rely on *SDL2*, *SDL2_ttf*, *cURL*, *Fontconfig*, *FluidSynth*, and *libblkid* libraries.
 MS-DOS builds require [GCC for IA-16](https://github.com/tkchia/gcc-ia16/) with [libi86](https://github.com/tkchia/libi86/).
 
