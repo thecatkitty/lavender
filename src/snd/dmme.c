@@ -2,7 +2,7 @@
 #include <windows.h>
 
 #include <pal.h>
-#include <snd.h>
+#include <snd/dev.h>
 
 static HMIDIOUT _out = NULL;
 

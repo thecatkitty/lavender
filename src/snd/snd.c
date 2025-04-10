@@ -9,6 +9,7 @@
 
 #include <pal.h>
 #include <snd.h>
+#include <snd/dev.h>
 
 #define MAX_DEVICES 4
 
@@ -159,15 +160,10 @@ snd_cleanup(void)
 #endif // CONFIG_ANDREA
 }
 
-bool
-snd_send(const midi_event *event)
+device *
+snd_get_device(void)
 {
-    if (NULL == _device)
-    {
-        return false;
-    }
-
-    return snd_device_write(_device, event);
+    return _device;
 }
 
 void
@@ -184,7 +180,7 @@ snd_handle(void)
         _music = NULL;
     }
 
-    if (NULL != ((far snd_device_ops *)_device->ops)->tick)
+    if (NULL != SND_DEVICE_OPS(_device)->tick)
     {
         uint32_t ts = pal_get_counter();
         if (_ts != ts)
