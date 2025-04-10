@@ -2,6 +2,7 @@
 #include <drv.h>
 #include <pal.h>
 #include <snd.h>
+#include <snd/dev.h>
 
 #define KEY_NONE         255
 #define KEY_MIN          14 // PIT incapable of frequencies lower than D0

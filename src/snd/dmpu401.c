@@ -3,7 +3,7 @@
 
 #include <drv.h>
 #include <pal.h>
-#include <snd.h>
+#include <snd/dev.h>
 
 #define MPU401_DATA    0x330
 #define MPU401_CONTROL 0x331

@@ -1,8 +1,10 @@
 #include <pal.h>
 #include <snd.h>
+#include <snd/dev.h>
 
 #define INIT_USEC_PER_QUARTER 500000
 
+static device      *_dev = NULL;
 static iff_context *_iff = 0;
 static uint16_t     _division = 960;
 static const char  *_track = 0, *_track_end;
@@ -72,6 +74,7 @@ sndseq_start(void *music, uint16_t length)
     _track = mtrk_chunk.data;
     _track_end = _track + mtrk_chunk.length;
     _next_event = 0;
+    _dev = snd_get_device();
 
     return true;
 }
@@ -103,7 +106,7 @@ sndseq_step(void)
 
     if (NULL != _event.msg)
     {
-        snd_send(&_event);
+        snd_device_write(_dev, &_event);
     }
 
     length = midi_read_event(_track, &_event);
@@ -123,7 +126,7 @@ sndseq_step(void)
             _kilotick_rate = pal_get_ticks(usec_per_quarter / _division);
         }
 
-        snd_send(&_event);
+        snd_device_write(_dev, &_event);
         length = midi_read_event(_track, &_event);
         _track += length;
     }

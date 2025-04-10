@@ -3,7 +3,7 @@
 
 #include <arch/linux.h>
 #include <pal.h>
-#include <snd.h>
+#include <snd/dev.h>
 
 static const char *SOUNDFONTS[] = {"/usr/share/sounds/sf2/default-GM.sf2",
                                    "/usr/share/soundfonts/default-GM.sf2",
