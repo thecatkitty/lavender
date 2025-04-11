@@ -6,6 +6,7 @@
 #define INIT_USEC_PER_QUARTER 500000
 
 static device      *_dev = NULL;
+static hasset       _asset = NULL;
 static iff_context *_iff = 0;
 static uint16_t     _division = 960;
 static const char  *_track = 0, *_track_end;
@@ -15,13 +16,64 @@ static uint32_t _kilotick_rate;
 static uint32_t _next_event;
 
 bool
-sndseq_start(void *music, uint16_t length)
+sndseq_open(const char *name)
+{
+    char  *data;
+    hasset asset;
+
+    if (_asset)
+    {
+        asset = _asset;
+        _asset = NULL;
+        pal_close_asset(asset);
+    }
+
+    asset = pal_open_asset(name, O_RDONLY);
+    if (NULL == asset)
+    {
+        return false;
+    }
+
+    data = pal_load_asset(asset);
+    if (NULL == data)
+    {
+        return false;
+    }
+
+    _asset = asset;
+    return true;
+}
+
+bool
+sndseq_close(void)
+{
+    if (NULL == _asset)
+    {
+        return false;
+    }
+
+    pal_close_asset(_asset);
+    _asset = NULL;
+    return true;
+}
+
+bool
+sndseq_start(void)
 {
     midi_mthd mthd = {0};
     iff_chunk mtrk_chunk = {0};
     iff_chunk it = {0};
+    iff_head *head;
 
-    iff_head *head = (iff_head *)music;
+    void *music = pal_load_asset(_asset);
+    long  length = pal_get_asset_size(_asset);
+
+    if (NULL == music)
+    {
+        return false;
+    }
+
+    head = (iff_head *)music;
     if (MIDI_FOURCC_MTHD.dw != head->type.dw)
     {
         errno = EFTYPE;

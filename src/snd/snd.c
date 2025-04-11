@@ -16,7 +16,7 @@
 
 static device   _devices[MAX_DEVICES] = {{{0}}};
 static device  *_device = NULL;
-static hasset   _music = NULL;
+static bool     _playing = false;
 static uint32_t _ts = 0;
 
 #if defined(CONFIG_ANDREA)
@@ -170,15 +170,15 @@ snd_get_device(void)
 void
 snd_handle(void)
 {
-    if ((NULL == _device) || (NULL == _music))
+    if ((NULL == _device) || !_playing)
     {
         return;
     }
 
     if (!sndseq_step())
     {
-        pal_close_asset(_music);
-        _music = NULL;
+        _playing = false;
+        sndseq_close();
     }
 
     if (NULL != SND_DEVICE_OPS(_device)->tick)
@@ -195,37 +195,17 @@ snd_handle(void)
 bool
 snd_play(const char *name)
 {
-    char  *data;
-    long   length;
-    hasset music;
-
-    if (_music)
-    {
-        music = _music;
-        _music = NULL;
-        pal_close_asset(music);
-    }
-
-    music = pal_open_asset(name, O_RDONLY);
-    if (NULL == music)
+    if (!sndseq_open(name))
     {
         return false;
     }
 
-    data = pal_load_asset(music);
-    if (NULL == data)
+    if (!sndseq_start())
     {
+        sndseq_close();
         return false;
     }
 
-    length = pal_get_asset_size(music);
-    if (sndseq_start(data, length))
-    {
-        _music = music;
-        return true;
-    }
-
-    pal_close_asset(music);
-    music = NULL;
-    return false;
+    _playing = true;
+    return true;
 }
