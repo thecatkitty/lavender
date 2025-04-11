@@ -33,4 +33,10 @@ snd_play(const char *name);
 extern void
 snd_handle(void);
 
+#ifdef PAL_EXTERNAL_TICK
+// Handle passage of time
+extern void
+snd_tick(void);
+#endif
+
 #endif // _SND_H_
