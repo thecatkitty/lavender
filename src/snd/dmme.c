@@ -13,7 +13,7 @@ static UINT     _timer = 0;
 static void CALLBACK
 _time_callback(UINT id, UINT msg, DWORD_PTR user, DWORD_PTR dw1, DWORD_PTR dw2)
 {
-    snd_handle();
+    snd_tick();
 }
 #endif
 

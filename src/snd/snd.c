@@ -168,7 +168,7 @@ snd_get_device(void)
 }
 
 void
-snd_handle(void)
+snd_tick(void)
 {
     if ((NULL == _device) || !_playing)
     {
@@ -190,6 +190,19 @@ snd_handle(void)
             snd_device_tick(_device, ts);
         }
     }
+}
+
+void
+snd_handle(void)
+{
+    if ((NULL == _device) || !_playing)
+    {
+        return;
+    }
+
+#if !PAL_EXTERNAL_TICK
+    snd_tick();
+#endif
 }
 
 bool
