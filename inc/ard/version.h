@@ -3,7 +3,8 @@
 
 #include <minwindef.h>
 #include <sal.h>
-#include <stdbool.h>
+
+#include <base.h>
 
 typedef enum
 {

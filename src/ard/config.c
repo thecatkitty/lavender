@@ -3,14 +3,6 @@
 #include <stdlib.h>
 #include <windows.h>
 
-#if defined(_MSC_VER)
-#include <intrin.h>
-
-#define BSWAP32(x) _byteswap_ulong(x)
-#else
-#define BSWAP32(x) __builtin_bswap32(x)
-#endif
-
 #include <ard/config.h>
 #include <ard/version.h>
 
