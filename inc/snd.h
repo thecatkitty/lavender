@@ -33,12 +33,4 @@ snd_play(const char *name);
 extern void
 snd_handle(void);
 
-// Start MIDI sequence
-extern bool
-sndseq_start(void *music, uint16_t length);
-
-// Step MIDI sequence forward
-extern bool
-sndseq_step(void);
-
 #endif // _SND_H_

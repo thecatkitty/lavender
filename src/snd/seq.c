@@ -1,6 +1,7 @@
 #include <pal.h>
 #include <snd.h>
 #include <snd/dev.h>
+#include <snd/seq.h>
 
 #define INIT_USEC_PER_QUARTER 500000
 
