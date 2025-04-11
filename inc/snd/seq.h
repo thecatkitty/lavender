@@ -3,9 +3,17 @@
 
 #include <base.h>
 
+// Open MIDI file for playback
+extern bool
+sndseq_open(const char *name);
+
+// Close MIDI file
+extern bool
+sndseq_close(void);
+
 // Start MIDI sequence
 extern bool
-sndseq_start(void *music, uint16_t length);
+sndseq_start(void);
 
 // Step MIDI sequence forward
 extern bool
