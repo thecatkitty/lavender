@@ -290,8 +290,8 @@ __enc_remote_proc(int msg, enc_context *enc)
     case ENCM_TRANSFORM: {
         __enc_des_expand56(_56betoull(encr_response), enc->key.b);
         __enc_des_expand56(_56betoull(encr_response + 7), enc->key.b + 8);
-        (&enc->key.qw)[0] = __builtin_bswap64((&enc->key.qw)[0]);
-        (&enc->key.qw)[1] = __builtin_bswap64((&enc->key.qw)[1]);
+        (&enc->key.qw)[0] = BSWAP64((&enc->key.qw)[0]);
+        (&enc->key.qw)[1] = BSWAP64((&enc->key.qw)[1]);
         return 0;
     }
 

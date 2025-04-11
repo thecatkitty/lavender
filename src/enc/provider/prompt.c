@@ -129,8 +129,8 @@ __enc_prompt_proc(int msg, enc_context *enc)
             (ENC_KEYSM_PKEY25XOR2B == (enc->provider >> 8)))
         {
             enc_decode_key(enc->buffer, enc->key.b, enc->provider >> 8);
-            (&enc->key.qw)[0] = __builtin_bswap64((&enc->key.qw)[0]);
-            (&enc->key.qw)[1] = __builtin_bswap64((&enc->key.qw)[1]);
+            (&enc->key.qw)[0] = BSWAP64((&enc->key.qw)[0]);
+            (&enc->key.qw)[1] = BSWAP64((&enc->key.qw)[1]);
 
             return 0;
         }

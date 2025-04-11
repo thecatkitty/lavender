@@ -40,13 +40,13 @@ _rotl28(uint32_t value, uint8_t count)
 static uint64_t
 _from_bytes(const uint8_t *block)
 {
-    return __builtin_bswap64(*(const uint64_t *)block);
+    return BSWAP64(*(const uint64_t *)block);
 }
 
 static void
 _to_bytes(uint64_t num, uint8_t *block)
 {
-    *(uint64_t *)block = __builtin_bswap64(num);
+    *(uint64_t *)block = BSWAP64(num);
 }
 
 static void
