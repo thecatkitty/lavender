@@ -92,9 +92,9 @@ sndseq_start(void)
         {
             midi_mthd *data = (midi_mthd *)it.data;
 
-            mthd.format = __builtin_bswap16(data->format);
-            mthd.ntrks = __builtin_bswap16(data->ntrks);
-            mthd.division = __builtin_bswap16(data->division);
+            mthd.format = BSWAP16(data->format);
+            mthd.ntrks = BSWAP16(data->ntrks);
+            mthd.division = BSWAP16(data->division);
             if (mthd.division & MIDI_MTHD_DIVISION_SMPTE_FLAG)
             {
                 // SMPTE timing not supported

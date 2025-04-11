@@ -3,14 +3,6 @@
 #include <stdio.h>
 #include <windows.h>
 
-#if defined(_MSC_VER)
-#include <intrin.h>
-
-#define BSWAP16(x) _byteswap_ushort(x)
-#else
-#define BSWAP16(x) __builtin_bswap16(x)
-#endif
-
 #include <ard/version.h>
 
 typedef BOOL(WINAPI *pf_getversionex)(LPOSVERSIONINFO);

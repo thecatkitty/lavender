@@ -31,11 +31,15 @@
 #include <intrin.h>
 #endif
 
-#define __builtin_bswap16(x) _byteswap_ushort(x)
-#define __builtin_bswap32(x) _byteswap_ulong(x)
-#define __builtin_bswap64(x) _byteswap_uint64(x)
+#define BSWAP16(x) _byteswap_ushort(x)
+#define BSWAP32(x) _byteswap_ulong(x)
+#define BSWAP64(x) _byteswap_uint64(x)
 
 #define strcasecmp _stricmp
+#else
+#define BSWAP16(x) __builtin_bswap16(x)
+#define BSWAP32(x) __builtin_bswap32(x)
+#define BSWAP64(x) __builtin_bswap64(x)
 #endif
 
 #ifndef far
