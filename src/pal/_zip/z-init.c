@@ -40,9 +40,16 @@ ziparch_cleanup(void)
 
     for (i = 0; i < MAX_OPEN_ASSETS; ++i)
     {
-        if (NULL != pal_assets[i].data)
+        if ((PALOPT_LOCAL == (pal_assets[i].opts & PALOPT_WHERE)) &&
+            (NULL != pal_assets[i].data))
         {
             zip_free_data(pal_assets[i].data);
+        }
+
+        if ((PALOPT_CACHE == (pal_assets[i].opts & PALOPT_WHERE)) &&
+            (0 != pal_assets[i].handle))
+        {
+            zip_discard(pal_assets[i].handle);
         }
     }
 
