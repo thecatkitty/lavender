@@ -1,7 +1,7 @@
 #ifndef _FMT_IFF_H_
 #define _FMT_IFF_H_
 
-#include <base.h>
+#include <pal.h>
 
 typedef union {
     char     c[4];
@@ -22,15 +22,17 @@ typedef enum
 
 typedef struct
 {
-    const char *data;
-    iff_mode    mode;
-    uint32_t    length;
+    iff_mode   mode;
+    hasset     asset;
+    iff_fourcc type;
+    uint32_t   length;
+    uint32_t   position;
 } iff_context;
 typedef struct
 {
-    iff_fourcc  type;
-    uint32_t    length;
-    const char *data;
+    iff_fourcc type;
+    uint32_t   length;
+    uint32_t   position;
 } iff_chunk;
 
 #define IFF_FOURCC(fourcc) {fourcc}
@@ -41,7 +43,7 @@ static const iff_fourcc IFF_FOURCC_LIST = IFF_FOURCC("LIST");
 static const iff_fourcc IFF_FOURCC_CAT = IFF_FOURCC("CAT ");
 
 extern iff_context *
-iff_open(void *data, uint16_t length);
+iff_open(hasset asset);
 
 extern bool
 iff_close(iff_context *ctx);
