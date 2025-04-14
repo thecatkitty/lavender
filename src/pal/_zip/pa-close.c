@@ -34,7 +34,7 @@ pal_close_asset(hasset asset)
     if ((PALOPT_CACHE == (ptr->opts & PALOPT_WHERE)) && (0 != ptr->handle))
     {
         zip_discard(ptr->handle);
-        ptr->data = NULL;
+        ptr->handle = (zip_cached)0;
     }
 
     LOG("exit");
