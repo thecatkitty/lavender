@@ -1,3 +1,4 @@
+#include <stdarg.h>
 #include <stdio.h>
 
 // clang-format off
@@ -258,3 +259,20 @@ pal_cleanup(void)
     gfx_cleanup();
     ziparch_cleanup();
 }
+
+#ifdef _DEBUG
+void
+pal_print_log(const char *location, const char *format, ...)
+{
+    char msg[4096];
+    int length = sprintf(msg, "%s: ", location);
+
+    va_list args;
+    va_start(args, format);
+    vsnprintf(msg + length, lengthof(msg) - length, format, args);
+    va_end(args);
+
+    strcat(msg, "\r\n");
+    OutputDebugStringA(msg);
+}
+#endif

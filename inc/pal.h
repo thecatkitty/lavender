@@ -61,7 +61,7 @@ typedef bool (*pal_enum_assets_callback)(const char *, void *);
 #define VK_OEM_MINUS 0xBD
 #endif
 
-#if defined(__linux__)
+#if defined(__linux__) || (defined(_WIN32) && defined(_DEBUG))
 
 extern void
 pal_print_log(const char *location, const char *format, ...);
