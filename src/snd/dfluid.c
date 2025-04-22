@@ -111,6 +111,27 @@ fluid_close(device *dev)
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
 }
 
+static size_t
+parse_vlq(const char *buffer, uint32_t *out)
+{
+    uint32_t byte;
+    size_t   count = 0;
+
+    *out = 0;
+
+    do
+    {
+        byte = (uint8_t)*buffer;
+
+        *out <<= 7;
+        *out |= byte & 0x7F;
+
+        count++;
+    } while (byte & 0x80);
+
+    return count;
+}
+
 static bool ddcall
 fluid_write(device *dev, const midi_event *event)
 {
@@ -321,7 +342,7 @@ fluid_write(device *dev, const midi_event *event)
         LOG("COM %-10.10s %3d", "MetaEvent", type);
 
         uint32_t    data_len;
-        const char *data = msg + 1 + midi_read_vlq(msg + 1, &data_len);
+        const char *data = msg + 1 + parse_vlq(msg + 1, &data_len);
 
         if ((MIDI_META_TEXT <= type) && (MIDI_META_CUEPOINT >= type))
         {
