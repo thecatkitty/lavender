@@ -19,4 +19,7 @@ sndseq_start(void);
 extern bool
 sndseq_step(void);
 
+extern bool
+sndseq_feed(void);
+
 #endif // _SND_SEQ_H_
