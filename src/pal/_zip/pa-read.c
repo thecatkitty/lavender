@@ -8,7 +8,7 @@ pal_read_asset(hasset asset, char *buff, off_t at, size_t size)
 {
     pal_asset *ptr = (pal_asset *)asset;
 
-    LOG("entry, asset: %p", (void *)asset);
+    LOG("entry, asset: %p, %lu @ %lu", (void *)asset, (long)size, (long)at);
 
     if (-1 == ptr->inzip)
     {
@@ -47,6 +47,5 @@ pal_read_asset(hasset asset, char *buff, off_t at, size_t size)
     ptr->opts |= PALOPT_CACHE;
     zip_read(ptr->handle, buff, at, size);
 
-    LOG("exit");
     return true;
 }
