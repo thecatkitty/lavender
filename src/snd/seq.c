@@ -1,15 +1,18 @@
 #include <pal.h>
 #include <snd.h>
+#include <snd/buf.h>
 #include <snd/dev.h>
 #include <snd/seq.h>
 
+#define BUFFER_SIZE           4096
 #define INIT_USEC_PER_QUARTER 500000
 
 static device      *_dev = NULL;
 static hasset       _asset = NULL;
 static iff_context *_iff = 0;
 static uint16_t     _division = 960;
-static char        *_track = 0, *_track_cur, *_track_end;
+static snd_buffer   _buffer = {0, 0, NULL, 0};
+static uint32_t     _track_start = 0, _track_length = 0;
 static midi_event   _event = {0, 0, NULL, 0};
 
 static uint32_t _kilotick_rate;
@@ -40,6 +43,10 @@ sndseq_open(const char *name)
 bool
 sndseq_close(void)
 {
+    char *buffer_data = _buffer.data;
+    _buffer.data = NULL;
+    free(buffer_data);
+
     if (NULL == _asset)
     {
         return false;
@@ -108,11 +115,19 @@ sndseq_start(void)
         return false;
     }
 
-    _track = (char *)malloc(mtrk_chunk.length);
-    pal_read_asset(_iff->asset, _track, mtrk_chunk.position, mtrk_chunk.length);
-    _track_cur = _track;
-    _track_end = _track + mtrk_chunk.length;
-    _next_event = 0;
+    _buffer.size = BUFFER_SIZE;
+    _buffer.position = 0;
+    _buffer.flags = 0;
+    _buffer.data = (char *)malloc(_buffer.size);
+    if (NULL == _buffer.data)
+    {
+        return false;
+    }
+
+    _track_start = mtrk_chunk.position;
+    _track_length = mtrk_chunk.length;
+    pal_read_asset(_iff->asset, _buffer.data, _track_start, _buffer.size);
+
     _dev = snd_get_device();
 
     return true;
@@ -124,18 +139,21 @@ sndseq_step(void)
     uint32_t now;
     size_t   length;
 
-    if (!_track)
+    if (NULL == _buffer.data)
     {
+        LOG("no allocated buffer!");
         errno = EINVAL;
         return false;
     }
 
-    if (_track_end <= _track_cur)
+    if (_track_length <= _buffer.position)
     {
-        char *track = _track;
-        _track = NULL;
-        free(track);
+        char *data = _buffer.data;
+        _buffer.data = NULL;
+        free(data);
         iff_close(_iff);
+
+        LOG("finished at %lu", _buffer.position);
         return true;
     }
 
@@ -150,10 +168,10 @@ sndseq_step(void)
         snd_device_write(_dev, &_event);
     }
 
-    length = midi_read_event(_track_cur, &_event);
-    _track_cur += length;
+    length = midi_read_event(&_buffer, &_event);
 
-    while ((0 != length) && (0 == _event.delta) && (_track_end > _track_cur))
+    while ((0 != length) && (0 == _event.delta) &&
+           (_track_length > _buffer.position))
     {
         if ((MIDI_MSG_META == (uint8_t)_event.status) && (NULL != _event.msg) &&
             (MIDI_META_TEMPO == (uint8_t)_event.msg[0]) &&
@@ -168,20 +186,66 @@ sndseq_step(void)
         }
 
         snd_device_write(_dev, &_event);
-        length = midi_read_event(_track_cur, &_event);
-        _track_cur += length;
+        length = midi_read_event(&_buffer, &_event);
     }
 
     if (0 == length)
     {
-        char *track = _track;
-        _track = NULL;
-        free(track);
+        char *data = _buffer.data;
+        _buffer.data = NULL;
+        free(data);
         iff_close(_iff);
         errno = EINVAL;
+
+        LOG("cannot read event at %lu!", _buffer.position);
         return false;
     }
 
     _next_event = now + _event.delta * _kilotick_rate / 1000;
+    return true;
+}
+
+static uint32_t
+get_next_packet_start(const snd_buffer *buf)
+{
+    size_t packet = SND_PACKET_SIZE(&_buffer);
+    return packet * (_buffer.position / packet + 1);
+}
+
+bool
+sndseq_feed(void)
+{
+    uint32_t packet_start;
+    size_t   packet_size;
+    if (SNDBUFF_REQPKT !=
+        (_buffer.flags & (SNDBUFF_REQPKT | SNDBUFF_ACKPKT | SNDBUFF_NOMORE)))
+    {
+        return true;
+    }
+
+    packet_start = get_next_packet_start(&_buffer);
+    packet_size = SND_PACKET_SIZE(&_buffer);
+    if (_track_length < (packet_start + packet_size))
+    {
+        if (_track_length < packet_start)
+        {
+            LOG("end of track!");
+            _buffer.flags |= SNDBUFF_NOMORE;
+            return true;
+        }
+
+        packet_size = _track_length - packet_start;
+    }
+
+    LOG("packet requested, %lu @ %lu", (long)packet_size, (long)packet_start);
+
+    if (!pal_read_asset(_iff->asset, sndbuf_next_packet(&_buffer),
+                        _track_start + packet_start, packet_size))
+    {
+        LOG("read error at %lu!", _buffer.position);
+        return false;
+    }
+
+    _buffer.flags |= SNDBUFF_ACKPKT;
     return true;
 }

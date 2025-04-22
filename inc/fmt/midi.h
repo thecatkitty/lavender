@@ -2,6 +2,7 @@
 #define _FMT_MIDI_H_
 
 #include <fmt/iff.h>
+#include <snd/buf.h>
 
 typedef struct
 {
@@ -70,9 +71,9 @@ static const iff_fourcc MIDI_FOURCC_MTRK = IFF_FOURCC("MTrk");
 #define MIDI_DRUMS_CHANNEL 9
 
 extern size_t
-midi_read_event(const char *buffer, midi_event *event);
+midi_read_event(snd_buffer *buffer, midi_event *event);
 
 extern size_t
-midi_read_vlq(const char *buffer, uint32_t *vlq);
+midi_read_vlq(snd_buffer *buffer, uint32_t *vlq);
 
 #endif // _FMT_MIDI_H_

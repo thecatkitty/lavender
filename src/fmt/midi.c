@@ -1,37 +1,66 @@
 #include <fmt/midi.h>
 #include <pal.h>
-#include <snd.h>
+#include <snd/buf.h>
 
-#define USEC_PER_QUARTER  500000
-#define TICKS_PER_QUARTER 960
-#define USEC_PER_TICK     (USEC_PER_QUARTER / TICKS_PER_QUARTER)
+#define MAX_MSGLEN 1024
+
+#define TRY_GETC(dst, buffer)                                                  \
+    {                                                                          \
+        int byte = sndbuf_getc(buffer);                                        \
+        if (0 > byte)                                                          \
+        {                                                                      \
+            LOG("cannot get the next byte at %lu!", (long)buffer->position);   \
+            return 0;                                                          \
+        }                                                                      \
+        dst = (char)byte;                                                      \
+    }
+
+static char msg_[MAX_MSGLEN];
+
+static void
+restore_vlq(char *out, uint32_t value, int size)
+{
+    int i;
+
+    for (i = size - 1; i >= 0; i--)
+    {
+        *(uint8_t *)(out + i) = 0x80 | (value & 0x7F);
+        value >>= 7;
+    }
+
+    *(uint8_t *)(out + size - 1) &= 0x7F;
+}
 
 size_t
-midi_read_event(const char *buffer, midi_event *event)
+midi_read_event(snd_buffer *buffer, midi_event *event)
 {
-    const char *ptr = buffer;
-    uint8_t     status;
+    int    status;
+    size_t size = 0;
 
-    int delta_len = midi_read_vlq(ptr, &event->delta);
+    int delta_len = midi_read_vlq(buffer, &event->delta);
     if (0 > delta_len)
     {
         return 0;
     }
 
-    ptr += delta_len;
+    size += delta_len;
 
-    status = *ptr;
+    status = sndbuf_peek(buffer);
     if (0x80 <= status)
     {
-        event->status = status;
-        ptr++;
+        status = sndbuf_getc(buffer);
+        if (0 > status)
+        {
+            return 0;
+        }
+
+        event->status = (uint8_t)status;
+        size++;
     }
     else
     {
         status = event->status;
     }
-
-    event->msg = ptr;
 
     if (MIDI_MSG_SYSEX > status)
     {
@@ -46,14 +75,18 @@ midi_read_event(const char *buffer, midi_event *event)
     case MIDI_MSG_CONTINUE:
     case MIDI_MSG_STOP:
     case MIDI_MSG_SENSING:
+        event->msg_length = 0;
         break;
 
     case MIDI_MSG_PROGRAM:
     case MIDI_MSG_CHANPRESS:
     case MIDI_MSG_ENDEX:
-    case MIDI_MSG_SONG:
-        ptr += 1;
+    case MIDI_MSG_SONG: {
+        event->msg_length = 1;
+        TRY_GETC(msg_[0], buffer);
+        event->msg = msg_;
         break;
+    }
 
     case MIDI_MSG_NOTEOFF:
     case MIDI_MSG_NOTEON:
@@ -61,22 +94,29 @@ midi_read_event(const char *buffer, midi_event *event)
     case MIDI_MSG_CONTROL:
     case MIDI_MSG_PITCHWHEEL:
     case MIDI_MSG_POSITION:
-        ptr += 2;
+        event->msg_length = 2;
+        TRY_GETC(msg_[0], buffer);
+        TRY_GETC(msg_[1], buffer);
+        event->msg = msg_;
         break;
 
     case MIDI_MSG_SYSEX: {
-        int mfg = *ptr;
-        ptr++;
+        int i = 0;
 
-        if (0 == mfg)
+        while (MIDI_MSG_ENDEX != sndbuf_peek(buffer))
         {
-            ptr += 2;
+            if (MAX_MSGLEN == event->msg_length)
+            {
+                LOG("SysEx message is too long!");
+                return 0;
+            }
+
+            TRY_GETC(msg_[i], buffer);
+            event->msg_length++;
+            i++;
         }
 
-        while (MIDI_MSG_ENDEX != (uint8_t)*ptr)
-        {
-            ptr++;
-        }
+        event->msg = msg_;
         break;
     }
 
@@ -84,14 +124,26 @@ midi_read_event(const char *buffer, midi_event *event)
         uint32_t meta_vlq;
         int      meta_vlq_len;
 
-        ptr++;
-        meta_vlq_len = midi_read_vlq(ptr, &meta_vlq);
-        if (0 > meta_vlq_len)
+        TRY_GETC(msg_[0], buffer);
+        size++;
+
+        meta_vlq_len = midi_read_vlq(buffer, &meta_vlq);
+        if ((0 == meta_vlq_len) || ((MAX_MSGLEN - 1 - meta_vlq_len) < meta_vlq))
         {
+            LOG("MetaEvent message is too long (%lu)!", (long)meta_vlq);
             return 0;
         }
 
-        ptr += meta_vlq_len + meta_vlq;
+        event->msg_length = 1 + meta_vlq_len + meta_vlq;
+
+        restore_vlq(msg_ + 1, meta_vlq, meta_vlq_len);
+        if (!sndbuf_read(buffer, meta_vlq, msg_ + 1 + meta_vlq_len))
+        {
+            LOG("cannot load the MetaEvent message!");
+            return 0;
+        }
+
+        event->msg = msg_;
         break;
     }
 
@@ -99,19 +151,23 @@ midi_read_event(const char *buffer, midi_event *event)
         return 0;
     }
 
-    event->msg_length = ptr - event->msg;
-    return ptr - buffer;
+    return size + event->msg_length;
 }
 
 size_t
-midi_read_vlq(const char *buffer, uint32_t *vlq)
+midi_read_vlq(snd_buffer *buffer, uint32_t *vlq)
 {
     uint32_t out = 0;
 
     int byte, count = 0;
     while (5 > count)
     {
-        byte = buffer[count];
+        byte = sndbuf_getc(buffer);
+        if (0 > byte)
+        {
+            return 0;
+        }
+
         count++;
 
         out <<= 7;

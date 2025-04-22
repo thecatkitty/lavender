@@ -9,6 +9,7 @@
 
 #include <pal.h>
 #include <snd.h>
+#include <snd/buf.h>
 #include <snd/dev.h>
 #include <snd/seq.h>
 
@@ -203,6 +204,12 @@ snd_handle(void)
 #if !PAL_EXTERNAL_TICK
     snd_tick();
 #endif
+
+    if (!sndseq_feed())
+    {
+        _playing = false;
+        sndseq_close();
+    }
 }
 
 bool
