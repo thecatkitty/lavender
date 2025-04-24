@@ -1,5 +1,6 @@
 0       P       sheba.mid
 :Start
+0       A   0   0   0   0   0
 0       ?   gfx.title:Lavender Demo Slideshow
 0       r   0   <640 200 B
 0       T   18  ^Lavender
@@ -14,6 +15,7 @@
 0       =   27  End
 0       J   Start
 :ExtendedFont
+0       A   0   0   0   0   0
 0       r   0   <640 200 B
 0       T   0   ^Extended Font
 0       A   0   ^13 1   49
@@ -30,6 +32,7 @@
 0       =   27  End
 0       J   ExtendedFont
 :Rectangles
+0       A   0   0   0   0   0
 0       r   0   <640 200 B
 0       r   0   <160 25  maroon
 0       r   25  <160 25  olive
@@ -46,6 +49,7 @@
 0       r   125 >160 25  fuchsia
 0       r   150 >160 25  silver
 0       r   175 >160 25  white
+0       A   22  60  20  3   1000
 0       R   40  40  540 100 W
 0       R   50  50  540 100 G
 0       R   60  60  540 100 B
@@ -105,13 +109,29 @@
 0       =   52  Encryption DES
 0       =   53  Encryption TDES
 0       =   27  End
+0       =   11000   Hover
 0       J   Rectangles
+:Hover
+0       r   175 >160 25  yellow
+:Hovered
+0       K
+0       =   1000    Click
+0       =   10000   Rectangles
+0       J   Hovered
+:Click
+0       r   175 >160 25  red
+:Clicked
+0       K
+50      =   11000   Hover
+0       J   Clicked
 :Encryption DES
+0       A   0   0   0   0   0
 0       r   0   <640 200 B
 0       !   hellodes.enc    2   C1D0F85C    1   131A15CE89D5F2BC
 0       =   65535   Key not provided
 0       J   Start
 :Encryption TDES
+0       A   0   0   0   0   0
 0       r   0   <640 200 B
 0       !   helltdes.enc    3   10B60E1D    8   9G9CR-HQVD3-MT69W-GX6MJ-38X7D
 0       =   65535   Key not provided
@@ -122,4 +142,5 @@
 0       K
 0       J   Start
 :End
+0       A   0   0   0   0   0
 0       !   presskey.txt    1   A53AB4CC    0   FFFFFFFFFFFF
