@@ -44,7 +44,6 @@ gfx_get_color(const char *str)
         }
         else
         {
-            LOG("exit, %d", NAMED_COLORS[i].color);
             return NAMED_COLORS[i].color;
         }
     }
