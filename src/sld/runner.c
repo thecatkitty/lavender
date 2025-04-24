@@ -132,7 +132,7 @@ sld_handle(void)
     // SLD_STATE_WAIT
     if (SLD_STATE_WAIT == ctx->state)
     {
-        uint16_t x, y, tag;
+        uint16_t x, y, buttons, tag;
 
         int keystroke = pal_get_keystroke();
         if (0 != keystroke)
@@ -142,17 +142,27 @@ sld_handle(void)
             return;
         }
 
-        if (0 == (PAL_MOUSE_LBUTTON & pal_get_mouse(&x, &y)))
-        {
-            return;
-        }
-
+        buttons = pal_get_mouse(&x, &y);
         tag = __sld_retrieve_active_area_tag(x, y);
         if (0 != tag)
         {
-            __sld_accumulator = tag;
             __sld_ctx->state = SLD_STATE_LOAD;
+
+            if (buttons & PAL_MOUSE_LBUTTON)
+            {
+                __sld_accumulator = tag;
+            }
+            else
+            {
+                __sld_accumulator = SLD_ACTAREA_HOVER + tag;
+            }
         }
+        else if (SLD_ACTAREA_HOVER < __sld_accumulator)
+        {
+            __sld_ctx->state = SLD_STATE_LOAD;
+            __sld_accumulator = SLD_ACTAREA_HOVER;
+        }
+
         return;
     }
 

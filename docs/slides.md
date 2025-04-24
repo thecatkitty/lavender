@@ -61,6 +61,8 @@ Stores the scan code in the *Accumulator*.
 ```
 
 When the area is clicked, `<tag>` is stored in the *Accumulator*.
+When the area is hovered, 10000 + `<tag>` is stored in the *Accumulator*.
+If any area is being left (unhovered), 10000 is stored in the *Accumulator*.
 In order to remove an area, set its `<tag>` to zero.
 
 In order to remove all active areas:

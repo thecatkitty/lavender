@@ -77,6 +77,8 @@ typedef enum
 #define SLD_PARAMETER_DES_REMOTE 9
 #endif // CONFIG_ENCRYPTED_CONTENT
 
+#define SLD_ACTAREA_HOVER 10000
+
 typedef struct
 {
     uint16_t delay;
