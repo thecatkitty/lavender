@@ -79,10 +79,16 @@ pal_initialize(int argc, char *argv[])
 
     LOG("entry");
 
+    const char *arg_archive = argv[0];
+
     for (int i = 1; i < argc; i++)
     {
         if ('-' != argv[i][0])
         {
+            if (argv[0] == arg_archive)
+            {
+                arg_archive = argv[i];
+            }
             continue;
         }
 
@@ -100,7 +106,7 @@ pal_initialize(int argc, char *argv[])
 #endif // CONFIG_SOUND
     }
 
-    if (!ziparch_initialize(argv[0]))
+    if (!ziparch_initialize(arg_archive))
     {
         LOG("ZIP architecture initialization failed");
         abort();

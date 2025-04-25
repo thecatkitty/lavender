@@ -262,6 +262,9 @@ pal_initialize(int argc, char *argv[])
 #endif // STACK_PROFILING
 
     bool arg_help = false;
+#ifndef ZIP_PIGGYBACK
+    const char *arg_archive = argv[0];
+#endif // ZIP_PIGGYBACK
 #if defined(CONFIG_SOUND)
     const char *arg_snd = NULL;
 #endif // CONFIG_SOUND
@@ -270,6 +273,12 @@ pal_initialize(int argc, char *argv[])
     {
         if ('/' != argv[i][0])
         {
+#ifndef ZIP_PIGGYBACK
+            if (argv[0] == arg_archive)
+            {
+                arg_archive = argv[i];
+            }
+#endif // ZIP_PIGGYBACK
             continue;
         }
 
@@ -318,7 +327,7 @@ pal_initialize(int argc, char *argv[])
     dos_initialize_cache();
 #endif
 
-    if (!ziparch_initialize(argv[0]))
+    if (!ziparch_initialize(arg_archive))
 #endif
     {
         char msg[GFX_COLUMNS];
