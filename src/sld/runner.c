@@ -45,7 +45,13 @@ _execute_entry(sld_entry *sld)
     case SLD_TYPE_JUMP:
         return INT_MAX;
     case SLD_TYPE_JUMPE:
-        return (__sld_accumulator == sld->posy) ? INT_MAX : 0;
+        if (__sld_accumulator == sld->posy)
+        {
+            pal_disable_mouse();
+            return INT_MAX;
+        }
+
+        return 0;
     case SLD_TYPE_CALL:
         return __sld_handle_script_call(sld);
     }
@@ -133,7 +139,6 @@ sld_handle(void)
         {
             __sld_accumulator = keystroke;
             __sld_ctx->state = SLD_STATE_LOAD;
-            pal_disable_mouse();
             return;
         }
 
@@ -147,7 +152,6 @@ sld_handle(void)
         {
             __sld_accumulator = tag;
             __sld_ctx->state = SLD_STATE_LOAD;
-            pal_disable_mouse();
         }
         return;
     }
