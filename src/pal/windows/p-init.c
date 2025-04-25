@@ -109,6 +109,7 @@ pal_initialize(int argc, char *argv[])
     int    i;
     hasset icon;
 
+    const char *arg_archive = argv[0];
 #if defined(CONFIG_SOUND)
     const char *arg_snd = NULL;
 #endif // CONFIG_SOUND
@@ -122,6 +123,10 @@ pal_initialize(int argc, char *argv[])
     {
         if ('/' != argv[i][0])
         {
+            if (argv[0] == arg_archive)
+            {
+                arg_archive = argv[i];
+            }
             continue;
         }
 
@@ -144,7 +149,7 @@ pal_initialize(int argc, char *argv[])
         }
     }
 
-    if (!ziparch_initialize(argv[0]))
+    if (!ziparch_initialize(arg_archive))
     {
         LOG("ZIP architecture initialization failed");
         die_early(IDS_NOARCHIVE);

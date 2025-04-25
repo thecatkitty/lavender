@@ -6,14 +6,14 @@
 pal_asset pal_assets[MAX_OPEN_ASSETS];
 
 bool
-ziparch_initialize(zip_archive self)
+ziparch_initialize(zip_archive archive)
 {
     int i;
 
 #ifdef ZIP_PIGGYBACK
     LOG("entry, piggyback");
 #else
-    LOG("entry, self: '%s'", self);
+    LOG("entry, archive: '%s'", archive);
 #endif
 
     for (i = 0; i < MAX_OPEN_ASSETS; ++i)
@@ -22,9 +22,9 @@ ziparch_initialize(zip_archive self)
         pal_assets[i].inzip = -1;
     }
 
-    if (!zip_open(self))
+    if (!zip_open(archive))
     {
-        LOG("cannot open the archive '%s'. %s", self, strerror(errno));
+        LOG("cannot open the archive '%s'. %s", archive, strerror(errno));
         return false;
     }
 
