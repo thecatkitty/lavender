@@ -117,12 +117,6 @@ pal_initialize(int argc, char *argv[])
 
     LOG("entry");
 
-    if (!ziparch_initialize(argv[0]))
-    {
-        LOG("ZIP architecture initialization failed");
-        die_early(IDS_NOARCHIVE);
-    }
-
     arg_kiosk = false;
     for (i = 1; i < argc; i++)
     {
@@ -148,6 +142,12 @@ pal_initialize(int argc, char *argv[])
             _show_help(argv[0]);
             exit(1);
         }
+    }
+
+    if (!ziparch_initialize(argv[0]))
+    {
+        LOG("ZIP architecture initialization failed");
+        die_early(IDS_NOARCHIVE);
     }
 
     {
