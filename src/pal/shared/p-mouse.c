@@ -8,6 +8,12 @@ static uint16_t x_, y_, buttons_;
 void
 pal_enable_mouse(void)
 {
+    if (enabled_)
+    {
+        // Prevent log flood on input loops
+        return;
+    }
+
     LOG("entry");
 
     enabled_ = true;
@@ -17,6 +23,12 @@ pal_enable_mouse(void)
 void
 pal_disable_mouse(void)
 {
+    if (!enabled_)
+    {
+        // Prevent log flood on input loops
+        return;
+    }
+
     LOG("entry");
 
     enabled_ = false;
