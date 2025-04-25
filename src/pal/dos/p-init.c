@@ -261,6 +261,31 @@ pal_initialize(int argc, char *argv[])
         *ptr = STACK_FILL_PATTERN;
 #endif // STACK_PROFILING
 
+    bool arg_help = false;
+#if defined(CONFIG_SOUND)
+    const char *arg_snd = NULL;
+#endif // CONFIG_SOUND
+
+    for (int i = 1; i < argc; i++)
+    {
+        if ('/' != argv[i][0])
+        {
+            continue;
+        }
+
+#if defined(CONFIG_SOUND)
+        if ('s' == tolower(argv[i][1]))
+        {
+            arg_snd = argv[i] + 2;
+        }
+#endif // CONFIG_SOUND
+
+        if ('?' == argv[i][1])
+        {
+            arg_help = true;
+        }
+    }
+
 #ifdef ZIP_PIGGYBACK
     zip_cdir_end_header *cdir = locate_cdir(__edata, __sbss);
     if (NULL == cdir)
@@ -308,28 +333,10 @@ pal_initialize(int argc, char *argv[])
     andrea_init();
 #endif
 
-#if defined(CONFIG_SOUND)
-    const char *arg_snd = NULL;
-#endif // CONFIG_SOUND
-    for (int i = 1; i < argc; i++)
+    if (arg_help)
     {
-        if ('/' != argv[i][0])
-        {
-            continue;
-        }
-
-#if defined(CONFIG_SOUND)
-        if ('s' == tolower(argv[i][1]))
-        {
-            arg_snd = argv[i] + 2;
-        }
-#endif // CONFIG_SOUND
-
-        if ('?' == argv[i][1])
-        {
-            show_help(argv[0]);
-            msdos_exit(1);
-        }
+        show_help(argv[0]);
+        msdos_exit(1);
     }
 
     if (!is_compatible())
