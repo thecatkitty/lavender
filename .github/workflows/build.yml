@@ -23,6 +23,7 @@ jobs:
             config: tiny
             host: ubuntu-22.04
             nicetia16-arch: i8088
+            single-language: true
           - name: DOS 3.0+ (IA16, EXE)
             target: dos-ia16-exe
             flags: -DCMAKE_TOOLCHAIN_FILE=ext/nicetia16-i8088/cmake/DOS-GCC-IA16.cmake
@@ -119,7 +120,17 @@ jobs:
           Move-Item .\ext\winsdk71\WinSDK_RcDll_Dll_24874546_57CF_4C5F_80BC_4348431DB664_amd64 .\ext\winsdk71\RcDll.Dll
 
       - name: Build for ${{ matrix.platform.name }}
-        if: startsWith(matrix.platform.host, 'ubuntu')
+        if: startsWith(matrix.platform.host, 'ubuntu') && !matrix.platform.single-language
+        env:
+          CC: ${{ matrix.platform.cc }}
+          KCONFIG_CONFIG: ${{ matrix.platform.config }}.config
+        run: |
+          git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+          cmake -S . -B build -DCMAKE_INSTALL_PREFIX=bin/${{ matrix.platform.target }} ${{ matrix.platform.flags }}
+          cd build && make bundle && make install && cd ..
+
+      - name: Build for ${{ matrix.platform.name }}
+        if: startsWith(matrix.platform.host, 'ubuntu') && matrix.platform.single-language
         env:
           CC: ${{ matrix.platform.cc }}
           KCONFIG_CONFIG: ${{ matrix.platform.config }}.config
@@ -137,11 +148,9 @@ jobs:
         run: |
           git fetch --depth=1 origin +refs/tags/*:refs/tags/*
           call "C:\Program Files\Microsoft Platform SDK\SetEnv.Cmd" /SRV64 /RETAIL
-          for %%L in (cs-cz,en-us,pl-pl) do (
-            cmake -S . -B build -DCMAKE_INSTALL_PREFIX=bin/${{ matrix.platform.target }}/%%L -DLAV_LANG=%%L ${{ matrix.platform.flags }}
-            cmake --build build -t bundle --config Release
-            cmake --install build --config Release
-          )
+          cmake -S . -B build -DCMAKE_INSTALL_PREFIX=bin/${{ matrix.platform.target }} ${{ matrix.platform.flags }}
+          cmake --build build -t bundle --config Release
+          cmake --install build --config Release
 
       - name: Prepare release info
         if: startsWith(github.ref, 'refs/tags/')
