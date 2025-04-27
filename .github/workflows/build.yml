@@ -125,7 +125,7 @@ jobs:
           KCONFIG_CONFIG: ${{ matrix.platform.config }}.config
         run: |
           git fetch --depth=1 origin +refs/tags/*:refs/tags/*
-          for lang in ENU CSY PLK
+          for lang in cs-cz en-us pl-pl
           do
             cmake -S . -B build -DCMAKE_INSTALL_PREFIX=bin/${{ matrix.platform.target }}/$lang -DLAV_LANG=$lang ${{ matrix.platform.flags }}
             cd build && make bundle && make install && cd ..
@@ -137,7 +137,7 @@ jobs:
         run: |
           git fetch --depth=1 origin +refs/tags/*:refs/tags/*
           call "C:\Program Files\Microsoft Platform SDK\SetEnv.Cmd" /SRV64 /RETAIL
-          for %%L in (ENU,CSY,PLK) do (
+          for %%L in (cs-cz,en-us,pl-pl) do (
             cmake -S . -B build -DCMAKE_INSTALL_PREFIX=bin/${{ matrix.platform.target }}/%%L -DLAV_LANG=%%L ${{ matrix.platform.flags }}
             cmake --build build -t bundle --config Release
             cmake --install build --config Release
