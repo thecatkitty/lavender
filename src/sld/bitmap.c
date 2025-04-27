@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <math.h>
 #include <stdlib.h>
 
 #include <fmt/bmp.h>
@@ -11,10 +12,10 @@ typedef struct
 {
     gfx_bitmap bm;
     hasset     asset;
-    int        x, y, height;
+    int        x, y, height, last_y;
     float      scale;
     char _padding[SLD_ENTRY_MAX_LENGTH - ((sizeof(gfx_bitmap) + sizeof(hasset) +
-                                           3 * sizeof(int) + sizeof(float)))];
+                                           4 * sizeof(int) + sizeof(float)))];
     uint8_t state;
 } bitmap_content;
 
@@ -169,6 +170,7 @@ execute_start(sld_entry *sld)
     CONTENT(sld)->x = x;
     CONTENT(sld)->y = y;
     CONTENT(sld)->height = 0;
+    CONTENT(sld)->last_y = y;
 #if defined(GFX_HAS_SCALE)
     CONTENT(sld)->scale = scale;
 #endif
@@ -192,7 +194,7 @@ execute_read(sld_entry *sld)
     if (0 > ctx->bm.height)
     {
 #if defined(GFX_HAS_SCALE)
-        y -= (float)(ctx->bm.chunk_top + ctx->bm.chunk_height) * ctx->scale;
+        y = ctx->last_y - floor(ctx->bm.chunk_height * ctx->scale);
 #else
         y -= ctx->bm.chunk_top + ctx->bm.chunk_height;
 #endif
@@ -200,7 +202,7 @@ execute_read(sld_entry *sld)
     else
     {
 #if defined(GFX_HAS_SCALE)
-        y += (float)ctx->bm.chunk_top * ctx->scale;
+        y = ctx->last_y + floor(ctx->bm.chunk_height * ctx->scale);
 #else
         y += ctx->bm.chunk_top;
 #endif
@@ -213,6 +215,7 @@ execute_read(sld_entry *sld)
     }
 
     ctx->height += ctx->bm.chunk_height;
+    ctx->last_y = y;
     if ((ctx->height < abs(ctx->bm.height)) &&
         !bmp_load_bitmap(&ctx->bm, ctx->asset))
     {
