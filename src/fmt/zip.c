@@ -11,7 +11,7 @@
 #include <fmt/zip.h>
 #include <pal.h>
 
-#ifndef ZIP_PIGGYBACK
+#ifndef CONFIG_COMPACT
 static off_t _fbase = 0;
 static int   _fd = -1;
 static off_t _flen = 0;
@@ -22,7 +22,7 @@ const static zip_cdir_end_header *_cden = NULL;
 static int
 _match_file_name(const char *name, uint16_t length, zip_cdir_file_header *cfh);
 
-#ifndef ZIP_PIGGYBACK
+#ifndef CONFIG_COMPACT
 static bool
 _seek_read(void *ptr, off_t offset, size_t size)
 {
@@ -120,7 +120,7 @@ bool
 zip_open(zip_archive archive)
 {
     zip_cdir_end_header *cdirend;
-#ifndef ZIP_PIGGYBACK
+#ifndef CONFIG_COMPACT
     zip_cdir_end_header cdirend_buff = {0};
     long                cdir_size;
 #endif
@@ -131,7 +131,7 @@ zip_open(zip_archive archive)
         return false;
     }
 
-#ifdef ZIP_PIGGYBACK
+#ifdef CONFIG_COMPACT
     cdirend = archive;
 #else
 #ifdef O_BINARY
@@ -172,7 +172,7 @@ zip_open(zip_archive archive)
         return false;
     }
 
-#ifdef ZIP_PIGGYBACK
+#ifdef CONFIG_COMPACT
     _cdir = (zip_cdir_file_header *)((char *)cdirend - cdirend->cdir_size);
 #else
     cdir_size = cdirend->cdir_size + sizeof(zip_cdir_end_header);
@@ -192,7 +192,7 @@ zip_open(zip_archive archive)
 #endif
 
     _cden = (const zip_cdir_end_header *)((char *)_cdir + cdirend->cdir_size);
-#ifndef ZIP_PIGGYBACK
+#ifndef CONFIG_COMPACT
     _fbase = _flen - (off_t)(_cden->cdir_offset + _cden->cdir_size +
                              (off_t)sizeof(zip_cdir_end_header));
 #endif
@@ -202,7 +202,7 @@ zip_open(zip_archive archive)
 void
 zip_close(void)
 {
-#ifndef ZIP_PIGGYBACK
+#ifndef CONFIG_COMPACT
     close(_fd);
 #endif
 }
@@ -294,7 +294,7 @@ static off_t
 _get_data(zip_item olfh, uint32_t *size, uint32_t *crc32)
 {
     zip_local_file_header *lfh;
-#ifndef ZIP_PIGGYBACK
+#ifndef CONFIG_COMPACT
     zip_local_file_header lfh_buff = {0};
 #endif
 
@@ -308,7 +308,7 @@ _get_data(zip_item olfh, uint32_t *size, uint32_t *crc32)
         return -(errno = EINVAL);
     }
 
-#ifdef ZIP_PIGGYBACK
+#ifdef CONFIG_COMPACT
     char *base = (char *)_cdir - _cden->cdir_offset;
     lfh = (zip_local_file_header *)(base + olfh);
 #else
@@ -356,7 +356,7 @@ zip_load_data(zip_item item)
         return NULL;
     }
 
-#ifdef ZIP_PIGGYBACK
+#ifdef CONFIG_COMPACT
     char *base = (char *)_cdir - _cden->cdir_offset;
     buffer = base + odata;
 #else
@@ -375,7 +375,7 @@ zip_load_data(zip_item item)
 
     if (zip_calculate_crc((uint8_t *)buffer, size) != crc32)
     {
-#ifndef ZIP_PIGGYBACK
+#ifndef CONFIG_COMPACT
         free(buffer);
 #endif
         errno = EIO;
@@ -388,7 +388,7 @@ zip_load_data(zip_item item)
 void
 zip_free_data(char *data)
 {
-#ifndef ZIP_PIGGYBACK
+#ifndef CONFIG_COMPACT
     free(data);
 #endif
     return;
@@ -400,7 +400,7 @@ zip_cache(zip_item item)
     uint32_t size = 0, crc32 = 0;
     off_t    odata = _get_data(item, &size, &crc32);
 
-#ifndef ZIP_PIGGYBACK
+#ifndef CONFIG_COMPACT
     return pal_cache(_fd, _fbase + odata, size);
 #else
     return odata;
@@ -410,7 +410,7 @@ zip_cache(zip_item item)
 void
 zip_read(zip_cached handle, char *buff, off_t at, size_t size)
 {
-#ifndef ZIP_PIGGYBACK
+#ifndef CONFIG_COMPACT
     pal_read(handle, buff, at, size);
 #else
     char *base = (char *)_cdir - _cden->cdir_offset;
@@ -421,7 +421,7 @@ zip_read(zip_cached handle, char *buff, off_t at, size_t size)
 void
 zip_discard(zip_cached handle)
 {
-#ifndef ZIP_PIGGYBACK
+#ifndef CONFIG_COMPACT
     pal_discard(handle);
 #endif
 }
@@ -429,7 +429,7 @@ zip_discard(zip_cached handle)
 bool
 zip_extract_data(zip_item item, FILE *out)
 {
-#ifndef ZIP_PIGGYBACK
+#ifndef CONFIG_COMPACT
     char buffer[512];
 #endif
     uint32_t size = 0;
@@ -440,7 +440,7 @@ zip_extract_data(zip_item item, FILE *out)
         return false;
     }
 
-#ifdef ZIP_PIGGYBACK
+#ifdef CONFIG_COMPACT
     char *buffer = (char *)_cdir - _cden->cdir_offset + odata;
     return size == fwrite(buffer, 1, size, out);
 #else

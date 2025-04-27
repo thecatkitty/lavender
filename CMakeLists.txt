@@ -63,7 +63,8 @@ if(DOS)
         add_compile_options(-mcmodel=tiny)
         add_link_options(-mcmodel=tiny)
 
-        add_compile_definitions(ZIP_PIGGYBACK)
+        add_compile_definitions(CONFIG_COMPACT)
+        set(CONFIG_COMPACT 1)
         set(COM_MAX_SIZE 0xE000) # 56 KiB
     else()
         add_compile_options(-mcmodel=small)
