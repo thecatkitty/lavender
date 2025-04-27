@@ -165,7 +165,7 @@ static_assert(10 == sizeof(zip_extra_unicode_path_field),
 
 #pragma pack(pop)
 
-#ifdef ZIP_PIGGYBACK
+#ifdef CONFIG_COMPACT
 typedef zip_cdir_end_header *zip_archive;
 #else
 typedef const char *zip_archive;
