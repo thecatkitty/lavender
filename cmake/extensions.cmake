@@ -11,14 +11,23 @@ else()
     set(OBJCOPY_FMT elf32-i386)
 endif()
 
-function(target_link_win32_strings target source_file)
+function(target_link_win32_strings target source_file suffix)
     if(LINUX)
         set(win32_strings_args "-D__linux__")
+    endif()
+
+    if("${suffix}" STREQUAL "")
+        set(suffix_arg1 "")
+        set(suffix_arg2 "")
+    else()
+        set(suffix_arg1 "--suffix")
+        set(suffix_arg2 "_${suffix}")
     endif()
 
     add_custom_command(
         OUTPUT ${source_file}.c
         COMMAND python3 ${CMAKE_SOURCE_DIR}/tools/strconv.py
+            ${suffix_arg1} ${suffix_arg2}
             ${CMAKE_CURRENT_SOURCE_DIR}/${source_file}
             ${source_file}.c
             ${CMAKE_C_COMPILER}

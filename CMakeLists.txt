@@ -43,9 +43,6 @@ else()
 endif()
 
 set(CMAKE_RC_FLAGS "-c 65001")
-if(NOT DEFINED LAV_LANG)
-    set(LAV_LANG en-us)
-endif()
 
 if(DOS)
     if(DOS_TARGET_XMS)
