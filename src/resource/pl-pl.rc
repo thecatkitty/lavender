@@ -1,4 +1,4 @@
-#include "resource.h"
+#include "../resource.h"
 
 STRINGTABLE
 LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
@@ -102,7 +102,7 @@ LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
 #define VER_FILEDESCRIPTION_STR     "Odtwarzacz pokazu slajdów Lavender"
 #define VER_LEGALCOPYRIGHT_STR      "(C) 2021-2025 Mateusz Karcz. Udostępniono na zasadach Licencji MIT."
 #define VER_VERSION_UNICODE_LANG    "041504B0"
-#define VER_VERSION_TRANSLATION     LCID_PLK,0x04B0
+#define VER_VERSION_TRANSLATION     LCID_PL_PL,0x04B0
 
-#include "version.rc"
+#include "_version.rc"
 #endif

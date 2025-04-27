@@ -1,0 +1,2 @@
+#define VER_INTERNALNAME_STR        "lavender.exe"
+#include <version.rh>

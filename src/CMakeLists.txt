@@ -65,7 +65,8 @@ add_custom_target(version_text
     COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/../cmake/version.cmake)
 if(WIN32)
     add_dependencies(lavender version_text)
-    target_sources(lavender PRIVATE resource.${LAV_LANG}.rc)
+    target_sources(lavender PRIVATE resource/_neutral.rc)
+    target_sources(lavender PRIVATE resource/${LAV_LANG}.rc)
 else()
     add_custom_command(
         OUTPUT version.bin
@@ -74,7 +75,7 @@ else()
     add_binary_object(version version.bin _binary_obj_version_txt)
     target_link_binary_object(lavender version)
 
-    target_link_win32_strings(lavender resource.${LAV_LANG}.rc)
+    target_link_win32_strings(lavender resource/${LAV_LANG}.rc)
 endif()
 
 if(DOS)
