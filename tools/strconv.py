@@ -12,6 +12,7 @@ parser.add_argument("output", help="output C file",
                     type=FileType("w", encoding="utf-8"))
 parser.add_argument("cc", help="C compiler")
 parser.add_argument("ccarg", nargs="*", help="C compiler arguments")
+parser.add_argument("--suffix", default="", help="array name suffix")
 args = parser.parse_args()
 
 cpp = subprocess.run(
@@ -22,7 +23,7 @@ print("#include <nls.h>", file=args.output)
 
 for line in cpp.stdout.splitlines():
     if line == "STRINGTABLE":
-        print("nls_locstr STRINGS", end="", file=args.output)
+        print(f"nls_locstr STRINGS{args.suffix}", end="", file=args.output)
 
     elif line.startswith("LANGUAGE"):
         print(f"[] = ", file=args.output)
