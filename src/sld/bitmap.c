@@ -159,7 +159,13 @@ execute_start(sld_entry *sld)
     if (0 > bm.height)
     {
 #if defined(GFX_HAS_SCALE)
-        y -= (float)bm.height * scale;
+        int abs_height = abs(bm.height);
+        int abs_chunk = abs(bm.chunk_height);
+        int full_chunks = abs_height / abs_chunk;
+        int last_chunk = abs_height % abs_chunk;
+        int effective_height =
+            (int)(full_chunks * abs_chunk * scale) + (int)(last_chunk * scale);
+        y += effective_height;
 #else
         y -= bm.height;
 #endif
