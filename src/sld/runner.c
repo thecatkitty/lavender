@@ -47,7 +47,10 @@ _execute_entry(sld_entry *sld)
     case SLD_TYPE_JUMPE:
         if (__sld_accumulator == sld->posy)
         {
-            pal_disable_mouse();
+            if (SLD_ACTAREA_HOVER > __sld_accumulator)
+            {
+                pal_disable_mouse();
+            }
             return INT_MAX;
         }
 
