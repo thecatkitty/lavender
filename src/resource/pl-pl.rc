@@ -87,7 +87,7 @@ LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
     IDS_METHOD_RCODE_HEAD, "Przepisz kod żądania"
     IDS_METHOD_QR_HEAD, "Zeskanuj kod QR"
 
-    IDS_METHOD_RCODE_NOTE, "Zweryfikuj za pomocą kodu żądania udostępnionego ręcznie autorowi."
+    IDS_METHOD_RCODE_NOTE, "Zweryfikuj za pomocą kodu udostępnionego ręcznie autorowi."
     IDS_METHOD_QR_NOTE, "Zweryfikuj za pomocą urządzenia mobilnego z aparatem i dostępem do Internetu."
 
     IDS_METHOD_INET_HEAD, "Potwierdź online"
