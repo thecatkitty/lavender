@@ -140,7 +140,8 @@ ega_draw_bitmap(device *dev, gfx_bitmap *bm, int x, int y)
             const uint8_t *pbits = bits;
             far uint8_t   *pfb = fb;
 
-            _write_planes(1 << plane);
+            // IRGB -> IBGR
+            _write_planes(1 << ((3 == plane) ? 3 : (2 - plane)));
             for (int line = 0; line < lines; line++)
             {
                 for (int column = 0; column < bm->width; column += 8)
