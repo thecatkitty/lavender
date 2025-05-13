@@ -109,23 +109,6 @@ unlock_cache(cacheblk handle)
 }
 
 static bool
-remember_cache(int fd, off_t at, size_t size, cacheblk handle)
-{
-    cache_item *slot = find_cache(0);
-    if (NULL == slot)
-    {
-        return false;
-    }
-
-    slot->fd = fd;
-    slot->base = at;
-    slot->size = size;
-    slot->handle = handle;
-    slot->locks = 0;
-    return true;
-}
-
-static bool
 evict(size_t length)
 {
     int      best_i = 0;
@@ -182,6 +165,32 @@ evict(size_t length)
     }
 
     cache_[best_i].handle = 0;
+    return true;
+}
+
+static bool
+remember_cache(int fd, off_t at, size_t size, cacheblk handle)
+{
+    cache_item *slot = find_cache(0);
+    if (NULL == slot)
+    {
+        if (!evict(0))
+        {
+            return false;
+        }
+
+        slot = find_cache(0);
+        if (NULL == slot)
+        {
+            return false;
+        }
+    }
+
+    slot->fd = fd;
+    slot->base = at;
+    slot->size = size;
+    slot->handle = handle;
+    slot->locks = 0;
     return true;
 }
 #endif
