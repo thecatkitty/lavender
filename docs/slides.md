@@ -82,6 +82,9 @@ Loads value of `<name>` into the *Accumulator*.
 Updates `<name>` variable using the `<value>`.
 
 ### Defined variables
+* env.lang (W, except Windows) - set locale fallback
+  * 0 - error
+  * 1 - success
 * env.tz (W, DOS only) - set timezone fallback (POSIX TZ format)
   * 0 - error
   * 1 - success
