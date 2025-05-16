@@ -5,6 +5,7 @@
 
 #include <arch/windows.h>
 #include <pal.h>
+#include <snd.h>
 
 #include "../../resource.h"
 #include "impl.h"
@@ -407,6 +408,14 @@ windows_wndproc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
         paint(wnd);
         return 0;
     }
+
+#if PAL_EXTERNAL_TICK
+    case WM_TIMER: {
+        // Prevents music hang during modal UI
+        snd_handle();
+        return 0;
+    }
+#endif
     }
     return DefWindowProc(wnd, msg, wparam, lparam);
 }

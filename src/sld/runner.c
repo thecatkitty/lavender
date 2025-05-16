@@ -111,7 +111,7 @@ sld_handle(void)
         return;
     }
 
-#if defined(CONFIG_SOUND)
+#if defined(CONFIG_SOUND) && !PAL_EXTERNAL_TICK
     snd_handle();
 #endif
 
