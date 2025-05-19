@@ -22,10 +22,10 @@ If some setting is not defined for a particular language, the utility falls back
 
 ```ini
 [lard]
-name         = The Application Name   ; used in title and messages, defaults to Lavender
-run          = path\to\ia32\sshow.exe ; defaults to ia32\sshow.exe
-rundos       = path\to\dos\sshow.exe  ; optional
-copyright    = (C) 2025 Foo Inc.      ; defaults to the Lavender copyright
+name         = The Application Name     ; used in title and messages, defaults to Lavender
+run          = .\path\to\ia32\sshow.exe ; defaults to .\ia32\sshow.exe
+rundos       = .\path\to\dos\sshow.exe  ; optional
+copyright    = (C) 2025 Foo Inc.        ; defaults to the Lavender copyright
 
 [colors] ; text colors, default to white 
 intro        = #0055AA ; introduction
