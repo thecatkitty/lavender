@@ -325,6 +325,9 @@ ardc_load(void)
     DWORD deps_size;
 
     ZeroMemory(&config_, sizeof(config_));
+    ZeroMemory(&global_ini_, sizeof(global_ini_));
+    ZeroMemory(&local_ini_, sizeof(local_ini_));
+    ZeroMemory(&root_, sizeof(root_));
 
     // [lard]
     LOAD_STRING(SEC_LARD, name, IDS_DEFNAME);
