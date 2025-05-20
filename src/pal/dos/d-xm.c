@@ -118,13 +118,15 @@ xmemmove(const xms_move_args *args)
 bool
 dosxm_load(far void *dst, hdosxm src, uint32_t offset, uint32_t length)
 {
-    xms_move_args args = {length, (uint16_t)src, offset, 0, (uint32_t)dst};
+    xms_move_args args = {align(length, 2), (uint16_t)src, offset, 0,
+                          (uint32_t)dst};
     return xmemmove(&args);
 }
 
 bool
 dosxm_store(hdosxm dst, uint32_t offset, far void *src, uint32_t length)
 {
-    xms_move_args args = {length, 0, (uint32_t)src, (uint16_t)dst, offset};
+    xms_move_args args = {align(length, 2), 0, (uint32_t)src, (uint16_t)dst,
+                          offset};
     return xmemmove(&args);
 }
