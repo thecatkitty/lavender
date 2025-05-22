@@ -1,4 +1,4 @@
-#include <winnt.rh>
+#include <winnt.h>
 
 // Bitmaps
 #define IDB_BG           1

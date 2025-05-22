@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <sal.h>
 #include <stdio.h>
 #include <stdlib.h>
