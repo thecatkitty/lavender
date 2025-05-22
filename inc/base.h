@@ -36,10 +36,16 @@
 #define BSWAP64(x) _byteswap_uint64(x)
 
 #define strcasecmp _stricmp
-#else
+#elif defined(__GNUC__)
 #define BSWAP16(x) __builtin_bswap16(x)
 #define BSWAP32(x) __builtin_bswap32(x)
 #define BSWAP64(x) __builtin_bswap64(x)
+#else
+extern uint16_t
+BSWAP16(uint16_t x);
+
+extern uint32_t
+BSWAP32(uint32_t x);
 #endif
 
 #ifndef far
