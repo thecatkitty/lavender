@@ -4,6 +4,7 @@ install(TARGETS lard DESTINATION .)
 
 file(GLOB RESOURCES resource/*.rc)
 
+target_sources(lard PRIVATE compat.c)
 target_sources(lard PRIVATE config.c)
 target_sources(lard PRIVATE deps.c)
 target_sources(lard PRIVATE ui.c)
