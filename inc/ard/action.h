@@ -22,8 +22,10 @@ arda_run(_In_ const ardc_config *cfg);
 #if defined(_M_IX86)
 extern bool
 arda_rundos_available(_In_ const ardc_config *cfg);
-#else
+#elif defined(_M_X64)
 #define arda_rundos_available(x) false
+#else
+#define arda_rundos_available(x) true
 #endif
 
 extern int
