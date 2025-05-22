@@ -10,11 +10,13 @@ static const char *CPU_LEVELS[ARDV_CPU_MAX] = {"i386", "i486", "p5", "p6",
 ardv_cpu_level
 ardv_cpu_get_level(void)
 {
+#if defined(_M_IX86)
     HMODULE                      kernel32 = NULL;
     pf_isprocessorfeaturepresent fn_ispfp = NULL;
 
     SYSTEM_INFO info;
     GetSystemInfo(&info);
+#endif
 
 #if defined(_M_IX86)
     switch (info.dwProcessorType)
