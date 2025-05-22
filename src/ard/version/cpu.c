@@ -58,6 +58,8 @@ ardv_cpu_get_level(void)
     return ARDV_CPU_P6;
 #elif defined(_M_X64)
     return ARDV_CPU_X64;
+#elif defined(_M_ALPHA)
+    return ARDV_CPU_I486;
 #else
 #error "Unknown architecture!"
 #endif
