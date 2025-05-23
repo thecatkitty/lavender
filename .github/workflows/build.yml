@@ -7,7 +7,10 @@ on:
     tags: [0.*]
 
 env:
-  LINUX_APTS: libsdl2-dev libsdl2-ttf-dev libfontconfig-dev libfluidsynth-dev libblkid-dev libcurl4-openssl-dev
+  APT_HOST: zip
+  APT_TARGET_LINUX: libsdl2-dev libsdl2-ttf-dev libfontconfig-dev libfluidsynth-dev libblkid-dev libcurl4-openssl-dev
+  APT_TARGET_DOS: gcc-ia16-elf libi86-ia16-elf
+  WINGET_HOST: GnuWin32.Zip
 
 jobs:
   Build:
@@ -19,49 +22,69 @@ jobs:
         platform:
           - name: DOS 2.0+ (IA16, COM)
             target: dos-ia16-com
+            apts: $APT_TARGET_DOS
+            prepare-script: .github/prepare-dos.sh
+            fetch-script: .github/fetch-dos.sh i8088
             flags: -DCMAKE_TOOLCHAIN_FILE=ext/nicetia16-i8088/cmake/DOS-GCC-IA16.cmake -DDOS_TARGET_COM=1
             config: tiny
             host: ubuntu-22.04
-            nicetia16-arch: i8088
             single-language: true
+
           - name: DOS 3.0+ (IA16, EXE)
             target: dos-ia16-exe
+            apts: $APT_TARGET_DOS
+            prepare-script: .github/prepare-dos.sh
+            fetch-script: .github/fetch-dos.sh i8088
             flags: -DCMAKE_TOOLCHAIN_FILE=ext/nicetia16-i8088/cmake/DOS-GCC-IA16.cmake
-            nicetia16-arch: i8088
             host: ubuntu-22.04
+
           - name: DOS 3.0+ (IA16 with XMS)
             target: dos-ia16x
+            apts: $APT_TARGET_DOS
+            prepare-script: .github/prepare-dos.sh
+            fetch-script: .github/fetch-dos.sh i286
             flags: -DCMAKE_TOOLCHAIN_FILE=ext/nicetia16-i286/cmake/DOS-GCC-IA16.cmake -DDOS_TARGET_XMS=1
-            nicetia16-arch: i286
             host: ubuntu-22.04
+
           - name: Linux
             target: linux
-            apts: $LINUX_APTS
+            apts: $APT_TARGET_LINUX
             host: ubuntu-latest
+
           - name: Windows (IA32)
             target: windows-ia32
+            fetch-script: .github/fetch-mingw.sh ia32
             cc: i686-w64-mingw32-gcc
             flags: -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_EXE_LINKER_FLAGS=-L$GITHUB_WORKSPACE/ext/bulwa/i686-w64-mingw32/lib -DLAV_ARD=1
             host: ubuntu-latest
+
           - name: Windows (x64)
             target: windows-x64
+            fetch-script: .github/fetch-mingw.sh
             cc: x86_64-w64-mingw32-gcc
             flags: -DCMAKE_SYSTEM_NAME=Windows -DWINVER=0x0502
             host: ubuntu-latest
+
           - name: Windows (ARM)
             target: windows-arm
+            fetch-script: .github/fetch-mingw.sh
             cc: armv7-w64-mingw32-gcc
             flags: -DCMAKE_SYSTEM_NAME=Windows -DWINVER=0x0602
             host: ubuntu-latest
+
           - name: Windows (ARM64)
             target: windows-arm64
+            fetch-script: .github/fetch-mingw.sh
             cc: aarch64-w64-mingw32-gcc
             flags: -DCMAKE_SYSTEM_NAME=Windows -DWINVER=0x0A00
             host: ubuntu-latest
+
           - name: Windows (IA64)
             target: windows-ia64
-            flags: -G "NMake Makefiles" -DWINVER=0x0501 -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS_DEBUG="/Zi /Ob0 /Od" -DCMAKE_CXX_COMPILER_FORCED=TRUE -DCMAKE_RC_COMPILER=D:/a/lavender/lavender/ext/winsdk71/RC.Exe"
-            host: windows-latest
+            fetch-script: .\.github\fetch-winsdk.ps1
+            env-script: . .\.github\enter-winsdk.ps1
+            flags: -G "NMake Makefiles" -DWINVER=0x0501 -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS_DEBUG="/Zi /Ob0 /Od" -DCMAKE_CXX_COMPILER_FORCED=TRUE "-DCMAKE_RC_COMPILER=D:/a/lavender/lavender/ext/winsdk71/RC.Exe"
+            host: windows-2025
 
     steps:
       - uses: actions/checkout@v4
@@ -69,88 +92,50 @@ jobs:
           fetch-depth: 0
           submodules: true
   
-      - name: Install Linux host dependencies
+      - name: Prepare Ubuntu host
         if: startsWith(matrix.platform.host, 'ubuntu')
         run: |
+          ${{ matrix.platform.prepare-script }}
           sudo apt update
-          sudo apt install ${{ matrix.platform.apts }} cmake zip -y
-
-      - name: Fetch Windows cross-compiler
-        if: startsWith(matrix.platform.target, 'windows') && !startsWith(matrix.platform.host, 'windows')
+          sudo apt install $APT_HOST ${{ matrix.platform.apts }} -y
+  
+      - name: Prepare Windows host
+        if: startsWith(matrix.platform.host, 'windows')
         run: |
-          wget -nv -P ext/ https://github.com/mstorsjo/llvm-mingw/releases/download/20241001/llvm-mingw-20241001-msvcrt-ubuntu-20.04-x86_64.tar.xz
-          tar -xf ext/llvm-mingw-20241001-msvcrt-ubuntu-20.04-x86_64.tar.xz -C ext/
-          echo "$PWD/ext/llvm-mingw-20241001-msvcrt-ubuntu-20.04-x86_64/bin" >> $GITHUB_PATH
+          ${{ matrix.platform.prepare-script }}
+          "C:\Program Files (x86)\GnuWin32\bin" | Out-File -Encoding utf8 -Append $env:GITHUB_PATH
+          winget install $env:WINGET_HOST --accept-source-agreements
 
-      - name: Fetch DOS dependencies
-        if: startsWith(matrix.platform.target, 'dos')
+      - name: Fetch dependencies
         run: |
-          sudo add-apt-repository ppa:tkchia/build-ia16
-          sudo apt update
-          sudo apt install gcc-ia16-elf libi86-ia16-elf -y
-          wget -nv -P ext/ https://github.com/thecatkitty/nicetia16/releases/download/REL-20250305/nicetia16-REL-20250305-${{matrix.platform.nicetia16-arch}}.zip
-          wget -nv -P ext/ https://github.com/thecatkitty/andrea/releases/download/0.1.2/andrea-0.1.2.zip
-          unzip ext/nicetia16-REL-20250305-${{matrix.platform.nicetia16-arch}}.zip -d ext/nicetia16-${{matrix.platform.nicetia16-arch}}
-          unzip ext/andrea-0.1.2.zip -d ext/andrea
+          ${{ matrix.platform.fetch-script }}
+          git fetch --depth=1 origin "+refs/tags/*:refs/tags/*"
 
-      - name: Fetch Windows (IA32) dependencies
-        if: matrix.platform.target == 'windows-ia32'
-        run: |
-          wget -nv -P ext/ https://github.com/thecatkitty/bulwa/releases/download/REL-20250208/bulwa-REL-20250208-i486.zip
-          wget -nv -P ext/ http://prdownloads.sourceforge.net/libunicows/libunicows-1.1.1-mingw32.zip
-          unzip ext/bulwa-REL-20250208-i486 -d ext/bulwa
-          unzip -j ext/libunicows-1.1.1-mingw32.zip -d ext/libunicows
-
-      - name: Fetch Windows (IA64) dependencies
-        if: matrix.platform.target == 'windows-ia64'
-        shell: powershell
-        run: |
-          choco install zip
-          Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
-          refreshenv
-          curl.exe -kL https://download.microsoft.com/download/7/5/e/75ec7f04-4c8c-4f38-b582-966e76602643/5.2.3790.1830.15.PlatformSDK_Svr2003SP1_rtm.img -o ext/winsdk52.iso
-          curl.exe -kL http://download.microsoft.com/download/F/1/0/F10113F5-B750-4969-A255-274341AC6BCE/GRMSDKX_EN_DVD.iso -o ext/winsdk71.iso
-          7z x ext/winsdk52.iso -oext/winsdk52
-          7z x ext/winsdk71.iso -oext/winsdk71
-          "Installing Windows Server 2003 SP1 Platform SDK..."
-          Start-Process -Wait msiexec.exe -ArgumentList @("/i", (Get-Item .\ext\winsdk52\Setup\PSDK-amd64.msi).FullName, "ADDLOCAL=ALL", "/norestart", "/quiet")
-          "Extracting Windows SDK 7.1 Resource Compiler..."
-          7z e ext/winsdk71/Setup/WinSDKWin32Tools_amd64/cab1.cab -oext/winsdk71 WinSDK_RC_Exe_24874546_57CF_4C5F_80BC_4348431DB664_amd64 WinSDK_RcDll_Dll_24874546_57CF_4C5F_80BC_4348431DB664_amd64
-          Move-Item .\ext\winsdk71\WinSDK_RC_Exe_24874546_57CF_4C5F_80BC_4348431DB664_amd64 .\ext\winsdk71\RC.Exe
-          Move-Item .\ext\winsdk71\WinSDK_RcDll_Dll_24874546_57CF_4C5F_80BC_4348431DB664_amd64 .\ext\winsdk71\RcDll.Dll
-
-      - name: Build for ${{ matrix.platform.name }}
-        if: startsWith(matrix.platform.host, 'ubuntu') && !matrix.platform.single-language
+      - name: Build multi language target
+        if: ${{!matrix.platform.single-language}}
         env:
           CC: ${{ matrix.platform.cc }}
           KCONFIG_CONFIG: ${{ matrix.platform.config }}.config
         run: |
-          git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+          ${{matrix.platform.env-script}}
           cmake -S . -B build -DCMAKE_INSTALL_PREFIX=bin/${{ matrix.platform.target }} ${{ matrix.platform.flags }}
-          cd build && make bundle && make install && cd ..
+          cmake --build build --config Release
+          cmake --build build -t bundle --config Release
+          cmake --install build --config Release
 
-      - name: Build for ${{ matrix.platform.name }}
-        if: startsWith(matrix.platform.host, 'ubuntu') && matrix.platform.single-language
+      - name: Build single language targets
+        if: matrix.platform.single-language
         env:
           CC: ${{ matrix.platform.cc }}
           KCONFIG_CONFIG: ${{ matrix.platform.config }}.config
         run: |
-          git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+          ${{matrix.platform.env-script}}
           for lang in cs-cz en-us pl-pl
           do
             cmake -S . -B build -DCMAKE_INSTALL_PREFIX=bin/${{ matrix.platform.target }}/$lang -DLAV_LANG=$lang ${{ matrix.platform.flags }}
-            cd build && make bundle && make install && cd ..
+            cmake --build build -t bundle --config Release
+            cmake --install build --config Release
           done
-
-      - name: Build with MSVC
-        if: startsWith(matrix.platform.host, 'windows')
-        shell: cmd
-        run: |
-          git fetch --depth=1 origin +refs/tags/*:refs/tags/*
-          call "C:\Program Files\Microsoft Platform SDK\SetEnv.Cmd" /SRV64 /RETAIL
-          cmake -S . -B build -DCMAKE_INSTALL_PREFIX=bin/${{ matrix.platform.target }} ${{ matrix.platform.flags }}
-          cmake --build build -t bundle --config Release
-          cmake --install build --config Release
 
       - name: Prepare release info
         if: startsWith(github.ref, 'refs/tags/')
@@ -172,10 +157,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install Linux host dependencies
+      - name: Prepare Ubuntu host
         run: |
           sudo apt update
-          sudo apt install $LINUX_APTS -y
+          sudo apt install $APT_HOST $APT_TARGET_LINUX -y
 
       - name: Run unit tests
         run: |
