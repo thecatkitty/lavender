@@ -83,7 +83,7 @@ jobs:
             target: windows-ia64
             fetch-script: .\.github\fetch-winsdk.ps1
             env-script: . .\.github\enter-winsdk.ps1
-            flags: -G "NMake Makefiles" -DWINVER=0x0501 -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS_DEBUG="/Zi /Ob0 /Od" -DCMAKE_CXX_COMPILER_FORCED=TRUE "-DCMAKE_RC_COMPILER=D:/a/lavender/lavender/ext/winsdk71/RC.Exe"
+            flags: -G "NMake Makefiles" -DWINVER=0x0501 -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS_DEBUG="/Zi /Ob0 /Od" -DCMAKE_CXX_COMPILER_FORCED=TRUE "-DCMAKE_RC_COMPILER=C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64/rc.exe"
             host: windows-2025
 
     steps:
