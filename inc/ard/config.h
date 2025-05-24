@@ -2,6 +2,7 @@
 #define _ARD_CONFIG_H_
 
 #include <minwindef.h>
+#include <sal.h>
 #include <stdbool.h>
 #include <stdint.h>
 

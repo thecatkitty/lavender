@@ -29,6 +29,7 @@ jobs:
             config: tiny
             host: ubuntu-22.04
             single-language: true
+            build-targets: all bundle
 
           - name: DOS 3.0+ (IA16, EXE)
             target: dos-ia16-exe
@@ -36,6 +37,7 @@ jobs:
             prepare-script: .github/prepare-dos.sh
             fetch-script: .github/fetch-dos.sh i8088
             flags: -DCMAKE_TOOLCHAIN_FILE=ext/nicetia16-i8088/cmake/DOS-GCC-IA16.cmake
+            build-targets: all bundle
             host: ubuntu-22.04
 
           - name: DOS 3.0+ (IA16 with XMS)
@@ -44,11 +46,13 @@ jobs:
             prepare-script: .github/prepare-dos.sh
             fetch-script: .github/fetch-dos.sh i286
             flags: -DCMAKE_TOOLCHAIN_FILE=ext/nicetia16-i286/cmake/DOS-GCC-IA16.cmake -DDOS_TARGET_XMS=1
+            build-targets: all bundle
             host: ubuntu-22.04
 
           - name: Linux
             target: linux
             apts: $APT_TARGET_LINUX
+            build-targets: all bundle
             host: ubuntu-latest
 
           - name: Windows (IA32)
@@ -56,6 +60,7 @@ jobs:
             fetch-script: .github/fetch-mingw.sh ia32
             cc: i686-w64-mingw32-gcc
             flags: -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_EXE_LINKER_FLAGS=-L$GITHUB_WORKSPACE/ext/bulwa/i686-w64-mingw32/lib -DLAV_ARD=1
+            build-targets: all bundle
             host: ubuntu-latest
 
           - name: Windows (x64)
@@ -64,6 +69,7 @@ jobs:
             cc: x86_64-w64-mingw32-gcc
             flags: -DCMAKE_SYSTEM_NAME=Windows -DWINVER=0x0502
             host: ubuntu-latest
+            build-targets: all bundle
 
           - name: Windows (ARM)
             target: windows-arm
@@ -71,6 +77,7 @@ jobs:
             cc: armv7-w64-mingw32-gcc
             flags: -DCMAKE_SYSTEM_NAME=Windows -DWINVER=0x0602
             host: ubuntu-latest
+            build-targets: all bundle
 
           - name: Windows (ARM64)
             target: windows-arm64
@@ -78,6 +85,7 @@ jobs:
             cc: aarch64-w64-mingw32-gcc
             flags: -DCMAKE_SYSTEM_NAME=Windows -DWINVER=0x0A00
             host: ubuntu-latest
+            build-targets: all bundle
 
           - name: Windows (IA64)
             target: windows-ia64
@@ -85,6 +93,16 @@ jobs:
             env-script: . .\.github\enter-winsdk.ps1
             flags: -G "NMake Makefiles" -DWINVER=0x0501 -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS_DEBUG="/Zi /Ob0 /Od" -DCMAKE_CXX_COMPILER_FORCED=TRUE "-DCMAKE_RC_COMPILER=C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64/rc.exe"
             host: windows-2025
+            build-targets: all bundle
+
+          - name: Windows (AXP)
+            target: windows-axp
+            fetch-script: .\.github\fetch-ow.ps1
+            env-script: . .\.github\enter-ow.ps1
+            flags: -G "Watcom WMake" -DCMAKE_C_COMPILER=wclaxp -DCMAKE_CXX_COMPILER=wclaxp -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER_FORCED=TRUE -DCMAKE_CXX_COMPILER_FORCED=TRUE -DLAV_ARD=1
+            no-bundle: true
+            host: windows-2025
+            build-targets: lard
 
     steps:
       - uses: actions/checkout@v4
@@ -119,8 +137,7 @@ jobs:
         run: |
           ${{matrix.platform.env-script}}
           cmake -S . -B build -DCMAKE_INSTALL_PREFIX=bin/${{ matrix.platform.target }} ${{ matrix.platform.flags }}
-          cmake --build build --config Release
-          cmake --build build -t bundle --config Release
+          cmake --build build -t ${{ matrix.platform.build-targets }} --config Release
           cmake --install build --config Release
 
       - name: Build single language targets
@@ -187,6 +204,7 @@ jobs:
           cd lavender-windows-arm   && zip -r ../lavender-${{ github.ref_name }}-windows-arm.zip   * && cd ..
           cd lavender-windows-arm64 && zip -r ../lavender-${{ github.ref_name }}-windows-arm64.zip * && cd ..
           cd lavender-windows-ia64  && zip -r ../lavender-${{ github.ref_name }}-windows-ia64.zip  * && cd ..
+          cd lavender-windows-axp   && zip -r ../lavender-${{ github.ref_name }}-windows-axp.zip   * && cd ..
 
       - name: Release
         uses: softprops/action-gh-release@v1
@@ -202,3 +220,4 @@ jobs:
             lavender-${{ github.ref_name }}-windows-arm.zip
             lavender-${{ github.ref_name }}-windows-arm64.zip
             lavender-${{ github.ref_name }}-windows-ia64.zip
+            lavender-${{ github.ref_name }}-windows-axp.zip

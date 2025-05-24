@@ -10,11 +10,13 @@ static const char *CPU_LEVELS[ARDV_CPU_MAX] = {"i386", "i486", "p5", "p6",
 ardv_cpu_level
 ardv_cpu_get_level(void)
 {
+#if defined(_M_IX86)
     HMODULE                      kernel32 = NULL;
     pf_isprocessorfeaturepresent fn_ispfp = NULL;
 
     SYSTEM_INFO info;
     GetSystemInfo(&info);
+#endif
 
 #if defined(_M_IX86)
     switch (info.dwProcessorType)
@@ -56,6 +58,8 @@ ardv_cpu_get_level(void)
     return ARDV_CPU_P6;
 #elif defined(_M_X64)
     return ARDV_CPU_X64;
+#elif defined(_M_ALPHA)
+    return ARDV_CPU_I486;
 #else
 #error "Unknown architecture!"
 #endif

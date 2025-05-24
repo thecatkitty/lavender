@@ -399,13 +399,13 @@ wndproc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
     }
 
     case WM_PAINT: {
+        BITMAP      bmp;
         PAINTSTRUCT ps;
         HDC         dc = BeginPaint(wnd, &ps);
 
         HDC bmp_dc = CreateCompatibleDC(dc);
         SelectObject(bmp_dc, bg_);
 
-        BITMAP bmp;
         GetObject(bg_, sizeof(BITMAP), &bmp);
         BitBlt(dc, 0, 0, bmp.bmWidth, bmp.bmHeight, bmp_dc, 0, 0, SRCCOPY);
 
@@ -415,15 +415,14 @@ wndproc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
     }
 
     case WM_CTLCOLORSTATIC: {
-        HDC dc = (HDC)wparam;
-        int id = GetDlgCtrlID((HWND)lparam);
-
-        SetBkMode(dc, TRANSPARENT);
-
+        HDC      dc = (HDC)wparam;
+        int      id = GetDlgCtrlID((HWND)lparam);
         COLORREF color = (ID_TITLE == id)    ? config_->title_color
                          : (ID_FOOTER == id) ? config_->footer_color
                          : (ID_INTRO == id)  ? config_->intro_color
                                              : config_->text_color;
+
+        SetBkMode(dc, TRANSPARENT);
         SetTextColor(dc, color);
 
         return (LRESULT)GetStockObject(NULL_BRUSH);
