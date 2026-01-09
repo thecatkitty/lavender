@@ -9,6 +9,10 @@
 
 #include "../resource.h"
 
+#if defined(_MSC_VER)
+#pragma warning(disable : 28159)
+#endif
+
 int
 arda_exec(_In_ const ardc_config *cfg, _In_z_ const char *cmd)
 {

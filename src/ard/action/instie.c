@@ -9,6 +9,10 @@
 
 #include "../resource.h"
 
+#if defined(_MSC_VER)
+#pragma warning(disable : 28159)
+#endif
+
 int
 arda_instie(_In_ const ardc_config *cfg)
 {

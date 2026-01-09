@@ -1,7 +1,7 @@
 #include "../resource.h"
 
 #define VER_FILEDESCRIPTION_STR     "Narzędzie do sprawdzania zależności autoodtwarzania programu Lavender"
-#define VER_LEGALCOPYRIGHT_STR      "(C) 2025 Mateusz Karcz. Udostępniono na zasadach Licencji MIT."
+#define VER_LEGALCOPYRIGHT_STR      "(C) 2025-2026 Mateusz Karcz. Udostępniono na zasadach Licencji MIT."
 #define VER_VERSION_UNICODE_LANG    "041504B0"
 #define VER_VERSION_TRANSLATION     0x0415, 0x04B0
 
