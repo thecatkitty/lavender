@@ -972,8 +972,8 @@ _find_bang(void)
 #if WINVER >= 0x0600
         fn = SHGetStockIconInfo;
 #else
-        fn = windows_get_proc("shell32.dll", "SHGetStockIconInfo",
-                              pf_shgetstockiconinfo);
+        fn = (pf_shgetstockiconinfo)windows_get_proc("shell32.dll",
+                                                     "SHGetStockIconInfo");
 #endif
         if (fn &&
             SUCCEEDED(fn(SIID_WARNING, SHGSI_ICON | SHGSI_SMALLICON, &info)))
