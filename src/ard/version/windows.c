@@ -134,6 +134,11 @@ ardv_windows_get_spname(_In_ WORD os_version,
     if (is_nt)
     {
         int length = sprintf(sp_name_, "Service Pack %u", sp_version >> 8);
+        if (length < 0)
+        {
+            return NULL;
+        }
+
         if (sp_version & 0xFF)
         {
             sp_name_[length++] = 'a' + (sp_version & 0xFF) - 1;

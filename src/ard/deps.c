@@ -152,5 +152,6 @@ ard_get_sources(_Inout_ ardc_config *cfg)
     }
     *ptr = NULL;
 
+    LocalFree(counters);
     return list;
 }
