@@ -815,10 +815,10 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
                 ENCUIM_NEXT, textbox ? textbox->buffer : NULL, _pages[id].data);
             if (0 < status)
             {
-                WCHAR message[MAX_PATH];
+                WCHAR message[MAX_PATH] = L"";
                 HWND  alert = GetDlgItem(dlg, IDC_ALERT);
 
-                if (INT_MAX == status)
+                if ((INT_MAX == status) && (NULL != textbox))
                 {
                     MultiByteToWideChar(CP_UTF8, 0, textbox->alert, -1, message,
                                         lengthof(message));
@@ -842,10 +842,14 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
                         }
                     }
                 }
-                SetWindowTextW(alert, message);
-                Static_SetIcon(GetDlgItem(dlg, IDC_BANG), _bang);
-                MessageBeep(MB_ICONEXCLAMATION);
-                _set_buttons(dlg, id, false);
+
+                if (NULL != alert)
+                {
+                    SetWindowTextW(alert, message);
+                    Static_SetIcon(GetDlgItem(dlg, IDC_BANG), _bang);
+                    MessageBeep(MB_ICONEXCLAMATION);
+                    _set_buttons(dlg, id, false);
+                }
 
                 SetFocus(edit_box);
                 SetWindowLongPtrW(dlg, DWLP_MSGRESULT, -1);

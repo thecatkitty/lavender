@@ -1,3 +1,5 @@
+#include <sal.h>
+
 #include "impl.h"
 
 extern int
@@ -7,10 +9,10 @@ int       windows_cmd_show;
 HINSTANCE windows_instance = NULL;
 
 int WINAPI
-wWinMain(HINSTANCE instance,
-         HINSTANCE prevwindows_instance,
-         PWSTR     cmd_line,
-         int       cmd_show)
+wWinMain(_In_ HINSTANCE     instance,
+         _In_opt_ HINSTANCE prev_instance,
+         _In_ LPWSTR        cmd_line,
+         _In_ int           cmd_show)
 {
     int    argc = __argc, i, status;
     char **argv = (char **)malloc(((size_t)argc + 2) * sizeof(char *));

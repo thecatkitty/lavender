@@ -173,7 +173,7 @@ inet_callback(HINTERNET inet,
     {
     case INTERNET_STATUS_REQUEST_COMPLETE: {
         net_response_param param;
-        DWORD              query_number;
+        DWORD              query_number = 0;
         DWORD              query_size;
 
         char  buffer[4096] = "";
