@@ -173,7 +173,7 @@ create_option(_In_ unsigned      id,
     ctl = CreateWindow(
         WC_BUTTON, "",
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | BS_PUSHBUTTON | BS_ICON, cx, cy,
-        BUTTON_SIZE, BUTTON_SIZE, parent, (HMENU)id, instance_, 0);
+        BUTTON_SIZE, BUTTON_SIZE, parent, (HMENU)(UINT_PTR)id, instance_, 0);
     SendMessage(ctl, BM_SETIMAGE, IMAGE_ICON, (LPARAM)icon);
     cx += BUTTON_SIZE + WINDOW_MARGIN;
 

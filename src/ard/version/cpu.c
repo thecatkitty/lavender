@@ -66,7 +66,7 @@ ardv_cpu_get_level(void)
 }
 
 ardv_cpu_level
-ardv_cpu_from_string(const char *str, ardv_cpu_level default_val)
+ardv_cpu_from_string(_In_z_ const char *str, _In_ ardv_cpu_level default_val)
 {
     ardv_cpu_level i;
 
