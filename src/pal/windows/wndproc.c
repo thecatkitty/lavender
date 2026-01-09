@@ -101,9 +101,9 @@ get_fullscreen_rect(HWND wnd, RECT *rect)
     fn_mfw = MonitorFromWindow;
 #else
     fn_gmi =
-        windows_get_proc("user32.dll", "GetMonitorInfoA", pf_getmonitorinfoa);
-    fn_mfw = windows_get_proc("user32.dll", "MonitorFromWindow",
-                              pf_monitorfromwindow);
+        (pf_getmonitorinfoa)windows_get_proc("user32.dll", "GetMonitorInfoA");
+    fn_mfw = (pf_monitorfromwindow)windows_get_proc("user32.dll",
+                                                    "MonitorFromWindow");
 #endif
 
     if (fn_gmi && fn_mfw && fn_gmi(fn_mfw(wnd, MONITOR_DEFAULTTOPRIMARY), &mi))

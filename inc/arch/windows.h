@@ -53,6 +53,13 @@ windows_is_less_than(uint16_t ver)
     return ver > windows_get_version();
 }
 
+inline static FARPROC
+windows_get_proc(const char* module, const char* name)
+{
+    HMODULE hmodule = GetModuleHandleA(module);
+    return hmodule ? GetProcAddress(hmodule, name) : NULL;
+}
+
 #define winver_or_windows_is_at_least(ver)                                     \
     ((WINVER >= (ver)) || windows_is_at_least((ver)))
 
@@ -65,10 +72,5 @@ windows_is_less_than(uint16_t ver)
 
 #define windows_is_less_than_98()   winver_and_windows_is_less_than(0x040A)
 #define windows_is_less_than_2000() winver_and_windows_is_less_than(0x0500)
-
-#define windows_get_proc(module, name, type)                                   \
-    (GetModuleHandleA(module)                                                  \
-         ? (type)GetProcAddress(GetModuleHandleA(module), name)                \
-         : NULL)
 
 #endif // _ARCH_WINDOWS_H_
