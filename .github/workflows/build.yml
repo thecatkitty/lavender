@@ -101,7 +101,6 @@ jobs:
             fetch-script: .\.github\fetch-ow.ps1
             env-script: . .\.github\enter-ow.ps1
             flags: -G "Watcom WMake" -DCMAKE_C_COMPILER=wclaxp -DCMAKE_CXX_COMPILER=wclaxp -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER_FORCED=TRUE -DCMAKE_CXX_COMPILER_FORCED=TRUE -DLAV_ARD=1
-            no-bundle: true
             host: windows-2025
             build-targets: lard
 
