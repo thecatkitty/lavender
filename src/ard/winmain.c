@@ -128,7 +128,7 @@ WinMain(_In_ HINSTANCE     instance,
     if (!complete && (cfg->ossp > ardv_windows_get_servicepack()))
     {
         char     format[ARDC_LENGTH_MID] = "";
-        bool     is_nt = ardv_windows_get_version();
+        bool     is_nt = ardv_windows_is_nt();
         uint16_t winver = ardv_windows_get_version();
 
         LoadString(NULL, is_nt ? IDS_OLDSP : IDS_OLDOSR, format,
