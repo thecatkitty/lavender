@@ -90,7 +90,7 @@ _verify_inet_proc(int msg, void *param, void *data)
     switch (msg)
     {
     case NETM_CONNECTED: {
-        _inet_fields[0].data &= ~ENCUIFF_DYNAMIC;
+        _inet_fields[0].flags &= ~ENCUIFF_DYNAMIC;
         _inet_fields[0].data = IDS_INET_SEND;
         encui_refresh_field(encr_pages + PAGE_INET, 0);
         break;
