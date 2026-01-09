@@ -44,7 +44,7 @@ LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
     IDS_BADSOUND, "Niepoprawny lub niewspierany plik dźwiękowy"
 
     IDS_DESCRIPTION, "Odtwarzacz pokazu slajdów"
-    IDS_COPYRIGHT, "(C) 2021-2025 Mateusz Karcz.\nUdostępniono na zasadach Licencji MIT."
+    IDS_COPYRIGHT, "(C) 2021-2026 Mateusz Karcz.\nUdostępniono na zasadach Licencji MIT."
 
 #ifdef _WIN32
     IDS_ABOUT, "O programie..."
@@ -100,7 +100,7 @@ LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
 LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
 
 #define VER_FILEDESCRIPTION_STR     "Odtwarzacz pokazu slajdów Lavender"
-#define VER_LEGALCOPYRIGHT_STR      "(C) 2021-2025 Mateusz Karcz. Udostępniono na zasadach Licencji MIT."
+#define VER_LEGALCOPYRIGHT_STR      "(C) 2021-2026 Mateusz Karcz. Udostępniono na zasadach Licencji MIT."
 #define VER_VERSION_UNICODE_LANG    "041504B0"
 #define VER_VERSION_TRANSLATION     LCID_PL_PL,0x04B0
 

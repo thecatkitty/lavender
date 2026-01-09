@@ -6,7 +6,7 @@
 0       T   18  ^Lavender
 500     B   40  ^lavndr<>.bmp
 500     T   19  ^Version 0.6
-500     T   23  ^Copyright (c) Mateusz Karcz, 2021-2025. Shared under the MIT License.
+500     T   23  ^Copyright (c) Mateusz Karcz, 2021-2026. Shared under the MIT License.
 0       K
 0       =   50  ExtendedFont
 0       =   51  Rectangles

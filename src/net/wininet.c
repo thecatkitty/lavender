@@ -10,6 +10,10 @@
 #include <net.h>
 #include <pal.h>
 
+#if defined(_MSC_VER) && (_MSC_VER >= 1900)
+#pragma warning(disable : 28159)
+#endif
+
 static HINTERNET session_ = NULL;
 static HINTERNET connection_ = NULL;
 static HINTERNET request_ = NULL;
