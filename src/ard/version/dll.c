@@ -25,12 +25,21 @@ _Success_(return == true) bool ardv_dll_get_version_info(
         return false;
     }
 
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 6388) // handle can be non-NULL under Windows 9x
+#endif
+
     if (!GetFileVersionInfo(name, handle, size, data) ||
         !VerQueryValue(data, "\\", (LPVOID *)&ffi, &ffi_size))
     {
         status = false;
         goto end;
     }
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 
     info->major = min(MAXBYTE, HIWORD(ffi->dwFileVersionMS));
     info->minor = min(MAXBYTE, LOWORD(ffi->dwFileVersionMS));

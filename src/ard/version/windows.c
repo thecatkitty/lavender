@@ -5,6 +5,10 @@
 
 #include <ard/version.h>
 
+#if defined(_MSC_VER)
+#pragma warning(disable : 28159)
+#endif
+
 typedef BOOL(WINAPI *pf_getversionex)(LPOSVERSIONINFO);
 
 typedef struct

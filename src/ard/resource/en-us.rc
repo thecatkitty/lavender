@@ -1,7 +1,7 @@
 #include "../resource.h"
 
 #define VER_FILEDESCRIPTION_STR     "Lavender AutoRun Dependency Checker"
-#define VER_LEGALCOPYRIGHT_STR      "(C) 2025 Mateusz Karcz. Shared under the MIT License."
+#define VER_LEGALCOPYRIGHT_STR      "(C) 2025-2026 Mateusz Karcz. Shared under the MIT License."
 #define VER_VERSION_UNICODE_LANG    "040904B0"
 #define VER_VERSION_TRANSLATION     0x0409, 0x04B0
 
