@@ -1,14 +1,18 @@
 include(CheckIncludeFile)
 
-cmake_path(GET CMAKE_C_COMPILER FILENAME compiler_name)
-if(${compiler_name} MATCHES "-")
-    string(REGEX REPLACE "-[a-z]+$" "-" compiler_prefix ${compiler_name})
-endif()
+if(NOT WIN32)
+    execute_process(
+        COMMAND ${CMAKE_C_COMPILER} -dumpmachine
+        OUTPUT_VARIABLE COMPILER_TRIPLE
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-if((${compiler_prefix} MATCHES "x86_64") OR (("${compiler_prefix}" STREQUAL "") AND ("${CMAKE_HOST_SYSTEM_PROCESSOR}" MATCHES "x86_64")))
-    set(OBJCOPY_FMT elf64-x86-64)
-else()
-    set(OBJCOPY_FMT elf32-i386)
+    if(COMPILER_TRIPLE MATCHES "^x86_64")
+        set(OBJCOPY_FMT elf64-x86-64)
+    elseif(COMPILER_TRIPLE MATCHES "^(i[3-6]86|ia16)")
+        set(OBJCOPY_FMT elf32-i386)
+    else()
+        message(FATAL_ERROR "Unsupported target triple: ${COMPILER_TRIPLE}")
+    endif()
 endif()
 
 function(target_link_win32_strings target source_file suffix)

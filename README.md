@@ -38,7 +38,7 @@ This is still work in progress, but I'm doing my best to separate working versio
 
 ## Building
 Building requires *CMake*, *Python 3* and `zip` on all hosts.
-On Linux hosts, *GNU Make* and *GNU Binutils* are also required.
+On Linux hosts, *GNU Make* and either *GCC* with *GNU Binutils*, or *LLVM* are supported.
 Cross-compilation for Windows is done using [LLVM-MinGW](https://github.com/mstorsjo/llvm-mingw) for i486, x86_64, armv7, and aarch64.
 Cross-compiled i486 Windows target links against [libunicows](https://libunicows.sourceforge.net/) and requires Internet Explorer 5 or newer.
 Native compilation on Windows requires at least Microsoft Visual C++ 2005 with Windows Server 2003 SP1 Platform SDK.
