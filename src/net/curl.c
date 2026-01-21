@@ -1,3 +1,6 @@
+#include <stdarg.h>
+#include <stdio.h>
+
 #include <curl/curl.h>
 
 #include <net.h>
@@ -32,6 +35,68 @@ net_stop(void)
     curl_global_cleanup();
 }
 
+static int
+_rsnprintf(char *buff, size_t buflen, const char *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+
+    int written = vsnprintf(buff, buflen, fmt, args);
+    va_end(args);
+
+    if ((written < 0) || (written >= buflen))
+    {
+        *buff = 0;
+        return -1;
+    }
+
+    return written;
+}
+
+static void
+_build_user_agent(char *buff, size_t buflen)
+{
+    int   written = 0, remaining = buflen;
+    char *ptr = buff;
+
+    // Lavender/*
+    if (0 >
+        (written = _rsnprintf(ptr, remaining, "%s", pal_get_version_string())))
+        goto end;
+    ptr += written;
+    remaining -= written;
+
+    ptr = strrchr(buff, ' ');
+    if (ptr)
+    {
+        *ptr = '/';
+    }
+
+    // operating system
+    if (0 > (written = _rsnprintf(ptr, remaining, " (Linux")))
+        goto end;
+    ptr += written;
+    remaining -= written;
+
+    // architecture
+    if (0 > (written = _rsnprintf(ptr, remaining, "; %s)",
+#if defined(__i386__)
+                                  "ia32"
+#elif defined(__amd64__)
+                                  "x64"
+#else
+#error "Unknown architecture!"
+#endif
+                                  )))
+        goto end;
+
+end:
+    if (0 == *buff)
+    {
+        strcat(buff, "Lavender");
+    }
+}
+
 bool
 net_connect(const char *url, net_proc *proc, void *data)
 {
@@ -53,36 +118,8 @@ net_connect(const char *url, net_proc *proc, void *data)
     data_ = data;
     curl_easy_setopt(curl_, CURLOPT_ERRORBUFFER, error_);
 
-    // ----- User-Agent string
-    char  user_agent[PATH_MAX] = "";
-    char *ptr = NULL;
-
-    strcpy(user_agent, pal_get_version_string());
-    ptr = strrchr(user_agent, ' ');
-    if (ptr)
-    {
-        *ptr = '/';
-    }
-
-    strcat(user_agent, " (");
-    ptr = user_agent + strlen(user_agent);
-
-    ptr += sprintf(ptr, "Linux");
-
-    strcpy(ptr, "; ");
-    ptr += 2;
-    {
-#if defined(__i386__)
-        ptr += sprintf(ptr, "ia32");
-#elif defined(__amd64__)
-        ptr += sprintf(ptr, "x64");
-#else
-#error "Unknown architecture!"
-#endif
-    }
-
-    strcpy(ptr, ")");
-
+    char user_agent[PATH_MAX] = "";
+    _build_user_agent(user_agent, sizeof(user_agent));
     if (0 != curl_easy_setopt(curl_, CURLOPT_USERAGENT, user_agent))
     {
         proc_(NETM_ERROR, error_, data_);
@@ -119,7 +156,8 @@ _inet_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata)
                                        &content_length));
 
         net_response_param response_param = {status_code, "", content_length};
-        sprintf(response_param.status_text, "HTTP %d", response_param.status);
+        snprintf(response_param.status_text, sizeof(response_param.status_text),
+                 "HTTP %d", response_param.status);
         proc_(NETM_RESPONSE, &response_param, data_);
 
         receiving_ = true;
