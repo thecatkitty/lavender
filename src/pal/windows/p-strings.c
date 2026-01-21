@@ -35,7 +35,7 @@ pal_load_string(unsigned id, char *buffer, int max_length)
 
     mb_length = WideCharToMultiByte(CP_UTF8, 0, wbuffer, length, buffer,
                                     max_length, NULL, NULL);
-    buffer[mb_length] = 0;
+    buffer[mb_length <= max_length ? mb_length : 0] = 0;
     free(wbuffer);
 
     LOG("exit, '%s'", buffer);
