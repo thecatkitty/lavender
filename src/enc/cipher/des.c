@@ -214,16 +214,24 @@ des_at(enc_stream *stream, size_t i)
 static bool
 des_decrypt(enc_stream *stream, uint8_t *dst)
 {
-    size_t length = stream->data_length - sizeof(uint64_t);
-
-    // Load initialization vector
-    uint64_t       ct_previous = _from_bytes(stream->data);
-    const uint8_t *ct_ptr = stream->data + sizeof(uint64_t);
-    const uint8_t *ct_padding = stream->data + length;
+    size_t         length;
+    uint64_t       ct_previous;
+    const uint8_t *ct_ptr, *ct_padding;
 
     uint64_t ct, pt;
-    uint8_t  pt_bytes[sizeof(uint64_t)];
-    uint8_t  padding;
+    uint8_t  pt_bytes[sizeof(uint64_t)], padding;
+
+    if (sizeof(uint64_t) > stream->data_length)
+    {
+        return false;
+    }
+
+    length = stream->data_length - sizeof(uint64_t);
+
+    // Load initialization vector
+    ct_previous = _from_bytes(stream->data);
+    ct_ptr = stream->data + sizeof(uint64_t);
+    ct_padding = stream->data + length;
 
     // Process the unpadded part of the ciphertext
     while (ct_ptr < ct_padding)
@@ -253,14 +261,19 @@ des_decrypt(enc_stream *stream, uint8_t *dst)
 static bool
 des_verify(enc_stream *stream, uint32_t crc)
 {
-    size_t   position = stream->data_length - sizeof(uint64_t);
-    uint64_t iv = _from_bytes(stream->data + position - sizeof(uint64_t));
-    uint64_t ct = _from_bytes(stream->data + position);
-    uint64_t pt = _get_pt(stream, iv, ct);
+    size_t   position, length;
+    uint64_t iv, ct, pt;
+    uint8_t  pt_bytes[sizeof(uint64_t)], padding;
 
-    uint8_t pt_bytes[sizeof(uint64_t)];
-    uint8_t padding;
-    size_t  length;
+    if ((2 * sizeof(uint64_t)) > stream->data_length)
+    {
+        return false;
+    }
+
+    position = stream->data_length - sizeof(uint64_t);
+    iv = _from_bytes(stream->data + position - sizeof(uint64_t));
+    ct = _from_bytes(stream->data + position);
+    pt = _get_pt(stream, iv, ct);
 
     _to_bytes(pt, pt_bytes);
     padding = pt_bytes[7];
@@ -270,8 +283,8 @@ des_verify(enc_stream *stream, uint32_t crc)
     }
 
     length = stream->data_length - sizeof(uint64_t) - padding;
-    return crc == zip_calculate_crc_indirect((uint8_t(*)(void *, size_t))des_at,
-                                             stream, length);
+    return crc == zip_calculate_crc_indirect(
+                      (uint8_t (*)(void *, size_t))des_at, stream, length);
 }
 
 enc_stream_impl __enc_des_impl = {des_allocate, des_free, des_at, des_decrypt,
