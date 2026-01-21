@@ -50,9 +50,16 @@ jobs:
             build-targets: all bundle
             host: ubuntu-22.04
 
-          - name: Linux
-            target: linux
+          - name: Linux (GCC)
+            target: linux-gcc
             apts: $APT_TARGET_LINUX
+            build-targets: all bundle
+            host: ubuntu-latest
+
+          - name: Linux (LLVM)
+            target: linux-llvm
+            apts: $APT_TARGET_LINUX clang
+            cc: clang
             build-targets: all bundle
             host: ubuntu-latest
 
