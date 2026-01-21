@@ -1,9 +1,15 @@
+#include <assert.h>
 #include <stdio.h>
 
 #include "qr/encqr.h"
 #include "remote.h"
 
 #define QR_SIZE 128
+
+#define QUERY_MAX_PREFIX 39 // must fit script_call_content::data
+#define QUERY_RC_LENGTH  (2 * ENCR_REQUEST_SIZE)
+
+static const char QUERY_QR[] = "/qr?rc=";
 
 static gfx_bitmap _qr_bitmap = {QR_SIZE, QR_SIZE, QR_SIZE / 8, 1};
 
@@ -50,13 +56,16 @@ encr_qr_enter(void *data)
 {
     enc_context *enc = (enc_context *)data;
     uint8_t      rbytes[lengthof(encr_request)];
-    char         url[100] = "", *purl;
-    size_t       url_len = strlen(enc->parameter);
-    int          i;
+    char        *purl;
+    char   url[QUERY_MAX_PREFIX + sizeof(QUERY_QR) + QUERY_RC_LENGTH] = "";
+    size_t url_len = strlen(enc->parameter);
+    int    i;
 
+    assert(QUERY_MAX_PREFIX >= url_len);
     strcpy(url, enc->parameter);
-    strcpy(url + url_len, "/qr?rc=");
-    purl = url + url_len + 7;
+    strcpy(url + url_len, QUERY_QR);
+    url_len += lengthof(QUERY_QR) - 1;
+    purl = url + url_len;
 
     encr_encode_request(rbytes);
     for (i = 0; i < lengthof(rbytes); i++)
