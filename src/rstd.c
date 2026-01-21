@@ -6,9 +6,9 @@
 
 #include <base.h>
 
-#define _rstrtoull(condition, digxform)                                        \
+#define _rstrtoull(str, num, condition, digxform)                              \
     {                                                                          \
-        uint64_t num = 0, prev = 0;                                            \
+        uint64_t prev = 0;                                                     \
         while (condition(*str))                                                \
         {                                                                      \
             prev = num;                                                        \
@@ -18,10 +18,10 @@
             if (num < prev)                                                    \
             {                                                                  \
                 errno = ERANGE;                                                \
-                return UINT64_MAX;                                             \
+                num = UINT64_MAX;                                              \
+                break;                                                         \
             }                                                                  \
         }                                                                      \
-        return num;                                                            \
     }
 
 #define _digxform_10(c, num)                                                   \
@@ -39,6 +39,8 @@
 uint64_t
 rstrtoull(const char *str, int base)
 {
+    uint64_t num = 0;
+
     while (isspace(*str))
     {
         ++str;
@@ -47,10 +49,12 @@ rstrtoull(const char *str, int base)
     switch (base)
     {
     case 10:
-        _rstrtoull(isdigit, _digxform_10);
+        _rstrtoull(str, num, isdigit, _digxform_10);
+        return num;
 
     case 16:
-        _rstrtoull(isxdigit, _digxform_16);
+        _rstrtoull(str, num, isxdigit, _digxform_16);
+        return num;
 
     default:
         errno = EINVAL;
