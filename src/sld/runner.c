@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include <pal.h>
 #include <snd.h>
 
@@ -93,9 +95,7 @@ _goto_label(sld_context *ctx, const char *label)
     }
 
     __sld_errmsgcpy(msg, IDS_NOLABEL);
-    __sld_errmsgcat(msg, ": ");
-    __sld_errmsgcat(msg, label);
-    strcpy(ctx->message, msg);
+    snprintf(ctx->message, sizeof(ctx->message), "%.80s: %.160s", msg, label);
     return SLD_ARGERR;
 }
 
@@ -183,11 +183,13 @@ sld_handle(void)
         length = sld_load_entry(ctx, &ctx->entry);
         if (0 > length)
         {
-            char msg[sizeof(sld_entry)] = {0};
+            char   msg[sizeof(sld_entry)] = {0};
+            size_t msg_len = 0;
             __sld_errmsgcpy(msg, IDS_LOADERROR);
-            __sld_errmsgcat(msg, "\n");
-            __sld_errmsgcat(msg, ctx->message);
-            strcpy(ctx->message, msg);
+            msg_len = strlen(msg);
+            snprintf(msg + msg_len, sizeof(msg) - msg_len, "\n%s",
+                     ctx->message);
+            strncpy(ctx->message, msg, sizeof(ctx->message));
             ctx->state = length;
             return;
         }
@@ -229,11 +231,12 @@ sld_handle(void)
 
     if (0 > status)
     {
-        char msg[sizeof(sld_entry)] = {0};
+        char   msg[sizeof(sld_entry)] = {0};
+        size_t msg_len = 0;
         __sld_errmsgcpy(msg, IDS_EXECERROR);
-        __sld_errmsgcat(msg, "\n");
-        __sld_errmsgcat(msg, ctx->message);
-        strcpy(ctx->message, msg);
+        msg_len = strlen(msg);
+        snprintf(msg + msg_len, sizeof(msg) - msg_len, "\n%s", ctx->message);
+        strncpy(ctx->message, msg, sizeof(ctx->message));
         ctx->state = status;
         return;
     }

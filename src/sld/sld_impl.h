@@ -79,9 +79,6 @@ __sld_retrieve_active_area_tag(uint16_t x, uint16_t y);
 extern void
 __sld_errmsgcpy(void *sld, unsigned int msg);
 
-extern void
-__sld_errmsgcat(void *sld, const char *msg);
-
 extern uint16_t       __sld_accumulator;
 extern sld_context   *__sld_ctx;
 extern gfx_dimensions __sld_screen;
