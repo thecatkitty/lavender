@@ -75,16 +75,13 @@ encr_qr_enter(void *data)
     }
 
     _qr_bitmap.width = _qr_bitmap.height = QR_SIZE;
-    if (NULL == _qr_bitmap.bits)
-    {
-        _qr_bitmap.bits = malloc(_qr_bitmap.height * _qr_bitmap.opl);
-    }
+    _qr_bitmap.bits = NULL; // allocated by encqr_generate
     encqr_generate(url, &_qr_bitmap);
-    _qr_bitmap.width = (_qr_bitmap.width + 7) / 8 * 8;
+    _qr_bitmap.width = (int16_t)align(_qr_bitmap.width, 8);
 
     encui_set_page(PAGE_QR);
 
-    free(_qr_bitmap.bits);
+    free(_qr_bitmap.bits); // already drawn by encui_set_page
     _qr_bitmap.bits = NULL;
 }
 
