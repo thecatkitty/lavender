@@ -38,7 +38,7 @@ encqr_generate(const char *str, gfx_bitmap *bm)
         return false;
     }
 
-    if (NULL == bm->bits)
+    if (NULL == (bm->bits = malloc(bm->height * bm->opl)))
     {
         return false;
     }
