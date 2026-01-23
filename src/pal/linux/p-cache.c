@@ -63,6 +63,7 @@ pal_discard(hcache handle)
 
     cache_item *cache = cache_ + handle - 1;
     assert(0 == munmap(cache->addr, cache->size));
+    cache->fd = 0;
 }
 
 void

@@ -37,10 +37,10 @@ pal_read_asset(hasset asset, char *buff, off_t at, size_t size)
         ptr->handle = zip_cache(ptr->inzip);
     }
 
-    if (0 >= ptr->handle)
+    if (0 >= (long)ptr->handle)
     {
-        ptr->handle = 0;
         LOG("exit, failed with status %d", ptr->handle);
+        ptr->handle = 0;
         return false;
     }
 
