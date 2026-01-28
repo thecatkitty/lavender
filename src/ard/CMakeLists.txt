@@ -1,5 +1,5 @@
 add_executable(lard WIN32)
-add_dependencies(lard config version_text)
+add_dependencies(lard version_text)
 install(TARGETS lard DESTINATION .)
 
 file(GLOB RESOURCES resource/*.rc)

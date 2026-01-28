@@ -1,5 +1,4 @@
 add_library(sld OBJECT)
-add_dependencies(sld config)
 
 target_sources(sld PRIVATE context.c)
 target_sources(sld PRIVATE loader.c)
