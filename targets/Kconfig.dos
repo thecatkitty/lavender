@@ -1,0 +1,2 @@
+config DOS
+    def_bool y
