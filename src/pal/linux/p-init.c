@@ -138,7 +138,9 @@ pal_cleanup(void)
         free(font_);
     }
 
+#if defined(CONFIG_INTERNET)
     net_stop();
+#endif
     sdl2_cleanup();
     ziparch_cleanup();
 }

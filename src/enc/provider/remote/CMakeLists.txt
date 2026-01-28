@@ -4,7 +4,7 @@ target_sources(enc PRIVATE ccode.c)
 target_sources(enc PRIVATE qr.c)
 target_sources(enc PRIVATE rcode.c)
 
-if (WIN32 OR LINUX)
+if (CONFIG_INTERNET)
     target_sources(enc PRIVATE inet.c)
     add_subdirectory(json)
 endif()
