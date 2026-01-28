@@ -1,2 +1,10 @@
+config INTERNET
+    bool "Internet features support"
+    default y
+    depends on HAVE_INTERNET
+    help
+        Support for online connectivity features.
+
+
 rsource "enc/Kconfig"
 rsource "snd/Kconfig"
