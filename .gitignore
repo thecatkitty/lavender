@@ -6,5 +6,5 @@ build*
 !/ext/MatchingWildcards
 !/ext/QR-Code-generator
 !/ext/jsmn
-venv
+venv*
 __pycache__

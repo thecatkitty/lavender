@@ -80,15 +80,26 @@ function(target_link_binary_object target object)
 endfunction()
 
 
-function(import_dotconfig dotconfig_file)
-    file(STRINGS ${dotconfig_file} DOTCONFIG_FILE
+function(prepare_dotconfig)
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${CMAKE_BINARY_DIR}/${DOTCONFIG})
+
+    execute_process(
+        COMMAND ${CMAKE_COMMAND} -E env
+            TARGET=${KCONFIG_TARGET}
+            defconfig ${CMAKE_SOURCE_DIR}/${DOTCONFIG}
+            --kconfig ${CMAKE_SOURCE_DIR}/Kconfig
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+endfunction()
+
+function(import_dotconfig)
+    file(STRINGS ${CMAKE_BINARY_DIR}/${DOTCONFIG} DOTCONFIG_FILE
         ENCODING "UTF-8")
 
     foreach(LINE ${DOTCONFIG_FILE})
         if("${LINE}" MATCHES "^(CONFIG_[^=]+)=([yn]|.+$)")
             set(KCONFIG_VARIABLE_NAME "${CMAKE_MATCH_1}")
             set(KCONFIG_VARIABLE_VALUE "${CMAKE_MATCH_2}")
-        elseif("${LINE}" MATCHES "^# (${prefix}[^ ]+) is not set")
+        elseif("${LINE}" MATCHES "^# (CONFIG_[^ ]+) is not set")
             set(KCONFIG_VARIABLE_NAME "${CMAKE_MATCH_1}")
             set(KCONFIG_VARIABLE_VALUE "n")
         else()
@@ -107,19 +118,21 @@ function(import_dotconfig dotconfig_file)
 endfunction()
 
 function(add_config_header target source_file)
-    file(MAKE_DIRECTORY inc/generated)
+    file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/inc/generated)
 
     add_custom_command(
-        OUTPUT inc/generated/${target}.h
-        COMMAND ${CMAKE_COMMAND}
-            -Din=${CMAKE_CURRENT_SOURCE_DIR}/${source_file}
-            -Dout=inc/generated/${target}.h
-            -P ${CMAKE_CURRENT_LIST_DIR}/cmake/dotconfig.cmake
-        MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/${source_file})
+        OUTPUT ${CMAKE_BINARY_DIR}/inc/generated/${target}.h
+        COMMAND ${CMAKE_COMMAND} -E env
+            TARGET=${KCONFIG_TARGET}
+            KCONFIG_CONFIG=${CMAKE_SOURCE_DIR}/${DOTCONFIG} --
+            genconfig
+            --header-path ${CMAKE_BINARY_DIR}/inc/generated/${target}.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/Kconfig
+        MAIN_DEPENDENCY ${source_file})
 
-        add_custom_target(
-            ${target} ALL
-            DEPENDS inc/generated/${target}.h)
+    add_custom_target(
+        ${target} ALL
+        DEPENDS ${CMAKE_BINARY_DIR}/inc/generated/${target}.h)
 endfunction()
 
 

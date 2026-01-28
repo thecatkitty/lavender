@@ -134,6 +134,7 @@ jobs:
       - name: Fetch dependencies
         run: |
           ${{ matrix.platform.fetch-script }}
+          python -m pip install -r requirements.txt
           git fetch --depth=1 origin "+refs/tags/*:refs/tags/*"
 
       - name: Build multi language target
@@ -185,6 +186,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt install $APT_HOST $APT_TARGET_LINUX -y
+          pip install -r requirements.txt
 
       - name: Run unit tests
         run: |
