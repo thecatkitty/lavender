@@ -1,5 +1,4 @@
 add_library(pal OBJECT)
-add_dependencies(pal config)
 target_include_directories(pal PRIVATE inc)
 
 add_subdirectory(_zip)

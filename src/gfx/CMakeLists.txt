@@ -1,5 +1,4 @@
 add_library(gfx OBJECT)
-add_dependencies(gfx config)
 
 target_sources(gfx PRIVATE color.c)
 

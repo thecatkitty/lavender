@@ -36,8 +36,7 @@ endif()
 
 prepare_dotconfig()
 import_dotconfig()
-add_config_header(config ${CMAKE_BINARY_DIR}/${DOTCONFIG})
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/inc)
+add_config_header(config)
 include_directories(ext)
 
 supply_c99_header(inttypes)
@@ -134,7 +133,6 @@ endif()
 include_directories(BEFORE inc)
 
 add_subdirectory(src)
-add_dependencies(lavender config)
 
 if(DOS_TARGET_COM)
     add_custom_command(

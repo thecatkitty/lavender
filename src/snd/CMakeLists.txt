@@ -1,5 +1,4 @@
 add_library(snd OBJECT)
-add_dependencies(snd config)
 
 target_sources(snd PRIVATE drivers.c)
 target_sources(snd PRIVATE snd.c)

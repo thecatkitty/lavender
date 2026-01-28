@@ -117,22 +117,18 @@ function(import_dotconfig)
     endforeach()
 endfunction()
 
-function(add_config_header target source_file)
+function(add_config_header)
     file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/inc/generated)
 
-    add_custom_command(
-        OUTPUT ${CMAKE_BINARY_DIR}/inc/generated/${target}.h
+    execute_process(
         COMMAND ${CMAKE_COMMAND} -E env
             TARGET=${KCONFIG_TARGET}
             KCONFIG_CONFIG=${CMAKE_SOURCE_DIR}/${DOTCONFIG} --
             genconfig
-            --header-path ${CMAKE_BINARY_DIR}/inc/generated/${target}.h
-            ${CMAKE_CURRENT_SOURCE_DIR}/Kconfig
-        MAIN_DEPENDENCY ${source_file})
+            --header-path ${CMAKE_BINARY_DIR}/inc/generated/config.h
+            ${CMAKE_SOURCE_DIR}/Kconfig)
 
-    add_custom_target(
-        ${target} ALL
-        DEPENDS ${CMAKE_BINARY_DIR}/inc/generated/${target}.h)
+    include_directories(${CMAKE_BINARY_DIR}/inc)
 endfunction()
 
 

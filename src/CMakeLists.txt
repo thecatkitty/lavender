@@ -1,5 +1,4 @@
 add_executable(lavender WIN32)
-add_dependencies(lavender config)
 
 if(CONFIG_SDL2)
     find_package(SDL2 REQUIRED PATHS ../ext)

@@ -1,5 +1,4 @@
 add_library(enc OBJECT)
-add_dependencies(enc config)
 
 target_sources(enc PRIVATE enc.c)
 
