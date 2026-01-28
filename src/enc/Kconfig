@@ -1,0 +1,10 @@
+menu "Encrypted content"
+
+config ENCRYPTED_CONTENT
+    bool "Encrypted content support"
+    default y
+    help
+        Support for inclusion of encrypted scripts.
+
+
+endmenu

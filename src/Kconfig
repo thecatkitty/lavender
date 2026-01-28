@@ -1,7 +1,2 @@
-config ENCRYPTED_CONTENT
-    bool "Encrypted content support"
-    default y
-    help
-        Support for inclusion of encrypted scripts.
-
+rsource "enc/Kconfig"
 rsource "snd/Kconfig"
