@@ -94,7 +94,7 @@ else()
 endif()
 
 if(DOS)
-    if(NOT CONFIG_COMPACT)
+    if(CONFIG_ANDREA)
         target_link_options(lavender PRIVATE -T ${ANDREA_LIB}/andrea-host.ld)
         add_custom_target(
             lavender.exe.a
