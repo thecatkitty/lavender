@@ -6,5 +6,6 @@ config INTERNET
         Support for online connectivity features.
 
 
+rsource "pal/Kconfig"
 rsource "enc/Kconfig"
 rsource "snd/Kconfig"
