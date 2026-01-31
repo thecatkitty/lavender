@@ -30,7 +30,7 @@ dos_beep(uint16_t divisor);
 extern void ddcall
 dos_silence(void);
 
-#ifdef CONFIG_IA16X
+#if defined(CONFIG_XMS)
 DEFINE_HANDLE(hdosxm);
 
 extern uint16_t

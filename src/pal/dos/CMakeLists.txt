@@ -18,7 +18,7 @@ target_sources(pal PRIVATE d-info.c)
 if(NOT CONFIG_COMPACT)
     target_sources(pal PRIVATE d-driver.c)
 endif()
-if(DOS_TARGET_XMS)
+if(CONFIG_XMS)
     target_sources(pal PRIVATE d-xm.c)
 endif()
 

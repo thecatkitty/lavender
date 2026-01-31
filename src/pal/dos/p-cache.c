@@ -8,7 +8,7 @@
 
 typedef unsigned cacheblk;
 
-#ifdef CONFIG_IA16X
+#if defined(CONFIG_XMS)
 typedef uint64_t cacheptr;
 
 static inline cacheptr
@@ -48,7 +48,7 @@ retrieve_cache(int fd, off_t at, size_t size)
 {
     cacheblk handle = 0;
 
-#ifdef CONFIG_IA16X
+#if defined(CONFIG_XMS)
     for (int i = 0; i < MAX_CACHE_ITEMS; i++)
     {
         if ((0 == handle) && (fd == cache_[i].fd) && (at == cache_[i].base) &&
@@ -68,7 +68,7 @@ retrieve_cache(int fd, off_t at, size_t size)
     return handle;
 }
 
-#ifdef CONFIG_IA16X
+#if defined(CONFIG_XMS)
 static cache_item *
 find_cache(cacheblk handle)
 {
@@ -198,7 +198,7 @@ remember_cache(int fd, off_t at, size_t size, cacheblk handle)
 static cacheblk
 allocate_cache(size_t length)
 {
-#ifdef CONFIG_IA16X
+#if defined(CONFIG_XMS)
     hdosxm xm = dosxm_alloc((length + 1023) / 1024);
     if (!xm && !evict(length))
     {
@@ -219,7 +219,7 @@ allocate_cache(size_t length)
 static bool
 free_cache(cacheblk handle)
 {
-#ifdef CONFIG_IA16X
+#if defined(CONFIG_XMS)
     return dosxm_free(MK_HDOSXM(handle));
 #else
     _dos_freemem(handle);
@@ -230,7 +230,7 @@ free_cache(cacheblk handle)
 static bool
 load_cache(void *dst, cacheptr src, size_t length)
 {
-#ifdef CONFIG_IA16X
+#if defined(CONFIG_XMS)
     return dosxm_load(dst, XP_HND(src), XP_OFF(src), length);
 #else
     _fmemcpy(dst, src, length);
@@ -241,7 +241,7 @@ load_cache(void *dst, cacheptr src, size_t length)
 static bool
 store_cache(cacheptr dst, void *src, size_t length)
 {
-#ifdef CONFIG_IA16X
+#if defined(CONFIG_XMS)
     return dosxm_store(XP_HND(dst), XP_OFF(dst), src, length);
 #else
     _fmemcpy(dst, src, length);
@@ -292,7 +292,7 @@ pal_cache(int fd, off_t at, size_t size)
     cacheblk block = retrieve_cache(fd, at, size);
     if (block)
     {
-#ifdef CONFIG_IA16X
+#if defined(CONFIG_XMS)
         lock_cache(block);
 #endif
     }
@@ -304,7 +304,7 @@ pal_cache(int fd, off_t at, size_t size)
             return 0;
         }
 
-#ifdef CONFIG_IA16X
+#if defined(CONFIG_XMS)
         if (remember_cache(fd, at, size, block))
         {
             lock_cache(block);
@@ -329,7 +329,7 @@ pal_cache(int fd, off_t at, size_t size)
 void
 pal_discard(hcache handle)
 {
-#ifdef CONFIG_IA16X
+#if defined(CONFIG_XMS)
     unlock_cache(handle);
 #else
     free_cache((cacheblk)handle);
@@ -342,7 +342,7 @@ pal_read(hcache handle, char *buff, off_t at, size_t size)
     load_cache(buff, MK_CACHEPTR(handle, at), size);
 }
 
-#ifdef CONFIG_IA16X
+#if defined(CONFIG_XMS)
 void
 dos_initialize_cache(void)
 {

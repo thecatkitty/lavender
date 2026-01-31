@@ -8,7 +8,7 @@ target_sources(test-pal-dos-cache PRIVATE mock/fmem.cpp)
 target_sources(test-pal-dos-cache PRIVATE ../p-cache.c)
 
 add_test_executable(pal-dos-cache-xms)
-target_compile_definitions(test-pal-dos-cache-xms PRIVATE CONFIG_IA16X)
+target_compile_definitions(test-pal-dos-cache-xms PRIVATE CONFIG_XMS)
 target_sources(test-pal-dos-cache-xms PRIVATE p-cache.cpp)
 target_sources(test-pal-dos-cache-xms PRIVATE mock/xmem.cpp)
 target_sources(test-pal-dos-cache-xms PRIVATE ../p-cache.c)

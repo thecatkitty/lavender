@@ -22,7 +22,7 @@ template <typename Func>
 void
 test_case(Func func)
 {
-#ifdef CONFIG_IA16X
+#if defined(CONFIG_XMS)
     mock::xmem::instance = mock::xmem{};
 
     dos_initialize_cache();
@@ -37,7 +37,7 @@ test_case(Func func)
 
     close(fd);
 
-#ifdef CONFIG_IA16X
+#if defined(CONFIG_XMS)
     dos_cleanup_cache();
 #endif
 }
@@ -53,7 +53,7 @@ main(int argc, char *argv[])
         pal_discard(cache1);
     });
 
-#ifdef CONFIG_IA16X
+#if defined(CONFIG_XMS)
     test_case([](int fd) {
         // fails in case of handle exhaustion
 

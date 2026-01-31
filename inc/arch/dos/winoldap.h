@@ -1,7 +1,7 @@
 #ifndef _ARCH_DOS_WINOLDAP_H_
 #define _ARCH_DOS_WINOLDAP_H_
 
-#ifdef CONFIG_IA16X
+#if defined(CONFIG_WINOLDAP)
 
 #include <i86.h>
 
