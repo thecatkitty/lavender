@@ -76,13 +76,10 @@ if(DOS)
     add_compile_options(-march=${ARCH})
     add_link_options(-Wl,--nmagic)
 
-    if(DOS_TARGET_COM)
+    if(CONFIG_COMPACT)
         set(CMAKE_EXECUTABLE_SUFFIX ".com")
         add_compile_options(-mcmodel=tiny)
         add_link_options(-mcmodel=tiny)
-
-        add_compile_definitions(CONFIG_COMPACT)
-        set(CONFIG_COMPACT 1)
         set(COM_MAX_SIZE 0xE000) # 56 KiB
     else()
         add_compile_options(-mcmodel=small)
@@ -125,7 +122,7 @@ include_directories(BEFORE inc)
 
 add_subdirectory(src)
 
-if(DOS_TARGET_COM)
+if(CONFIG_COMPACT)
     add_custom_command(
         OUTPUT slides.txt
         COMMAND
@@ -148,7 +145,7 @@ add_custom_command(
         ${DRIVERS}
     DEPENDS ${ASSETS})
 
-if(DOS_TARGET_COM)
+if(CONFIG_COMPACT)
     add_custom_command(
         OUTPUT sshow${CMAKE_EXECUTABLE_SUFFIX}
         COMMAND

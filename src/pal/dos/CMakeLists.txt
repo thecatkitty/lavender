@@ -15,7 +15,7 @@ target_sources(pal PRIVATE p-wchar.c)
 
 target_sources(pal PRIVATE d-beep.c)
 target_sources(pal PRIVATE d-info.c)
-if(NOT DOS_TARGET_COM)
+if(NOT CONFIG_COMPACT)
     target_sources(pal PRIVATE d-driver.c)
 endif()
 if(DOS_TARGET_XMS)
