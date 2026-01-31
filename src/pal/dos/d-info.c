@@ -1,11 +1,12 @@
-#include <arch/dos/winoldap.h>
 #include <base.h>
+
+#include <arch/dos/winoldap.h>
 
 #ifdef CONFIG_ANDREA
 #include <andrea.h>
 #endif
 
-#ifdef CONFIG_IA16X
+#if defined(CONFIG_WINOLDAP)
 static short winoldap_version = 0;
 #endif
 
@@ -18,7 +19,7 @@ dos_is_dosbox(void)
 bool
 dos_is_windows(void)
 {
-#ifdef CONFIG_IA16X
+#if defined(CONFIG_WINOLDAP)
     if (0 == winoldap_version)
     {
         winoldap_version = winoldap_get_version();

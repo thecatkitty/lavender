@@ -1,0 +1,20 @@
+menu "MS-DOS specific features"
+    depends on DOS
+
+
+config WINOLDAP
+    bool "Enable Windows DOS box integration"
+    default n
+    help
+        Support for MS-DOS mode window lifecycle management (title and closability).
+
+
+config XMS
+    bool "Enable Extended Memory Specification support"
+    default n
+    depends on !COMPACT
+    help
+        Support for extended memory on 286 and newer processors.
+
+
+endmenu

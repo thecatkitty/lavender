@@ -316,7 +316,7 @@ pal_initialize(int argc, char *argv[])
         msdos_exit(1);
     }
 
-#ifdef CONFIG_IA16X
+#if defined(CONFIG_XMS)
     if (0x200 > dosxm_init())
     {
         msdos_puts("XMS \x1A HIMEM\r\n$");
@@ -379,7 +379,7 @@ pal_initialize(int argc, char *argv[])
     gfx_get_glyph_dimensions(&dos_cell);
     dos_mouse = msmouse_init();
 
-#ifdef CONFIG_IA16X
+#if defined(CONFIG_WINOLDAP)
     if (dos_is_windows())
     {
         winoldap_set_closable(1);
@@ -395,7 +395,7 @@ void
 pal_cleanup(void)
 {
     ziparch_cleanup();
-#ifdef CONFIG_IA16X
+#if defined(CONFIG_XMS)
     dos_cleanup_cache();
 #endif
     gfx_cleanup();

@@ -46,7 +46,8 @@ jobs:
             apts: $APT_TARGET_DOS
             prepare-script: .github/prepare-dos.sh
             fetch-script: .github/fetch-dos.sh i286
-            flags: -DCMAKE_TOOLCHAIN_FILE=ext/nicetia16-i286/cmake/DOS-GCC-IA16.cmake -DDOS_TARGET_XMS=1
+            flags: -DCMAKE_TOOLCHAIN_FILE=ext/nicetia16-i286/cmake/DOS-GCC-IA16.cmake
+            config: ia16x
             build-targets: all bundle
             host: ubuntu-22.04
 

@@ -8,3 +8,6 @@ config COMPACT
     depends on DOS
     help
         Only support asset bundle loaded to memory with the executable.
+
+
+rsource "dos/Kconfig"

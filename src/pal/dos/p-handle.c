@@ -5,7 +5,7 @@
 bool
 pal_handle(void)
 {
-#ifdef CONFIG_IA16X
+#if defined(CONFIG_WINOLDAP)
     if (!dos_is_windows())
     {
         return true;

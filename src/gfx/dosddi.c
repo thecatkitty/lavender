@@ -153,7 +153,7 @@ gfx_cleanup(void)
 bool
 gfx_set_title(const char *title)
 {
-#ifdef CONFIG_IA16X
+#if defined(CONFIG_WINOLDAP)
     if (!dos_is_windows())
     {
         return false;
