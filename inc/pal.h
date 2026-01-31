@@ -3,6 +3,7 @@
 
 #include <fcntl.h>
 
+#include <base.h>
 #include <fmt/utf8.h>
 
 DEFINE_HANDLE(hasset);
