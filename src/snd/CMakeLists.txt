@@ -7,7 +7,7 @@ target_sources(snd PRIVATE seq.c)
 
 if(DOS)
     target_sources(snd PRIVATE dbeep.c)
-    if(DOS_TARGET_COM)
+    if(CONFIG_COMPACT)
         target_sources(snd PRIVATE dmpu401.c)
         target_sources(snd PRIVATE gm-opl2.c)
         target_sources(snd PRIVATE dopl2.c)

@@ -26,7 +26,7 @@ jobs:
             apts: $APT_TARGET_DOS
             prepare-script: .github/prepare-dos.sh
             fetch-script: .github/fetch-dos.sh i8088
-            flags: -DCMAKE_TOOLCHAIN_FILE=ext/nicetia16-i8088/cmake/DOS-GCC-IA16.cmake -DDOS_TARGET_COM=1
+            flags: -DCMAKE_TOOLCHAIN_FILE=ext/nicetia16-i8088/cmake/DOS-GCC-IA16.cmake
             config: tiny
             host: ubuntu-22.04
             single-language: true

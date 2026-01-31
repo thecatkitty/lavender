@@ -51,7 +51,7 @@ After acquiring all prerequisities, you can configure the Linux host environment
 cmake -S . -B build
 
 # MS-DOS build, COM file (DOS 2+)
-cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=cmake/DOS-GCC-IA16.cmake -DDOS_TARGET_COM=1
+KCONFIG_CONFIG=tiny.config cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=cmake/DOS-GCC-IA16.cmake
 
 # MS-DOS build, EXE file (DOS 3+)
 cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=cmake/DOS-GCC-IA16.cmake

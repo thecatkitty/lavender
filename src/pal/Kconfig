@@ -1,2 +1,10 @@
 config SDL2
     bool
+
+
+config COMPACT
+    bool "Use compact bundle strategy"
+    default n
+    depends on DOS
+    help
+        Only support asset bundle loaded to memory with the executable.
