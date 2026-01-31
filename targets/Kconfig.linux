@@ -1,3 +1,4 @@
 config LINUX
     def_bool y
     select HAVE_INTERNET
+    select SDL2
