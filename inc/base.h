@@ -1,6 +1,8 @@
 #ifndef _BASE_H_
 #define _BASE_H_
 
+#include <generated/config.h>
+
 #include <errno.h>
 #include <inttypes.h>
 #include <limits.h>

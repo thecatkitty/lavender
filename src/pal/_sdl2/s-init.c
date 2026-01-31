@@ -1,4 +1,5 @@
 #include <pal.h>
+#include <snd.h>
 
 #include "impl.h"
 

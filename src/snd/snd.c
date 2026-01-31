@@ -5,8 +5,6 @@
 #include <arch/dos.h>
 #endif
 
-#include <generated/config.h>
-
 #include <pal.h>
 #include <snd.h>
 #include <snd/buf.h>

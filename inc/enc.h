@@ -3,8 +3,6 @@
 
 #include <base.h>
 
-#include <generated/config.h>
-
 #if defined(CONFIG_ENCRYPTED_CONTENT)
 typedef enum
 {
