@@ -1,15 +1,15 @@
 #include <string.h>
 
-#ifdef CONFIG_ANDREA
-#include <andrea.h>
-#include <arch/dos.h>
-#endif
-
 #include <pal.h>
 #include <snd.h>
 #include <snd/buf.h>
 #include <snd/dev.h>
 #include <snd/seq.h>
+
+#ifdef CONFIG_ANDREA
+#include <andrea.h>
+#include <arch/dos.h>
+#endif
 
 #define MAX_DEVICES 4
 

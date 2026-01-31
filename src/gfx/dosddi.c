@@ -1,10 +1,11 @@
-#ifdef CONFIG_ANDREA
-#include <andrea.h>
-#endif
 #include <arch/dos.h>
 #include <arch/dos/winoldap.h>
 #include <gfx.h>
 #include <pal.h>
+
+#ifdef CONFIG_ANDREA
+#include <andrea.h>
+#endif
 
 #define MAX_DEVICES 1
 

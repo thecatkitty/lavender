@@ -1,11 +1,11 @@
 #include <conio.h>
 #include <i86.h>
 
+#include <arch/dos.h>
+
 #ifdef CONFIG_ANDREA
 #include <andrea.h>
 #endif
-
-#include <arch/dos.h>
 
 #include "hw.h"
 

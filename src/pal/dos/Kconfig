@@ -2,6 +2,13 @@ menu "MS-DOS specific features"
     depends on DOS
 
 
+config ANDREA
+    bool "Enable Andrea loadable modules"
+    default y
+    help
+        Support for loadable drivers using the Andrea library.
+
+
 config WINOLDAP
     bool "Enable Windows DOS box integration"
     default n

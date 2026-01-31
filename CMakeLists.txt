@@ -84,11 +84,12 @@ if(DOS)
         add_compile_options(-mcmodel=small)
         add_link_options(-mcmodel=small)
         add_link_options(-nostdlib)
+    endif()
 
+    if(CONFIG_ANDREA)
         set(ANDREA_LIB ${CMAKE_CURRENT_SOURCE_DIR}/ext/andrea/lib)
         include_directories(ext/andrea/include)
         link_directories(${ANDREA_LIB})
-        add_compile_definitions(CONFIG_ANDREA)
         set(DRIVERS 
             $<TARGET_FILE:gfxega>
             $<TARGET_FILE:sndmpu>
