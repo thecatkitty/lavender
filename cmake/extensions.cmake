@@ -81,18 +81,30 @@ endfunction()
 
 
 function(prepare_dotconfig)
-    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${CMAKE_BINARY_DIR}/${DOTCONFIG})
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${CMAKE_BINARY_DIR}/.config)
 
-    execute_process(
-        COMMAND ${CMAKE_COMMAND} -E env
-            TARGET=${KCONFIG_TARGET}
-            defconfig ${CMAKE_SOURCE_DIR}/${DOTCONFIG}
-            --kconfig ${CMAKE_SOURCE_DIR}/Kconfig
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+    if("$ENV{LAV_DEFCONFIG}" STREQUAL "")
+        execute_process(
+            COMMAND ${CMAKE_COMMAND} -E env
+                TARGET=${KCONFIG_TARGET}
+                alldefconfig ${CMAKE_SOURCE_DIR}/Kconfig
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+    else()
+        set(defconfig "${CMAKE_SOURCE_DIR}/targets/$ENV{LAV_DEFCONFIG}.defconfig")
+        set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${defconfig})
+        execute_process(
+            COMMAND ${CMAKE_COMMAND} -E env
+                TARGET=${KCONFIG_TARGET}
+                defconfig ${defconfig}
+                --kconfig ${CMAKE_SOURCE_DIR}/Kconfig
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+    endif()
+
+    install(FILES ${CMAKE_BINARY_DIR}/.config DESTINATION .)
 endfunction()
 
 function(import_dotconfig)
-    file(STRINGS ${CMAKE_BINARY_DIR}/${DOTCONFIG} DOTCONFIG_FILE
+    file(STRINGS ${CMAKE_BINARY_DIR}/.config DOTCONFIG_FILE
         ENCODING "UTF-8")
 
     foreach(LINE ${DOTCONFIG_FILE})
@@ -123,10 +135,10 @@ function(add_config_header)
     execute_process(
         COMMAND ${CMAKE_COMMAND} -E env
             TARGET=${KCONFIG_TARGET}
-            KCONFIG_CONFIG=${CMAKE_SOURCE_DIR}/${DOTCONFIG} --
             genconfig
-            --header-path ${CMAKE_BINARY_DIR}/inc/generated/config.h
-            ${CMAKE_SOURCE_DIR}/Kconfig)
+            --header-path inc/generated/config.h
+            ${CMAKE_SOURCE_DIR}/Kconfig
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 
     include_directories(${CMAKE_BINARY_DIR}/inc)
 endfunction()

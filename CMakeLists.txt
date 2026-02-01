@@ -18,12 +18,6 @@ if(CMAKE_C_COMPILER_ID MATCHES "OpenWatcom")
     set(WATCOM 1)
 endif()
 
-if(DEFINED ENV{KCONFIG_CONFIG})
-    set(DOTCONFIG $ENV{KCONFIG_CONFIG})
-else()
-    set(DOTCONFIG .config)
-endif()
-
 if(DOS)
     set(KCONFIG_TARGET "dos")
 elseif(LINUX)
