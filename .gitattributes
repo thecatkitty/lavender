@@ -1,8 +1,8 @@
 /data/*.txt text eol=crlf
 
-Kconfig linguist-detectable=true
-Kconfig linguist-documentation=false
-Kconfig linguist-language=text
+Kconfig* linguist-detectable=true
+Kconfig* linguist-documentation=false
+Kconfig* linguist-language=text
 
 *.defconfig linguist-detectable=true
 *.defconfig linguist-documentation=false
