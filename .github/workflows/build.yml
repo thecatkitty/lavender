@@ -27,7 +27,7 @@ jobs:
             prepare-script: .github/prepare-dos.sh
             fetch-script: .github/fetch-dos.sh i8088
             flags: -DCMAKE_TOOLCHAIN_FILE=ext/nicetia16-i8088/cmake/DOS-GCC-IA16.cmake
-            config: tiny
+            config: dos-ia16-com
             host: ubuntu-22.04
             single-language: true
             build-targets: all bundle
@@ -47,7 +47,7 @@ jobs:
             prepare-script: .github/prepare-dos.sh
             fetch-script: .github/fetch-dos.sh i286
             flags: -DCMAKE_TOOLCHAIN_FILE=ext/nicetia16-i286/cmake/DOS-GCC-IA16.cmake
-            config: ia16x
+            config: dos-ia16x
             build-targets: all bundle
             host: ubuntu-22.04
 
@@ -142,7 +142,7 @@ jobs:
         if: ${{!matrix.platform.single-language}}
         env:
           CC: ${{ matrix.platform.cc }}
-          KCONFIG_CONFIG: ${{ matrix.platform.config }}.config
+          LAV_DEFCONFIG: ${{ matrix.platform.config }}
         run: |
           ${{matrix.platform.env-script}}
           cmake -S . -B build -DCMAKE_INSTALL_PREFIX=bin/${{ matrix.platform.target }} ${{ matrix.platform.flags }}
@@ -153,7 +153,7 @@ jobs:
         if: matrix.platform.single-language
         env:
           CC: ${{ matrix.platform.cc }}
-          KCONFIG_CONFIG: ${{ matrix.platform.config }}.config
+          LAV_DEFCONFIG: ${{ matrix.platform.config }}
         run: |
           ${{matrix.platform.env-script}}
           for lang in cs-cz en-us pl-pl
@@ -175,6 +175,7 @@ jobs:
           name: lavender-${{ matrix.platform.target }}
           path: |
             bin
+          include-hidden-files: true
 
   Test:
     runs-on: ubuntu-latest
