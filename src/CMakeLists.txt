@@ -65,7 +65,7 @@ target_link_libraries(lavender fmt gfx pal sld)
 
 file(GLOB LANG_RESOURCES resource/[a-z]*.rc)
 add_custom_target(version_text
-    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/../cmake/version.cmake)
+    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/../cmake/scripts/version.cmake)
 if(WIN32)
     add_dependencies(lavender version_text)
     target_sources(lavender PRIVATE resource/_neutral.rc)
