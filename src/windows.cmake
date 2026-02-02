@@ -1,0 +1,22 @@
+target_link_libraries(lavender comctl32 version wininet winmm)
+
+if(MSVC)
+    if(MSVC_VERSION LESS 1500)
+        target_link_libraries(lavender bufferoverflowU)
+    endif()
+
+    target_link_options(lavender PRIVATE /manifest:no /manifestuac:no)
+    target_link_options(lavender PRIVATE /subsystem:windows,${WINVER_MAJOR}.${WINVER_MINOR})
+else()
+    target_link_options(lavender PRIVATE -mwindows -s)
+    target_link_options(lavender PRIVATE -municode)
+    target_link_options(lavender PRIVATE -Wl,--major-os-version,${WINVER_MAJOR})
+    target_link_options(lavender PRIVATE -Wl,--minor-os-version,${WINVER_MINOR})
+    target_link_options(lavender PRIVATE -Wl,--major-subsystem-version,${WINVER_MAJOR})
+    target_link_options(lavender PRIVATE -Wl,--minor-subsystem-version,${WINVER_MINOR})
+
+    cmake_path(GET CMAKE_C_COMPILER FILENAME compiler_name)
+    if(${compiler_name} MATCHES "^i[3-6]86")
+        target_link_options(lavender PRIVATE ${CMAKE_SOURCE_DIR}/ext/libunicows/libunicows.a)
+    endif()
+endif()
