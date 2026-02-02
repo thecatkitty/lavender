@@ -45,7 +45,7 @@ if(DOS AND CONFIG_COMPACT)
     # FIXME: W/A for https://codeberg.org/tkchia/newlib-ia16/commit/189732ae9ff01ffaf07e0cd042150c0001f0e9f1
     # Explicit selection of a linker script shouldn't be required
     target_link_options(lavender PRIVATE -Tdos-com.ld)
-    target_link_options(lavender PRIVATE -Tbss=${COM_MAX_SIZE})
+    target_link_options(lavender PRIVATE -Tbss=${MAX_BUNDLE_SIZE})
 endif()
 
 if(NOT WIN32)

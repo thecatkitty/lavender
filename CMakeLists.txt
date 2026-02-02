@@ -73,7 +73,7 @@ if(DOS)
         set(CMAKE_EXECUTABLE_SUFFIX ".com")
         add_compile_options(-mcmodel=tiny)
         add_link_options(-mcmodel=tiny)
-        set(COM_MAX_SIZE 0xE000) # 56 KiB
+        set(MAX_BUNDLE_SIZE 0xE000) # 56 KiB
     else()
         add_compile_options(-mcmodel=small)
         add_link_options(-mcmodel=small)
@@ -139,21 +139,15 @@ add_custom_command(
         ${DRIVERS}
     DEPENDS ${ASSETS})
 
-if(CONFIG_COMPACT)
-    add_custom_command(
-        OUTPUT sshow${CMAKE_EXECUTABLE_SUFFIX}
-        COMMAND
-            cmake -E cat $<TARGET_FILE:lavender> data.zip > sshow${CMAKE_EXECUTABLE_SUFFIX}
-        COMMAND
-            [ `stat -c %s sshow${CMAKE_EXECUTABLE_SUFFIX}` -lt `printf \"%d\\n\" ${COM_MAX_SIZE}` ] || (echo "COM file too large" && false)
-        DEPENDS lavender data.zip)
-else()
-    add_custom_command(
-        OUTPUT sshow${CMAKE_EXECUTABLE_SUFFIX}
-        COMMAND
-            cmake -E cat $<TARGET_FILE:lavender> data.zip > sshow${CMAKE_EXECUTABLE_SUFFIX}
-        DEPENDS lavender data.zip)
-endif()
+add_custom_command(
+    OUTPUT sshow${CMAKE_EXECUTABLE_SUFFIX}
+    COMMAND ${CMAKE_COMMAND}
+        -DEXECUTABLE_PATH=$<TARGET_FILE:lavender>
+        -DARCHIVE_PATH=data.zip
+        -DBUNDLE_PATH=sshow${CMAKE_EXECUTABLE_SUFFIX}
+        -DMAX_SIZE=${MAX_BUNDLE_SIZE}
+        -P ${CMAKE_SOURCE_DIR}/cmake/scripts/bundle.cmake
+    DEPENDS lavender data.zip)
 
 add_custom_target(bundle DEPENDS sshow${CMAKE_EXECUTABLE_SUFFIX})
 
