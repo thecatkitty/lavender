@@ -36,11 +36,6 @@ if(CONFIG_SOUND)
     target_link_libraries(lavender snd)
 endif()
 
-if(DOS)
-    target_include_directories(lavender SYSTEM BEFORE PRIVATE ../ext/nicetia16-${ARCH}/include/c++/6.3.0)
-    target_link_directories(lavender BEFORE PRIVATE ../ext/nicetia16-${ARCH}/lib)
-endif()
-
 if(DOS AND CONFIG_COMPACT)
     # FIXME: W/A for https://codeberg.org/tkchia/newlib-ia16/commit/189732ae9ff01ffaf07e0cd042150c0001f0e9f1
     # Explicit selection of a linker script shouldn't be required
@@ -110,9 +105,6 @@ if(DOS)
 endif()
 
 if(WIN32)
-    math(EXPR WINVER_MAJOR "${WINVER} >> 8")
-    math(EXPR WINVER_MINOR "${WINVER} & 0xFF")
-
     if (NOT MSVC)
         target_link_options(lavender PRIVATE -mwindows -s)
         target_link_options(lavender PRIVATE -municode)
