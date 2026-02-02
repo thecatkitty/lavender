@@ -90,7 +90,7 @@ function(prepare_dotconfig)
                 alldefconfig ${CMAKE_SOURCE_DIR}/Kconfig
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
     else()
-        set(defconfig "${CMAKE_SOURCE_DIR}/targets/$ENV{LAV_DEFCONFIG}.defconfig")
+        set(defconfig "${CMAKE_SOURCE_DIR}/config/$ENV{LAV_DEFCONFIG}.defconfig")
         set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${defconfig})
         execute_process(
             COMMAND ${CMAKE_COMMAND} -E env
