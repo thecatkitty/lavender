@@ -1,7 +1,7 @@
 mainmenu "Lavender slideshow player features"
 
 
-rsource "targets/Kconfig.$(TARGET)"
+rsource "config/Kconfig.$(TARGET)"
 
 
 config HAVE_INTERNET
