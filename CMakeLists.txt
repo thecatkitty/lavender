@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
 enable_testing()
-cmake_policy(SET CMP0136 NEW) # Watcom runtime library flags are selected by an abstraction
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     project(Lavender C CXX RC)
@@ -9,18 +8,23 @@ else()
 endif()
 include(cmake/extensions.cmake)
 
-cmake_path(GET CMAKE_C_COMPILER FILENAME COMPILER_NAME)
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    set(LINUX 1)
-endif ()
+# Toolchain policy
+set(CMAKE_RC_FLAGS "-c 65001")
 
-if(CMAKE_C_COMPILER_ID MATCHES "OpenWatcom")
-    set(WATCOM 1)
+cmake_path(GET CMAKE_C_COMPILER FILENAME COMPILER_NAME)
+if(MSVC)
+    include(cmake/toolchains/msvc.cmake)
+elseif(CMAKE_C_COMPILER_ID MATCHES "OpenWatcom")
+    include(cmake/toolchains/watcom.cmake)
+else()
+    include(cmake/toolchains/gcc.cmake)
 endif()
 
+# Platform configuration
 if(DOS)
     set(KCONFIG_TARGET "dos")
-elseif(LINUX)
+elseif(UNIX AND NOT APPLE)
+    set(LINUX 1)
     set(KCONFIG_TARGET "linux")
 elseif(WIN32)
     set(KCONFIG_TARGET "windows")
@@ -31,8 +35,19 @@ endif()
 prepare_dotconfig()
 import_dotconfig()
 add_config_header(config)
-include_directories(ext)
 
+# Platform policy
+if(DOS)
+    include(cmake/platforms/dos.cmake)
+elseif(LINUX)
+    include(cmake/platforms/linux.cmake)
+elseif(WIN32)
+    include(cmake/platforms/windows.cmake)
+else()
+    message(FATAL_ERROR "Unsupported platform")
+endif()
+
+# Supply missing headers for compatibility
 supply_c99_header(inttypes)
 supply_c99_header(minwindef)
 supply_c99_header(sal)
@@ -40,82 +55,21 @@ supply_c99_header(stdbool)
 supply_c99_header(stdint)
 supply_c99_header(winnt)
 
-if(MSVC)
-    if(MSVC_VERSION GREATER_EQUAL 1800)
-        add_compile_options(/utf-8)
-    else()
-        set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
-    endif()
-elseif(NOT WATCOM)
-    add_compile_options(-Os)
-    add_compile_options(-fno-strict-aliasing)
-    add_compile_options(-Wall -Werror)
-    if(NOT DOS)
-        add_compile_options(-Wpedantic)
-    endif()
-else()
-    set(CMAKE_WATCOM_RUNTIME_LIBRARY "MultiThreaded")
+if(CONFIG_ANDREA)
+    set(DRIVERS 
+        $<TARGET_FILE:gfxega>
+        $<TARGET_FILE:sndmpu>
+        $<TARGET_FILE:sndopl>)
 endif()
 
-set(CMAKE_RC_FLAGS "-c 65001")
-
-if(DOS)
-    if(CONFIG_XMS)
-        set(ARCH "i286")
-    else()
-        set(ARCH "i8088")
-    endif()
-
-    add_compile_options(-march=${ARCH})
-    add_link_options(-Wl,--nmagic)
-
-    if(CONFIG_COMPACT)
-        set(CMAKE_EXECUTABLE_SUFFIX ".com")
-        add_compile_options(-mcmodel=tiny)
-        add_link_options(-mcmodel=tiny)
-        set(COM_MAX_SIZE 0xE000) # 56 KiB
-    else()
-        add_compile_options(-mcmodel=small)
-        add_link_options(-mcmodel=small)
-        add_link_options(-nostdlib)
-    endif()
-
-    if(CONFIG_ANDREA)
-        set(ANDREA_LIB ${CMAKE_CURRENT_SOURCE_DIR}/ext/andrea/lib)
-        include_directories(ext/andrea/include)
-        link_directories(${ANDREA_LIB})
-        set(DRIVERS 
-            $<TARGET_FILE:gfxega>
-            $<TARGET_FILE:sndmpu>
-            $<TARGET_FILE:sndopl>)
-    endif()
-
-    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions>)
-    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
-endif()
-
-if(WIN32)
-    if(NOT DEFINED WINVER)
-        if(MSVC)
-            set(WINVER 0x0500)
-        else()
-            set(WINVER 0x0400)
-        endif()
-    endif()
-    add_compile_definitions(WINVER=${WINVER})
-    if(${COMPILER_NAME} MATCHES "i686")
-        add_compile_options(-march=i486)
-    endif()
-endif()
-
-if(LINUX)
-    add_compile_options(-g)
-endif()
-
+# Include directories
 include_directories(BEFORE inc)
+include_directories(ext)
 
+# Application
 add_subdirectory(src)
 
+# Asset archive
 if(CONFIG_COMPACT)
     add_custom_command(
         OUTPUT slides.txt
@@ -139,21 +93,16 @@ add_custom_command(
         ${DRIVERS}
     DEPENDS ${ASSETS})
 
-if(CONFIG_COMPACT)
-    add_custom_command(
-        OUTPUT sshow${CMAKE_EXECUTABLE_SUFFIX}
-        COMMAND
-            cmake -E cat $<TARGET_FILE:lavender> data.zip > sshow${CMAKE_EXECUTABLE_SUFFIX}
-        COMMAND
-            [ `stat -c %s sshow${CMAKE_EXECUTABLE_SUFFIX}` -lt `printf \"%d\\n\" ${COM_MAX_SIZE}` ] || (echo "COM file too large" && false)
-        DEPENDS lavender data.zip)
-else()
-    add_custom_command(
-        OUTPUT sshow${CMAKE_EXECUTABLE_SUFFIX}
-        COMMAND
-            cmake -E cat $<TARGET_FILE:lavender> data.zip > sshow${CMAKE_EXECUTABLE_SUFFIX}
-        DEPENDS lavender data.zip)
-endif()
+# Bundle
+add_custom_command(
+    OUTPUT sshow${CMAKE_EXECUTABLE_SUFFIX}
+    COMMAND ${CMAKE_COMMAND}
+        -DEXECUTABLE_PATH=$<TARGET_FILE:lavender>
+        -DARCHIVE_PATH=data.zip
+        -DBUNDLE_PATH=sshow${CMAKE_EXECUTABLE_SUFFIX}
+        -DMAX_SIZE=${MAX_BUNDLE_SIZE}
+        -P ${CMAKE_SOURCE_DIR}/cmake/scripts/bundle.cmake
+    DEPENDS lavender data.zip)
 
 add_custom_target(bundle DEPENDS sshow${CMAKE_EXECUTABLE_SUFFIX})
 

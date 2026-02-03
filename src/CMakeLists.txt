@@ -3,13 +3,9 @@ add_executable(lavender WIN32)
 if(CONFIG_SDL2)
     find_package(SDL2 REQUIRED PATHS ../ext)
     if(SDL2_FOUND)
-        message("Found SDL2 - ${SDL2_DIR}")
+        message(STATUS "Found SDL2 - ${SDL2_DIR}")
     endif()
     include_directories(lavender ${SDL2_INCLUDE_DIR} ${SDL2_INCLUDE_DIR}/..)
-endif()
-
-if(LINUX)
-    find_package(Fontconfig REQUIRED)
 endif()
 
 add_subdirectory(fmt)
@@ -36,36 +32,19 @@ if(CONFIG_SOUND)
     target_link_libraries(lavender snd)
 endif()
 
-if(DOS)
-    target_include_directories(lavender SYSTEM BEFORE PRIVATE ../ext/nicetia16-${ARCH}/include/c++/6.3.0)
-    target_link_directories(lavender BEFORE PRIVATE ../ext/nicetia16-${ARCH}/lib)
-endif()
-
-if(DOS AND CONFIG_COMPACT)
-    # FIXME: W/A for https://codeberg.org/tkchia/newlib-ia16/commit/189732ae9ff01ffaf07e0cd042150c0001f0e9f1
-    # Explicit selection of a linker script shouldn't be required
-    target_link_options(lavender PRIVATE -Tdos-com.ld)
-    target_link_options(lavender PRIVATE -Tbss=${COM_MAX_SIZE})
-endif()
-
 if(NOT WIN32)
     set_property(TARGET lavender PROPERTY CXX_STANDARD 14)
     target_link_libraries(lavender -lstdc++)
 endif()
 
-if(MSVC)
-    target_link_options(lavender PRIVATE /manifest:no /manifestuac:no)
-else()
-    target_link_options(lavender PRIVATE -no-pie -Wl,-Map=lavender.map)
-endif()
 include_directories(lavender ${CMAKE_CURRENT_BINARY_DIR})
-
 target_sources(lavender PRIVATE main.c rstd.c)
 target_link_libraries(lavender fmt gfx pal sld)
 
 file(GLOB LANG_RESOURCES resource/[a-z]*.rc)
 add_custom_target(version_text
-    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/../cmake/version.cmake)
+    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_SOURCE_DIR}/cmake/scripts/version.cmake
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 if(WIN32)
     add_dependencies(lavender version_text)
     target_sources(lavender PRIVATE resource/_neutral.rc)
@@ -73,7 +52,7 @@ if(WIN32)
 else()
     add_custom_command(
         OUTPUT version.bin
-        COMMAND sed -E \"s/$$/\\x0/\" version.txt > version.bin
+        COMMAND sed -E \"s/$$/\\x0/\" ${CMAKE_BINARY_DIR}/version.txt > version.bin
         DEPENDS version_text)
     add_binary_object(version version.bin _binary_obj_version_txt)
     target_link_binary_object(lavender version)
@@ -93,57 +72,7 @@ else()
     endif()
 endif()
 
-if(DOS)
-    if(CONFIG_ANDREA)
-        target_link_options(lavender PRIVATE -T ${ANDREA_LIB}/andrea-host.ld)
-        add_custom_target(
-            lavender.exe.a
-            COMMAND python3
-                ${ANDREA_LIB}/../libman/libman.py
-                lavender.exe
-                -o lavender.exe.a
-            BYPRODUCTS lavender.exe.a
-            DEPENDS lavender)
-    endif()
-    target_link_libraries(lavender -lnstdio)
-    target_link_libraries(lavender -li86)
-endif()
-
-if(WIN32)
-    math(EXPR WINVER_MAJOR "${WINVER} >> 8")
-    math(EXPR WINVER_MINOR "${WINVER} & 0xFF")
-
-    if (NOT MSVC)
-        target_link_options(lavender PRIVATE -mwindows -s)
-        target_link_options(lavender PRIVATE -municode)
-        target_link_options(lavender PRIVATE -Wl,--major-os-version,${WINVER_MAJOR})
-        target_link_options(lavender PRIVATE -Wl,--minor-os-version,${WINVER_MINOR})
-        target_link_options(lavender PRIVATE -Wl,--major-subsystem-version,${WINVER_MAJOR})
-        target_link_options(lavender PRIVATE -Wl,--minor-subsystem-version,${WINVER_MINOR})
-
-        cmake_path(GET CMAKE_C_COMPILER FILENAME compiler_name)
-        if(${compiler_name} MATCHES "^i[3-6]86")
-            target_link_options(lavender PRIVATE ${CMAKE_SOURCE_DIR}/ext/libunicows/libunicows.a)
-        endif()
-    else()
-        target_link_options(lavender PRIVATE /subsystem:windows,${WINVER_MAJOR}.${WINVER_MINOR})
-    endif()
-    target_link_libraries(lavender comctl32 version wininet winmm)
-
-    if(MSVC)
-        if(MSVC_VERSION LESS 1500)
-            target_link_libraries(lavender bufferoverflowU)
-        endif()
-    endif()
-endif()
-
-if(LINUX)
-    target_link_libraries(lavender blkid)
-    target_link_libraries(lavender curl)
-    target_link_libraries(lavender ${Fontconfig_LIBRARIES})
-    target_link_libraries(lavender ${SDL2_LIBRARIES} SDL2_ttf)
-    target_link_libraries(lavender fluidsynth)
-endif()
+include(${KCONFIG_TARGET}.cmake)
 
 if(LINUX)
     add_subdirectory(pal/dos/test)
