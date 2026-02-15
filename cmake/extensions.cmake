@@ -16,10 +16,6 @@ if(NOT WIN32)
 endif()
 
 function(target_link_win32_strings target source_file suffix)
-    if(LINUX)
-        set(win32_strings_args "-D__linux__")
-    endif()
-
     if("${suffix}" STREQUAL "")
         set(suffix_arg1 "")
         set(suffix_arg2 "")
