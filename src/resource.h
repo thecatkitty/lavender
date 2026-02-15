@@ -70,7 +70,7 @@
 #define IDS_QR_DESC      0x6D
 #define IDS_PRIVACY      0x6E
 
-#if defined(_WIN32) || defined(__linux__)
+#if defined(CONFIG_INTERNET)
 #define IDS_METHOD_INET  0x70
 #define IDS_INET_CONN    0x71
 #define IDS_INET_SEND    0x72

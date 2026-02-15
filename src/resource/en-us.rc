@@ -68,7 +68,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
     IDS_QR_DESC, "Scan the QR code above to proceed on a mobile device, then enter the received confirmation code below. The QR code will expire after 15 minutes."
     IDS_PRIVACY, "View the slideshow author's <a>Privacy Policy</a>."
 
-#if defined(_WIN32) || defined(__linux__)
+#if defined(CONFIG_INTERNET)
     IDS_METHOD_INET, "Let's connect to the automatic service"
     IDS_INET_CONN, "Connecting to the service..."
     IDS_INET_SEND, "Sending the request..."

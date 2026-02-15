@@ -68,7 +68,7 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
     IDS_QR_DESC, "Naskenujte výše uvedený QR kód a pokračujte na mobilním zařízení a poté zadejte přijatý potvrzovací kód níže. Platnost QR kódu vyprší po 15 minutách."
     IDS_PRIVACY, "Zobrazit <a>zásady ochrany osobních údajů</a> autora prezentace."
 
-#if defined(_WIN32) || defined(__linux__)
+#if defined(CONFIG_INTERNET)
     IDS_METHOD_INET, "Připojit k automatické službě"
     IDS_INET_CONN, "Připojování ke službě..."
     IDS_INET_SEND, "Odesílání požadavku..."
