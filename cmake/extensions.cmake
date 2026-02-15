@@ -15,33 +15,6 @@ if(NOT WIN32)
     endif()
 endif()
 
-function(target_link_win32_strings target source_file suffix)
-    if("${suffix}" STREQUAL "")
-        set(suffix_arg1 "")
-        set(suffix_arg2 "")
-    else()
-        set(suffix_arg1 "--suffix")
-        set(suffix_arg2 "_${suffix}")
-    endif()
-
-    add_custom_command(
-        OUTPUT ${source_file}.c
-        COMMAND python3 ${CMAKE_SOURCE_DIR}/tools/strconv.py
-            ${suffix_arg1} ${suffix_arg2}
-            ${CMAKE_CURRENT_SOURCE_DIR}/${source_file}
-            ${source_file}.c
-            ${CMAKE_C_COMPILER}
-            --
-            -DSTRINGS_ONLY
-            ${win32_strings_args}
-            -I${CMAKE_SOURCE_DIR}/inc/
-            -I${CMAKE_BINARY_DIR}/inc/
-        MAIN_DEPENDENCY ${source_file})
-
-    target_sources(${target} PRIVATE ${source_file}.c)
-    set_source_files_properties(${source_file}.c PROPERTIES COMPILE_FLAGS -Wno-pedantic)
-endfunction()
-
 
 function(add_binary_object target source_file object_prefix)
     string(MAKE_C_IDENTIFIER ${source_file} __source_file_cname)
