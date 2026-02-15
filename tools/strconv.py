@@ -16,7 +16,7 @@ def output_file_type(path: str):
 parser = ArgumentParser(
     prog="strconv",
     description="Lavender utility for converting Windows string resources to C",
-    epilog="Copyright (c) Mateusz Karcz, 2025. Shared under the MIT License.")
+    epilog="Copyright (c) Mateusz Karcz, 2025-2026. Shared under the MIT License.")
 parser.add_argument("input", help="input Resource Compiler script")
 parser.add_argument("output", help="output C file", type=output_file_type)
 parser.add_argument("cc", help="C compiler")
@@ -25,7 +25,7 @@ parser.add_argument("--suffix", default="", help="array name suffix")
 args = parser.parse_args()
 
 cpp = subprocess.run(
-    [args.cc, "-x", "c", "-E", args.input, *args.ccarg], capture_output=True, encoding="utf-8")
+    [args.cc, "-x", "c", "-E", "-P", args.input, *args.ccarg], capture_output=True, encoding="utf-8")
 
 print("#include <limits.h>", file=args.output)
 print("#include <nls.h>", file=args.output)
