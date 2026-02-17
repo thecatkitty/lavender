@@ -72,3 +72,17 @@ function(add_menuconfig_target)
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         COMMENT "Running menuconfig...")
 endfunction()
+
+
+function(retrieve_kconfig_target varname)
+    execute_process(
+        COMMAND ${CMAKE_COMMAND} -LA -N ${CMAKE_BINARY_DIR}
+        OUTPUT_VARIABLE CACHE_VARS)
+    string(REPLACE "\n" ";" CACHE_VARS "${CACHE_VARS}")
+
+    foreach(line IN LISTS CACHE_VARS)
+        if(line MATCHES "^KCONFIG_TARGET:STRING=(.+)$")
+            set(${varname} "${CMAKE_MATCH_1}")
+        endif()
+    endforeach()
+endfunction()
