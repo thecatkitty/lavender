@@ -32,3 +32,6 @@ endif()
 
 include_directories(SYSTEM BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/ext/nicetia16-${ARCH}/include/c++/6.3.0)
 link_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/ext/nicetia16-${ARCH}/lib)
+
+include(cmake/extensions/binobj.cmake)
+include(cmake/extensions/driver.cmake)

@@ -1,0 +1,6 @@
+function(add_test_executable name)
+    add_executable(test-${name})
+    add_test(NAME build-test-${name} COMMAND "${CMAKE_COMMAND}" --build ${CMAKE_BINARY_DIR} --target test-${name})
+    add_test(NAME run-test-${name} COMMAND $<TARGET_FILE:test-${name}>)
+    set_tests_properties(run-test-${name} PROPERTIES DEPENDS build-test-${name})
+endfunction()

@@ -1,12 +1,10 @@
 cmake_minimum_required(VERSION 3.24)
-enable_testing()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     project(Lavender C CXX RC)
 else()
     project(Lavender C CXX ASM)
 endif()
-include(cmake/extensions.cmake)
 
 # Toolchain policy
 set(CMAKE_RC_FLAGS "-c 65001")
@@ -32,6 +30,7 @@ else()
     message(FATAL_ERROR "Unsupported platform")
 endif()
 
+include(cmake/extensions/dotconfig.cmake)
 prepare_dotconfig()
 import_dotconfig()
 add_config_header(config)
@@ -48,6 +47,7 @@ else()
 endif()
 
 # Supply missing headers for compatibility
+include(cmake/extensions/c99.cmake)
 supply_c99_header(inttypes)
 supply_c99_header(minwindef)
 supply_c99_header(sal)
@@ -55,16 +55,13 @@ supply_c99_header(stdbool)
 supply_c99_header(stdint)
 supply_c99_header(winnt)
 
-if(CONFIG_ANDREA)
-    set(DRIVERS 
-        $<TARGET_FILE:gfxega>
-        $<TARGET_FILE:sndmpu>
-        $<TARGET_FILE:sndopl>)
-endif()
-
 # Include directories
 include_directories(BEFORE inc)
 include_directories(ext)
+
+# Tests
+enable_testing()
+include(cmake/extensions/test.cmake)
 
 # Application
 add_subdirectory(src)
@@ -83,6 +80,13 @@ if(CONFIG_COMPACT)
         ${CMAKE_CURRENT_SOURCE_DIR}/data/lavndr99.bmp)
 else()
     set(ASSETS ${CMAKE_CURRENT_SOURCE_DIR}/data/*)
+endif()
+
+if(CONFIG_ANDREA)
+    set(DRIVERS 
+        $<TARGET_FILE:gfxega>
+        $<TARGET_FILE:sndmpu>
+        $<TARGET_FILE:sndopl>)
 endif()
 
 add_custom_command(
