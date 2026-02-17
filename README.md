@@ -63,6 +63,9 @@ CC=i686-w64-mingw32-gcc cmake -S . -B build -DCMAKE_SYSTEM_NAME=Windows
 CC=x86_64-w64-mingw32-gcc cmake -S . -B build -DCMAKE_SYSTEM_NAME=Windows
 ```
 
-For the MS-DOS COM build, you can select user interface language (`cs-cz`, `en-us`, `pl-pl`) by adding the `-DLAV_LANG=` option.
+You can create a single language (`CS_CZ`, `EN_US`, `PL_PL`) build by changing configuration:
+```sh
+cmake -P cmake/scripts/setconfig.cmake build SINGLE_LANGUAGE=y LANGUAGE_CS_CZ=y
+```
 
 After finishing configuration, navigate to the `build` directory and run `make bundle`. An executable called `sshow` should appear. You can modify the slideshow by editing files in the `data` directory.

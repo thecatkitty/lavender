@@ -1,0 +1,28 @@
+config SINGLE_LANGUAGE
+    bool "Single language build"
+    default n
+    help
+        Only build localized messages for a single language.
+
+
+choice
+    prompt "Selected language"
+    depends on SINGLE_LANGUAGE
+    default LANGUAGE_EN_US
+
+config LANGUAGE_CS_CZ
+    bool "Czech - Czechia"
+
+config LANGUAGE_EN_US
+    bool "English - US"
+
+config LANGUAGE_PL_PL
+    bool "Polish - Poland"
+
+endchoice
+
+
+config LANGUAGE_CODE
+    def_string "cs-cz" if LANGUAGE_CS_CZ
+    def_string "en-us" if LANGUAGE_EN_US
+    def_string "pl-pl" if LANGUAGE_PL_PL
