@@ -5,7 +5,7 @@ function(prepare_dotconfig)
         execute_process(
             COMMAND ${CMAKE_COMMAND} -E env
                 TARGET=${KCONFIG_TARGET}
-                alldefconfig ${CMAKE_SOURCE_DIR}/Kconfig
+                olddefconfig ${CMAKE_SOURCE_DIR}/Kconfig
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
     else()
         set(defconfig "${CMAKE_SOURCE_DIR}/config/$ENV{LAV_DEFCONFIG}.defconfig")
@@ -61,4 +61,14 @@ function(add_config_header)
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 
     include_directories(${CMAKE_BINARY_DIR}/inc)
+endfunction()
+
+
+function(add_menuconfig_target)
+    add_custom_target(menuconfig
+        COMMAND ${CMAKE_COMMAND} -E env
+            TARGET=${KCONFIG_TARGET}
+            menuconfig ${CMAKE_SOURCE_DIR}/Kconfig
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        COMMENT "Running menuconfig...")
 endfunction()
