@@ -37,7 +37,7 @@ This is still work in progress, but I'm doing my best to separate working versio
 * [configurable and localizable](docs/lard.md) AutoRun application for checking Lavender run-time dependecies
 
 ## Building
-Building requires *CMake*, *Python 3* and `zip` on all hosts.
+Building requires *CMake*, *Python 3* (with kconfiglib and pycryptodome) and `zip` on all hosts.
 On Linux hosts, *GNU Make* and either *GCC* with *GNU Binutils*, or *LLVM* are supported.
 Cross-compilation for Windows is done using [LLVM-MinGW](https://github.com/mstorsjo/llvm-mingw) for i486, x86_64, armv7, and aarch64.
 Cross-compiled i486 Windows target links against [libunicows](https://libunicows.sourceforge.net/) and requires Internet Explorer 5 or newer.
