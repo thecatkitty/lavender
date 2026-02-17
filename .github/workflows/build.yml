@@ -61,6 +61,7 @@ jobs:
             target: linux-llvm
             apts: $APT_TARGET_LINUX clang
             cc: clang
+            cxx: clang++
             build-targets: all bundle
             host: ubuntu-latest
 
@@ -68,6 +69,7 @@ jobs:
             target: windows-ia32
             fetch-script: .github/fetch-mingw.sh ia32
             cc: i686-w64-mingw32-gcc
+            cxx: i686-w64-mingw32-g++
             flags: -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_EXE_LINKER_FLAGS=-L$GITHUB_WORKSPACE/ext/bulwa/i686-w64-mingw32/lib -DLAV_ARD=1
             build-targets: all bundle
             host: ubuntu-latest
@@ -76,6 +78,7 @@ jobs:
             target: windows-x64
             fetch-script: .github/fetch-mingw.sh
             cc: x86_64-w64-mingw32-gcc
+            cxx: x86_64-w64-mingw32-g++
             flags: -DCMAKE_SYSTEM_NAME=Windows -DWINVER=0x0502
             host: ubuntu-latest
             build-targets: all bundle
@@ -84,6 +87,7 @@ jobs:
             target: windows-arm
             fetch-script: .github/fetch-mingw.sh
             cc: armv7-w64-mingw32-gcc
+            cxx: armv7-w64-mingw32-g++
             flags: -DCMAKE_SYSTEM_NAME=Windows -DWINVER=0x0602
             host: ubuntu-latest
             build-targets: all bundle
@@ -92,6 +96,7 @@ jobs:
             target: windows-arm64
             fetch-script: .github/fetch-mingw.sh
             cc: aarch64-w64-mingw32-gcc
+            cxx: aarch64-w64-mingw32-g++
             flags: -DCMAKE_SYSTEM_NAME=Windows -DWINVER=0x0A00
             host: ubuntu-latest
             build-targets: all bundle
@@ -142,6 +147,7 @@ jobs:
         if: ${{!matrix.platform.single-language}}
         env:
           CC: ${{ matrix.platform.cc }}
+          CXX: ${{ matrix.platform.cxx }}
           LAV_DEFCONFIG: ${{ matrix.platform.config }}
         run: |
           ${{matrix.platform.env-script}}
@@ -153,6 +159,7 @@ jobs:
         if: matrix.platform.single-language
         env:
           CC: ${{ matrix.platform.cc }}
+          CXX: ${{ matrix.platform.cxx }}
         run: |
           ${{matrix.platform.env-script}}
           for lang in cs-cz en-us pl-pl
