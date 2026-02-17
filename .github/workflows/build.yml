@@ -153,12 +153,14 @@ jobs:
         if: matrix.platform.single-language
         env:
           CC: ${{ matrix.platform.cc }}
-          LAV_DEFCONFIG: ${{ matrix.platform.config }}
         run: |
           ${{matrix.platform.env-script}}
           for lang in cs-cz en-us pl-pl
           do
-            cmake -S . -B build -DCMAKE_INSTALL_PREFIX=bin/${{ matrix.platform.target }}/$lang -DLAV_LANG=$lang ${{ matrix.platform.flags }}
+            lang_upper=${lang//-/_}
+            lang_upper=${lang_upper^^}
+            LAV_DEFCONFIG=${{ matrix.platform.config }} cmake -S . -B build -DCMAKE_INSTALL_PREFIX=bin/${{ matrix.platform.target }}/$lang ${{ matrix.platform.flags }}
+            cmake -P cmake/scripts/setconfig.cmake build SINGLE_LANGUAGE=y LANGUAGE_${lang_upper}=y
             cmake --build build -t bundle --config Release
             cmake --install build --config Release
           done

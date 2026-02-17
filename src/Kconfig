@@ -9,3 +9,4 @@ config INTERNET
 rsource "pal/Kconfig"
 rsource "enc/Kconfig"
 rsource "snd/Kconfig"
+rsource "resource/Kconfig"

@@ -4,7 +4,7 @@
 #include <nls.h>
 #include <pal.h>
 
-#ifdef CONFIG_COMPACT
+#if defined(CONFIG_SINGLE_LANGUAGE)
 extern nls_locstr STRINGS[];
 #else
 extern nls_locstr  STRINGS_CS_CZ[];
@@ -103,7 +103,7 @@ pal_load_string(unsigned id, char *buffer, int max_length)
     LOG("entry, id: %u, buffer: %p, max_length: %d", id, buffer, max_length);
 
     nls_locstr *it;
-#ifndef CONFIG_COMPACT
+#if !defined(CONFIG_SINGLE_LANGUAGE)
     select_language();
 #endif
     it = STRINGS;
