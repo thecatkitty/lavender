@@ -32,6 +32,7 @@ endif()
 
 include(cmake/extensions/dotconfig.cmake)
 prepare_dotconfig()
+add_menuconfig_target()
 import_dotconfig()
 add_config_header(config)
 
