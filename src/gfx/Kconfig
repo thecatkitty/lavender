@@ -2,3 +2,8 @@ config HAVE_GFX_DEVICES
     bool
     help
         The target platform supports graphics device registration.
+
+config HAVE_GFX_SCALING
+    bool
+    help
+        The target platform supports variable graphics scaling.
