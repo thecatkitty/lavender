@@ -117,7 +117,7 @@ typedef struct
 
 typedef far const gfx_glyph *gfx_glyph_data;
 
-#if defined(__ia16__)
+#if defined(CONFIG_HAVE_GFX_DEVICES)
 extern int ddcall
 gfx_register_device(far device *dev);
 #endif

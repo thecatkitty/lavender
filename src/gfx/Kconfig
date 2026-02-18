@@ -1,0 +1,4 @@
+config HAVE_GFX_DEVICES
+    bool
+    help
+        The target platform supports graphics device registration.
