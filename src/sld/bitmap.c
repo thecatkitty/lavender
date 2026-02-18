@@ -111,7 +111,7 @@ execute_complete(sld_entry *sld);
 static int
 execute_start(sld_entry *sld)
 {
-#if defined(GFX_HAS_SCALE)
+#if defined(CONFIG_HAVE_GFX_SCALING)
     float scale;
 #endif
     gfx_bitmap     bm;
@@ -131,21 +131,21 @@ execute_start(sld_entry *sld)
     }
 
     gfx_get_screen_dimensions(&screen);
-#if defined(GFX_HAS_SCALE)
+#if defined(CONFIG_HAVE_GFX_SCALING)
     scale = gfx_get_scale();
 #endif
 
     switch (sld->posx)
     {
     case SLD_ALIGN_CENTER:
-#if defined(GFX_HAS_SCALE)
+#if defined(CONFIG_HAVE_GFX_SCALING)
         x = ((float)screen.width / scale - bm.width) / 2 * scale;
 #else
         x = (screen.width - bm.width) / 2;
 #endif
         break;
     case SLD_ALIGN_RIGHT:
-#if defined(GFX_HAS_SCALE)
+#if defined(CONFIG_HAVE_GFX_SCALING)
         x = ((float)screen.width / scale - bm.width) * scale;
 #else
         x = screen.width - bm.width;
@@ -158,7 +158,7 @@ execute_start(sld_entry *sld)
     y = (int)((int32_t)sld->posy * screen.height / SLD_VIEWBOX_HEIGHT);
     if (0 > bm.height)
     {
-#if defined(GFX_HAS_SCALE)
+#if defined(CONFIG_HAVE_GFX_SCALING)
         int abs_height = abs(bm.height);
         int abs_chunk = abs(bm.chunk_height);
         int full_chunks = abs_height / abs_chunk;
@@ -177,7 +177,7 @@ execute_start(sld_entry *sld)
     CONTENT(sld)->y = y;
     CONTENT(sld)->height = 0;
     CONTENT(sld)->last_y = y;
-#if defined(GFX_HAS_SCALE)
+#if defined(CONFIG_HAVE_GFX_SCALING)
     CONTENT(sld)->scale = scale;
 #endif
     CONTENT(sld)->state = STATE_READ;
@@ -199,7 +199,7 @@ execute_read(sld_entry *sld)
 
     if (0 > ctx->bm.height)
     {
-#if defined(GFX_HAS_SCALE)
+#if defined(CONFIG_HAVE_GFX_SCALING)
         y = ctx->last_y - floor(ctx->bm.chunk_height * ctx->scale);
 #else
         y -= ctx->bm.chunk_top + ctx->bm.chunk_height;
@@ -207,7 +207,7 @@ execute_read(sld_entry *sld)
     }
     else
     {
-#if defined(GFX_HAS_SCALE)
+#if defined(CONFIG_HAVE_GFX_SCALING)
         y = ctx->last_y + floor(ctx->bm.chunk_height * ctx->scale);
 #else
         y += ctx->bm.chunk_top;
