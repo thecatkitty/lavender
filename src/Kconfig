@@ -8,5 +8,6 @@ config INTERNET
 
 rsource "pal/Kconfig"
 rsource "enc/Kconfig"
+rsource "gfx/Kconfig"
 rsource "snd/Kconfig"
 rsource "resource/Kconfig"
