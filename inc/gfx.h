@@ -147,7 +147,7 @@ extern float
 gfx_get_scale(void);
 #endif
 
-#if defined(__ia16__)
+#if defined(CONFIG_HAVE_GFX_CHARSET)
 extern bool
 gfx_get_font_data(gfx_glyph_data *data);
 #endif

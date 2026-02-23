@@ -1,3 +1,8 @@
+config HAVE_GFX_CHARSET
+    bool
+    help
+        The target graphics backend requires custom text encoding.
+
 config HAVE_GFX_DEVICES
     bool
     help
