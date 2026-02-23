@@ -3,7 +3,7 @@
 static int
 _measure_span(const char *str, size_t span)
 {
-#ifdef UTF8_NATIVE
+#if !defined(CONFIG_HAVE_GFX_CHARSET)
     const char *end = str + span;
     int         length;
 
@@ -23,7 +23,7 @@ _measure_span(const char *str, size_t span)
 static int
 _copy_text(char *dst, const char *src, size_t length)
 {
-#ifdef UTF8_NATIVE
+#if !defined(CONFIG_HAVE_GFX_CHARSET)
     int size = 0;
 
     for (int i = 0; i < length; i++)
@@ -112,12 +112,12 @@ encui_direct_load_string(encui_field *field, char *buff, size_t length)
 int
 encui_direct_print(int top, char *text)
 {
-#ifndef UTF8_NATIVE
+#if defined(CONFIG_HAVE_GFX_CHARSET)
     utf8_encode(text, text, pal_wctob);
 #endif
 
     const char *fragment = text;
-#ifdef UTF8_NATIVE
+#if !defined(CONFIG_HAVE_GFX_CHARSET)
     char line_buff[2 * TEXT_WIDTH + 1];
 #else
     char line_buff[TEXT_WIDTH + 1];

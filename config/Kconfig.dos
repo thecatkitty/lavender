@@ -2,4 +2,5 @@ config DOS
     def_bool y
     help
         Target platform is MS-DOS.
+    select HAVE_GFX_CHARSET
     select HAVE_GFX_DEVICES

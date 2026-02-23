@@ -2,7 +2,7 @@
 
 #include "sld_impl.h"
 
-#ifndef UTF8_NATIVE
+#if defined(CONFIG_HAVE_GFX_CHARSET)
 static int
 _convert_text(const char *str, sld_entry *inout)
 {
@@ -50,7 +50,7 @@ __sld_load_text(const char *str, sld_entry *out)
 
     __sld_try_load(__sld_load_position, cur, out);
     __sld_try_load(__sld_load_content, cur, out);
-#ifdef UTF8_NATIVE
+#if !defined(CONFIG_HAVE_GFX_CHARSET)
     out->length = utf8_strlen(out->content);
 #else
     __sld_try_load(_convert_text, cur, out);

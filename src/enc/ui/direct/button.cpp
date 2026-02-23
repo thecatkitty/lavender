@@ -23,7 +23,7 @@ button::draw()
 
     char buff[GFX_COLUMNS / 2];
     encui_direct_load_string(&field_, buff, sizeof(buff));
-#ifndef UTF8_NATIVE
+#if defined(CONFIG_HAVE_GFX_CHARSET)
     utf8_encode(buff, buff, pal_wctob);
 #endif
 

@@ -76,7 +76,7 @@ option::mark(bool checked)
 
     char buff[4];
     strcpy(buff, "○");
-#ifndef UTF8_NATIVE
+#if defined(CONFIG_HAVE_GFX_CHARSET)
     utf8_encode(buff, buff, pal_wctob);
 #endif
     gfx_draw_text(buff, pos.left + 1, pos.top);
@@ -87,7 +87,7 @@ option::mark(bool checked)
 #else
         strcpy(buff, "x");
 #endif
-#ifndef UTF8_NATIVE
+#if defined(CONFIG_HAVE_GFX_CHARSET)
         utf8_encode(buff, buff, pal_wctob);
 #endif
         gfx_draw_text(buff, pos.left + 1, pos.top);

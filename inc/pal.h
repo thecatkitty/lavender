@@ -194,7 +194,7 @@ extern void
 pal_open_url(const char *url);
 #endif
 
-#ifndef UTF8_NATIVE
+#if defined(CONFIG_HAVE_GFX_CHARSET)
 extern char
 pal_wctoa(uint16_t wc);
 
