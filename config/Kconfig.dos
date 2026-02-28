@@ -4,3 +4,4 @@ config DOS
         Target platform is MS-DOS.
     select HAVE_GFX_CHARSET
     select HAVE_GFX_DEVICES
+    select HAVE_GFX_XOR_BLENDING

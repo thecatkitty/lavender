@@ -33,7 +33,7 @@ checkbox::click(int x, int y)
 {
     field_.flags ^= ENCUIFF_CHECKED;
 
-#ifdef __ia16__
+#if defined(CONFIG_HAVE_GFX_XOR_BLENDING)
     mark(true);
 #else
     mark(ENCUIFF_CHECKED & field_.flags);
@@ -54,7 +54,7 @@ checkbox::mark(bool checked)
     box.top += pos.top * glyph.height;
 
     gfx_draw_rectangle(&box, GFX_COLOR_BLACK);
-#ifndef __ia16__
+#if !defined(CONFIG_HAVE_GFX_XOR_BLENDING)
     gfx_fill_rectangle(&box, GFX_COLOR_WHITE);
 #endif
 
