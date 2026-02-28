@@ -1,0 +1,22 @@
+menu "Content unlock UI"
+
+config ENCUI_CHECKBOX_MARK_CHARACTER
+    string "Checkbox mark character"
+    default "x"
+    help
+        Character used to represent a selected checkbox mark.
+
+config ENCUI_RADIO_FIELD_CHARACTER
+    string "Radio button field character"
+    default "○"
+    help
+        Character used to represent a radio button field.
+
+config ENCUI_RADIO_MARK_CHARACTER
+    string "Radio button mark character"
+    default "•" if HAVE_GFX_CHARSET
+    default "x"
+    help
+        Character used to represent a selected radio button mark.
+
+endmenu
