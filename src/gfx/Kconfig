@@ -12,3 +12,9 @@ config HAVE_GFX_SCALING
     bool
     help
         The target platform supports variable graphics scaling.
+
+config HAVE_GFX_XOR_BLENDING
+    bool
+    help
+        The target graphics backend utilizes XOR blending natively.
+        Writing a character a second time within the same cell clears it.
