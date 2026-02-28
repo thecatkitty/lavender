@@ -3,7 +3,7 @@
 
 #include <base.h>
 
-#ifdef __ia16__
+#if defined(__ia16__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
 typedef void __attribute__((interrupt)) far (*dos_isr)(void);

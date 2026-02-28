@@ -16,7 +16,15 @@
 
 #ifndef __cplusplus
 
-#if defined(__ia16__)
+#if defined(EDITING)
+
+#ifndef far
+#define far
+#endif
+
+#endif
+
+#if defined(CONFIG_DOS)
 #include <libi86/malloc.h>
 #include <libi86/string.h>
 #else
@@ -51,7 +59,7 @@ BSWAP32(uint32_t x);
 #endif
 
 #ifndef far
-#if !defined(EDITING) && defined(__ia16__)
+#if defined(__ia16__)
 #define far __far
 #else
 #define far
