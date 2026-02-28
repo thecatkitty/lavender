@@ -75,18 +75,14 @@ option::mark(bool checked)
     gfx_fill_rectangle(&box, GFX_COLOR_WHITE);
 
     char buff[4];
-    strcpy(buff, "○");
+    strcpy(buff, CONFIG_ENCUI_RADIO_FIELD_CHARACTER);
 #if defined(CONFIG_HAVE_GFX_CHARSET)
     utf8_encode(buff, buff, pal_wctob);
 #endif
     gfx_draw_text(buff, pos.left + 1, pos.top);
     if (checked)
     {
-#ifdef __ia16__
-        strcpy(buff, "•");
-#else
-        strcpy(buff, "x");
-#endif
+        strcpy(buff, CONFIG_ENCUI_RADIO_MARK_CHARACTER);
 #if defined(CONFIG_HAVE_GFX_CHARSET)
         utf8_encode(buff, buff, pal_wctob);
 #endif

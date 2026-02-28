@@ -60,6 +60,6 @@ checkbox::mark(bool checked)
 
     if (checked)
     {
-        gfx_draw_text("x", pos.left + 1, pos.top);
+        gfx_draw_text(CONFIG_ENCUI_CHECKBOX_MARK_CHARACTER, pos.left + 1, pos.top);
     }
 }

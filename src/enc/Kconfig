@@ -6,5 +6,6 @@ config ENCRYPTED_CONTENT
     help
         Support for inclusion of encrypted scripts.
 
+rsource "ui/Kconfig"
 
 endmenu
