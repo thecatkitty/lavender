@@ -19,14 +19,14 @@ _get(const char *name)
 static uint16_t
 _set(const char *name, const char *value)
 {
-#if !defined(_WIN32)
+#if defined(CONFIG_HAVE_ENV_LANG)
     if (0 == strcmp("env.lang", name))
     {
         return (0 == setenv("LANG", value, 0)) ? 1 : 0;
     }
 #endif
 
-#if defined(__ia16__)
+#if defined(CONFIG_HAVE_ENV_TZ)
     if (0 == strcmp("env.tz", name))
     {
         return (0 == setenv("TZ", value, 0)) ? 1 : 0;
