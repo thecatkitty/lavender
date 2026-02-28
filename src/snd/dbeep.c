@@ -222,6 +222,6 @@ drv_deinit(void)
 ANDREA_EXPORT(drv_deinit);
 #endif
 
-#if defined(__linux__)
+#if defined(CONFIG_SOUND_BEEPEMU)
 snd_device_ops *__beep_ops = &_ops;
 #endif

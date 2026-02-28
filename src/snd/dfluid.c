@@ -17,8 +17,10 @@ static fluid_audio_driver_t *_audio;
 static device          _beep;
 extern snd_device_ops *__beep_ops;
 
+#if defined(CONFIG_SOUND_BEEPEMU)
 extern void
 beepemu_stop(void);
+#endif
 
 static bool ddcall
 fluid_open(device *dev)
@@ -102,11 +104,13 @@ fluid_close(device *dev)
         delete_fluid_settings(_settings);
     }
 
+#if defined(CONFIG_SOUND_BEEPEMU)
     beepemu_stop();
     if (NULL != _beep.ops)
     {
         snd_device_close(&_beep);
     }
+#endif
 
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
 }
@@ -385,7 +389,9 @@ __fluid_init(void)
 {
     LOG("entry");
 
+#if defined(CONFIG_SOUND_BEEPEMU)
     _beep.ops = linux_beepemu_enabled() ? __beep_ops : NULL;
+#endif
 
     device dev = {"fluid", "FluidSynth", &_ops, NULL};
     return snd_register_device(&dev);

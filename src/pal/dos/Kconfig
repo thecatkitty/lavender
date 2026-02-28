@@ -5,6 +5,7 @@ menu "MS-DOS specific features"
 config ANDREA
     bool "Enable Andrea loadable modules"
     default y
+    select MODULES
     help
         Support for loadable drivers using the Andrea library.
 
