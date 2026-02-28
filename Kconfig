@@ -4,6 +4,11 @@ mainmenu "Lavender slideshow player features"
 rsource "config/Kconfig.$(TARGET)"
 
 
+config MODULES
+    bool
+    help
+        Loadable module support.
+
 config HAVE_INTERNET
     bool
     help

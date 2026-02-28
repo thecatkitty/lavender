@@ -88,11 +88,9 @@ else()
     set(ASSETS ${CMAKE_CURRENT_SOURCE_DIR}/data/*)
 endif()
 
-if(CONFIG_ANDREA)
-    set(DRIVERS 
-        $<TARGET_FILE:gfxega>
-        $<TARGET_FILE:sndmpu>
-        $<TARGET_FILE:sndopl>)
+get_target_property(DRIVERS lavender ANDREA_DRIVERS)
+if(DRIVERS MATCHES "-NOTFOUND$")
+    set(DRIVERS "")
 endif()
 
 add_custom_command(

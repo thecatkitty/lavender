@@ -98,12 +98,12 @@ pal_initialize(int argc, char *argv[])
             exit(0);
         }
 
-#if defined(CONFIG_SOUND)
+#if defined(CONFIG_SOUND_BEEPEMU)
         if ('b' == argv[i][1])
         {
             linux_has_beepemu = true;
         }
-#endif // CONFIG_SOUND
+#endif // CONFIG_SOUND_BEEPEMU
     }
 
     if (!ziparch_initialize(arg_archive))

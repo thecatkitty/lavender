@@ -6,4 +6,45 @@ config SOUND
     help
         Support for playback of music files.
 
+config SOUND_BEEP
+    bool "PC Speaker driver"
+    default y if DOS || LINUX
+    depends on SOUND && (DOS || LINUX)
+    help
+        Use the PC speaker for music output.
+
+config SOUND_BEEPEMU
+    def_bool y
+    depends on SOUND_BEEP && !DOS
+    help
+        The PC speaker is emulated.
+
+config SOUND_FLUID
+    bool "FluidSynth driver"
+    default y
+    depends on SOUND && SDL2
+    help
+        Use FluidSynth for music output.
+
+config SOUND_MPU401
+    tristate "Roland MPU-401 UART driver"
+    default m if DOS
+    depends on SOUND && DOS
+    help
+        Use Roland MPU-401 UART for music output.
+
+config SOUND_OPL2
+    tristate "Yamaha YM3812 (OPL2) driver"
+    default m if DOS
+    depends on SOUND && DOS
+    help
+        Use Yamaha YM3812 (OPL2) for music output.
+
+config SOUND_WINMM
+    bool "Windows MME driver"
+    default y
+    depends on SOUND && WINDOWS
+    help
+        Use Windows MME for music output.
+
 endmenu

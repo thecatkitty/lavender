@@ -9,21 +9,20 @@ extern drv_init __mpu401_init;
 extern drv_init __opl2_init;
 
 static drv_init *const INBOX_INIT[] = {
-#if defined(__ia16__) && !defined(CONFIG_ANDREA)
-    __mpu401_init, // Roland MPU-401 UART
-    __opl2_init,   // Yamaha YM3812 (OPL2)
-#endif
-
-#if defined(__ia16__)
-    __beep_init, // PC Speaker
-#endif
-
-#if defined(__linux__)
+#if defined(CONFIG_SOUND_FLUID)
     __fluid_init, // FluidSynth
 #endif
-
-#if defined(_WIN32)
+#if defined(CONFIG_SOUND_WINMM)
     __mme_init, // Windows MME
+#endif
+#if defined(CONFIG_SOUND_MPU401)
+    __mpu401_init, // Roland MPU-401 UART
+#endif
+#if defined(CONFIG_SOUND_OPL2)
+    __opl2_init, // Yamaha YM3812 (OPL2)
+#endif
+#if defined(CONFIG_SOUND_BEEP)
+    __beep_init, // PC Speaker
 #endif
 };
 
