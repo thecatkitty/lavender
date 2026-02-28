@@ -145,7 +145,7 @@ enc_validate_key_format(const char *key, enc_keysm sm)
     if ((ENC_KEYSM_PKEY25RAW == sm) || (ENC_KEYSM_PKEY25XOR12 == sm) ||
         (ENC_KEYSM_PKEY25XOR2B == sm))
     {
-#ifdef __ia16__
+#if defined(__ia16__)
         // FIXME: W/A for return value truncation
         // The condition below will never happen, but without this block the
         // returned value gets lost under gcc-ia16.

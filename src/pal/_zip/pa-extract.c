@@ -9,7 +9,7 @@
 
 #include <assets.h>
 
-#ifdef __ia16__
+#if defined(CONFIG_DOS)
 // newlib-ia16 seems to have some misbehaving tmpnam implementation
 static int tmpnam_num_ = 0;
 
