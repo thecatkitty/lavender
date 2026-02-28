@@ -1,3 +1,13 @@
+config HAVE_ENV_LANG
+    bool
+    help
+        Target platform supports runtime LANG environment variable setting.
+
+config HAVE_ENV_TZ
+    bool
+    help
+        Target platform supports runtime TZ environment variable setting.
+
 config SDL2
     bool
     help

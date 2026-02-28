@@ -2,6 +2,7 @@ config LINUX
     def_bool y
     help
         Target platform is Linux.
+    select HAVE_ENV_LANG
     select HAVE_GFX_SCALING
     select HAVE_INTERNET
     select SDL2

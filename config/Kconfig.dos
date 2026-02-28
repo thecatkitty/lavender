@@ -2,6 +2,8 @@ config DOS
     def_bool y
     help
         Target platform is MS-DOS.
+    select HAVE_ENV_LANG
+    select HAVE_ENV_TZ
     select HAVE_GFX_CHARSET
     select HAVE_GFX_DEVICES
     select HAVE_GFX_XOR_BLENDING
