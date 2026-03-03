@@ -1,5 +1,7 @@
 config SDL2
     bool
+    help
+        Target platform uses Simple DirectMedia Layer for I/O handling.
 
 
 config COMPACT

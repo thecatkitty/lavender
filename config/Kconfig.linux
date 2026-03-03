@@ -1,4 +1,6 @@
 config LINUX
     def_bool y
+    help
+        Target platform is Linux.
     select HAVE_INTERNET
     select SDL2
