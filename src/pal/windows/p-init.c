@@ -265,7 +265,7 @@ pal_cleanup(void)
     ziparch_cleanup();
 }
 
-#ifdef _DEBUG
+#if defined(CONFIG_LOGS)
 void
 pal_print_log(const char *location, const char *format, ...)
 {
