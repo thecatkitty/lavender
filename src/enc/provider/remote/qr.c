@@ -28,7 +28,7 @@ encr_qr_init(enc_context *enc)
         return;
     }
 
-#if defined(_WIN32) || defined(__linux__)
+#if defined(CONFIG_HAVE_BROWSER)
     encr_pages[PAGE_METHOD].fields[2].flags &= ~ENCUIFF_DYNAMIC;
     encr_pages[PAGE_METHOD].fields[2].data = IDS_PRIVACY;
 #endif

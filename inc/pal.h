@@ -189,7 +189,7 @@ pal_save_state(const char *name, const uint8_t *buffer, size_t size);
 extern void
 pal_alert(const char *text, int error);
 
-#if defined(_WIN32) || defined(__linux__)
+#if defined(CONFIG_HAVE_BROWSER)
 extern void
 pal_open_url(const char *url);
 #endif

@@ -203,7 +203,7 @@ _method_page_proc(int msg, void *param, void *data)
         }
     }
 
-#if defined(_WIN32) || defined(__linux__)
+#if defined(CONFIG_HAVE_BROWSER)
     case ENCUIM_NOTIFY: {
         if (0x102 == (intptr_t)param)
         {
