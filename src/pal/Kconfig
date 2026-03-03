@@ -1,3 +1,8 @@
+config HAVE_BROWSER
+    bool
+    help
+        Target platform features a browser capable of handling URLs.
+
 config HAVE_ENV_LANG
     bool
     help
