@@ -13,5 +13,8 @@ endif()
 
 if(LINUX)
     add_subdirectory(linux)
+endif()
+
+if(CONFIG_LOGS AND NOT WIN32)
     target_sources(pal PRIVATE log.c)
 endif()

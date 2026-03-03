@@ -26,5 +26,13 @@ config COMPACT
     help
         Only support asset bundle loaded to memory with the executable.
 
+config LOGS
+    bool "Print logs"
+    default y if LINUX
+    default n
+    depends on !DOS
+    help
+        Print diagnostic log messages.
+
 
 rsource "dos/Kconfig"
