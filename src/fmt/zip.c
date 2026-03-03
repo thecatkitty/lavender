@@ -44,7 +44,7 @@ _seek_read(void *ptr, off_t offset, size_t size)
 static off_t
 _get_bundle_length(void)
 {
-#ifdef _WIN32
+#if defined(CONFIG_WINDOWS)
     exe_dos_header         dos_header;
     exe_pe_optional_header optional_header = {0};
     exe_pe_data_directory  security = {0};
