@@ -1,9 +1,9 @@
-#ifdef _WIN32
+#include <generated/config.h>
+
+#if defined(CONFIG_WINDOWS)
 #include <winnt.rh>
 #include <nls.h>
 #endif
-
-#include <generated/config.h>
 
 #define IDS_ERROR     0x00
 #define IDS_NOARCHIVE 0x01
@@ -48,7 +48,7 @@
 #define IDS_DESCRIPTION 0x40
 #define IDS_COPYRIGHT   0x41
 
-#ifdef _WIN32
+#if defined(CONFIG_WINDOWS)
 #define IDS_ABOUT      0x50
 #define IDS_ABOUT_LONG 0x51
 #define IDS_SIZE       0x52
@@ -85,7 +85,7 @@
 #define IDS_INVALIDRESP  0x7E
 #endif
 
-#ifdef _WIN32
+#if defined(CONFIG_WINDOWS)
 #define IDS_METHOD_RCODE_HEAD (0x200 + IDS_METHOD_RCODE)
 #define IDS_METHOD_QR_HEAD    (0x200 + IDS_METHOD_QR)
 
@@ -94,5 +94,5 @@
 
 #define IDS_METHOD_INET_HEAD  (0x200 + IDS_METHOD_INET)
 #define IDS_METHOD_INET_NOTE  (0x300 + IDS_METHOD_INET)
-#endif // _WIN32
+#endif // CONFIG_WINDOWS
 #endif // CONFIG_ENCRYPTED_CONTENT

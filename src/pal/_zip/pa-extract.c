@@ -1,10 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifdef _WIN32
-#include <windows.h>
-#endif
-
 #include <fmt/zip.h>
 
 #include <assets.h>
@@ -32,7 +28,8 @@ my_tmpnam(char *path)
 
     return path;
 }
-#elif defined(_WIN32)
+#elif defined(CONFIG_WINDOWS)
+#undef align
 #include <windows.h>
 
 static char *

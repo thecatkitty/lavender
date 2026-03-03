@@ -46,7 +46,7 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
     IDS_DESCRIPTION, "Přehrávač prezentací"
     IDS_COPYRIGHT, "(C) 2021-2026 Mateusz Karcz.\nZpřístupněno pod Licencí MIT."
 
-#ifdef _WIN32
+#if defined(CONFIG_WINDOWS)
     IDS_ABOUT, "O programu..."
     IDS_ABOUT_LONG, "O programu Lavender"
     IDS_SIZE, "Rozměr"
@@ -83,7 +83,7 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
     IDS_INVALIDRESP, "Přijatá odpověď je neplatná"
 #endif
 
-#ifdef _WIN32
+#if defined(CONFIG_WINDOWS)
     IDS_METHOD_RCODE_HEAD, "Přepište kód požadavku"
     IDS_METHOD_QR_HEAD, "Naskenujte QR kód"
 
@@ -92,7 +92,7 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
 
     IDS_METHOD_INET_HEAD, "Potvrďte online"
     IDS_METHOD_INET_NOTE, "Ověřte pomocí automatické služby přes internet."
-#endif // _WIN32
+#endif // CONFIG_WINDOWS
 #endif // CONFIG_ENCRYPTED_CONTENT
 }
 

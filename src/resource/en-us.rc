@@ -46,7 +46,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
     IDS_DESCRIPTION, "A slideshow player"
     IDS_COPYRIGHT, "(C) 2021-2026 Mateusz Karcz.\nShared under the MIT License."
 
-#ifdef _WIN32
+#if defined(CONFIG_WINDOWS)
     IDS_ABOUT, "About..."
     IDS_ABOUT_LONG, "About Lavender"
     IDS_SIZE, "Size"
@@ -83,7 +83,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
     IDS_INVALIDRESP, "The received response is invalid"
 #endif
 
-#ifdef _WIN32
+#if defined(CONFIG_WINDOWS)
     IDS_METHOD_RCODE_HEAD, "Copy a request code"
     IDS_METHOD_QR_HEAD, "Scan a QR code"
 
@@ -92,7 +92,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
     IDS_METHOD_INET_HEAD, "Check online"
     IDS_METHOD_INET_NOTE, "Verify using the automatic service over the Internet."
-#endif // _WIN32
+#endif // CONFIG_WINDOWS
 #endif // CONFIG_ENCRYPTED_CONTENT
 }
 
