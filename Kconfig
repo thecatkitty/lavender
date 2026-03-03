@@ -6,6 +6,8 @@ rsource "config/Kconfig.$(TARGET)"
 
 config HAVE_INTERNET
     bool
+    help
+        Target platform supports Web services.
 
 
 rsource "src/Kconfig"

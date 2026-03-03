@@ -1,2 +1,4 @@
 config DOS
     def_bool y
+    help
+        Target platform is MS-DOS.

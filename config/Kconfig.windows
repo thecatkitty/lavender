@@ -1,3 +1,5 @@
 config WINDOWS
     def_bool y
+    help
+        Target platform is 32- or 64-bit Windows.
     select HAVE_INTERNET
