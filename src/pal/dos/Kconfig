@@ -10,6 +10,13 @@ config ANDREA
         Support for loadable drivers using the Andrea library.
 
 
+config STACK_PROFILING
+    bool "Enable stack usage measurement"
+    default n
+    help
+        Measures the maximum usage of the stack during the application lifecycle.
+
+
 config WINOLDAP
     bool "Enable Windows DOS box integration"
     default n
