@@ -62,7 +62,7 @@ rstrtoull(const char *str, int base)
     }
 }
 
-#if !defined(_WIN32) && !__MISC_VISIBLE
+#if defined(CUSTOM_ITOA)
 char *
 itoa(int value, char *str, int base)
 {
