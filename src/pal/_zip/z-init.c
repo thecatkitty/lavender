@@ -10,7 +10,7 @@ ziparch_initialize(zip_archive archive)
 {
     int i;
 
-#ifdef CONFIG_COMPACT
+#if defined(CONFIG_COMPACT)
     LOG("entry, piggyback");
 #else
     LOG("entry, archive: '%s'", archive);
