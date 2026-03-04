@@ -1,7 +1,7 @@
 function(add_driver target)
     add_executable(${target})
     set_target_properties(${target} PROPERTIES SUFFIX ".sys")
-    target_compile_definitions(${target} PRIVATE LOADABLE)
+    target_compile_definitions(${target} PRIVATE MODULE)
     target_link_options(${target} PRIVATE -T ${ANDREA_LIB}/andrea-module.ld)
     target_link_options(${target} PRIVATE -Wl,-Map=${target}.map)
     target_link_libraries(${target} ${CMAKE_BINARY_DIR}/src/lavender.exe.a)

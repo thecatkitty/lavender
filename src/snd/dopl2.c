@@ -354,7 +354,7 @@ DRV_INIT(opl2)(void)
     return snd_register_device(&_dev);
 }
 
-#ifdef LOADABLE
+#if defined(MODULE)
 int ddcall
 drv_deinit(void)
 {
