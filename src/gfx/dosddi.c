@@ -3,7 +3,7 @@
 #include <gfx.h>
 #include <pal.h>
 
-#ifdef CONFIG_ANDREA
+#if defined(CONFIG_ANDREA)
 #include <andrea.h>
 #endif
 
@@ -35,7 +35,7 @@ gfx_register_device(far device *dev)
     return -errno;
 }
 
-#ifdef CONFIG_ANDREA
+#if defined(CONFIG_ANDREA)
 ANDREA_EXPORT(gfx_register_device);
 #endif
 

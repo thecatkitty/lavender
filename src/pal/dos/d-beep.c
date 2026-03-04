@@ -2,7 +2,7 @@
 
 #include <arch/dos.h>
 
-#ifdef CONFIG_ANDREA
+#if defined(CONFIG_ANDREA)
 #include <andrea.h>
 #endif
 
@@ -21,7 +21,7 @@ dos_silence(void)
     _outp(0x61, _inp(0x61) & ~SPKR_ENABLE);
 }
 
-#ifdef CONFIG_ANDREA
+#if defined(CONFIG_ANDREA)
 ANDREA_EXPORT(dos_beep);
 ANDREA_EXPORT(dos_silence);
 #endif

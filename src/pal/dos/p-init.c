@@ -15,7 +15,7 @@
 #include <pal.h>
 #include <snd.h>
 
-#ifdef CONFIG_ANDREA
+#if defined(CONFIG_ANDREA)
 #include <andrea.h>
 #endif
 
@@ -23,7 +23,7 @@
 #include "hw.h"
 #include "impl.h"
 
-#ifdef CONFIG_ANDREA
+#if defined(CONFIG_ANDREA)
 #define MAX_DRIVERS 4
 #endif
 
@@ -154,7 +154,7 @@ is_compatible(void)
     return !is_dos_major(1) && (!is_winnt() || (0x0600 > get_winnt_version()));
 }
 
-#ifdef CONFIG_ANDREA
+#if defined(CONFIG_ANDREA)
 static bool
 driver_enum_callback(const char *name, void *data)
 {
@@ -338,7 +338,7 @@ pal_initialize(int argc, char *argv[])
         msdos_exit(1);
     }
 
-#ifdef CONFIG_ANDREA
+#if defined(CONFIG_ANDREA)
     andrea_init();
 #endif
 
