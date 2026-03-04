@@ -34,11 +34,11 @@ __cga_init(void);
 
 extern char __edata[], __sbss[], __ebss[];
 
-#ifdef STACK_PROFILING
+#if defined(CONFIG_STACK_PROFILING)
 static uint64_t      *stack_start_;
 static uint64_t      *stack_end_ = (uint64_t *)0xFFE8;
 static const uint64_t STACK_FILL_PATTERN = 0x0123456789ABCDEFULL;
-#endif // STACK_PROFILING
+#endif // CONFIG_STACK_PROFILING
 
 #ifdef CONFIG_COMPACT
 static zip_cdir_end_header *
@@ -255,11 +255,11 @@ show_help(const char *self)
 void
 pal_initialize(int argc, char *argv[])
 {
-#ifdef STACK_PROFILING
+#if defined(CONFIG_STACK_PROFILING)
     stack_start_ = (uint64_t *)((unsigned)__ebss / 8 * 8) + 1;
     for (uint64_t *ptr = stack_start_; ptr < stack_end_; ptr++)
         *ptr = STACK_FILL_PATTERN;
-#endif // STACK_PROFILING
+#endif // CONFIG_STACK_PROFILING
 
     bool arg_help = false;
 #ifndef CONFIG_COMPACT
@@ -407,7 +407,7 @@ pal_cleanup(void)
     pit_cleanup();
     nosound();
 
-#ifdef STACK_PROFILING
+#if defined(CONFIG_STACK_PROFILING)
     uint64_t *untouched;
     for (untouched = stack_start_; untouched < stack_end_; untouched++)
     {
@@ -425,5 +425,5 @@ pal_cleanup(void)
         msdos_putc(buffer[i]);
 
     msdos_puts("\r\n$");
-#endif // STACK_PROFILING
+#endif // CONFIG_STACK_PROFILING
 }
