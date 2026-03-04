@@ -409,7 +409,7 @@ windows_wndproc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
         return 0;
     }
 
-#if PAL_EXTERNAL_TICK
+#if defined(CONFIG_HAVE_TIMER)
     case WM_TIMER: {
         // Prevents music hang during modal UI
         snd_handle();

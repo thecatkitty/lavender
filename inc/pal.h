@@ -19,12 +19,6 @@ typedef bool (*pal_enum_assets_callback)(const char *, void *);
 #endif
 #endif
 
-#if defined(_WIN32)
-#define PAL_EXTERNAL_TICK 1
-#else
-#define PAL_EXTERNAL_TICK 0
-#endif
-
 #define PAL_MACHINE_ID_SIZE 16
 
 #define PAL_MOUSE_LBUTTON 0x0001
@@ -120,7 +114,7 @@ palpp_get_ticks(unsigned ms);
 extern void ddcall
 pal_sleep(unsigned ms);
 
-#if PAL_EXTERNAL_TICK
+#if defined(CONFIG_HAVE_TIMER)
 extern void
 pal_stall(int ms);
 #endif
