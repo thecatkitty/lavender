@@ -40,7 +40,7 @@ static uint64_t      *stack_end_ = (uint64_t *)0xFFE8;
 static const uint64_t STACK_FILL_PATTERN = 0x0123456789ABCDEFULL;
 #endif // CONFIG_STACK_PROFILING
 
-#ifdef CONFIG_COMPACT
+#if defined(CONFIG_COMPACT)
 static zip_cdir_end_header *
 locate_cdir(void *from, void *to)
 {
@@ -262,7 +262,7 @@ pal_initialize(int argc, char *argv[])
 #endif // CONFIG_STACK_PROFILING
 
     bool arg_help = false;
-#ifndef CONFIG_COMPACT
+#if !defined(CONFIG_COMPACT)
     const char *arg_archive = argv[0];
 #endif // CONFIG_COMPACT
 #if defined(CONFIG_SOUND)
@@ -273,7 +273,7 @@ pal_initialize(int argc, char *argv[])
     {
         if ('/' != argv[i][0])
         {
-#ifndef CONFIG_COMPACT
+#if !defined(CONFIG_COMPACT)
             if (argv[0] == arg_archive)
             {
                 arg_archive = argv[i];
@@ -295,7 +295,7 @@ pal_initialize(int argc, char *argv[])
         }
     }
 
-#ifdef CONFIG_COMPACT
+#if defined(CONFIG_COMPACT)
     zip_cdir_end_header *cdir = locate_cdir(__edata, __sbss);
     if (NULL == cdir)
     {
