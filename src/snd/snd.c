@@ -199,7 +199,7 @@ snd_handle(void)
         return;
     }
 
-#if !PAL_EXTERNAL_TICK
+#if !defined(CONFIG_HAVE_TIMER)
     snd_tick();
 #endif
 

@@ -13,6 +13,11 @@ config HAVE_ENV_TZ
     help
         Target platform supports runtime TZ environment variable setting.
 
+config HAVE_TIMER
+    bool
+    help
+        Target platform can raise timer events.
+
 config SDL2
     bool
     help

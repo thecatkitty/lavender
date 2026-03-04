@@ -34,7 +34,7 @@ _execute_entry(sld_entry *sld)
     case SLD_TYPE_PLAY:
         return __sld_execute_play(sld);
     case SLD_TYPE_WAITKEY:
-#if PAL_EXTERNAL_TICK
+#if defined(CONFIG_HAVE_TIMER)
         pal_stall(-1);
 #endif
         pal_enable_mouse();
@@ -111,7 +111,7 @@ sld_handle(void)
         return;
     }
 
-#if defined(CONFIG_SOUND) && !PAL_EXTERNAL_TICK
+#if defined(CONFIG_SOUND) && !defined(CONFIG_HAVE_TIMER)
     snd_handle();
 #endif
 
@@ -196,7 +196,7 @@ sld_handle(void)
 
         ctx->offset += length;
 
-#if PAL_EXTERNAL_TICK
+#if defined(CONFIG_HAVE_TIMER)
         pal_stall(ctx->entry.delay / 4);
 #endif
         if (0 != ctx->entry.delay)

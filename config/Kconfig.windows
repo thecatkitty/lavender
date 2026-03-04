@@ -5,3 +5,4 @@ config WINDOWS
     select HAVE_BROWSER
     select HAVE_GFX_SCALING
     select HAVE_INTERNET
+    select HAVE_TIMER

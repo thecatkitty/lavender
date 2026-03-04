@@ -6,7 +6,7 @@
 
 static HMIDIOUT _out = NULL;
 
-#if PAL_EXTERNAL_TICK
+#if defined(CONFIG_HAVE_TIMER)
 static unsigned _period = 0;
 static UINT     _timer = 0;
 
@@ -20,14 +20,14 @@ _time_callback(UINT id, UINT msg, DWORD_PTR user, DWORD_PTR dw1, DWORD_PTR dw2)
 static bool ddcall
 mme_open(device *dev)
 {
-#if PAL_EXTERNAL_TICK
+#if defined(CONFIG_HAVE_TIMER)
     TIMECAPS tc;
     unsigned period;
 #endif
 
     LOG("entry");
 
-#if PAL_EXTERNAL_TICK
+#if defined(CONFIG_HAVE_TIMER)
     if (TIMERR_NOERROR != timeGetDevCaps(&tc, sizeof(TIMECAPS)))
     {
         LOG("cannot get multimedia timer capabilities");
@@ -42,7 +42,7 @@ mme_open(device *dev)
         return false;
     }
 
-#if PAL_EXTERNAL_TICK
+#if defined(CONFIG_HAVE_TIMER)
     period = min(max(tc.wPeriodMin, 1), tc.wPeriodMax);
     if (TIMERR_NOERROR != timeBeginPeriod(period))
     {
@@ -70,7 +70,7 @@ mme_close(device *dev)
 {
     LOG("entry");
 
-#if PAL_EXTERNAL_TICK
+#if defined(CONFIG_HAVE_TIMER)
     if (_timer)
     {
         timeKillEvent(_timer);
