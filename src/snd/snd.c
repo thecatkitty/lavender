@@ -6,7 +6,7 @@
 #include <snd/dev.h>
 #include <snd/seq.h>
 
-#ifdef CONFIG_ANDREA
+#if defined(CONFIG_ANDREA)
 #include <andrea.h>
 #include <arch/dos.h>
 #endif
@@ -74,7 +74,7 @@ snd_unregister_devices(far snd_device_ops *ops)
     return count;
 }
 
-#ifdef CONFIG_ANDREA
+#if defined(CONFIG_ANDREA)
 ANDREA_EXPORT(snd_register_device);
 ANDREA_EXPORT(snd_unregister_devices);
 #endif

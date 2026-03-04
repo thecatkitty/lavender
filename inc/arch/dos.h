@@ -16,7 +16,7 @@ dos_is_dosbox(void);
 extern bool
 dos_is_windows(void);
 
-#ifdef CONFIG_ANDREA
+#if defined(CONFIG_ANDREA)
 extern uint16_t
 dos_load_driver(const char *name);
 

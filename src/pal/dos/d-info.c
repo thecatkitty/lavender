@@ -2,7 +2,7 @@
 
 #include <arch/dos/winoldap.h>
 
-#ifdef CONFIG_ANDREA
+#if defined(CONFIG_ANDREA)
 #include <andrea.h>
 #endif
 
@@ -31,6 +31,6 @@ dos_is_windows(void)
 #endif
 }
 
-#ifdef CONFIG_ANDREA
+#if defined(CONFIG_ANDREA)
 ANDREA_EXPORT(dos_is_dosbox);
 #endif

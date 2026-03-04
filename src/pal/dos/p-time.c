@@ -3,7 +3,7 @@
 
 #include <arch/dos.h>
 
-#ifdef CONFIG_ANDREA
+#if defined(CONFIG_ANDREA)
 #include <andrea.h>
 #endif
 
@@ -44,7 +44,7 @@ pal_sleep(unsigned ms)
     }
 }
 
-#ifdef CONFIG_ANDREA
+#if defined(CONFIG_ANDREA)
 ANDREA_EXPORT(pal_get_counter);
 ANDREA_EXPORT(pal_get_ticks);
 ANDREA_EXPORT(pal_sleep);
