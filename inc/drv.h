@@ -3,7 +3,7 @@
 
 #include <base.h>
 
-#ifdef LOADABLE
+#if defined(MODULE)
 #include <andrea.h>
 
 #define DRV_DATA ANDREA_MODDATA
