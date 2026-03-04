@@ -20,7 +20,6 @@ function(target_link_win32_strings target source_file suffix)
             ${destination_file}
             ${CMAKE_C_COMPILER}
             --
-            -DSTRINGS_ONLY
             ${win32_strings_args}
             -I${CMAKE_SOURCE_DIR}/inc/
             -I${CMAKE_BINARY_DIR}/inc/
