@@ -14,5 +14,11 @@ config HAVE_INTERNET
     help
         Target platform supports Web services.
 
+config TESTS
+    bool "Build tests"
+    default y if LINUX
+    help
+        Build automatic tests.
+
 
 rsource "src/Kconfig"

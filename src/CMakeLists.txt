@@ -59,6 +59,6 @@ add_subdirectory(resource)
 
 include(${KCONFIG_TARGET}.cmake)
 
-if(LINUX)
+if(CONFIG_TESTS)
     add_subdirectory(pal/dos/test)
 endif()
