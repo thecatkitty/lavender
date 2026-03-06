@@ -1,3 +1,11 @@
+config ARD
+    bool "Build AutoRun Dependency checker"
+    default n
+    depends on WINDOWS
+    help
+        Build the AutoRun utility for verifying and installing runtime
+        prerequisities under Windows.
+
 config INTERNET
     bool "Internet features support"
     default y
