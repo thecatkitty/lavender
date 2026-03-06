@@ -70,7 +70,8 @@ jobs:
             fetch-script: .github/fetch-mingw.sh ia32
             cc: i686-w64-mingw32-gcc
             cxx: i686-w64-mingw32-g++
-            flags: -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_EXE_LINKER_FLAGS=-L$GITHUB_WORKSPACE/ext/bulwa/i686-w64-mingw32/lib -DLAV_ARD=1
+            flags: -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_EXE_LINKER_FLAGS=-L$GITHUB_WORKSPACE/ext/bulwa/i686-w64-mingw32/lib
+            config: windows-lard
             build-targets: all bundle
             host: ubuntu-latest
 
@@ -113,7 +114,8 @@ jobs:
             target: windows-axp
             fetch-script: .\.github\fetch-ow.ps1
             env-script: . .\.github\enter-ow.ps1
-            flags: -G "Watcom WMake" -DCMAKE_C_COMPILER=wclaxp -DCMAKE_CXX_COMPILER=wclaxp -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER_FORCED=TRUE -DCMAKE_CXX_COMPILER_FORCED=TRUE -DLAV_ARD=1
+            flags: -G "Watcom WMake" -DCMAKE_C_COMPILER=wclaxp -DCMAKE_CXX_COMPILER=wclaxp -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER_FORCED=TRUE -DCMAKE_CXX_COMPILER_FORCED=TRUE
+            config: windows-lard
             host: windows-2025
             build-targets: lard
 
