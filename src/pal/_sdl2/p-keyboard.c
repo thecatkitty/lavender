@@ -2,19 +2,21 @@
 
 #include "impl.h"
 
-SDL_Keycode sdl2_keycode;
+SDL_Keysym sdl2_keysym;
 
 uint16_t
 pal_get_keystroke(void)
 {
-    if (!sdl2_keycode)
+    if (!sdl2_keysym.sym)
     {
         return 0;
     }
 
-    int c = sdl2_keycode;
-    sdl2_keycode = 0;
+    SDL_Keysym keysym;
+    memcpy(&keysym, &sdl2_keysym, sizeof(keysym));
+    memset(&sdl2_keysym, 0, sizeof(sdl2_keysym));
 
+    int c = keysym.sym;
     switch (c)
     {
     case '-':
@@ -116,6 +118,6 @@ pal_get_keystroke(void)
         }
     }
 
-    LOG("keystroke: %#.2x", c);
+    LOG("keystroke: %d", c);
     return c;
 }

@@ -51,13 +51,13 @@ pal_handle(void)
             }
         }
 
-        sdl2_keycode = e.key.keysym.sym;
+        memcpy(&sdl2_keysym, &e.key.keysym, sizeof(sdl2_keysym));
         break;
     }
 
     case SDL_KEYUP:
         LOG("key '%s' up", SDL_GetKeyName(e.key.keysym.sym));
-        sdl2_keycode = 0;
+        memset(&sdl2_keysym, 0, sizeof(sdl2_keysym));
         break;
 
     case SDL_MOUSEMOTION: {
