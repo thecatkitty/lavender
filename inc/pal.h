@@ -53,6 +53,7 @@ typedef bool (*pal_enum_assets_callback)(const char *, void *);
 #define VK_F10       0x79
 #define VK_F11       0x7A
 #define VK_F12       0x7B
+#define VK_OEM_PLUS  0xBB
 #define VK_OEM_MINUS 0xBD
 #endif
 

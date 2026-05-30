@@ -258,7 +258,15 @@ key_down(HWND wnd, WPARAM wparam)
         {
             gfx_step_scale(
                 ((VK_OEM_PLUS == wparam) || (VK_ADD == wparam)) ? +1 : -1);
-            break;
+        }
+
+        if (VK_ADD == wparam)
+        {
+            wparam = VK_OEM_PLUS;
+        }
+        else if (VK_SUBTRACT == wparam)
+        {
+            wparam = VK_OEM_MINUS;
         }
 
         // Fall through
