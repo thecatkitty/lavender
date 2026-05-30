@@ -46,6 +46,14 @@ bios_check_keystroke(void)
     return ax;
 }
 
+static inline uint8_t
+bios_get_shift_flags(void)
+{
+    uint16_t ax;
+    asm volatile("int $0x16" : "=a"(ax) : "Rah"((uint8_t)0x02));
+    return ax & 0xFF;
+}
+
 static inline void
 bios_set_cursor_position(uint8_t page, uint16_t position)
 {

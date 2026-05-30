@@ -3,15 +3,9 @@
 #include <arch/dos/bios.h>
 #include <pal.h>
 
-uint16_t
-pal_get_keystroke(void)
+static uint16_t
+map_keystroke(uint16_t keystroke)
 {
-    if (0 == bios_check_keystroke())
-    {
-        return 0;
-    }
-
-    uint16_t keystroke = bios_get_keystroke();
     if (keystroke & 0xFF)
     {
         if ('+' == (keystroke & 0xFF))
@@ -76,4 +70,23 @@ pal_get_keystroke(void)
     default:
         return 0;
     }
+}
+
+uint16_t
+pal_get_keystroke(void)
+{
+    if (0 == bios_check_keystroke())
+    {
+        return 0;
+    }
+
+    uint16_t bios_key = bios_get_keystroke();
+    uint16_t mapped_key = map_keystroke(bios_key);
+
+    if (mapped_key && ((1 << 2) & bios_get_shift_flags()))
+    {
+        mapped_key |= VKMOD_CTRL;
+    }
+
+    return mapped_key;
 }

@@ -316,6 +316,11 @@ key_down(HWND wnd, WPARAM wparam)
         break;
     }
     }
+
+    if (windows_keycode && (0x8000 & GetKeyState(VK_CONTROL)))
+    {
+        windows_keycode |= VKMOD_CTRL;
+    }
 }
 
 static void
