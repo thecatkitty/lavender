@@ -19,7 +19,12 @@ pal_get_keystroke(void)
     int c = keysym.sym;
     switch (c)
     {
-    case '-':
+    case SDLK_PLUS:
+    case SDLK_KP_PLUS:
+        c = VK_OEM_PLUS;
+        break;
+    case SDLK_MINUS:
+    case SDLK_KP_MINUS:
         c = VK_OEM_MINUS;
         break;
     case SDLK_DELETE:
