@@ -79,6 +79,13 @@ select_scale(int idx)
     return true;
 }
 
+bool
+windows_step_scale(int direction)
+{
+    int scale_idx = match_scale(gfx_get_scale(), direction);
+    return select_scale(scale_idx);
+}
+
 static bool
 get_fullscreen_rect(HWND wnd, RECT *rect)
 {
@@ -249,10 +256,8 @@ key_down(HWND wnd, WPARAM wparam)
     case VK_SUBTRACT: {
         if (0x8000 & GetKeyState(VK_CONTROL))
         {
-            int scale_idx = match_scale(
-                gfx_get_scale(),
+            gfx_step_scale(
                 ((VK_OEM_PLUS == wparam) || (VK_ADD == wparam)) ? +1 : -1);
-            select_scale(scale_idx);
             break;
         }
 
