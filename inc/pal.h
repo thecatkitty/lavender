@@ -57,6 +57,8 @@ typedef bool (*pal_enum_assets_callback)(const char *, void *);
 #define VK_OEM_MINUS 0xBD
 #endif
 
+#define VKMOD_CTRL (1 << 8)
+
 #if defined(CONFIG_LOGS)
 
 extern void

@@ -123,6 +123,11 @@ pal_get_keystroke(void)
         }
     }
 
+    if (c && (keysym.mod & KMOD_CTRL))
+    {
+        c |= VKMOD_CTRL;
+    }
+
     LOG("keystroke: %d", c);
     return c;
 }
