@@ -157,6 +157,12 @@ gfx_get_scale(void)
     return _scale;
 }
 
+bool
+gfx_step_scale(int direction)
+{
+    return windows_step_scale(direction);
+}
+
 unsigned
 gfx_get_color_depth(void)
 {

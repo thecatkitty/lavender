@@ -22,6 +22,9 @@ windows_set_font(HFONT font);
 extern bool
 windows_set_scale(float scale);
 
+extern bool
+windows_step_scale(int direction);
+
 extern void
 windows_set_box(int width, int height);
 

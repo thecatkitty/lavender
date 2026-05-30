@@ -214,6 +214,12 @@ gfx_get_scale(void)
     return _scale;
 }
 
+bool
+gfx_step_scale(int direction)
+{
+    return sdl2_set_scale(_scale + (direction > 0 ? 1 : -1));
+}
+
 unsigned
 gfx_get_color_depth(void)
 {

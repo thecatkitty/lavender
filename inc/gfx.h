@@ -145,6 +145,10 @@ gfx_get_pixel_aspect(void);
 // Get display scaling factor
 extern float
 gfx_get_scale(void);
+
+// Change display scaling factor by direction (-1 for smaller, +1 for larger)
+extern bool
+gfx_step_scale(int direction);
 #endif
 
 #if defined(CONFIG_HAVE_GFX_CHARSET)

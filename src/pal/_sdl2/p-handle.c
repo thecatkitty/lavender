@@ -37,7 +37,7 @@ pal_handle(void)
             if ((SDLK_PLUS == e.key.keysym.sym) ||
                 (SDLK_KP_PLUS == e.key.keysym.sym))
             {
-                sdl2_set_scale(gfx_get_scale() + 1);
+                gfx_step_scale(+1);
                 gfx_get_glyph_dimensions(&sdl2_cell);
                 break;
             }
@@ -45,7 +45,7 @@ pal_handle(void)
             if ((SDLK_MINUS == e.key.keysym.sym) ||
                 (SDLK_KP_MINUS == e.key.keysym.sym))
             {
-                sdl2_set_scale(gfx_get_scale() - 1);
+                gfx_step_scale(-1);
                 gfx_get_glyph_dimensions(&sdl2_cell);
                 break;
             }
