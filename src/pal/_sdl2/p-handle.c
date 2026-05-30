@@ -30,23 +30,6 @@ pal_handle(void)
 
     case SDL_KEYDOWN: {
         LOG("key '%s' down", SDL_GetKeyName(e.key.keysym.sym));
-        if (KMOD_CTRL & e.key.keysym.mod)
-        {
-            if ((SDLK_PLUS == e.key.keysym.sym) ||
-                (SDLK_KP_PLUS == e.key.keysym.sym))
-            {
-                gfx_step_scale(+1);
-                break;
-            }
-
-            if ((SDLK_MINUS == e.key.keysym.sym) ||
-                (SDLK_KP_MINUS == e.key.keysym.sym))
-            {
-                gfx_step_scale(-1);
-                break;
-            }
-        }
-
         memcpy(&sdl2_keysym, &e.key.keysym, sizeof(sdl2_keysym));
         break;
     }

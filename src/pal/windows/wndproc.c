@@ -252,26 +252,6 @@ key_down(HWND wnd, WPARAM wparam)
     {
     case VK_OEM_PLUS:
     case VK_OEM_MINUS:
-    case VK_ADD:
-    case VK_SUBTRACT: {
-        if (0x8000 & GetKeyState(VK_CONTROL))
-        {
-            gfx_step_scale(
-                ((VK_OEM_PLUS == wparam) || (VK_ADD == wparam)) ? +1 : -1);
-        }
-
-        if (VK_ADD == wparam)
-        {
-            wparam = VK_OEM_PLUS;
-        }
-        else if (VK_SUBTRACT == wparam)
-        {
-            wparam = VK_OEM_MINUS;
-        }
-
-        // Fall through
-    }
-
     case VK_BACK:
     case VK_TAB:
     case VK_RETURN:
@@ -298,6 +278,16 @@ key_down(HWND wnd, WPARAM wparam)
     case VK_F10:
     case VK_F12: {
         windows_keycode = wparam;
+        break;
+    }
+
+    case VK_ADD: {
+        windows_keycode = VK_OEM_PLUS;
+        break;
+    }
+
+    case VK_SUBTRACT: {
+        windows_keycode = VK_OEM_MINUS;
         break;
     }
 
