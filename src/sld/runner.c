@@ -99,6 +99,29 @@ _goto_label(sld_context *ctx, const char *label)
     return SLD_ARGERR;
 }
 
+static bool
+_handle_keystroke(uint16_t keystroke)
+{
+#if defined(CONFIG_HAVE_GFX_SCALING)
+    if (VKMOD_CTRL & keystroke)
+    {
+        if (VK_OEM_PLUS == (keystroke & 0xFF))
+        {
+            gfx_step_scale(+1);
+            return true;
+        }
+
+        if (VK_OEM_MINUS == (keystroke & 0xFF))
+        {
+            gfx_step_scale(-1);
+            return true;
+        }
+    }
+#endif
+
+    return false;
+}
+
 void
 sld_handle(void)
 {
@@ -135,11 +158,16 @@ sld_handle(void)
     // SLD_STATE_WAIT
     if (SLD_STATE_WAIT == ctx->state)
     {
-        uint16_t x, y, buttons, tag;
+        uint16_t x, y, buttons, keystroke, tag;
 
-        int keystroke = pal_get_keystroke();
+        keystroke = pal_get_keystroke();
         if (0 != keystroke)
         {
+            if (_handle_keystroke(keystroke))
+            {
+                return;
+            }
+
             __sld_accumulator = keystroke;
             __sld_ctx->state = SLD_STATE_LOAD;
             return;
@@ -215,6 +243,7 @@ sld_handle(void)
     // SLD_STATE_DELAY
     if (SLD_STATE_DELAY == ctx->state)
     {
+        _handle_keystroke(pal_get_keystroke());
         if (ctx->next_step < pal_get_counter())
         {
             ctx->state = SLD_STATE_EXECUTE;
