@@ -19,6 +19,7 @@ jobs:
 
     runs-on: ${{ matrix.platform.host }}
     strategy:
+      fail-fast: false
       matrix:
         platform:
           - name: DOS 2.0+ (IA16, COM)
