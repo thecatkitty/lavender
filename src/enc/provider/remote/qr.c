@@ -13,11 +13,11 @@ static const char QUERY_QR[] = "/qr?rc=";
 
 static gfx_bitmap _qr_bitmap = {QR_SIZE, QR_SIZE, QR_SIZE / 8, 1};
 
-static encui_field _qr_fields[] = {
-    {ENCUIFT_BITMAP, ENCUIFF_DYNAMIC | ENCUIFF_CENTER, (intptr_t)&_qr_bitmap},
-    {ENCUIFT_LABEL, ENCUIFF_STATIC, IDS_QR_DESC},
-    {ENCUIFT_TEXTBOX, 0, (intptr_t)&encr_ccode_texbox},
-    {ENCUIFT_CHECKBOX, ENCUIFF_STATIC, IDS_STOREKEY},
+static shiz_field _qr_fields[] = {
+    {SHIZFT_BITMAP, SHIZFF_DYNAMIC | SHIZFF_CENTER, (intptr_t)&_qr_bitmap},
+    {SHIZFT_LABEL, SHIZFF_STATIC, IDS_QR_DESC},
+    {SHIZFT_TEXTBOX, 0, (intptr_t)&encr_ccode_texbox},
+    {SHIZFT_CHECKBOX, SHIZFF_STATIC, IDS_STOREKEY},
 };
 
 void
@@ -29,7 +29,7 @@ encr_qr_init(enc_context *enc)
     }
 
 #if defined(CONFIG_HAVE_BROWSER)
-    encr_pages[PAGE_METHOD].fields[2].flags &= ~ENCUIFF_DYNAMIC;
+    encr_pages[PAGE_METHOD].fields[2].flags &= ~SHIZFF_DYNAMIC;
     encr_pages[PAGE_METHOD].fields[2].data = IDS_PRIVACY;
 #endif
 
@@ -43,7 +43,7 @@ encr_qr_init(enc_context *enc)
 
     if (enc_has_key_store())
     {
-        _qr_fields[3].flags |= ENCUIFF_CHECKED;
+        _qr_fields[3].flags |= SHIZFF_CHECKED;
     }
     else
     {
@@ -79,9 +79,9 @@ encr_qr_enter(void *data)
     encqr_generate(url, &_qr_bitmap);
     _qr_bitmap.width = (int16_t)align(_qr_bitmap.width, 8);
 
-    encui_set_page(PAGE_QR);
+    shiz_set_page(PAGE_QR);
 
-    free(_qr_bitmap.bits); // already drawn by encui_set_page
+    free(_qr_bitmap.bits); // already drawn by shiz_set_page
     _qr_bitmap.bits = NULL;
 }
 
@@ -90,8 +90,8 @@ encr_qr_page_proc(int msg, void *param, void *data)
 {
     switch (msg)
     {
-    case ENCUIM_NEXT: {
-        encr_store = ENCUIFF_CHECKED & _qr_fields[3].flags;
+    case SHIZM_NEXT: {
+        encr_store = SHIZFF_CHECKED & _qr_fields[3].flags;
         break;
     }
     }

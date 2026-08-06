@@ -62,12 +62,12 @@ encr_encode_request(uint8_t *out)
 
 // ----- Access code input
 
-static encui_textbox_data _acode_textbox = {NULL};
+static shiz_textbox_data _acode_textbox = {NULL};
 
-static encui_field _acode_fields[] = {
-    {ENCUIFT_LABEL, ENCUIFF_STATIC, IDS_ENTERPKEY_DESC},
-    {ENCUIFT_SEPARATOR, 0, 1},
-    {ENCUIFT_TEXTBOX, 0, (intptr_t)&_acode_textbox},
+static shiz_field _acode_fields[] = {
+    {SHIZFT_LABEL, SHIZFF_STATIC, IDS_ENTERPKEY_DESC},
+    {SHIZFT_SEPARATOR, 0, 1},
+    {SHIZFT_TEXTBOX, 0, (intptr_t)&_acode_textbox},
 };
 
 static int
@@ -75,7 +75,7 @@ _acode_page_proc(int msg, void *param, void *data)
 {
     switch (msg)
     {
-    case ENCUIM_CHECK: {
+    case SHIZM_CHECK: {
         const char *acode = (const char *)param;
         if (NULL == acode)
         {
@@ -85,7 +85,7 @@ _acode_page_proc(int msg, void *param, void *data)
         return enc_validate_key_format(acode, ENC_KEYSM_PKEY25RAW) ? 0 : 1;
     }
 
-    case ENCUIM_NEXT: {
+    case SHIZM_NEXT: {
         enc_context *enc = (enc_context *)data;
         uint64_t     parts[2] = {0, 0};
         uint32_t     cid;
@@ -132,7 +132,7 @@ _acode_page_proc(int msg, void *param, void *data)
             // Only the request code method is available
             encr_pages[PAGE_RCODE - 1].data = (void *)PAGE_PKEY;
             _stamp_request();
-            encui_set_page(PAGE_RCODE);
+            shiz_set_page(PAGE_RCODE);
             return -EINTR;
         }
 
@@ -145,14 +145,14 @@ _acode_page_proc(int msg, void *param, void *data)
 
 // ----- Method selection
 
-static encui_field _method_fields[] = {
-    {ENCUIFT_LABEL, ENCUIFF_STATIC, IDS_METHOD_DESC},
-    {ENCUIFT_SEPARATOR, 0, 1},
-    {ENCUIFT_LABEL, ENCUIFF_DYNAMIC | ENCUIFF_FOOTER, (intptr_t)""},
-    {ENCUIFT_OPTION, ENCUIFF_STATIC | ENCUIFF_CHECKED},
-    {ENCUIFT_OPTION, ENCUIFF_STATIC},
+static shiz_field _method_fields[] = {
+    {SHIZFT_LABEL, SHIZFF_STATIC, IDS_METHOD_DESC},
+    {SHIZFT_SEPARATOR, 0, 1},
+    {SHIZFT_LABEL, SHIZFF_DYNAMIC | SHIZFF_FOOTER, (intptr_t)""},
+    {SHIZFT_OPTION, SHIZFF_STATIC | SHIZFF_CHECKED},
+    {SHIZFT_OPTION, SHIZFF_STATIC},
 #if defined(CONFIG_INTERNET)
-    {ENCUIFT_OPTION, ENCUIFF_STATIC},
+    {SHIZFT_OPTION, SHIZFF_STATIC},
 #endif
 };
 
@@ -161,7 +161,7 @@ _method_page_proc(int msg, void *param, void *data)
 {
     switch (msg)
     {
-    case ENCUIM_INIT: {
+    case SHIZM_INIT: {
 #if defined(CONFIG_INTERNET)
         // in case when navigated back from PAGE_INET
         encr_inet_cleanup();
@@ -169,12 +169,12 @@ _method_page_proc(int msg, void *param, void *data)
         return 0;
     }
 
-    case ENCUIM_NEXT: {
-        encui_field *it = encr_pages[PAGE_METHOD].fields + 3;
-        encui_field *end =
+    case SHIZM_NEXT: {
+        shiz_field *it = encr_pages[PAGE_METHOD].fields + 3;
+        shiz_field *end =
             encr_pages[PAGE_METHOD].fields + encr_pages[PAGE_METHOD].length;
 
-        while ((it < end) && (0 == (ENCUIFF_CHECKED & it->flags)))
+        while ((it < end) && (0 == (SHIZFF_CHECKED & it->flags)))
         {
             it++;
         }
@@ -185,7 +185,7 @@ _method_page_proc(int msg, void *param, void *data)
 #if defined(CONFIG_INTERNET)
         if (IDS_METHOD_INET == it->data)
         {
-            encui_set_page(PAGE_INET);
+            shiz_set_page(PAGE_INET);
             return -EINTR;
         }
 #endif
@@ -198,13 +198,13 @@ _method_page_proc(int msg, void *param, void *data)
 
         if (IDS_METHOD_RCODE == it->data)
         {
-            encui_set_page(PAGE_RCODE);
+            shiz_set_page(PAGE_RCODE);
             return -EINTR;
         }
     }
 
 #if defined(CONFIG_HAVE_BROWSER)
-    case ENCUIM_NOTIFY: {
+    case SHIZM_NOTIFY: {
         if (0x102 == (intptr_t)param)
         {
             enc_context *enc = (enc_context *)data;
@@ -223,7 +223,7 @@ _method_page_proc(int msg, void *param, void *data)
 
 // ----- Pages
 
-encui_page encr_pages[] = {
+shiz_page encr_pages[] = {
     {IDS_ENTERPKEY, _acode_page_proc},  // PAGE_PKEY
     {IDS_METHOD, _method_page_proc},    // PAGE_METHOD
     {0},                                //
@@ -283,7 +283,7 @@ __enc_remote_proc(int msg, enc_context *enc)
         encr_rcode_init(enc);
 
         encui_enter(encr_pages, PAGE_LAST + 1);
-        encui_set_page(0);
+        shiz_set_page(0);
         return CONTINUE;
     }
 
