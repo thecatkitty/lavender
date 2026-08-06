@@ -7,3 +7,6 @@
 [submodule "ext/jsmn"]
 	path = ext/jsmn
 	url = https://github.com/zserge/jsmn.git
+[submodule "ext/sharizard"]
+	path = ext/sharizard
+	url = https://github.com/thecatkitty/sharizard

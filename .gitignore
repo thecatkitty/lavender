@@ -7,5 +7,6 @@ build*
 !/ext/MatchingWildcards
 !/ext/QR-Code-generator
 !/ext/jsmn
+!/ext/sharizard
 venv*
 __pycache__
