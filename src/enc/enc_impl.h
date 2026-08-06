@@ -1,6 +1,8 @@
 #ifndef _ENC_IMPL_H_
 #define _ENC_IMPL_H_
 
+#include <sharizard.h>
+
 #include <enc.h>
 #include <pal.h>
 
@@ -72,5 +74,8 @@ __inline
 {
     return pal_get_machine_id(NULL);
 }
+
+extern bool
+encui_enter(shiz_page *pages, unsigned count);
 
 #endif // _ENC_IMPL_H_

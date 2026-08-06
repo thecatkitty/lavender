@@ -5,7 +5,6 @@
 #include <pal.h>
 
 #include "enc_impl.h"
-#include "ui/encui.h"
 
 // Size of the plaintext stored at the end of the data buffer
 #define PT_SIZE(data, size)                                                    \
@@ -165,7 +164,7 @@ enc_validate_key_format(const char *key, enc_keysm sm)
         int __status = (status);                                               \
         if (0 > __status)                                                      \
         {                                                                      \
-            encui_exit();                                                      \
+            shiz_exit();                                                       \
             return __status;                                                   \
         }                                                                      \
     }
@@ -196,8 +195,8 @@ enc_handle(enc_context *enc)
     }
 
     case ENCS_READ: {
-        int status = encui_handle();
-        if (ENCUI_INCOMPLETE == status)
+        int status = shiz_handle();
+        if (SHIZ_INCOMPLETE == status)
         {
             return CONTINUE;
         }
@@ -205,12 +204,12 @@ enc_handle(enc_context *enc)
         if (0 == status)
         {
             // Operation aborted by the user
-            encui_exit();
+            shiz_exit();
             return -EACCES;
         }
 
-        encui_set_page(encui_get_page() + 1);
-        if (-1 == encui_get_page())
+        shiz_set_page(shiz_get_page() + 1);
+        if (-1 == shiz_get_page())
         {
             enc->state = ENCS_COMPLETE;
         }
@@ -225,7 +224,7 @@ enc_handle(enc_context *enc)
     }
 
     case ENCS_COMPLETE:
-        encui_exit();
+        shiz_exit();
         return 0;
     }
 

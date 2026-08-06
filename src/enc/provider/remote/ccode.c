@@ -4,15 +4,15 @@
 
 #include "remote.h"
 
-static char        _ccode[50];
-encui_textbox_data encr_ccode_texbox = {_ccode, sizeof(_ccode), 0};
+static char       _ccode[50];
+shiz_textbox_data encr_ccode_texbox = {_ccode, sizeof(_ccode), 0};
 
 int
 encr_ccode_page_proc(int msg, void *param, void *data)
 {
     switch (msg)
     {
-    case ENCUIM_CHECK: {
+    case SHIZM_CHECK: {
         int i;
 
         const char *ccode = (const char *)param;
@@ -44,7 +44,7 @@ encr_ccode_page_proc(int msg, void *param, void *data)
         return 0;
     }
 
-    case ENCUIM_NEXT: {
+    case SHIZM_NEXT: {
         int         i;
         const char *ccode = (const char *)param;
         uint16_t   *cwords = (uint16_t *)encr_response;
@@ -55,7 +55,7 @@ encr_ccode_page_proc(int msg, void *param, void *data)
             uint32_t group = atol(ccode + i * 7);
             if (0 != encr_decimal_complement(group))
             {
-                char  fmt[GFX_COLUMNS * 2];
+                char  fmt[160];
                 char *msg;
                 int   length;
 
@@ -63,7 +63,7 @@ encr_ccode_page_proc(int msg, void *param, void *data)
                 length = snprintf(NULL, 0, fmt, i + 1);
                 msg = malloc(length + 1);
                 snprintf(msg, length + 1, fmt, i + 1);
-                ((encui_textbox_data *)encr_pages[PAGE_RCODE].fields[5].data)
+                ((shiz_textbox_data *)encr_pages[PAGE_RCODE].fields[5].data)
                     ->alert = msg;
                 return INT_MAX;
             }

@@ -5,7 +5,6 @@
 
 #include "../../resource.h"
 #include "../enc_impl.h"
-#include "../ui/encui.h"
 
 #define XOR48_PASSCODE_SIZE 3
 #define XOR48_DSN_LENGTH    9
@@ -16,7 +15,7 @@ _dsn_page_proc(int msg, void *param, void *data)
     const char *dsn = (const char *)param;
     int         i;
 
-    if (ENCUIM_NEXT == msg)
+    if (SHIZM_NEXT == msg)
     {
         enc_context *enc = (enc_context *)data;
         uint32_t     high = strtoul(enc->data.diskid.dsn, NULL, 16);
@@ -25,7 +24,7 @@ _dsn_page_proc(int msg, void *param, void *data)
         return 0;
     }
 
-    if (ENCUIM_CHECK != msg)
+    if (SHIZM_CHECK != msg)
     {
         return -ENOSYS;
     }
@@ -66,7 +65,7 @@ _passcode_page_proc(int msg, void *param, void *data)
 {
     switch (msg)
     {
-    case ENCUIM_CHECK: {
+    case SHIZM_CHECK: {
         const char *passcode = (const char *)param;
         if (NULL == passcode)
         {
@@ -76,7 +75,7 @@ _passcode_page_proc(int msg, void *param, void *data)
         return isdigstr(passcode) ? 0 : 1;
     }
 
-    case ENCUIM_NEXT: {
+    case SHIZM_NEXT: {
         return __enc_decrypt_content((enc_context *)data);
     }
     }
@@ -84,27 +83,27 @@ _passcode_page_proc(int msg, void *param, void *data)
     return -ENOSYS;
 }
 
-static encui_textbox_data _dsn_textbox = {NULL};
+static shiz_textbox_data _dsn_textbox = {NULL};
 
-static encui_field _dsn_fields[] = {
-    {ENCUIFT_LABEL, ENCUIFF_STATIC, IDS_ENTERDSN_DESC},
-    {ENCUIFT_SEPARATOR, 0, 1},
-    {ENCUIFT_TEXTBOX, 0, (intptr_t)&_dsn_textbox},
+static shiz_field _dsn_fields[] = {
+    {SHIZFT_LABEL, SHIZFF_STATIC, IDS_ENTERDSN_DESC},
+    {SHIZFT_SEPARATOR, 0, 1},
+    {SHIZFT_TEXTBOX, 0, (intptr_t)&_dsn_textbox},
 };
 
-static encui_textbox_data _passcode_textbox = {NULL};
+static shiz_textbox_data _passcode_textbox = {NULL};
 
-static encui_field _passcode_fields[] = {
-    {ENCUIFT_LABEL, ENCUIFF_STATIC, IDS_ENTERPASS_DESC},
-    {ENCUIFT_SEPARATOR, 0, 1},
-    {ENCUIFT_TEXTBOX, 0, (intptr_t)&_passcode_textbox},
-    {ENCUIFT_CHECKBOX, ENCUIFF_STATIC, IDS_STOREKEY},
+static shiz_field _passcode_fields[] = {
+    {SHIZFT_LABEL, SHIZFF_STATIC, IDS_ENTERPASS_DESC},
+    {SHIZFT_SEPARATOR, 0, 1},
+    {SHIZFT_TEXTBOX, 0, (intptr_t)&_passcode_textbox},
+    {SHIZFT_CHECKBOX, SHIZFF_STATIC, IDS_STOREKEY},
 };
 
-static encui_page _pages[] = {            //
-    {IDS_ENTERDSN, _dsn_page_proc},       //
-    {IDS_ENTERPASS, _passcode_page_proc}, //
-    {0}};
+static shiz_page _pages[] = {                                      //
+                             {IDS_ENTERDSN, _dsn_page_proc},       //
+                             {IDS_ENTERPASS, _passcode_page_proc}, //
+                             {0}};
 
 int
 __enc_diskid_proc(int msg, enc_context *enc)
@@ -132,7 +131,7 @@ __enc_diskid_proc(int msg, enc_context *enc)
 
             if (enc_has_key_store())
             {
-                _passcode_fields[3].flags |= ENCUIFF_CHECKED;
+                _passcode_fields[3].flags |= SHIZFF_CHECKED;
             }
             else
             {
@@ -145,11 +144,11 @@ __enc_diskid_proc(int msg, enc_context *enc)
             if (0 != medium_id)
             {
                 enc->data.diskid.split.local_part = medium_id;
-                encui_set_page(1);
+                shiz_set_page(1);
                 return CONTINUE;
             }
 
-            encui_set_page(0);
+            shiz_set_page(0);
             return CONTINUE;
         }
 
@@ -170,8 +169,8 @@ __enc_diskid_proc(int msg, enc_context *enc)
     }
 
     case ENCM_GET_STORAGE_POLICY: {
-        return (ENCUIFF_CHECKED & _passcode_fields[3].flags) ? ENCSTORPOL_SAVE
-                                                             : ENCSTORPOL_NONE;
+        return (SHIZFF_CHECKED & _passcode_fields[3].flags) ? ENCSTORPOL_SAVE
+                                                            : ENCSTORPOL_NONE;
     }
     }
 

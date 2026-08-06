@@ -2,14 +2,13 @@
 
 #include "../../resource.h"
 #include "../enc_impl.h"
-#include "../ui/encui.h"
 
 static int
 _passcode_page_proc(int msg, void *param, void *data)
 {
     switch (msg)
     {
-    case ENCUIM_CHECK: {
+    case SHIZM_CHECK: {
         const char        *passcode = (const char *)param;
         const enc_context *enc = (const enc_context *)data;
 
@@ -28,7 +27,7 @@ _passcode_page_proc(int msg, void *param, void *data)
         return isxdigstr(passcode) ? 0 : 1;
     }
 
-    case ENCUIM_NEXT: {
+    case SHIZM_NEXT: {
         return __enc_decrypt_content((enc_context *)data);
     }
     }
@@ -36,18 +35,18 @@ _passcode_page_proc(int msg, void *param, void *data)
     return -ENOSYS;
 }
 
-static encui_textbox_data _passcode_textbox = {NULL};
+static shiz_textbox_data _passcode_textbox = {NULL};
 
-static encui_field _passcode_fields[] = {
-    {ENCUIFT_LABEL, ENCUIFF_STATIC, IDS_ENTERPASS_DESC},
-    {ENCUIFT_SEPARATOR, 0, 1},
-    {ENCUIFT_TEXTBOX, 0, (intptr_t)&_passcode_textbox},
-    {ENCUIFT_CHECKBOX, ENCUIFF_STATIC, IDS_STOREKEY},
+static shiz_field _passcode_fields[] = {
+    {SHIZFT_LABEL, SHIZFF_STATIC, IDS_ENTERPASS_DESC},
+    {SHIZFT_SEPARATOR, 0, 1},
+    {SHIZFT_TEXTBOX, 0, (intptr_t)&_passcode_textbox},
+    {SHIZFT_CHECKBOX, SHIZFF_STATIC, IDS_STOREKEY},
 };
 
-static encui_page _pages[] = {            //
-    {IDS_ENTERPASS, _passcode_page_proc}, //
-    {0}};
+static shiz_page _pages[] = {                                      //
+                             {IDS_ENTERPASS, _passcode_page_proc}, //
+                             {0}};
 
 int
 __enc_prompt_proc(int msg, enc_context *enc)
@@ -89,7 +88,7 @@ __enc_prompt_proc(int msg, enc_context *enc)
 
         if (enc_has_key_store())
         {
-            _passcode_fields[3].flags |= ENCUIFF_CHECKED;
+            _passcode_fields[3].flags |= SHIZFF_CHECKED;
         }
         else
         {
@@ -97,7 +96,7 @@ __enc_prompt_proc(int msg, enc_context *enc)
         }
 
         encui_enter(_pages, 1);
-        encui_set_page(0);
+        shiz_set_page(0);
         return CONTINUE;
     }
 
@@ -144,8 +143,8 @@ __enc_prompt_proc(int msg, enc_context *enc)
     }
 
     case ENCM_GET_STORAGE_POLICY: {
-        return (ENCUIFF_CHECKED & _passcode_fields[3].flags) ? ENCSTORPOL_SAVE
-                                                             : ENCSTORPOL_NONE;
+        return (SHIZFF_CHECKED & _passcode_fields[3].flags) ? ENCSTORPOL_SAVE
+                                                            : ENCSTORPOL_NONE;
     }
     }
 
