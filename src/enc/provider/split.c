@@ -4,7 +4,6 @@
 
 #include "../../resource.h"
 #include "../enc_impl.h"
-#include "../ui/encui.h"
 
 #define XOR48_PASSCODE_SIZE 3
 
@@ -13,7 +12,7 @@ _passcode_page_proc(int msg, void *param, void *data)
 {
     switch (msg)
     {
-    case ENCUIM_CHECK: {
+    case SHIZM_CHECK: {
         const char *passcode = (const char *)param;
         if (NULL == passcode)
         {
@@ -23,7 +22,7 @@ _passcode_page_proc(int msg, void *param, void *data)
         return isdigstr(passcode) ? 0 : 1;
     }
 
-    case ENCUIM_NEXT: {
+    case SHIZM_NEXT: {
         return __enc_decrypt_content((enc_context *)data);
     }
     }
@@ -31,18 +30,18 @@ _passcode_page_proc(int msg, void *param, void *data)
     return -ENOSYS;
 }
 
-static encui_textbox_data _passcode_textbox = {NULL};
+static shiz_textbox_data _passcode_textbox = {NULL};
 
-static encui_field _passcode_fields[] = {
-    {ENCUIFT_LABEL, ENCUIFF_STATIC, IDS_ENTERPASS_DESC},
-    {ENCUIFT_SEPARATOR, 0, 1},
-    {ENCUIFT_TEXTBOX, 0, (intptr_t)&_passcode_textbox},
-    {ENCUIFT_CHECKBOX, ENCUIFF_STATIC, IDS_STOREKEY},
+static shiz_field _passcode_fields[] = {
+    {SHIZFT_LABEL, SHIZFF_STATIC, IDS_ENTERPASS_DESC},
+    {SHIZFT_SEPARATOR, 0, 1},
+    {SHIZFT_TEXTBOX, 0, (intptr_t)&_passcode_textbox},
+    {SHIZFT_CHECKBOX, SHIZFF_STATIC, IDS_STOREKEY},
 };
 
-static encui_page _pages[] = {            //
-    {IDS_ENTERPASS, _passcode_page_proc}, //
-    {0}};
+static shiz_page _pages[] = {                                      //
+                             {IDS_ENTERPASS, _passcode_page_proc}, //
+                             {0}};
 
 int
 __enc_split_proc(int msg, enc_context *enc)
@@ -68,14 +67,14 @@ __enc_split_proc(int msg, enc_context *enc)
 
         if (enc_has_key_store())
         {
-            _passcode_fields[3].flags |= ENCUIFF_CHECKED;
+            _passcode_fields[3].flags |= SHIZFF_CHECKED;
         }
         else
         {
             _pages[0].length--;
         }
 
-        encui_set_page(0);
+        shiz_set_page(0);
         return CONTINUE;
     }
 
