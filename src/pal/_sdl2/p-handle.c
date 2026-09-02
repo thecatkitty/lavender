@@ -4,8 +4,6 @@
 #include "impl.h"
 #include <evtmouse.h>
 
-gfx_dimensions sdl2_cell;
-
 bool
 pal_handle(void)
 {
@@ -38,7 +36,6 @@ pal_handle(void)
                 (SDLK_KP_PLUS == e.key.keysym.sym))
             {
                 gfx_step_scale(+1);
-                gfx_get_glyph_dimensions(&sdl2_cell);
                 break;
             }
 
@@ -46,7 +43,6 @@ pal_handle(void)
                 (SDLK_KP_MINUS == e.key.keysym.sym))
             {
                 gfx_step_scale(-1);
-                gfx_get_glyph_dimensions(&sdl2_cell);
                 break;
             }
         }
@@ -62,8 +58,10 @@ pal_handle(void)
 
     case SDL_MOUSEMOTION: {
         LOG("mouse x: %d, y: %d", e.motion.x, e.motion.y);
-        evtmouse_set_position(e.motion.x / sdl2_cell.width,
-                              e.motion.y / sdl2_cell.height);
+        gfx_dimensions cell;
+        gfx_get_glyph_dimensions(&cell);
+        evtmouse_set_position(e.motion.x / cell.width,
+                              e.motion.y / cell.height);
         break;
     }
 

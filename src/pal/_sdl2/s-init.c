@@ -19,7 +19,6 @@ sdl2_initialize(const char *font)
         return false;
     }
 
-    gfx_get_glyph_dimensions(&sdl2_cell);
     return true;
 }
 
