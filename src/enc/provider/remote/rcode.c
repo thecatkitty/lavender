@@ -4,14 +4,14 @@
 
 static char _rcode[64];
 
-static encui_field _rcode_fields[] = {
-    {ENCUIFT_LABEL, ENCUIFF_STATIC, IDS_RCODE_DESC},
-    {ENCUIFT_SEPARATOR, 0, 1},
-    {ENCUIFT_LABEL, ENCUIFF_DYNAMIC | ENCUIFF_CENTER},
-    {ENCUIFT_SEPARATOR, 0, 2},
-    {ENCUIFT_LABEL, ENCUIFF_STATIC, IDS_CCODE_DESC},
-    {ENCUIFT_TEXTBOX, 0, (intptr_t)&encr_ccode_texbox},
-    {ENCUIFT_CHECKBOX, ENCUIFF_STATIC, IDS_STOREKEY},
+static shiz_field _rcode_fields[] = {
+    {SHIZFT_LABEL, SHIZFF_STATIC, IDS_RCODE_DESC},
+    {SHIZFT_SEPARATOR, 0, 1},
+    {SHIZFT_LABEL, SHIZFF_DYNAMIC | SHIZFF_CENTER},
+    {SHIZFT_SEPARATOR, 0, 2},
+    {SHIZFT_LABEL, SHIZFF_STATIC, IDS_CCODE_DESC},
+    {SHIZFT_TEXTBOX, 0, (intptr_t)&encr_ccode_texbox},
+    {SHIZFT_CHECKBOX, SHIZFF_STATIC, IDS_STOREKEY},
 };
 
 void
@@ -30,7 +30,7 @@ encr_rcode_init(enc_context *enc)
 
     if (enc_has_key_store())
     {
-        _rcode_fields[6].flags |= ENCUIFF_CHECKED;
+        _rcode_fields[6].flags |= SHIZFF_CHECKED;
     }
     else
     {
@@ -43,7 +43,7 @@ encr_rcode_page_proc(int msg, void *param, void *data)
 {
     switch (msg)
     {
-    case ENCUIM_INIT: {
+    case SHIZM_INIT: {
         uint8_t rbytes[lengthof(encr_request)];
         int     i, offset = 0;
 
@@ -60,8 +60,8 @@ encr_rcode_page_proc(int msg, void *param, void *data)
         return 0;
     }
 
-    case ENCUIM_NEXT: {
-        encr_store = ENCUIFF_CHECKED & _rcode_fields[6].flags;
+    case SHIZM_NEXT: {
+        encr_store = SHIZFF_CHECKED & _rcode_fields[6].flags;
         break;
     }
     }

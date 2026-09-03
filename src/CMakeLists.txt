@@ -32,11 +32,6 @@ if(CONFIG_SOUND)
     target_link_libraries(lavender snd)
 endif()
 
-if(NOT WIN32)
-    set_property(TARGET lavender PROPERTY CXX_STANDARD 14)
-    target_link_libraries(lavender -lstdc++)
-endif()
-
 include_directories(lavender ${CMAKE_CURRENT_BINARY_DIR})
 target_sources(lavender PRIVATE main.c rstd.c)
 target_link_libraries(lavender fmt gfx pal sld)

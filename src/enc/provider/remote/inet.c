@@ -16,10 +16,10 @@ static size_t             _response_processed;
 
 // ----- Internet-based verification
 
-static encui_field _inet_fields[] = {
-    {ENCUIFT_LABEL, ENCUIFF_DYNAMIC, (intptr_t) "Decoy\nDecoy"},
-    {ENCUIFT_LABEL, ENCUIFF_DYNAMIC, (intptr_t) "Decoy\n\nDecoy"},
-    {ENCUIFT_CHECKBOX, ENCUIFF_STATIC, IDS_STOREKEY},
+static shiz_field _inet_fields[] = {
+    {SHIZFT_LABEL, SHIZFF_DYNAMIC, (intptr_t)"Decoy\nDecoy"},
+    {SHIZFT_LABEL, SHIZFF_DYNAMIC, (intptr_t)"Decoy\n\nDecoy"},
+    {SHIZFT_CHECKBOX, SHIZFF_STATIC, IDS_STOREKEY},
 };
 
 void
@@ -40,7 +40,7 @@ encr_inet_init(enc_context *enc)
 
     if (enc_has_key_store())
     {
-        _inet_fields[2].flags |= ENCUIFF_CHECKED;
+        _inet_fields[2].flags |= SHIZFF_CHECKED;
     }
     else
     {
@@ -66,18 +66,18 @@ static void
 _inet_error(int head, intptr_t desc, bool dynamic)
 {
     _inet_fields[0].data = head;
-    encui_refresh_field(encr_pages + PAGE_INET, 0);
+    shiz_refresh_field(encr_pages + PAGE_INET, 0);
 
     if (dynamic)
     {
-        _inet_fields[1].flags |= ENCUIFF_DYNAMIC;
+        _inet_fields[1].flags |= SHIZFF_DYNAMIC;
     }
     else
     {
-        _inet_fields[1].flags &= ~ENCUIFF_DYNAMIC;
+        _inet_fields[1].flags &= ~SHIZFF_DYNAMIC;
     }
     _inet_fields[1].data = desc;
-    encui_refresh_field(encr_pages + PAGE_INET, 1);
+    shiz_refresh_field(encr_pages + PAGE_INET, 1);
 
     net_close();
     free(_response_data);
@@ -90,9 +90,9 @@ _verify_inet_proc(int msg, void *param, void *data)
     switch (msg)
     {
     case NETM_CONNECTED: {
-        _inet_fields[0].flags &= ~ENCUIFF_DYNAMIC;
+        _inet_fields[0].flags &= ~SHIZFF_DYNAMIC;
         _inet_fields[0].data = IDS_INET_SEND;
-        encui_refresh_field(encr_pages + PAGE_INET, 0);
+        shiz_refresh_field(encr_pages + PAGE_INET, 0);
         break;
     }
 
@@ -120,7 +120,7 @@ _verify_inet_proc(int msg, void *param, void *data)
 
     case NETM_RESPONSE: {
         _inet_fields[0].data = IDS_INET_RECV;
-        encui_refresh_field(encr_pages + PAGE_INET, 0);
+        shiz_refresh_field(encr_pages + PAGE_INET, 0);
 
         memcpy(&_response, param, sizeof(_response));
         _response_data = (char *)malloc((size_t)_response.content_length + 1);
@@ -216,8 +216,8 @@ _verify_inet_proc(int msg, void *param, void *data)
         }
 
         _inet_fields[0].data = IDS_INET_SUCCESS;
-        encui_refresh_field(encr_pages + PAGE_INET, 0);
-        encui_check_page(encr_pages + PAGE_INET, (void *)1);
+        shiz_refresh_field(encr_pages + PAGE_INET, 0);
+        shiz_check_page(encr_pages + PAGE_INET, (void *)1);
 
         net_close();
         free(_response_data);
@@ -227,12 +227,12 @@ _verify_inet_proc(int msg, void *param, void *data)
 
     case NETM_ERROR: {
         _inet_fields[0].data = IDS_INET_CONNERR;
-        encui_refresh_field(encr_pages + PAGE_INET, 0);
+        shiz_refresh_field(encr_pages + PAGE_INET, 0);
 
         if (NULL != param)
         {
             _inet_fields[1].data = (intptr_t)param;
-            encui_refresh_field(encr_pages + PAGE_INET, 1);
+            shiz_refresh_field(encr_pages + PAGE_INET, 1);
         }
 
         free(_response_data);
@@ -256,37 +256,37 @@ encr_inet_page_proc(int msg, void *param, void *data)
 {
     switch (msg)
     {
-    case ENCUIM_INIT: {
-        _inet_fields[0].data = (intptr_t) "";
-        _inet_fields[1].data = (intptr_t) "";
+    case SHIZM_INIT: {
+        _inet_fields[0].data = (intptr_t)"";
+        _inet_fields[1].data = (intptr_t)"";
         return 0;
     }
 
-    case ENCUIM_CHECK: {
+    case SHIZM_CHECK: {
         return NULL == param ? 1 : 0;
     }
 
-    case ENCUIM_ENTERED: {
-        encui_request_notify(NOTIFY_START);
+    case SHIZM_ENTERED: {
+        shiz_request_notify(NOTIFY_START);
         return 0;
     }
 
-    case ENCUIM_NOTIFY: {
+    case SHIZM_NOTIFY: {
         int notify = (intptr_t)param;
 
         if (NOTIFY_START == notify)
         {
-            _inet_fields[0].flags &= ~ENCUIFF_DYNAMIC;
+            _inet_fields[0].flags &= ~SHIZFF_DYNAMIC;
             if (net_start())
             {
                 _inet_fields[0].data = IDS_INET_CONN;
-                encui_refresh_field(encr_pages + PAGE_INET, 0);
-                encui_request_notify(NOTIFY_CONNECT);
+                shiz_refresh_field(encr_pages + PAGE_INET, 0);
+                shiz_request_notify(NOTIFY_CONNECT);
             }
             else
             {
                 _inet_fields[0].data = IDS_INET_INITERR;
-                encui_refresh_field(encr_pages + PAGE_INET, 0);
+                shiz_refresh_field(encr_pages + PAGE_INET, 0);
             }
 
             return 0;
@@ -299,7 +299,7 @@ encr_inet_page_proc(int msg, void *param, void *data)
             if (net_connect((const char *)enc->parameter, _verify_inet_proc,
                             (void *)1))
             {
-                encui_request_notify(NOTIFY_REQUEST);
+                shiz_request_notify(NOTIFY_REQUEST);
             }
             // net_connect errors handled in _verify_inet_proc
 
@@ -322,8 +322,8 @@ encr_inet_page_proc(int msg, void *param, void *data)
         return 0;
     }
 
-    case ENCUIM_NEXT: {
-        encr_store = ENCUIFF_CHECKED & _inet_fields[2].flags;
+    case SHIZM_NEXT: {
+        encr_store = SHIZFF_CHECKED & _inet_fields[2].flags;
         return __enc_decrypt_content((enc_context *)data);
     }
     }

@@ -3,7 +3,6 @@
 
 #include "../../../resource.h"
 #include "../../enc_impl.h"
-#include "../../ui/encui.h"
 
 enum
 {
@@ -20,11 +19,11 @@ enum
 #define ENCR_REQUEST_SIZE  18
 #define ENCR_RESPONSE_SIZE 14
 
-extern encui_page         encr_pages[PAGE_LAST + 1];
-extern encui_textbox_data encr_ccode_texbox;
-extern uint8_t            encr_request[ENCR_REQUEST_SIZE];
-extern uint8_t            encr_response[ENCR_RESPONSE_SIZE];
-extern bool               encr_store;
+extern shiz_page         encr_pages[PAGE_LAST + 1];
+extern shiz_textbox_data encr_ccode_texbox;
+extern uint8_t           encr_request[ENCR_REQUEST_SIZE];
+extern uint8_t           encr_response[ENCR_RESPONSE_SIZE];
+extern bool              encr_store;
 
 extern void
 encr_encode_request(uint8_t *out);
