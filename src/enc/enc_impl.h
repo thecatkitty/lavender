@@ -78,4 +78,7 @@ __inline
 extern bool
 encui_enter(shiz_page *pages, unsigned count);
 
+extern bool
+encui_exit(void);
+
 #endif // _ENC_IMPL_H_

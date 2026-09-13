@@ -39,7 +39,19 @@ encui_enter(shiz_page *pages, unsigned count)
                  pal_get_version_string());
     }
 
+#if defined(SHARIZARD_USES_CANVAS)
+    pal_enable_mouse();
+#endif
     return (0 == shiz_enter(&wizard));
+}
+
+bool
+encui_exit(void)
+{
+#if defined(SHARIZARD_USES_CANVAS)
+    pal_disable_mouse();
+#endif
+    return shiz_exit();
 }
 
 #if defined(SHARIZARD_USES_CANVAS)

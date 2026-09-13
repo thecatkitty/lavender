@@ -164,7 +164,7 @@ enc_validate_key_format(const char *key, enc_keysm sm)
         int __status = (status);                                               \
         if (0 > __status)                                                      \
         {                                                                      \
-            shiz_exit();                                                       \
+            encui_exit();                                                      \
             return __status;                                                   \
         }                                                                      \
     }
@@ -204,7 +204,7 @@ enc_handle(enc_context *enc)
         if (0 == status)
         {
             // Operation aborted by the user
-            shiz_exit();
+            encui_exit();
             return -EACCES;
         }
 
@@ -224,7 +224,7 @@ enc_handle(enc_context *enc)
     }
 
     case ENCS_COMPLETE:
-        shiz_exit();
+        encui_exit();
         return 0;
     }
 
