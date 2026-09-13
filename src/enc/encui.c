@@ -44,7 +44,7 @@ encui_enter(shiz_page *pages, unsigned count)
 
 #if defined(SHARIZARD_USES_CANVAS)
 
-static uint32_t _ticks_per_sec = 0;
+static uint32_t _tick_rate = 0;
 
 static void
 _dimensions_to_vec2i(_In_ const gfx_dimensions *dims, _Out_ shiz_vec2i *vec)
@@ -210,11 +210,11 @@ shiz_ms
 shizh_get_clock(_In_opt_ void *ctx)
 {
     uint32_t ticks = pal_get_counter();
-    if (0 == _ticks_per_sec)
+    if (0 == _tick_rate)
     {
-        _ticks_per_sec = pal_get_ticks(1000);
+        _tick_rate = pal_get_ticks(1 << 8);
     }
-    return ticks * 1000 / _ticks_per_sec;
+    return (shiz_ms)((ticks << 8) / _tick_rate);
 }
 
 shizerr
