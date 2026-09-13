@@ -11,7 +11,8 @@
 
 static const char QUERY_QR[] = "/qr?rc=";
 
-static gfx_bitmap _qr_bitmap = {QR_SIZE, QR_SIZE, QR_SIZE / 8, 1};
+static shiz_bitmap _qr_bitmap = {
+    {QR_SIZE, QR_SIZE}, SHIZ_PXFORMAT_MONO1, QR_SIZE / 8};
 
 static shiz_field _qr_fields[] = {
     {SHIZFT_BITMAP, SHIZFF_DYNAMIC | SHIZFF_CENTER, (intptr_t)&_qr_bitmap},
@@ -74,15 +75,15 @@ encr_qr_enter(void *data)
         purl += 2;
     }
 
-    _qr_bitmap.width = _qr_bitmap.height = QR_SIZE;
-    _qr_bitmap.bits = NULL; // allocated by encqr_generate
+    _qr_bitmap.size.x = _qr_bitmap.size.y = QR_SIZE;
+    _qr_bitmap.pixels = NULL; // allocated by encqr_generate
     encqr_generate(url, &_qr_bitmap);
-    _qr_bitmap.width = (int16_t)align(_qr_bitmap.width, 8);
+    _qr_bitmap.size.x = align(_qr_bitmap.size.x, 8);
 
     shiz_set_page(PAGE_QR);
 
-    free(_qr_bitmap.bits); // already drawn by shiz_set_page
-    _qr_bitmap.bits = NULL;
+    free((void *)_qr_bitmap.pixels); // already drawn by shiz_set_page
+    _qr_bitmap.pixels = NULL;
 }
 
 int
