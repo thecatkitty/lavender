@@ -5,9 +5,9 @@
 #include <QR-Code-generator/c/qrcodegen.h>
 
 static void
-_set_pixel(gfx_bitmap *bm, int x, int y, int xscale, int yscale, bool value)
+_set_pixel(shiz_bitmap *bm, int x, int y, int xscale, int yscale, bool value)
 {
-    uint8_t *line = (uint8_t *)bm->bits + y * yscale * bm->opl;
+    uint8_t *line = (uint8_t *)bm->pixels + y * yscale * bm->stride;
     int      sx, sy;
 
     for (sy = 0; sy < yscale; sy++)
@@ -21,12 +21,12 @@ _set_pixel(gfx_bitmap *bm, int x, int y, int xscale, int yscale, bool value)
             }
         }
 
-        line += bm->opl;
+        line += bm->stride;
     }
 }
 
 bool
-encqr_generate(const char *str, gfx_bitmap *bm)
+encqr_generate(const char *str, shiz_bitmap *bm)
 {
     uint8_t buffer[qrcodegen_BUFFER_LEN_FOR_VERSION(10)];
     uint8_t qr[qrcodegen_BUFFER_LEN_FOR_VERSION(10)];
@@ -38,16 +38,16 @@ encqr_generate(const char *str, gfx_bitmap *bm)
         return false;
     }
 
-    if (NULL == (bm->bits = malloc(bm->height * bm->opl)))
+    if (NULL == (bm->pixels = (uint8_t *)malloc(bm->size.y * bm->stride)))
     {
         return false;
     }
 
     size = qrcodegen_getSize(qr);
-    xscale = bm->width / size;
+    xscale = bm->size.x / size;
     yscale = xscale * 64 / gfx_get_pixel_aspect();
 
-    memset(bm->bits, 0xFF, bm->opl * bm->height);
+    memset((void *)bm->pixels, 0xFF, bm->stride * bm->size.y);
     for (y = 0; y < size; y++)
     {
         for (x = 0; x < size; x++)
@@ -56,8 +56,8 @@ encqr_generate(const char *str, gfx_bitmap *bm)
         }
     }
 
-    bm->width = size * xscale;
-    bm->height = size * yscale;
+    bm->size.x = size * xscale;
+    bm->size.y = size * yscale;
 
     return true;
 }
