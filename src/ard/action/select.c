@@ -276,9 +276,9 @@ wndproc_create(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
     char  message[ARDC_LENGTH_LONG] = "";
     RECT  rect;
     int   cxsmicon = GetSystemMetrics(SM_CXSMICON),
-        cysmicon = GetSystemMetrics(SM_CYSMICON),
-        cxicon = GetSystemMetrics(SM_CXICON),
-        cyicon = GetSystemMetrics(SM_CYICON);
+          cysmicon = GetSystemMetrics(SM_CYSMICON),
+          cxicon = GetSystemMetrics(SM_CXICON),
+          cyicon = GetSystemMetrics(SM_CYICON);
 
     {
         HDC dc = GetDC(wnd);
