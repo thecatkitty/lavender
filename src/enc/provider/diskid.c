@@ -9,6 +9,23 @@
 #define XOR48_PASSCODE_SIZE 3
 #define XOR48_DSN_LENGTH    9
 
+static shiz_textbox_data _dsn_textbox = {NULL};
+
+static shiz_field _dsn_fields[] = {
+    {SHIZFT_LABEL, SHIZFF_STATIC, IDS_ENTERDSN_DESC},
+    {SHIZFT_SEPARATOR, 0, 1},
+    {SHIZFT_TEXTBOX, 0, (intptr_t)&_dsn_textbox},
+};
+
+static shiz_textbox_data _passcode_textbox = {NULL};
+
+static shiz_field _passcode_fields[] = {
+    {SHIZFT_LABEL, SHIZFF_STATIC, IDS_ENTERPASS_DESC},
+    {SHIZFT_SEPARATOR, 0, 1},
+    {SHIZFT_TEXTBOX, 0, (intptr_t)&_passcode_textbox},
+    {SHIZFT_CHECKBOX, SHIZFF_STATIC, IDS_STOREKEY},
+};
+
 static int
 _dsn_page_proc(int msg, void *param, void *data)
 {
@@ -72,6 +89,11 @@ _passcode_page_proc(int msg, void *param, void *data)
             return 1;
         }
 
+        if (_passcode_textbox.capacity != strlen(passcode))
+        {
+            return 1;
+        }
+
         return isdigstr(passcode) ? 0 : 1;
     }
 
@@ -82,23 +104,6 @@ _passcode_page_proc(int msg, void *param, void *data)
 
     return -ENOSYS;
 }
-
-static shiz_textbox_data _dsn_textbox = {NULL};
-
-static shiz_field _dsn_fields[] = {
-    {SHIZFT_LABEL, SHIZFF_STATIC, IDS_ENTERDSN_DESC},
-    {SHIZFT_SEPARATOR, 0, 1},
-    {SHIZFT_TEXTBOX, 0, (intptr_t)&_dsn_textbox},
-};
-
-static shiz_textbox_data _passcode_textbox = {NULL};
-
-static shiz_field _passcode_fields[] = {
-    {SHIZFT_LABEL, SHIZFF_STATIC, IDS_ENTERPASS_DESC},
-    {SHIZFT_SEPARATOR, 0, 1},
-    {SHIZFT_TEXTBOX, 0, (intptr_t)&_passcode_textbox},
-    {SHIZFT_CHECKBOX, SHIZFF_STATIC, IDS_STOREKEY},
-};
 
 static shiz_page _pages[] = {                                      //
                              {IDS_ENTERDSN, _dsn_page_proc},       //

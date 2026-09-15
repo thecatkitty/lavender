@@ -145,5 +145,5 @@ __enc_pkey25_validate_format(const char *key)
         }
     }
 
-    return PKEY25_LENGTH + 4 == i;
+    return (PKEY25_LENGTH + 4 == i) && ('\0' == key[i]);
 }
