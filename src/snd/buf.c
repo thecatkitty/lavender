@@ -59,11 +59,11 @@ sndbuf_read(snd_buffer *buffer, size_t size, char *data)
 }
 
 int
-sndbuf_getc(snd_buffer* buffer)
+sndbuf_getc(snd_buffer *buffer)
 {
     uint8_t byte = 0;
 
-    if (!sndbuf_read(buffer, 1, (char*)&byte))
+    if (!sndbuf_read(buffer, 1, (char *)&byte))
     {
         return -1;
     }
@@ -72,7 +72,7 @@ sndbuf_getc(snd_buffer* buffer)
 }
 
 int
-sndbuf_peek(snd_buffer* buffer)
+sndbuf_peek(snd_buffer *buffer)
 {
     size_t position = (size_t)(buffer->position % (uint32_t)buffer->size);
     return (uint8_t)buffer->data[position];
