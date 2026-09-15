@@ -13,11 +13,8 @@
 static const char CONTENT_KEY_FMT[] = "ContentKey-%08" PRIx32;
 
 static enc_provider_proc *const PROVIDER[] = {
-    &__enc_caller_proc,
-    &__enc_prompt_proc,
-    &__enc_split_proc,
-    &__enc_diskid_proc,
-    &__enc_remote_proc,
+    &__enc_caller_proc, &__enc_prompt_proc, &__enc_split_proc,
+    &__enc_diskid_proc, &__enc_remote_proc,
 };
 
 #define ENC_PROV(enc) (*(PROVIDER[(enc)->provider & 0xFF]))

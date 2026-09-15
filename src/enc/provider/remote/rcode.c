@@ -25,8 +25,8 @@ encr_rcode_init(enc_context *enc)
     encr_pages[PAGE_RCODE].length = lengthof(_rcode_fields);
     encr_pages[PAGE_RCODE].fields = _rcode_fields;
     encr_pages[PAGE_RCODE].fields[2].data =
-        (intptr_t) "888888-888888-888888-888888-888888-888888-888888-"
-                   "888888-888888";
+        (intptr_t)"888888-888888-888888-888888-888888-888888-888888-"
+                  "888888-888888";
 
     if (enc_has_key_store())
     {
