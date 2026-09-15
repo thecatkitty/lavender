@@ -25,7 +25,7 @@ static bool
 _xor_verify(enc_stream *stream, uint32_t crc)
 {
     return crc ==
-           zip_calculate_crc_indirect((uint8_t(*)(void *, size_t))_xor_at,
+           zip_calculate_crc_indirect((uint8_t (*)(void *, size_t))_xor_at,
                                       stream, stream->data_length);
 }
 

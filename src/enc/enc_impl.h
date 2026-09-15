@@ -6,11 +6,11 @@
 #include <enc.h>
 #include <pal.h>
 
-typedef bool    (*enc_stream_allocate)(enc_stream *stream);
-typedef bool    (*enc_stream_free)(enc_stream *stream);
+typedef bool (*enc_stream_allocate)(enc_stream *stream);
+typedef bool (*enc_stream_free)(enc_stream *stream);
 typedef uint8_t (*enc_stream_at)(enc_stream *stream, size_t i);
-typedef bool    (*enc_stream_decrypt)(enc_stream *stream, uint8_t *dst);
-typedef bool    (*enc_stream_verify)(enc_stream *stream, uint32_t crc);
+typedef bool (*enc_stream_decrypt)(enc_stream *stream, uint8_t *dst);
+typedef bool (*enc_stream_verify)(enc_stream *stream, uint32_t crc);
 
 typedef struct
 {
@@ -21,7 +21,7 @@ typedef struct
     enc_stream_verify   verify;
 } enc_stream_impl;
 
-typedef int (enc_provider_proc)(int msg, enc_context *enc);
+typedef int(enc_provider_proc)(int msg, enc_context *enc);
 
 extern enc_stream_impl __enc_des_impl;
 extern enc_stream_impl __enc_xor_impl;
@@ -57,7 +57,7 @@ enum
 };
 
 // Decrypt content described by the encryption context
-// @returns Zero on success, positive error message ID, or negative on other error
+// @returns Zero on success, positive error message ID, negative on other error
 extern int
 __enc_decrypt_content(enc_context *enc);
 
