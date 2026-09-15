@@ -21,10 +21,10 @@ extern bool
 sndbuf_read(snd_buffer *buffer, size_t size, char *data);
 
 extern int
-sndbuf_getc(snd_buffer* buffer);
+sndbuf_getc(snd_buffer *buffer);
 
 extern int
-sndbuf_peek(snd_buffer* buffer);
+sndbuf_peek(snd_buffer *buffer);
 
 extern char *
 sndbuf_next_packet(const snd_buffer *buffer);
