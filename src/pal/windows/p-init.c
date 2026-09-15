@@ -199,7 +199,6 @@ pal_initialize(int argc, char *argv[])
         die_early(IDS_UNSUPPENV);
     }
 
-    windows_fullscreen = false;
     gfx_get_glyph_dimensions(&windows_cell);
 
     ShowWindow(windows_wnd, windows_cmd_show);
