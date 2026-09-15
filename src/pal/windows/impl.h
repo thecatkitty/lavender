@@ -16,6 +16,9 @@
 #define FMT_AS L"%s"
 #endif
 
+#define INITIAL_WINDOW_STYLE                                                   \
+    (WS_OVERLAPPEDWINDOW & ~(WS_MAXIMIZEBOX | WS_SIZEBOX))
+
 extern int       windows_cmd_show;
 extern HINSTANCE windows_instance;
 extern HWND      windows_wnd;

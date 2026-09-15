@@ -130,11 +130,11 @@ windows_toggle_fullscreen(HWND wnd)
     int i;
 
     DWORD style = GetWindowLongW(wnd, GWL_STYLE);
-    bool  was_fullscreen = !(style & WS_OVERLAPPEDWINDOW);
+    bool  was_fullscreen = !(style & INITIAL_WINDOW_STYLE);
     if (was_fullscreen)
     {
         windows_set_scale(scale_);
-        SetWindowLongW(wnd, GWL_STYLE, style | WS_OVERLAPPEDWINDOW);
+        SetWindowLongW(wnd, GWL_STYLE, style | INITIAL_WINDOW_STYLE);
         SetWindowPlacement(wnd, &placement_);
         SetWindowPos(wnd, NULL, 0, 0, 0, 0,
                      SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER |
@@ -152,7 +152,7 @@ windows_toggle_fullscreen(HWND wnd)
             scale_ = gfx_get_scale();
             windows_set_font(windows_find_font(max_width, max_height));
             windows_set_box(rect.right - rect.left, rect.bottom - rect.top);
-            SetWindowLongW(wnd, GWL_STYLE, style & ~WS_OVERLAPPEDWINDOW);
+            SetWindowLongW(wnd, GWL_STYLE, style & ~INITIAL_WINDOW_STYLE);
             SetWindowPos(wnd, HWND_TOP, rect.left, rect.top,
                          rect.right - rect.left, rect.bottom - rect.top,
                          SWP_NOOWNERZORDER | SWP_FRAMECHANGED);

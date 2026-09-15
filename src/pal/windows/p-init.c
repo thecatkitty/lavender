@@ -173,17 +173,16 @@ pal_initialize(int argc, char *argv[])
     MultiByteToWideChar(CP_UTF8, 0, pal_get_version_string(), -1, title,
                         MAX_PATH);
 
-    windows_wnd = CreateWindowExW(
-        0,         // Optional window styles
-        wndc_name, // Window class
-        title,     // Window text
-        WS_OVERLAPPEDWINDOW & ~(WS_MAXIMIZEBOX | WS_SIZEBOX), // Window style
-        CW_USEDEFAULT, CW_USEDEFAULT,                         // Position
-        640, 480,                                             // Size
-        NULL,                                                 // Parent
-        NULL,                                                 // Menu
-        windows_instance, // Application instance
-        NULL);
+    windows_wnd = CreateWindowExW(0,         // Optional window styles
+                                  wndc_name, // Window class
+                                  title,     // Window text
+                                  INITIAL_WINDOW_STYLE,         // Window style
+                                  CW_USEDEFAULT, CW_USEDEFAULT, // Position
+                                  640, 480,                     // Size
+                                  NULL,                         // Parent
+                                  NULL,                         // Menu
+                                  windows_instance, // Application instance
+                                  NULL);
     if (NULL == windows_wnd)
     {
         LOG("cannot create the window");
