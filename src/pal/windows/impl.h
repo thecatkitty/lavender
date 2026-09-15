@@ -20,7 +20,6 @@ extern int       windows_cmd_show;
 extern HINSTANCE windows_instance;
 extern HWND      windows_wnd;
 
-extern bool  windows_fullscreen;
 extern bool  windows_no_stall;
 extern DWORD windows_start_time;
 

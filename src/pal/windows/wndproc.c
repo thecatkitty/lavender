@@ -23,7 +23,6 @@ typedef HMONITOR(WINAPI *pf_monitorfromwindow)(HWND, DWORD);
 #define ID_FULL  0x2100
 
 gfx_dimensions windows_cell;
-bool           windows_fullscreen = false;
 
 // See DEVICE_SCALE_FACTOR in shtypes.h
 static const float SCALES[] = {1.00f, 1.20f, 1.25f, 1.40f, 1.50f, 1.60f,
@@ -131,7 +130,8 @@ windows_toggle_fullscreen(HWND wnd)
     int i;
 
     DWORD style = GetWindowLongW(wnd, GWL_STYLE);
-    if (windows_fullscreen)
+    bool  was_fullscreen = !(style & WS_OVERLAPPEDWINDOW);
+    if (was_fullscreen)
     {
         windows_set_scale(scale_);
         SetWindowLongW(wnd, GWL_STYLE, style | WS_OVERLAPPEDWINDOW);
@@ -160,16 +160,14 @@ windows_toggle_fullscreen(HWND wnd)
     }
 
     gfx_get_glyph_dimensions(&windows_cell);
-    windows_fullscreen = !windows_fullscreen;
 
     CheckMenuItem(size_menu_, ID_FULL,
-                  MF_BYCOMMAND |
-                      (windows_fullscreen ? MF_CHECKED : MF_UNCHECKED));
+                  MF_BYCOMMAND | (was_fullscreen ? MF_UNCHECKED : MF_CHECKED));
     for (i = scale_min_id_ - ID_SCALE; i < lengthof(SCALES); i++)
     {
         EnableMenuItem(size_menu_, ID_SCALE + i,
                        MF_BYCOMMAND |
-                           (windows_fullscreen ? MF_GRAYED : MF_ENABLED));
+                           (was_fullscreen ? MF_ENABLED : MF_GRAYED));
     }
 }
 
