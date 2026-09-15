@@ -268,7 +268,7 @@ void
 pal_print_log(const char *location, const char *format, ...)
 {
     char msg[4096];
-    int length = sprintf(msg, "%s: ", location);
+    int  length = sprintf(msg, "%s: ", location);
 
     va_list args;
     va_start(args, format);

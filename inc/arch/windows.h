@@ -57,7 +57,7 @@ windows_is_less_than(uint16_t ver)
 }
 
 inline static FARPROC
-windows_get_proc(const char* module, const char* name)
+windows_get_proc(const char *module, const char *name)
 {
     HMODULE hmodule = GetModuleHandleA(module);
     return hmodule ? GetProcAddress(hmodule, name) : NULL;
