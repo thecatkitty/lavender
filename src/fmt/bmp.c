@@ -10,7 +10,7 @@
 #if SIZE_MAX <= UINT16_MAX
 #define MAX_CHUNK 5120 // 640x2 @ 32bpp, 640x16 @ 4bpp, 640x48 @ 1bpp
 #else
-#define MAX_CHUNK UINT16_MAX
+#define MAX_CHUNK 65536 // 640x25 @ 32bpp, 640x204 @ 4bpp, 640x819 @ 1bpp
 #endif
 
 static bool
@@ -99,11 +99,13 @@ prepare(gfx_bitmap *bm, hasset asset)
     }
 
     bm->opl = (((bm->width * bm->bpp) + 31) & ~31) >> 3;
+#if MAX_CHUNK <= UINT16_MAX
     if (MAX_CHUNK < bm->opl)
     {
         LOG("exit, %u octets per line not supported!", bm->opl);
         return deallocate(bm, EFTYPE);
     }
+#endif
 
     bm->offset = fh->off_bits;
     bm->chunk_top = 0;
