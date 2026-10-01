@@ -18,3 +18,5 @@ IDI_APPICON     ICON    "lard.ico"
 IDI_INSTREDIST  ICON    "instredist.ico"
 IDI_RUNDOS      ICON    "rundos.ico"
 IDI_INSTIE      ICON    "instie.ico"
+
+1 24 "lard.exe.manifest"
