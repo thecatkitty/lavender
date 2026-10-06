@@ -2,24 +2,28 @@ add_executable(lard WIN32)
 add_dependencies(lard version_text)
 install(TARGETS lard DESTINATION .)
 
-file(GLOB RESOURCES resource/*.rc)
+set(RESOURCE_NAMES _neutral en-us cs-cz pl-pl)
+list(TRANSFORM RESOURCE_NAMES
+    REPLACE "^(.+)$" "resource/\\1.rc"
+    OUTPUT_VARIABLE RESOURCES)
 
-target_sources(lard PRIVATE compat.c)
-target_sources(lard PRIVATE config.c)
-target_sources(lard PRIVATE deps.c)
-target_sources(lard PRIVATE ui.c)
-target_sources(lard PRIVATE winmain.c)
-target_sources(lard PRIVATE action/_exec.c)
-target_sources(lard PRIVATE action/instie.c)
-target_sources(lard PRIVATE action/instredist.c)
-target_sources(lard PRIVATE action/run.c)
-target_sources(lard PRIVATE action/rundos.c)
-target_sources(lard PRIVATE action/select.c)
-target_sources(lard PRIVATE version/cpu.c)
-target_sources(lard PRIVATE version/ie.c)
-target_sources(lard PRIVATE version/dll.c)
-target_sources(lard PRIVATE version/windows.c)
-target_sources(lard PRIVATE ${RESOURCES})
+target_sources(lard PRIVATE
+    compat.c
+    config.c
+    deps.c
+    ui.c
+    winmain.c
+    action/_exec.c
+    action/instie.c
+    action/instredist.c
+    action/run.c
+    action/rundos.c
+    action/select.c
+    version/cpu.c
+    version/ie.c
+    version/dll.c
+    version/windows.c
+    ${RESOURCES})
 
 if(WATCOM)
     foreach(resource ${RESOURCES})
