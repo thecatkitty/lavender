@@ -26,32 +26,59 @@ target_sources(lard PRIVATE
     ${RESOURCES})
 
 if(WATCOM)
-    foreach(resource ${RESOURCES})
-        cmake_path(GET resource STEM resource_stem)
+    # Watcom does not support UTF-8 resource files, so we need to compile them
+    # with the Microsoft resource compiler.
+    set(resource_outputs)
+    foreach(name IN LISTS RESOURCE_NAMES)
+        set(resource "${CMAKE_CURRENT_SOURCE_DIR}/resource/${name}.rc")
+        set(output "${CMAKE_CURRENT_BINARY_DIR}/${name}.res")
+
         add_custom_command(
-            OUTPUT ${resource_stem}.res
+            OUTPUT "${output}"
             COMMAND rc /nologo /c 65001
-                /i ${CMAKE_SOURCE_DIR}/inc
-                /i ${CMAKE_BINARY_DIR}/inc
-                /fo ${resource_stem}.res
-                ${resource_stem}.rc
-            COMMAND ${CMAKE_COMMAND} -E rename
-                ${resource_stem}.res
-                ${CMAKE_CURRENT_BINARY_DIR}/${resource_stem}.res
-            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/resource
+                /i "${CMAKE_SOURCE_DIR}/inc"
+                /i "${CMAKE_BINARY_DIR}/inc"
+                /fo "${output}"
+                "${resource}"
+            DEPENDS "${resource}"
+            WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resource"
+            COMMENT "Compiling resource ${name}"
             VERBATIM)
-        add_custom_target(lard-res-${resource_stem} DEPENDS ${resource_stem}.res)
-        add_dependencies(lard lard-res-${resource_stem})
+
+        list(APPEND resource_outputs "${output}")
     endforeach()
+
+    # Watcom does not support linking multiple resource files, so we need to use
+    # Resource Hacker to link them together.
+    set(rh_commands)
+    foreach(name IN LISTS RESOURCE_NAMES)
+        if(NOT name STREQUAL "_neutral")
+            string(APPEND rh_commands
+                "-add \"${CMAKE_CURRENT_BINARY_DIR}/${name}.res\",,,\n")
+        endif()
+    endforeach()
+
+    set(rh_script "${CMAKE_CURRENT_BINARY_DIR}/lard-resources-$<CONFIG>.txt")
+    file(GENERATE OUTPUT "${rh_script}"
+        CONTENT "[FILENAMES]
+Open=\"$<TARGET_FILE:lard>\"
+Save=\"$<TARGET_FILE:lard>\"
+[COMMANDS]
+${rh_commands}")
 
     add_custom_command(
         TARGET lard POST_BUILD
-        COMMAND wrc -q _neutral.res ${CMAKE_CURRENT_BINARY_DIR}/lard.exe
-        COMMAND ResourceHacker -open ${CMAKE_CURRENT_BINARY_DIR}/lard.exe -save ${CMAKE_CURRENT_BINARY_DIR}/lard.exe -action add -res en-us.res ,,,
-        COMMAND ResourceHacker -open ${CMAKE_CURRENT_BINARY_DIR}/lard.exe -save ${CMAKE_CURRENT_BINARY_DIR}/lard.exe -action add -res cs-cz.res ,,,
-        COMMAND ResourceHacker -open ${CMAKE_CURRENT_BINARY_DIR}/lard.exe -save ${CMAKE_CURRENT_BINARY_DIR}/lard.exe -action add -res pl-pl.res ,,,
+        COMMAND wrc -q
+            "${CMAKE_CURRENT_BINARY_DIR}/_neutral.res"
+            "$<TARGET_FILE:lard>"
+        COMMAND ResourceHacker -script "${rh_script}"
         COMMENT "Linking resources"
         VERBATIM)
+
+    # Ensure that the resource files are built before lard is linked.
+    add_custom_target(lard-resources DEPENDS ${resource_outputs})
+    add_dependencies(lard lard-resources)
+    set_property(TARGET lard APPEND PROPERTY LINK_DEPENDS ${resource_outputs})
 endif()
 
 set(LARD_WINVER 0x030A)
