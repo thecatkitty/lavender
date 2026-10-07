@@ -17,7 +17,7 @@ mv ext/$LLVM_MINGW_NAME ext/llvm-mingw-$LLVM_MINGW_CRT
 echo "$PWD/ext/llvm-mingw-$LLVM_MINGW_CRT/bin" >> $GITHUB_PATH
 
 if [ "$1" = "ia32" ]; then
-    for crt in $LLVM_MINGW_CRT; do
+    for crt in $LLVM_MINGW_CRT crtdll; do
         BULWA_NAME="bulwa-REL-$LLVM_MINGW_VERSION-$crt"
         curl -L https://github.com/thecatkitty/bulwa/releases/download/REL-$LLVM_MINGW_VERSION/$BULWA_NAME.zip -o ext/$BULWA_NAME.zip
         unzip ext/$BULWA_NAME.zip -d ext/bulwa-$crt
