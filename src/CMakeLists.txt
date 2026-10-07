@@ -36,6 +36,10 @@ include_directories(lavender ${CMAKE_CURRENT_BINARY_DIR})
 target_sources(lavender PRIVATE main.c rstd.c)
 target_link_libraries(lavender fmt gfx pal sld)
 
+if(EXISTS "${PROJECT_SOURCE_DIR}/ext/bulwa-msvcrt")
+    target_link_options(lavender PRIVATE -B "${PROJECT_SOURCE_DIR}/ext/bulwa-msvcrt/lib/i486")
+endif()
+
 add_custom_target(version_text
     COMMAND ${CMAKE_COMMAND} -P ${CMAKE_SOURCE_DIR}/cmake/scripts/version.cmake
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
