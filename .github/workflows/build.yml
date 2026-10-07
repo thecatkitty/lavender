@@ -71,7 +71,7 @@ jobs:
             fetch-script: .github/fetch-mingw.sh ia32
             cc: i686-w64-mingw32-gcc
             cxx: i686-w64-mingw32-g++
-            flags: -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_EXE_LINKER_FLAGS=-L$GITHUB_WORKSPACE/ext/bulwa/lib/i486
+            flags: -DCMAKE_SYSTEM_NAME=Windows
             config: windows-lard
             build-targets: all bundle
             host: ubuntu-latest

@@ -17,9 +17,12 @@ mv ext/$LLVM_MINGW_NAME ext/llvm-mingw-$LLVM_MINGW_CRT
 echo "$PWD/ext/llvm-mingw-$LLVM_MINGW_CRT/bin" >> $GITHUB_PATH
 
 if [ "$1" = "ia32" ]; then
-    BULWA_NAME="bulwa-REL-$LLVM_MINGW_VERSION-$LLVM_MINGW_CRT"
-    curl -L https://github.com/thecatkitty/bulwa/releases/download/REL-$LLVM_MINGW_VERSION/$BULWA_NAME.zip -o ext/$BULWA_NAME.zip
+    for crt in $LLVM_MINGW_CRT; do
+        BULWA_NAME="bulwa-REL-$LLVM_MINGW_VERSION-$crt"
+        curl -L https://github.com/thecatkitty/bulwa/releases/download/REL-$LLVM_MINGW_VERSION/$BULWA_NAME.zip -o ext/$BULWA_NAME.zip
+        unzip ext/$BULWA_NAME.zip -d ext/bulwa-$crt
+    done
+ 
     curl -L https://prdownloads.sourceforge.net/libunicows/libunicows-1.1.1-mingw32.zip -o ext/libunicows.zip
-    unzip ext/$BULWA_NAME.zip -d ext/bulwa
     unzip -j ext/libunicows.zip -d ext/libunicows
 fi
