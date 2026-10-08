@@ -1,4 +1,7 @@
+include(../cmake/extensions/win32.cmake)
+
 target_link_libraries(lavender comctl32 version wininet winmm)
+target_win32_version(lavender ${WINVER})
 
 if(MSVC)
     if(MSVC_VERSION LESS 1500)
@@ -6,14 +9,9 @@ if(MSVC)
     endif()
 
     target_link_options(lavender PRIVATE /manifest:no /manifestuac:no)
-    target_link_options(lavender PRIVATE /subsystem:windows,${WINVER_MAJOR}.${WINVER_MINOR})
 else()
     target_link_options(lavender PRIVATE -mwindows -s)
     target_link_options(lavender PRIVATE -municode)
-    target_link_options(lavender PRIVATE -Wl,--major-os-version,${WINVER_MAJOR})
-    target_link_options(lavender PRIVATE -Wl,--minor-os-version,${WINVER_MINOR})
-    target_link_options(lavender PRIVATE -Wl,--major-subsystem-version,${WINVER_MAJOR})
-    target_link_options(lavender PRIVATE -Wl,--minor-subsystem-version,${WINVER_MINOR})
 
     if(COMPILER_NAME MATCHES "^i686")
         target_link_options(lavender PRIVATE ${CMAKE_SOURCE_DIR}/ext/libunicows/libunicows.a)
