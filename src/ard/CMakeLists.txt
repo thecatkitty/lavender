@@ -88,7 +88,7 @@ math(EXPR LARD_WINVER_MINOR "${LARD_WINVER} & 0xFF")
 remove_definitions(-DWINVER=${WINVER})
 
 target_compile_definitions(lard PRIVATE WINVER=0x0400) # 0x030A breaks MinGW's winreg.h
-if(${COMPILER_NAME} MATCHES "i686")
+if(COMPILER_NAME MATCHES "^i686")
     target_compile_options(lard PRIVATE -march=i386)
 endif()
 

@@ -8,6 +8,6 @@ message(STATUS "Building for Windows ${WINVER_MAJOR}.${WINVER_MINOR}")
 
 add_compile_definitions(WINVER=${WINVER})
 
-if(${COMPILER_NAME} MATCHES "^i[3-6]86")
+if(COMPILER_NAME MATCHES "^i686")
     add_compile_options(-march=i486)
 endif()
