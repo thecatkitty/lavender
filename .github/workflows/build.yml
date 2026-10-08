@@ -71,14 +71,14 @@ jobs:
             fetch-script: .github/fetch-mingw.sh ia32
             cc: i686-w64-mingw32-gcc
             cxx: i686-w64-mingw32-g++
-            flags: -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_EXE_LINKER_FLAGS=-L$GITHUB_WORKSPACE/ext/bulwa/i686-w64-mingw32/lib
+            flags: -DCMAKE_SYSTEM_NAME=Windows
             config: windows-lard
             build-targets: all bundle
             host: ubuntu-latest
 
           - name: Windows (x64)
             target: windows-x64
-            fetch-script: .github/fetch-mingw.sh
+            fetch-script: .github/fetch-mingw.sh x64
             cc: x86_64-w64-mingw32-gcc
             cxx: x86_64-w64-mingw32-g++
             flags: -DCMAKE_SYSTEM_NAME=Windows -DWINVER=0x0502
@@ -87,7 +87,7 @@ jobs:
 
           - name: Windows (ARM)
             target: windows-arm
-            fetch-script: .github/fetch-mingw.sh
+            fetch-script: .github/fetch-mingw.sh arm
             cc: armv7-w64-mingw32-gcc
             cxx: armv7-w64-mingw32-g++
             flags: -DCMAKE_SYSTEM_NAME=Windows -DWINVER=0x0602
@@ -96,7 +96,7 @@ jobs:
 
           - name: Windows (ARM64)
             target: windows-arm64
-            fetch-script: .github/fetch-mingw.sh
+            fetch-script: .github/fetch-mingw.sh arm64
             cc: aarch64-w64-mingw32-gcc
             cxx: aarch64-w64-mingw32-g++
             flags: -DCMAKE_SYSTEM_NAME=Windows -DWINVER=0x0A00
