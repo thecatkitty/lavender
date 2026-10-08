@@ -1,3 +1,5 @@
+include(../../cmake/extensions/win32.cmake)
+
 add_executable(lard WIN32)
 add_dependencies(lard version_text)
 install(TARGETS lard DESTINATION .)
@@ -81,32 +83,21 @@ ${rh_commands}")
     set_property(TARGET lard APPEND PROPERTY LINK_DEPENDS ${resource_outputs})
 endif()
 
-set(LARD_WINVER 0x030A)
-math(EXPR LARD_WINVER_MAJOR "${LARD_WINVER} >> 8")
-math(EXPR LARD_WINVER_MINOR "${LARD_WINVER} & 0xFF")
-
 remove_definitions(-DWINVER=${WINVER})
-
 target_compile_definitions(lard PRIVATE WINVER=0x0400) # 0x030A breaks MinGW's winreg.h
 if(COMPILER_NAME MATCHES "^i686")
     target_compile_options(lard PRIVATE -march=i386)
 endif()
 
 target_link_libraries(lard PRIVATE version)
-if(MSVC)
-    target_link_options(lard PRIVATE /subsystem:windows,${LARD_WINVER_MAJOR}.${LARD_WINVER_MINOR})
-elseif(WATCOM)
-    target_link_options(lard PRIVATE runtime windows=${LARD_WINVER_MAJOR}.${LARD_WINVER_MINOR})
-else()
+target_win32_version(lard 0x030A)
+
+if(NOT MSVC AND NOT WATCOM)
     if(EXISTS "${PROJECT_SOURCE_DIR}/ext/bulwa-crtdll")
         target_link_options(lard PRIVATE -B "${PROJECT_SOURCE_DIR}/ext/bulwa-crtdll/lib/i386")
     endif()
 
     target_link_options(lard PRIVATE -s)
     target_link_options(lard PRIVATE -lcrtdll)
-    target_link_options(lard PRIVATE -Wl,--major-os-version,${LARD_WINVER_MAJOR})
-    target_link_options(lard PRIVATE -Wl,--minor-os-version,${LARD_WINVER_MINOR})
-    target_link_options(lard PRIVATE -Wl,--major-subsystem-version,${LARD_WINVER_MAJOR})
-    target_link_options(lard PRIVATE -Wl,--minor-subsystem-version,${LARD_WINVER_MINOR})
     target_link_options(lard PRIVATE -Wl,-Map=lard.map)
 endif()
