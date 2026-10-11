@@ -175,6 +175,13 @@ jobs:
             cmake --install build --config Release
           done
 
+      - name: Check imports
+        if: matrix.platform.target == 'windows-ia32'
+        run: |
+          for file in $(find bin -name lard.exe); do
+            .github/check-imports.sh 030a "$file"
+          done
+
       - name: Prepare release info
         if: startsWith(github.ref, 'refs/tags/')
         shell: bash
