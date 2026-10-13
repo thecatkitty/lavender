@@ -101,4 +101,10 @@ if(NOT MSVC AND NOT WATCOM)
     target_link_options(lard PRIVATE -s)
     target_link_options(lard PRIVATE -lcrtdll)
     target_link_options(lard PRIVATE -Wl,-Map=lard.map)
+
+    # On Windows NT 3.1, writing to IAT in .rdata causes Access Violation
+    target_link_options(lard PRIVATE "LINKER:--Xlink=/MERGE:.idata=Sidata")
+
+    # On Windows NT 3.1, .data is not zero-initialized
+    target_link_options(lard PRIVATE "LINKER:--Xlink=/MERGE:.bss=Sbss")
 endif()
