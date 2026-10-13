@@ -94,7 +94,8 @@ target_win32_version(lard 0x030A)
 
 if(NOT MSVC AND NOT WATCOM)
     if(EXISTS "${PROJECT_SOURCE_DIR}/ext/bulwa-crtdll")
-        target_link_options(lard PRIVATE -B "${PROJECT_SOURCE_DIR}/ext/bulwa-crtdll/lib/i386")
+        target_link_directories(lard BEFORE PRIVATE "${PROJECT_SOURCE_DIR}/ext/bulwa-crtdll/lib/i386")
+        target_link_options(lard BEFORE PRIVATE -B "${PROJECT_SOURCE_DIR}/ext/bulwa-crtdll/lib/i386")
     endif()
 
     target_link_options(lard PRIVATE -s)
