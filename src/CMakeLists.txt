@@ -37,7 +37,8 @@ target_sources(lavender PRIVATE main.c rstd.c)
 target_link_libraries(lavender fmt gfx pal sld)
 
 if(EXISTS "${PROJECT_SOURCE_DIR}/ext/bulwa-msvcrt")
-    target_link_options(lavender PRIVATE -B "${PROJECT_SOURCE_DIR}/ext/bulwa-msvcrt/lib/i486")
+    target_link_directories(lavender BEFORE PRIVATE "${PROJECT_SOURCE_DIR}/ext/bulwa-msvcrt/lib/i486")
+    target_link_options(lavender BEFORE PRIVATE -B "${PROJECT_SOURCE_DIR}/ext/bulwa-msvcrt/lib/i486")
 endif()
 
 add_custom_target(version_text
