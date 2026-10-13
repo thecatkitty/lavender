@@ -44,7 +44,7 @@ icmpxchg_impl_(LONG volatile *Destination, LONG Exchange, LONG Comperand)
         *Destination = Exchange;
     }
 
-    icmpxchg_lock_ = 0;
+    InterlockedExchange(&icmpxchg_lock_, 0);
 
     return old;
 }
