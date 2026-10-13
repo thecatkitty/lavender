@@ -121,7 +121,7 @@ jobs:
             build-targets: lard
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           submodules: true
@@ -189,7 +189,7 @@ jobs:
           git tag -l --format='%(contents:subject)' ${{ github.ref_name }} | sed -r "s/^.+: //" > bin/RELEASE.md
   
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: lavender-${{ matrix.platform.target }}
           path: |
@@ -199,7 +199,7 @@ jobs:
   Test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -222,7 +222,7 @@ jobs:
 
     steps:
       - name: Fetch build output
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
           
       - name: Prepare archives
         run: |
