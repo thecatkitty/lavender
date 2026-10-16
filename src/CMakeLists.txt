@@ -1,4 +1,8 @@
 add_executable(lavender WIN32)
+if(NOT CMAKE_SYSTEM_PROCESSOR STREQUAL ALPHA)
+    install(TARGETS lavender DESTINATION .)
+endif()
+
 
 if(CONFIG_SDL2)
     find_package(SDL2 REQUIRED PATHS ../ext)

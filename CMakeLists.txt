@@ -74,8 +74,3 @@ add_subdirectory(src)
 
 # Asset archive
 add_subdirectory(demo)
-
-if(NOT CMAKE_SYSTEM_PROCESSOR STREQUAL ALPHA)
-    install(TARGETS lavender DESTINATION .)
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/demo/sshow${CMAKE_EXECUTABLE_SUFFIX} DESTINATION .)
-endif()
