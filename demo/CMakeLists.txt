@@ -47,3 +47,6 @@ add_custom_command(
     DEPENDS lavender data.zip)
 
 add_custom_target(bundle DEPENDS sshow${CMAKE_EXECUTABLE_SUFFIX})
+if(NOT CMAKE_SYSTEM_PROCESSOR STREQUAL ALPHA)
+    install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/sshow${CMAKE_EXECUTABLE_SUFFIX}" DESTINATION .)
+endif()
