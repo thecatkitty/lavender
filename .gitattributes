@@ -1,4 +1,4 @@
-/data/*.txt text eol=crlf
+/demo/*.txt text eol=crlf
 
 Kconfig* linguist-detectable=true
 Kconfig* linguist-documentation=false
