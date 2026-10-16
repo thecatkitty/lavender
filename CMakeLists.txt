@@ -114,7 +114,7 @@ add_custom_command(
 
 add_custom_target(bundle DEPENDS sshow${CMAKE_EXECUTABLE_SUFFIX})
 
-if(NOT WATCOM)
+if(NOT CMAKE_SYSTEM_PROCESSOR STREQUAL ALPHA)
     install(TARGETS lavender DESTINATION .)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/sshow${CMAKE_EXECUTABLE_SUFFIX} DESTINATION .)
 endif()
