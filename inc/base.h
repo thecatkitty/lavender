@@ -63,18 +63,6 @@
 #endif
 #endif
 
-extern uint64_t
-rstrtoull(const char *str, int base);
-
-extern bool
-isdigstr(const char *str);
-
-extern bool
-isxdigstr(const char *str);
-
-extern uint8_t
-xtob(const char *str);
-
 #ifndef EFTYPE
 #define EFTYPE 0x11e
 #endif

@@ -34,7 +34,7 @@ if(CONFIG_SOUND)
 endif()
 
 include_directories(lavender ${CMAKE_CURRENT_BINARY_DIR})
-target_sources(lavender PRIVATE main.c rstd.c)
+target_sources(lavender PRIVATE main.c numstr.c)
 target_link_libraries(lavender fmt gfx pal sld)
 
 if(COMPILER_NAME MATCHES "^i686" AND EXISTS "${PROJECT_SOURCE_DIR}/ext/bulwa-msvcrt")

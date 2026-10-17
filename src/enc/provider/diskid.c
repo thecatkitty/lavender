@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <numstr.h>
 #include <pal.h>
 
 #include "../../resource.h"
