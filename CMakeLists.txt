@@ -74,3 +74,8 @@ add_subdirectory(src)
 
 # Asset archive
 add_subdirectory(demo)
+
+# Dependency checker
+if(CONFIG_ARD)
+    add_subdirectory(ard)
+endif()
