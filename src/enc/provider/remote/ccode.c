@@ -1,7 +1,7 @@
 #include <ctype.h>
-#include <stdio.h>
 #include <stdlib.h>
 
+#include <compat/stdio.h>
 #include "remote.h"
 
 static char       _ccode[50];
