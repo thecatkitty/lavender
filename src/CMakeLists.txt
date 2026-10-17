@@ -1,4 +1,9 @@
 add_executable(lavender WIN32)
+target_link_libraries(lavender compat)
+if(NOT CMAKE_SYSTEM_PROCESSOR STREQUAL ALPHA)
+    install(TARGETS lavender DESTINATION .)
+endif()
+
 
 if(CONFIG_SDL2)
     find_package(SDL2 REQUIRED PATHS ../ext)
@@ -12,10 +17,6 @@ add_subdirectory(fmt)
 add_subdirectory(gfx)
 add_subdirectory(pal)
 add_subdirectory(sld)
-
-if(CONFIG_ARD)
-    add_subdirectory(ard)
-endif()
 
 if(CONFIG_ENCRYPTED_CONTENT)
     add_subdirectory(enc)
@@ -33,10 +34,10 @@ if(CONFIG_SOUND)
 endif()
 
 include_directories(lavender ${CMAKE_CURRENT_BINARY_DIR})
-target_sources(lavender PRIVATE main.c rstd.c)
+target_sources(lavender PRIVATE main.c numstr.c)
 target_link_libraries(lavender fmt gfx pal sld)
 
-if(EXISTS "${PROJECT_SOURCE_DIR}/ext/bulwa-msvcrt")
+if(COMPILER_NAME MATCHES "^i686" AND EXISTS "${PROJECT_SOURCE_DIR}/ext/bulwa-msvcrt")
     target_link_directories(lavender BEFORE PRIVATE "${PROJECT_SOURCE_DIR}/ext/bulwa-msvcrt/lib/i486")
     target_link_options(lavender BEFORE PRIVATE -B "${PROJECT_SOURCE_DIR}/ext/bulwa-msvcrt/lib/i486")
 endif()

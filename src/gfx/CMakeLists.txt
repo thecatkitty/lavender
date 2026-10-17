@@ -1,4 +1,5 @@
 add_library(gfx OBJECT)
+target_link_libraries(gfx PRIVATE compat)
 
 target_sources(gfx PRIVATE color.c)
 

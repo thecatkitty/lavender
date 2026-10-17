@@ -20,5 +20,13 @@ config TESTS
     help
         Build automatic tests.
 
+config ARD
+    bool "Build AutoRun Dependency checker"
+    default n
+    depends on WINDOWS
+    help
+        Build the AutoRun utility for verifying and installing runtime
+        prerequisities under Windows.
+
 
 rsource "src/Kconfig"

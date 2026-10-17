@@ -1,5 +1,4 @@
-#include <stdio.h>
-
+#include <compat/stdio.h>
 #include <pal.h>
 #include <snd.h>
 

@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include <compat/stdio.h>
 
 #if defined(_WIN32)
 

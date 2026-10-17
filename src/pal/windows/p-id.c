@@ -1,4 +1,5 @@
 #include <arch/windows.h>
+#include <numstr.h>
 #include <pal.h>
 
 #include "impl.h"

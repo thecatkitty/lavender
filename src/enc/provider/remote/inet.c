@@ -1,6 +1,9 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include <net.h>
+#include <numstr.h>
 
 #include "remote.h"
 #include "json/encjson.h"

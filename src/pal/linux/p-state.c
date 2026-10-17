@@ -1,7 +1,9 @@
-#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <compat/stdio.h>
 #include <pal.h>
 
 static char state_dir_[PATH_MAX] = "";

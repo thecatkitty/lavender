@@ -52,18 +52,12 @@ else()
     message(FATAL_ERROR "Unsupported platform")
 endif()
 
-# Supply missing headers for compatibility
-include(cmake/extensions/c99.cmake)
-supply_c99_header(inttypes)
-supply_c99_header(minwindef)
-supply_c99_header(sal)
-supply_c99_header(stdbool)
-supply_c99_header(stdint)
-supply_c99_header(winnt)
-
 # Include directories
 include_directories(BEFORE inc)
 include_directories(ext)
+
+# Apply compatibility polyfills
+add_subdirectory(compat)
 
 # Tests
 enable_testing()
@@ -73,48 +67,9 @@ include(cmake/extensions/test.cmake)
 add_subdirectory(src)
 
 # Asset archive
-if(CONFIG_COMPACT)
-    add_custom_command(
-        OUTPUT slides.txt
-        COMMAND
-            tail -n +2 ${CMAKE_CURRENT_SOURCE_DIR}/data/slides.txt > slides.txt
-        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/data/slides.txt)
+add_subdirectory(demo)
 
-    set(ASSETS
-        slides.txt
-        ${CMAKE_CURRENT_SOURCE_DIR}/data/lavndr73.bmp
-        ${CMAKE_CURRENT_SOURCE_DIR}/data/lavndr99.bmp)
-else()
-    set(ASSETS ${CMAKE_CURRENT_SOURCE_DIR}/data/*)
-endif()
-
-get_target_property(DRIVERS lavender ANDREA_DRIVERS)
-if(DRIVERS MATCHES "-NOTFOUND$")
-    set(DRIVERS "")
-endif()
-
-add_custom_command(
-    OUTPUT data.zip
-    COMMAND
-        zip -0 -r -j data.zip
-        ${ASSETS}
-        ${DRIVERS}
-    DEPENDS ${ASSETS})
-
-# Bundle
-add_custom_command(
-    OUTPUT sshow${CMAKE_EXECUTABLE_SUFFIX}
-    COMMAND ${CMAKE_COMMAND}
-        -DEXECUTABLE_PATH=$<TARGET_FILE:lavender>
-        -DARCHIVE_PATH=data.zip
-        -DBUNDLE_PATH=sshow${CMAKE_EXECUTABLE_SUFFIX}
-        -DMAX_SIZE=${MAX_BUNDLE_SIZE}
-        -P ${CMAKE_SOURCE_DIR}/cmake/scripts/bundle.cmake
-    DEPENDS lavender data.zip)
-
-add_custom_target(bundle DEPENDS sshow${CMAKE_EXECUTABLE_SUFFIX})
-
-if(NOT WATCOM)
-    install(TARGETS lavender DESTINATION .)
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/sshow${CMAKE_EXECUTABLE_SUFFIX} DESTINATION .)
+# Dependency checker
+if(CONFIG_ARD)
+    add_subdirectory(ard)
 endif()

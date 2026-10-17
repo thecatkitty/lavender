@@ -1,3 +1,6 @@
+#include <libi86/malloc.h>
+#include <libi86/string.h>
+
 #include <arch/dos.h>
 #include <arch/dos/winoldap.h>
 #include <gfx.h>

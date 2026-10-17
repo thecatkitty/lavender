@@ -1,3 +1,6 @@
+#include <stdlib.h>
+#include <string.h>
+
 #include <enc.h>
 
 #define UINTN_MAX(n) ((1UL << n) - 1)

@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <compat/bswap.h>
 #include <enc.h>
 #include <fmt/zip.h>
 

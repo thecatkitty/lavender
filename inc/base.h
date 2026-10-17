@@ -10,10 +10,6 @@
 #include <stddef.h>
 #include <sys/types.h>
 
-#if defined(_MSC_VER) && (_MSC_VER < 1800)
-#define snprintf _snprintf
-#endif
-
 #ifndef __cplusplus
 
 #if defined(EDITING)
@@ -22,40 +18,6 @@
 #define far
 #endif
 
-#endif
-
-#if defined(CONFIG_DOS)
-#include <libi86/malloc.h>
-#include <libi86/string.h>
-#else
-#include <stdlib.h>
-#include <string.h>
-#define _ffree   free
-#define _fmalloc malloc
-#define _fmemcpy memcpy
-#define _fmemset memset
-#endif
-
-#if defined(_MSC_VER)
-#if _MSC_VER >= 1600
-#include <intrin.h>
-#endif
-
-#define BSWAP16(x) _byteswap_ushort(x)
-#define BSWAP32(x) _byteswap_ulong(x)
-#define BSWAP64(x) _byteswap_uint64(x)
-
-#define strcasecmp _stricmp
-#elif defined(__GNUC__)
-#define BSWAP16(x) __builtin_bswap16(x)
-#define BSWAP32(x) __builtin_bswap32(x)
-#define BSWAP64(x) __builtin_bswap64(x)
-#else
-extern uint16_t
-BSWAP16(uint16_t x);
-
-extern uint32_t
-BSWAP32(uint32_t x);
 #endif
 
 #ifndef far
@@ -100,24 +62,6 @@ BSWAP32(uint32_t x);
 #define SIZE_MAX UINT_MAX
 #endif
 #endif
-
-extern uint64_t
-rstrtoull(const char *str, int base);
-
-#if !defined(_WIN32) && !__MISC_VISIBLE
-#define CUSTOM_ITOA
-extern char *
-itoa(int value, char *str, int base);
-#endif
-
-extern bool
-isdigstr(const char *str);
-
-extern bool
-isxdigstr(const char *str);
-
-extern uint8_t
-xtob(const char *str);
 
 #ifndef EFTYPE
 #define EFTYPE 0x11e

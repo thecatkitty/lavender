@@ -1,5 +1,6 @@
-#include <stdio.h>
+#include <stdlib.h>
 
+#include <compat/stdio.h>
 #include <pal.h>
 
 static const char *OPEN_COMMAND[] = {

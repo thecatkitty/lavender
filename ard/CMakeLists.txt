@@ -1,30 +1,31 @@
-include(../../cmake/extensions/win32.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/extensions/win32.cmake)
 
 add_executable(lard WIN32)
 add_dependencies(lard version_text)
+target_include_directories(lard PRIVATE inc)
+target_link_libraries(lard PRIVATE compat)
 install(TARGETS lard DESTINATION .)
 
 set(RESOURCE_NAMES _neutral en-us cs-cz pl-pl)
 list(TRANSFORM RESOURCE_NAMES
-    REPLACE "^(.+)$" "resource/\\1.rc"
+    REPLACE "^(.+)$" "src/resource/\\1.rc"
     OUTPUT_VARIABLE RESOURCES)
 
 target_sources(lard PRIVATE
-    compat.c
-    config.c
-    deps.c
-    ui.c
-    winmain.c
-    action/_exec.c
-    action/instie.c
-    action/instredist.c
-    action/run.c
-    action/rundos.c
-    action/select.c
-    version/cpu.c
-    version/ie.c
-    version/dll.c
-    version/windows.c
+    src/config.c
+    src/deps.c
+    src/ui.c
+    src/winmain.c
+    src/action/_exec.c
+    src/action/instie.c
+    src/action/instredist.c
+    src/action/run.c
+    src/action/rundos.c
+    src/action/select.c
+    src/version/cpu.c
+    src/version/ie.c
+    src/version/dll.c
+    src/version/windows.c
     ${RESOURCES})
 
 if(WATCOM)
@@ -32,7 +33,7 @@ if(WATCOM)
     # with the Microsoft resource compiler.
     set(resource_outputs)
     foreach(name IN LISTS RESOURCE_NAMES)
-        set(resource "${CMAKE_CURRENT_SOURCE_DIR}/resource/${name}.rc")
+        set(resource "${CMAKE_CURRENT_SOURCE_DIR}/src/resource/${name}.rc")
         set(output "${CMAKE_CURRENT_BINARY_DIR}/${name}.res")
 
         add_custom_command(
@@ -43,7 +44,6 @@ if(WATCOM)
                 /fo "${output}"
                 "${resource}"
             DEPENDS "${resource}"
-            WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resource"
             COMMENT "Compiling resource ${name}"
             VERBATIM)
 

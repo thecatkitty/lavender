@@ -1,7 +1,9 @@
 #include <assert.h>
-#include <stdio.h>
+#include <string.h>
 #include <time.h>
 
+#include <compat/bswap.h>
+#include <compat/stdio.h>
 #include <pal.h>
 
 #include "remote.h"

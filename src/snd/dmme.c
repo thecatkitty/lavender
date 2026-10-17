@@ -1,6 +1,6 @@
-#include <stdio.h>
 #include <windows.h>
 
+#include <compat/stdio.h>
 #include <pal.h>
 #include <snd/dev.h>
 

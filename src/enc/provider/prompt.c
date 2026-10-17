@@ -1,3 +1,7 @@
+#include <string.h>
+
+#include <compat/bswap.h>
+#include <numstr.h>
 #include <pal.h>
 
 #include "../../resource.h"
