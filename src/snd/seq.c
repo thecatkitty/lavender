@@ -1,3 +1,4 @@
+#include <compat/bswap.h>
 #include <pal.h>
 #include <snd.h>
 #include <snd/buf.h>
