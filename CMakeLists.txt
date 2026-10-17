@@ -52,18 +52,12 @@ else()
     message(FATAL_ERROR "Unsupported platform")
 endif()
 
-# Supply missing headers for compatibility
-include(cmake/extensions/c99.cmake)
-supply_c99_header(inttypes)
-supply_c99_header(minwindef)
-supply_c99_header(sal)
-supply_c99_header(stdbool)
-supply_c99_header(stdint)
-supply_c99_header(winnt)
-
 # Include directories
 include_directories(BEFORE inc)
 include_directories(ext)
+
+# Apply compatibility polyfills
+add_subdirectory(compat)
 
 # Tests
 enable_testing()
