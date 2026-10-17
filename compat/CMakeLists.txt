@@ -2,6 +2,9 @@ include(CheckIncludeFile)
 
 add_library(compat OBJECT)
 target_include_directories(compat PUBLIC inc/pub)
+if(COMPILER_NAME MATCHES "^i686")
+    target_compile_options(compat PRIVATE -march=i386)
+endif()
 
 function(supply_header name)
     set(result "HAS_${name}")
@@ -20,3 +23,8 @@ supply_header(winnt)
 
 target_sources(compat PRIVATE
     src/bswap.c)
+
+if(WIN32)
+    target_sources(compat PRIVATE
+        src/icmpxchg.c)
+endif()

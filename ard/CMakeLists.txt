@@ -12,7 +12,6 @@ list(TRANSFORM RESOURCE_NAMES
     OUTPUT_VARIABLE RESOURCES)
 
 target_sources(lard PRIVATE
-    src/compat.c
     src/config.c
     src/deps.c
     src/ui.c
