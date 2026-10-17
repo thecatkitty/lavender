@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include <gfx.h>
 
 #include "encqr.h"

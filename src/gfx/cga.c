@@ -1,5 +1,6 @@
 #include <dos.h>
 #include <graph.h>
+#include <libi86/malloc.h>
 #include <libi86/string.h>
 #include <stdlib.h>
 

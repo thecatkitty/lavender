@@ -1,8 +1,4 @@
 #include <ctype.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #include <base.h>
 
@@ -61,27 +57,6 @@ rstrtoull(const char *str, int base)
         return UINT64_MAX;
     }
 }
-
-#if defined(CUSTOM_ITOA)
-char *
-itoa(int value, char *str, int base)
-{
-    if (10 == base)
-    {
-        sprintf(str, "%d", value);
-    }
-    else if (16 == base)
-    {
-        sprintf(str, "%x", value);
-    }
-    else
-    {
-        strcpy(str, "?base?");
-    }
-
-    return str;
-}
-#endif
 
 #define ISCTYPESTR(predicate)                                                  \
     {                                                                          \
