@@ -6,6 +6,7 @@
 
 #include <ard/config.h>
 #include <ard/version.h>
+#include <compat/bswap.h>
 
 #include "resource.h"
 

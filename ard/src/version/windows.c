@@ -4,6 +4,7 @@
 #include <windows.h>
 
 #include <ard/version.h>
+#include <compat/bswap.h>
 
 #if defined(_MSC_VER)
 #pragma warning(disable : 28159)
