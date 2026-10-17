@@ -1,4 +1,5 @@
 add_library(sld OBJECT)
+target_link_libraries(sld PRIVATE compat)
 
 target_sources(sld PRIVATE context.c)
 target_sources(sld PRIVATE loader.c)

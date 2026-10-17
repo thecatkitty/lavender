@@ -3,6 +3,7 @@ include(${PROJECT_SOURCE_DIR}/cmake/extensions/win32.cmake)
 add_executable(lard WIN32)
 add_dependencies(lard version_text)
 target_include_directories(lard PRIVATE inc)
+target_link_libraries(lard PRIVATE compat)
 install(TARGETS lard DESTINATION .)
 
 set(RESOURCE_NAMES _neutral en-us cs-cz pl-pl)

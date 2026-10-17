@@ -1,4 +1,5 @@
 add_executable(lavender WIN32)
+target_link_libraries(lavender compat)
 if(NOT CMAKE_SYSTEM_PROCESSOR STREQUAL ALPHA)
     install(TARGETS lavender DESTINATION .)
 endif()
