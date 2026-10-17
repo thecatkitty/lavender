@@ -1,4 +1,5 @@
 add_library(pal OBJECT)
+target_link_libraries(pal PRIVATE compat)
 target_include_directories(pal PRIVATE inc)
 
 add_subdirectory(_zip)

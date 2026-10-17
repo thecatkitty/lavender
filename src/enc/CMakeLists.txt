@@ -1,4 +1,5 @@
 add_library(enc OBJECT)
+target_link_libraries(enc PRIVATE compat)
 
 target_sources(enc PRIVATE enc.c encui.c)
 
