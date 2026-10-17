@@ -1,3 +1,5 @@
+#include <compat/stdlib.h>
+
 #include <arch/dos.h>
 #include <drv.h>
 #include <pal.h>

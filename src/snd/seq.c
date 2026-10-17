@@ -1,4 +1,5 @@
 #include <compat/bswap.h>
+#include <compat/stdlib.h>
 #include <pal.h>
 #include <snd.h>
 #include <snd/buf.h>

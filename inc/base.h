@@ -21,13 +21,9 @@
 #endif
 
 #if defined(CONFIG_DOS)
-#include <libi86/malloc.h>
 #include <libi86/string.h>
 #else
-#include <stdlib.h>
 #include <string.h>
-#define _ffree   free
-#define _fmalloc malloc
 #define _fmemcpy memcpy
 #define _fmemset memset
 #endif
