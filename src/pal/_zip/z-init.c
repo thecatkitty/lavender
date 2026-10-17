@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include <arch/zip.h>
 #include <fmt/zip.h>
 
