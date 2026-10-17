@@ -2,6 +2,7 @@
 #include <unistd.h>
 
 #include <arch/dos.h>
+#include <compat/string.h>
 #include <pal.h>
 
 #include "impl.h"

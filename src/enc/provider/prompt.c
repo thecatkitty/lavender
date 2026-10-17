@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include <compat/bswap.h>
 #include <pal.h>
 
