@@ -1,5 +1,6 @@
 #include <conio.h>
 #include <graph.h>
+#include <libi86/malloc.h>
 #include <stdlib.h>
 
 #include <arch/dos/bios.h>

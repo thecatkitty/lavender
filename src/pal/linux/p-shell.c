@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include <compat/stdio.h>
 #include <pal.h>
 
