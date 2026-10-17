@@ -1,8 +1,8 @@
 #include <stdarg.h>
-#include <stdio.h>
 
 #include <curl/curl.h>
 
+#include <compat/stdio.h>
 #include <net.h>
 #include <pal.h>
 
