@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include <net.h>
+#include <numstr.h>
 
 #include "remote.h"
 #include "json/encjson.h"

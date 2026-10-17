@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include <fmt/bmp.h>
+#include <numstr.h>
 #include <pal.h>
 #include <sld.h>
 
