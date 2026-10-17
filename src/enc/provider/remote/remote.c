@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <time.h>
 
+#include <compat/bswap.h>
 #include <pal.h>
 
 #include "remote.h"

@@ -1,5 +1,6 @@
 #include <stdlib.h>
 
+#include <compat/bswap.h>
 #include <fmt/iff.h>
 #include <pal.h>
 
