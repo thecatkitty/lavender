@@ -1,5 +1,4 @@
-#include <string.h>
-
+#include <compat/string.h>
 #include <pal.h>
 #include <snd.h>
 #include <snd/buf.h>

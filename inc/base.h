@@ -20,18 +20,6 @@
 
 #endif
 
-#if defined(CONFIG_DOS)
-#include <libi86/string.h>
-#else
-#include <string.h>
-#define _fmemcpy memcpy
-#define _fmemset memset
-#endif
-
-#if defined(_MSC_VER)
-#define strcasecmp _stricmp
-#endif
-
 #ifndef far
 #if defined(__ia16__)
 #define far __far
@@ -77,12 +65,6 @@
 
 extern uint64_t
 rstrtoull(const char *str, int base);
-
-#if !defined(_WIN32) && !__MISC_VISIBLE
-#define CUSTOM_ITOA
-extern char *
-itoa(int value, char *str, int base);
-#endif
 
 extern bool
 isdigstr(const char *str);

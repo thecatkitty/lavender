@@ -1,5 +1,6 @@
 #include <ctype.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <compat/stdio.h>
 #include "remote.h"

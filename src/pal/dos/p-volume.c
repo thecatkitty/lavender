@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include <arch/dos/bios.h>
 #include <fmt/fat.h>
 #include <pal.h>

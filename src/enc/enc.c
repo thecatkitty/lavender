@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include <compat/stdio.h>
 #include <enc.h>
 #include <fmt/zip.h>

@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include <enc.h>
 
 #include "../enc_impl.h"
