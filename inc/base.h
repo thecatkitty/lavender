@@ -10,10 +10,6 @@
 #include <stddef.h>
 #include <sys/types.h>
 
-#if defined(_MSC_VER) && (_MSC_VER < 1800)
-#define snprintf _snprintf
-#endif
-
 #ifndef __cplusplus
 
 #if defined(EDITING)
