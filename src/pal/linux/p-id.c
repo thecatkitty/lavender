@@ -1,5 +1,6 @@
 #include <unistd.h>
 
+#include <numstr.h>
 #include <pal.h>
 
 bool

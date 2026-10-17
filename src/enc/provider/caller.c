@@ -1,3 +1,5 @@
+#include <numstr.h>
+
 #include "../enc_impl.h"
 
 int

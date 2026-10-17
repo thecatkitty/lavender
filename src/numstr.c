@@ -1,8 +1,9 @@
 #include <ctype.h>
+#include <errno.h>
 
-#include <base.h>
+#include <numstr.h>
 
-#define _rstrtoull(str, num, condition, digxform)                              \
+#define RSTRTOULL(str, num, condition, digxform)                               \
     {                                                                          \
         uint64_t prev = 0;                                                     \
         while (condition(*str))                                                \
@@ -45,11 +46,11 @@ rstrtoull(const char *str, int base)
     switch (base)
     {
     case 10:
-        _rstrtoull(str, num, isdigit, _digxform_10);
+        RSTRTOULL(str, num, isdigit, _digxform_10);
         return num;
 
     case 16:
-        _rstrtoull(str, num, isxdigit, _digxform_16);
+        RSTRTOULL(str, num, isxdigit, _digxform_16);
         return num;
 
     default:
