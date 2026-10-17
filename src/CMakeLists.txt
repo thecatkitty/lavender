@@ -36,7 +36,7 @@ include_directories(lavender ${CMAKE_CURRENT_BINARY_DIR})
 target_sources(lavender PRIVATE main.c rstd.c)
 target_link_libraries(lavender fmt gfx pal sld)
 
-if(EXISTS "${PROJECT_SOURCE_DIR}/ext/bulwa-msvcrt")
+if(COMPILER_NAME MATCHES "^i686" AND EXISTS "${PROJECT_SOURCE_DIR}/ext/bulwa-msvcrt")
     target_link_directories(lavender BEFORE PRIVATE "${PROJECT_SOURCE_DIR}/ext/bulwa-msvcrt/lib/i486")
     target_link_options(lavender BEFORE PRIVATE -B "${PROJECT_SOURCE_DIR}/ext/bulwa-msvcrt/lib/i486")
 endif()
