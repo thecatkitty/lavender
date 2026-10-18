@@ -5,6 +5,7 @@
 #include <i86.h>
 
 #include <base.h>
+#include <compat/far.h>
 #include <fmt/edid.h>
 
 #pragma pack(push, 1)

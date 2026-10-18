@@ -1,7 +1,6 @@
 #include <libi86/string.h>
 
-#include <base.h>
-
+#include <arch/dos.h>
 #include <arch/dos/winoldap.h>
 
 #if defined(CONFIG_ANDREA)

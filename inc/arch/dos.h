@@ -2,6 +2,7 @@
 #define _ARCH_DOS_H_
 
 #include <base.h>
+#include <compat/far.h>
 
 #if defined(__ia16__)
 #pragma GCC diagnostic push

@@ -4,6 +4,7 @@
 #include <fcntl.h>
 
 #include <base.h>
+#include <compat/far.h>
 #include <fmt/utf8.h>
 
 DEFINE_HANDLE(hasset);
