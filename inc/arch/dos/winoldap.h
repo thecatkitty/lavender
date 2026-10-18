@@ -6,6 +6,7 @@
 #include <i86.h>
 
 #include <base.h>
+#include <compat/far.h>
 
 static inline unsigned
 winoldap_get_version(void)

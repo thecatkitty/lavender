@@ -10,37 +10,6 @@
 #include <stddef.h>
 #include <sys/types.h>
 
-#ifndef __cplusplus
-
-#if defined(EDITING)
-
-#ifndef far
-#define far
-#endif
-
-#endif
-
-#ifndef far
-#if defined(__ia16__)
-#define far __far
-#else
-#define far
-#endif
-#endif
-
-#if defined(__ia16__) && !defined(__IA16_CMODEL_TINY__)
-#define ddcall __attribute__((no_assume_ds_data)) far
-#else
-#define ddcall
-#endif
-
-#else
-
-#define far
-#define ddcall
-
-#endif
-
 #define DEFINE_HANDLE(x)                                                       \
     typedef struct                                                             \
     {                                                                          \

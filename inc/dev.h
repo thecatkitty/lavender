@@ -2,6 +2,7 @@
 #define _DEV_H_
 
 #include <base.h>
+#include <compat/far.h>
 
 #define DEV_MAX_NAME        9
 #define DEV_MAX_DESCRIPTION 32
