@@ -1,3 +1,5 @@
+target_include_directories(pal PUBLIC inc)
+
 add_subdirectory(../_sdl2 sdl2)
 target_sources(pal PRIVATE ../shared/p-strings.c)
 target_sources(pal PRIVATE ../shared/p-version.c)
