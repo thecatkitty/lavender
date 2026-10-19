@@ -1,10 +1,10 @@
 #ifndef _FMT_ZIP_H_
 #define _FMT_ZIP_H_
 
-#include <assert.h>
 #include <stdio.h>
 
 #include <base.h>
+#include <compat/assert.h>
 
 #define ZIP_PK_SIGN         0x4B50
 #define ZIP_LOCAL_FILE_SIGN 0x0403

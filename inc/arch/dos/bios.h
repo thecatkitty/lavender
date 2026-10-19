@@ -1,10 +1,10 @@
 #ifndef _ARCH_DOS_BIOS_H_
 #define _ARCH_DOS_BIOS_H_
 
-#include <assert.h>
 #include <i86.h>
 
 #include <base.h>
+#include <compat/assert.h>
 #include <compat/far.h>
 #include <fmt/edid.h>
 

@@ -1,6 +1,6 @@
-#include <assert.h>
 #include <conio.h>
 
+#include <compat/assert.h>
 #include <drv.h>
 #include <pal.h>
 #include <snd/dev.h>
