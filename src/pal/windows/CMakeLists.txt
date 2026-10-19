@@ -1,3 +1,5 @@
+target_include_directories(pal PUBLIC inc)
+
 target_sources(pal PRIVATE ../shared/p-mouse.c)
 
 target_sources(pal PRIVATE p-alert.c)
