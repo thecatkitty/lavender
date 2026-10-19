@@ -1,7 +1,7 @@
-#include <assert.h>
 #include <ctype.h>
 #include <stdlib.h>
 
+#include <compat/assert.h>
 #include <enc.h>
 
 #include "sld_impl.h"

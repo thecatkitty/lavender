@@ -1,9 +1,8 @@
 #ifndef _FMT_FAT_H_
 #define _FMT_FAT_H_
 
-#include <assert.h>
-
 #include <base.h>
+#include <compat/assert.h>
 
 #define FAT_ATTRIBUTE_READ_ONLY 0x01
 #define FAT_ATTRIBUTE_HIDDEN    0x02

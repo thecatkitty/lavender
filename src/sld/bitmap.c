@@ -1,7 +1,7 @@
-#include <assert.h>
 #include <math.h>
 #include <stdlib.h>
 
+#include <compat/assert.h>
 #include <fmt/bmp.h>
 #include <numstr.h>
 #include <pal.h>

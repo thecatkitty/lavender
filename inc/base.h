@@ -20,10 +20,6 @@
 #define lengthof(x)           (sizeof(x) / sizeof((x)[0]))
 #define sizeofm(type, member) sizeof(((type *)0)->member)
 
-#if !defined(__cplusplus) && !defined(static_assert)
-#define static_assert(expr, msg)
-#endif
-
 #ifndef SIZE_MAX
 #if defined(_WIN64)
 #define SIZE_MAX _UI64_MAX
