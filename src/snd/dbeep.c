@@ -1,11 +1,21 @@
 #include <compat/stdlib.h>
 #include <compat/string.h>
-
-#include <arch/dos.h>
 #include <drv.h>
 #include <pal.h>
 #include <snd.h>
 #include <snd/dev.h>
+
+#if defined(CONFIG_DOS)
+#include <arch/dos.h>
+#endif
+
+#if defined(CONFIG_SOUND_BEEPEMU)
+extern void ddcall
+dos_beep(uint16_t divisor);
+
+extern void ddcall
+dos_silence(void);
+#endif
 
 #define KEY_NONE         255
 #define KEY_MIN          14 // PIT incapable of frequencies lower than D0

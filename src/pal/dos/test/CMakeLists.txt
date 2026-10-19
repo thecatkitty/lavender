@@ -1,4 +1,5 @@
 include_directories(inc)
+include_directories(../inc)
 add_compile_options(-O0 -g)
 add_compile_options(-Wno-pointer-arith)
 
