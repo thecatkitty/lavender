@@ -1,4 +1,5 @@
 add_library(snd OBJECT)
+target_include_directories(snd PRIVATE inc)
 target_link_libraries(snd PRIVATE compat pal)
 
 target_sources(snd PRIVATE drivers.c)
@@ -6,9 +7,13 @@ target_sources(snd PRIVATE snd.c)
 target_sources(snd PRIVATE buf.c)
 target_sources(snd PRIVATE seq.c)
 
+target_sources(snd PRIVATE iff.c)
+target_sources(snd PRIVATE midi.c)
+
 function(add_sound_driver drv_name config_var target_var)
     if("${${config_var}}" STREQUAL m)
         add_driver(${drv_name})
+        target_include_directories(${drv_name} PUBLIC inc)
         set(${target_var} ${drv_name} PARENT_SCOPE)
     else()
         set(${target_var} snd PARENT_SCOPE)
