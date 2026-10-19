@@ -1,5 +1,5 @@
 add_library(snd OBJECT)
-target_link_libraries(snd PRIVATE compat)
+target_link_libraries(snd PRIVATE compat pal)
 
 target_sources(snd PRIVATE drivers.c)
 target_sources(snd PRIVATE snd.c)

@@ -1,3 +1,5 @@
+target_include_directories(pal PUBLIC inc)
+
 target_sources(pal PRIVATE ../shared/p-strings.c)
 target_sources(pal PRIVATE ../shared/p-version.c)
 
