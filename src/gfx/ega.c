@@ -5,7 +5,7 @@
 #include <stdlib.h>
 
 #include <arch/dos/bios.h>
-#include <drv.h>
+#include <ddi.h>
 #include <gfx.h>
 
 #include "glyph.h"

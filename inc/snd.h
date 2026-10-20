@@ -1,7 +1,7 @@
 #ifndef _SND_H_
 #define _SND_H_
 
-#include <dev.h>
+#include <ddi.h>
 
 typedef bool (*snd_enum_devices_callback)(device *device, void *data);
 

@@ -1,7 +1,7 @@
 #include <conio.h>
 
 #include <compat/assert.h>
-#include <drv.h>
+#include <ddi.h>
 #include <pal.h>
 #include <snd/dev.h>
 

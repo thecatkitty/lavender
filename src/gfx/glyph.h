@@ -1,7 +1,7 @@
 #ifndef _GLYPH_H_
 #define _GLYPH_H_
 
-#include <drv.h>
+#include <ddi.h>
 #include <gfx.h>
 
 #define GFX_MAX_OVERLAY_SIZE        3

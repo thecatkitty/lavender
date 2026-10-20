@@ -1,7 +1,7 @@
 #ifndef _SND_DEV_H_
 #define _SND_DEV_H_
 
-#include <dev.h>
+#include <ddi.h>
 #include <fmt/midi.h>
 #include <snd.h>
 

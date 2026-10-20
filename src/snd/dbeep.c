@@ -1,6 +1,6 @@
 #include <compat/stdlib.h>
 #include <compat/string.h>
-#include <drv.h>
+#include <ddi.h>
 #include <pal.h>
 #include <snd.h>
 #include <snd/dev.h>
