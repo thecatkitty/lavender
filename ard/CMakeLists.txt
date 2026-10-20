@@ -39,12 +39,13 @@ if(WATCOM)
         add_custom_command(
             OUTPUT "${output}"
             COMMAND rc /nologo /c 65001
-                /i "${CMAKE_SOURCE_DIR}/inc"
+                "/i;$<JOIN:$<TARGET_PROPERTY:compat,INTERFACE_INCLUDE_DIRECTORIES>,;/i;>"
                 /i "${CMAKE_BINARY_DIR}/inc"
                 /fo "${output}"
                 "${resource}"
             DEPENDS "${resource}"
             COMMENT "Compiling resource ${name}"
+            COMMAND_EXPAND_LISTS
             VERBATIM)
 
         list(APPEND resource_outputs "${output}")

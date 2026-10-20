@@ -6,8 +6,8 @@ config INTERNET
         Support for online connectivity features.
 
 
-rsource "pal/Kconfig"
-rsource "enc/Kconfig"
-rsource "gfx/Kconfig"
-rsource "snd/Kconfig"
-rsource "resource/Kconfig"
+rsource "src/pal/Kconfig"
+rsource "src/enc/Kconfig"
+rsource "src/gfx/Kconfig"
+rsource "src/snd/Kconfig"
+rsource "src/resource/Kconfig"
