@@ -4,6 +4,7 @@
 #include <arch/dos.h>
 #include <arch/dos/winoldap.h>
 #include <gfx.h>
+#include <gfx/ddi.h>
 #include <pal.h>
 
 #if defined(CONFIG_ANDREA)

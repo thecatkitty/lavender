@@ -2,6 +2,7 @@
 #define GFX_TYPES_H
 
 #include <base.h>
+#include <compat/far.h>
 
 typedef struct
 {
@@ -49,5 +50,17 @@ typedef enum
     GFX_COLOR_WHITE = 15,
     GFX_COLOR_UNKNOWN = -1
 } gfx_color;
+
+#pragma pack(push, 1)
+typedef struct
+{
+    uint16_t codepoint;
+    char     base;
+    uint8_t  overlay;
+    uint8_t  transformation;
+} gfx_glyph;
+#pragma pack(pop)
+
+typedef far const gfx_glyph *gfx_glyph_data;
 
 #endif // GFX_TYPES_H

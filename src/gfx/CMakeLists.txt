@@ -1,4 +1,5 @@
 add_library(gfx OBJECT)
+target_include_directories(gfx PRIVATE inc)
 target_link_libraries(gfx PRIVATE compat pal)
 
 target_sources(gfx PRIVATE color.c)
@@ -11,6 +12,7 @@ if(DOS)
 
     if(CONFIG_ANDREA)
         add_driver(gfxega)
+        target_include_directories(gfxega PRIVATE inc)
         target_sources(gfxega PRIVATE ega.c)
         target_sources(gfxega PRIVATE errno.c)
         target_sources(gfxega PRIVATE font-8x14.c)

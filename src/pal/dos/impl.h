@@ -1,7 +1,7 @@
 #ifndef _PAL_DOS_IMPL_H_
 #define _PAL_DOS_IMPL_H_
 
-#include <gfx.h>
+#include <gfx/types.h>
 
 extern gfx_glyph_data dos_font;
 extern gfx_dimensions dos_cell;
