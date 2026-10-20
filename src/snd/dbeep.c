@@ -1,9 +1,8 @@
 #include <compat/stdlib.h>
 #include <compat/string.h>
-#include <ddi.h>
 #include <pal.h>
 #include <snd.h>
-#include <snd/dev.h>
+#include <snd/ddi.h>
 
 #if defined(CONFIG_DOS)
 #include <arch/dos.h>

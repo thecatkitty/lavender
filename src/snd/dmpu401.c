@@ -1,9 +1,8 @@
 #include <conio.h>
 
 #include <compat/assert.h>
-#include <ddi.h>
 #include <pal.h>
-#include <snd/dev.h>
+#include <snd/ddi.h>
 
 #define MPU401_DATA    0x330
 #define MPU401_CONTROL 0x331

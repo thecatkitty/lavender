@@ -3,7 +3,7 @@
 #include <pal.h>
 #include <snd.h>
 #include <snd/buf.h>
-#include <snd/dev.h>
+#include <snd/ddi.h>
 #include <snd/seq.h>
 
 #define BUFFER_SIZE           4096
