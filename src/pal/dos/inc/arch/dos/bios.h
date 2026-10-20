@@ -6,7 +6,6 @@
 #include <base.h>
 #include <compat/assert.h>
 #include <compat/far.h>
-#include <fmt/edid.h>
 
 #pragma pack(push, 1)
 typedef struct
@@ -126,7 +125,7 @@ bios_get_equipment_list(void)
 }
 
 static inline short
-bios_read_edid(far edid_block *edid)
+bios_read_edid(far uint8_t *edid)
 {
     unsigned short ax, es, di;
     es = FP_SEG(edid);

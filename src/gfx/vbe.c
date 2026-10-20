@@ -1,4 +1,5 @@
 #include <arch/dos/bios.h>
+#include <fmt/edid.h>
 #include <gfx.h>
 
 #define _par(dx, dy, sx, sy)                                                   \
@@ -22,7 +23,7 @@ _read_edid(edid_block *edid)
         return false;
     }
 
-    ax = bios_read_edid(edid);
+    ax = bios_read_edid((far uint8_t *)edid);
     if (0x4F != (ax & 0xFF))
     {
         return false;
