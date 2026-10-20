@@ -2,7 +2,7 @@
 
 #include <compat/stdio.h>
 #include <pal.h>
-#include <snd/dev.h>
+#include <snd/ddi.h>
 
 static HMIDIOUT _out = NULL;
 

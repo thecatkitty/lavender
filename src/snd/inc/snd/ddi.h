@@ -1,5 +1,5 @@
-#ifndef _SND_DEV_H_
-#define _SND_DEV_H_
+#ifndef SND_DDI_H
+#define SND_DDI_H
 
 #include <ddi.h>
 #include <fmt/midi.h>
@@ -27,4 +27,4 @@ snd_register_device(far device *dev);
 extern int ddcall
 snd_unregister_devices(far snd_device_ops *ops);
 
-#endif // _SND_DEV_H_
+#endif // SND_DDI_H

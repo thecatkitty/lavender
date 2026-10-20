@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include <pal.h>
-#include <snd/dev.h>
+#include <snd/ddi.h>
 
 #include "opl2.h"
 
