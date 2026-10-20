@@ -7,8 +7,7 @@
 #include <arch/dos.h>
 #include <arch/dos/bios.h>
 #include <arch/dos/msdos.h>
-#include <ddi.h>
-#include <gfx.h>
+#include <gfx/ddi.h>
 
 #include "glyph.h"
 

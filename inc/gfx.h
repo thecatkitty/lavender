@@ -1,80 +1,10 @@
 #ifndef _GFX_H_
 #define _GFX_H_
 
-#include <ddi.h>
 #include <gfx/types.h>
-
-typedef enum
-{
-    GFX_PROPERTY_SCREEN_SIZE = 1,
-    GFX_PROPERTY_GLYPH_SIZE = 2,
-    GFX_PROPERTY_GLYPH_DATA = 3,
-    GFX_PROPERTY_COLOR_DEPTH = 4,
-} gfx_property;
 
 #define GFX_COLUMNS 80
 #define GFX_LINES   25
-
-typedef struct
-{
-    bool ddcall (*open)(device *dev);
-    void ddcall (*close)(device *dev);
-    bool ddcall (*get_property)(device *dev, gfx_property property, void *out);
-
-    bool ddcall (*draw_line)(device         *dev,
-                             const gfx_rect *rect,
-                             gfx_color       color);
-    bool ddcall (*draw_rectangle)(device         *dev,
-                                  const gfx_rect *rect,
-                                  gfx_color       color);
-    bool ddcall (*fill_rectangle)(device         *dev,
-                                  const gfx_rect *rect,
-                                  gfx_color       color);
-
-    bool ddcall (*draw_bitmap)(device *dev, gfx_bitmap *bm, int x, int y);
-    bool ddcall (*draw_text)(device     *dev,
-                             const char *str,
-                             uint16_t    x,
-                             uint16_t    y);
-} gfx_device_ops;
-
-#define gfx_device_open(dev) (((far gfx_device_ops *)((dev)->ops))->open((dev)))
-#define gfx_device_close(dev)                                                  \
-    (((far gfx_device_ops *)((dev)->ops))->close((dev)))
-#define gfx_device_get_property(dev, property, out)                            \
-    (((far gfx_device_ops *)((dev)->ops))                                      \
-         ->get_property((dev), (property), (out)))
-
-#define gfx_device_draw_line(dev, rect, color)                                 \
-    (((far gfx_device_ops *)((dev)->ops))->draw_line((dev), (rect), (color)))
-#define gfx_device_draw_rectangle(dev, rect, color)                            \
-    (((far gfx_device_ops *)((dev)->ops))                                      \
-         ->draw_rectangle((dev), (rect), (color)))
-#define gfx_device_fill_rectangle(dev, rect, color)                            \
-    (((far gfx_device_ops *)((dev)->ops))                                      \
-         ->fill_rectangle((dev), (rect), (color)))
-
-#define gfx_device_draw_bitmap(dev, bm, x, y)                                  \
-    (((far gfx_device_ops *)((dev)->ops))->draw_bitmap((dev), (bm), (x), (y)))
-#define gfx_device_draw_text(dev, str, x, y)                                   \
-    (((far gfx_device_ops *)((dev)->ops))->draw_text((dev), (str), (x), (y)))
-
-#pragma pack(push, 1)
-typedef struct
-{
-    uint16_t codepoint;
-    char     base;
-    uint8_t  overlay;
-    uint8_t  transformation;
-} gfx_glyph;
-#pragma pack(pop)
-
-typedef far const gfx_glyph *gfx_glyph_data;
-
-#if defined(CONFIG_HAVE_GFX_DEVICES)
-extern int ddcall
-gfx_register_device(far device *dev);
-#endif
 
 extern bool
 gfx_initialize(void);
