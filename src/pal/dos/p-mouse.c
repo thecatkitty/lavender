@@ -1,5 +1,5 @@
 #include <arch/dos/msmouse.h>
-#include <gfx.h>
+#include <gfx/types.h>
 #include <pal.h>
 
 #include "dos.h"

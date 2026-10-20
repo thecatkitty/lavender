@@ -5,7 +5,7 @@
 #include <windows.h>
 
 #include <base.h>
-#include <gfx.h>
+#include <gfx/types.h>
 
 extern HWND
 windows_get_hwnd(void);
