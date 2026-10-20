@@ -1,5 +1,7 @@
 target_include_directories(pal PUBLIC inc)
 
+target_sources(pal PRIVATE zip.c)
+
 target_sources(pal PRIVATE pa-close.c)
 target_sources(pal PRIVATE pa-enum.c)
 target_sources(pal PRIVATE pa-extract.c)
