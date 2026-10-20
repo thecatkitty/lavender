@@ -1,5 +1,5 @@
-#ifndef _FMT_UTF8_H_
-#define _FMT_UTF8_H_
+#ifndef PAL_UTF8_H
+#define PAL_UTF8_H
 
 #include <base.h>
 
@@ -29,4 +29,4 @@ utf8_strlen(const char *str);
 // Clears errno on success
 extern int
 utf8_strncasecmp(const char *str1, const char *str2, unsigned length);
-#endif // _FMT_UTF8_H_
+#endif // PAL_UTF8_H
