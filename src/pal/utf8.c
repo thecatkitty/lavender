@@ -1,4 +1,4 @@
-#include <fmt/utf8.h>
+#include <pal/utf8.h>
 
 uint16_t
 utf8_get_codepoint(const char *sequence, int *length)

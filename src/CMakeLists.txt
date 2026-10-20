@@ -13,7 +13,6 @@ if(CONFIG_SDL2)
     include_directories(lavender ${SDL2_INCLUDE_DIR} ${SDL2_INCLUDE_DIR}/..)
 endif()
 
-add_subdirectory(fmt)
 add_subdirectory(gfx)
 add_subdirectory(pal)
 add_subdirectory(sld)
@@ -35,7 +34,7 @@ endif()
 
 include_directories(lavender ${CMAKE_CURRENT_BINARY_DIR})
 target_sources(lavender PRIVATE main.c numstr.c)
-target_link_libraries(lavender fmt gfx pal sld)
+target_link_libraries(lavender gfx pal sld)
 
 if(COMPILER_NAME MATCHES "^i686" AND EXISTS "${PROJECT_SOURCE_DIR}/ext/bulwa-msvcrt")
     target_link_directories(lavender BEFORE PRIVATE "${PROJECT_SOURCE_DIR}/ext/bulwa-msvcrt/lib/i486")

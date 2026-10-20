@@ -2,6 +2,8 @@ add_library(pal OBJECT)
 target_link_libraries(pal PRIVATE compat)
 target_include_directories(pal PRIVATE inc)
 
+target_sources(pal PRIVATE utf8.c)
+
 add_subdirectory(_zip)
 
 if(DOS)

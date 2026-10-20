@@ -7,7 +7,6 @@
 #endif
 
 #include <fmt/exe.h>
-#include <fmt/utf8.h>
 #include <fmt/zip.h>
 #include <pal.h>
 
