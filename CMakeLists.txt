@@ -64,7 +64,7 @@ enable_testing()
 include(cmake/extensions/test.cmake)
 
 # Application
-add_subdirectory(src)
+add_subdirectory(player)
 
 # Asset archive
 add_subdirectory(demo)

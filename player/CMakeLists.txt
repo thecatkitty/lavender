@@ -1,4 +1,5 @@
 add_executable(lavender WIN32)
+include_directories(inc)
 target_link_libraries(lavender compat)
 if(NOT CMAKE_SYSTEM_PROCESSOR STREQUAL ALPHA)
     install(TARGETS lavender DESTINATION .)
@@ -6,34 +7,34 @@ endif()
 
 
 if(CONFIG_SDL2)
-    find_package(SDL2 REQUIRED PATHS ../ext)
+    find_package(SDL2 REQUIRED PATHS "${PROJECT_SOURCE_DIR}/ext")
     if(SDL2_FOUND)
         message(STATUS "Found SDL2 - ${SDL2_DIR}")
     endif()
-    include_directories(lavender ${SDL2_INCLUDE_DIR} ${SDL2_INCLUDE_DIR}/..)
+    include_directories(${SDL2_INCLUDE_DIR} ${SDL2_INCLUDE_DIR}/..)
 endif()
 
-add_subdirectory(gfx)
-add_subdirectory(pal)
-add_subdirectory(sld)
+add_subdirectory(src/gfx)
+add_subdirectory(src/pal)
+add_subdirectory(src/sld)
 
 if(CONFIG_ENCRYPTED_CONTENT)
-    add_subdirectory(enc)
+    add_subdirectory(src/enc)
     target_link_libraries(lavender enc)
 endif()
 
 if(CONFIG_INTERNET)
-    add_subdirectory(net)
+    add_subdirectory(src/net)
     target_link_libraries(lavender net)
 endif()
 
 if(CONFIG_SOUND)
-    add_subdirectory(snd)
+    add_subdirectory(src/snd)
     target_link_libraries(lavender snd)
 endif()
 
-include_directories(lavender ${CMAKE_CURRENT_BINARY_DIR})
-target_sources(lavender PRIVATE main.c numstr.c)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+target_sources(lavender PRIVATE src/main.c src/numstr.c)
 target_link_libraries(lavender gfx pal sld)
 
 if(COMPILER_NAME MATCHES "^i686" AND EXISTS "${PROJECT_SOURCE_DIR}/ext/bulwa-msvcrt")
@@ -55,10 +56,10 @@ else()
     target_link_binary_object(lavender version)
 endif()
 
-add_subdirectory(resource)
+add_subdirectory(src/resource)
 
 include(${KCONFIG_TARGET}.cmake)
 
 if(CONFIG_TESTS)
-    add_subdirectory(pal/dos/test)
+    add_subdirectory(src/pal/dos/test)
 endif()
