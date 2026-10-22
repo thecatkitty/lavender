@@ -71,7 +71,7 @@ WinMain(_In_ HINSTANCE     instance,
         // cannot load configuration
         LoadString(NULL, IDS_ECONFIG, message, ARRAYSIZE(message));
         ardui_msgbox(message, MB_ICONERROR | MB_OK);
-        return 0;
+        return 1;
     }
 
     ardui_set_title(cfg->name);
