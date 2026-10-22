@@ -28,6 +28,6 @@ arda_instie(_In_ const ardc_config *cfg)
     LoadString(NULL, IDS_EINSTNOF, format, ARRAYSIZE(format));
     sprintf(message, format, "Internet Explorer");
     ardui_msgbox(message, MB_ICONERROR | MB_OK);
-    PostQuitMessage(0);
+    PostQuitMessage(1);
     return 1;
 }
