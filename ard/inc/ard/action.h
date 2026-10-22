@@ -19,7 +19,7 @@ arda_exec(_In_ const ardc_config *cfg, _In_z_ const char *path);
 extern int
 arda_run(_In_ const ardc_config *cfg);
 
-#if defined(_M_X64)
+#if defined(_M_X64) || defined(_M_IA64) || defined(_M_ARM) || defined(_M_ARM64)
 #define arda_rundos_available(x) false
 #else
 extern bool
