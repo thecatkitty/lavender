@@ -7,15 +7,16 @@
 
 typedef BOOL(WINAPI *pf_iswow64process)(HANDLE, PBOOL);
 
-#if defined(_M_IX86)
 static bool available_, available_checked_ = false;
 
 bool
 arda_rundos_available(_In_ const ardc_config *cfg)
 {
+#if defined(_M_IX86)
     HMODULE           kernel32;
     pf_iswow64process fn_isw64;
     BOOL              is_wow64 = FALSE;
+#endif
 
     if (available_checked_)
     {
@@ -28,6 +29,7 @@ arda_rundos_available(_In_ const ardc_config *cfg)
         return available_ = false;
     }
 
+#if defined(_M_IX86)
     kernel32 = GetModuleHandle("kernel32.dll");
     fn_isw64 = (pf_iswow64process)(kernel32 ? GetProcAddress(kernel32,
                                                              "IsWow64Process")
@@ -36,10 +38,10 @@ arda_rundos_available(_In_ const ardc_config *cfg)
     {
         return available_ = !is_wow64;
     }
+#endif
 
     return available_ = true;
 }
-#endif
 
 int
 arda_rundos(_In_ const ardc_config *cfg)

@@ -36,9 +36,10 @@ get_profile_string(_In_z_ const char      *section,
 
     if (0 == global_ini_[0])
     {
-        sprintf(global_ini_, "%s" LARD_INI, ardc_get_root());
-        sprintf(local_ini_, "%s%04x\\" LARD_INI, ardc_get_root(),
-                LOWORD(GetThreadLocale()));
+        snprintf(global_ini_, ARRAYSIZE(global_ini_), "%s" LARD_INI,
+                 ardc_get_root());
+        snprintf(local_ini_, ARRAYSIZE(local_ini_), "%s%04x\\" LARD_INI,
+                 ardc_get_root(), LOWORD(GetThreadLocale()));
     }
 
     if (0 != (length = GetPrivateProfileString(section, key, "", buffer, size,
@@ -204,7 +205,7 @@ load_dependencies(_In_z_ const char *deps)
 static int
 load_source(_In_z_ const char *name)
 {
-    char section[7 + ARDC_LENGTH_SHORT] = "source.";
+    char section[7 + ARDC_LENGTH_SHORT];
     int  idx;
 
     for (idx = 0; idx < config_.srcs_count; idx++)
@@ -215,7 +216,7 @@ load_source(_In_z_ const char *name)
         }
     }
 
-    strncat(section, name, ARDC_LENGTH_SHORT);
+    snprintf(section, ARRAYSIZE(section), "source.%s", name);
     load_string(section, "path", config_.srcs[idx].path,
                 ARRAYSIZE(config_.srcs[idx].path), IDS_DEFRUNDOS);
     if (0 == config_.srcs[idx].path[0])
@@ -352,9 +353,9 @@ ardc_load(void)
         WORD version = ardv_windows_get_version();
 
         config_.ossp = 0;
-        if (0 < sprintf(ossp_key,
-                        ardv_windows_is_nt() ? "winspnt%u.%u" : "winsp%u.%u",
-                        HIBYTE(version), LOBYTE(version)))
+        if (0 < snprintf(ossp_key, ARRAYSIZE(ossp_key),
+                         ardv_windows_is_nt() ? "winspnt%u.%u" : "winsp%u.%u",
+                         HIBYTE(version), LOBYTE(version)))
         {
             config_.ossp = load_short_version(SEC_SYSTEM, ossp_key, 0);
         }

@@ -16,14 +16,16 @@
 int
 arda_exec(_In_ const ardc_config *cfg, _In_z_ const char *cmd)
 {
-    char  message[ARDC_LENGTH_LONG];
-    UINT  status;
-    char *argv0_end = strchr(cmd, ' ');
+    UINT status;
 
     if (32 > (status = WinExec(cmd, SW_SHOWNORMAL)))
     {
         char format[ARDC_LENGTH_LONG] = "";
+        char message[ARDC_LENGTH_LONG];
         int  id = IDS_EEXECNORES;
+
+        const char *argv0 = cmd;
+        const char *argv0_end;
 
         switch (status)
         {
@@ -36,19 +38,25 @@ arda_exec(_In_ const ardc_config *cfg, _In_z_ const char *cmd)
             break;
         }
 
-        if (argv0_end)
+        if (*argv0 == '"')
         {
-            *argv0_end = 0;
+            ++argv0;
+            argv0_end = strchr(argv0, '"');
+        }
+        else
+        {
+            argv0_end = strchr(argv0, ' ');
+        }
+
+        if (!argv0_end)
+        {
+            argv0_end = argv0 + strlen(argv0);
         }
 
         LoadString(NULL, id, format, ARRAYSIZE(format));
-        sprintf(message, format, cfg->name, cmd);
+        snprintf(message, ARRAYSIZE(message), format, cfg->name,
+                 (int)(argv0_end - argv0), argv0);
         ardui_msgbox(message, MB_ICONERROR | MB_OK);
-
-        if (argv0_end)
-        {
-            *argv0_end = ' ';
-        }
 
         return 1;
     }

@@ -21,7 +21,7 @@ ard_check_sources(_Inout_ ardc_config *cfg);
 extern _Ret_maybenull_ ardc_source **
 ard_get_sources(_Inout_ ardc_config *cfg);
 
-static int
+static void
 die_with_rundos_buff(_Inout_ char           *message,
                      _In_ size_t             capacity,
                      _In_ const ardc_config *cfg)
@@ -38,20 +38,17 @@ die_with_rundos_buff(_Inout_ char           *message,
                    capacity - length - 1);
     }
 
-    ardc_cleanup();
     if (IDYES == ardui_msgbox(message, has_rundos ? (MB_ICONWARNING | MB_YESNO)
                                                   : (MB_ICONERROR | MB_OK)))
     {
-        return arda_rundos(cfg);
+        arda_rundos(cfg);
     }
-
-    return 0;
 }
 
-static int
+static void
 die_with_rundos(_Inout_ char *message, _In_ const ardc_config *cfg)
 {
-    return die_with_rundos_buff(message, ARDC_LENGTH_LONG, cfg);
+    die_with_rundos_buff(message, ARDC_LENGTH_LONG, cfg);
 }
 
 int WINAPI
@@ -74,7 +71,7 @@ WinMain(_In_ HINSTANCE     instance,
         // cannot load configuration
         LoadString(NULL, IDS_ECONFIG, message, ARRAYSIZE(message));
         ardui_msgbox(message, MB_ICONERROR | MB_OK);
-        return 0;
+        return 1;
     }
 
     ardui_set_title(cfg->name);
@@ -89,9 +86,10 @@ WinMain(_In_ HINSTANCE     instance,
         LoadString(NULL,
                    IDS_CPUBASE + ardv_cpu_from_string(cfg->cpu, ARDV_CPU_I486),
                    cpu_desc, ARRAYSIZE(cpu_desc));
-        sprintf(message, format, cfg->name, cpu_desc);
+        snprintf(message, ARRAYSIZE(message), format, cfg->name, cpu_desc);
 
-        return die_with_rundos(message, cfg);
+        die_with_rundos(message, cfg);
+        goto msg_pump;
     }
 
     // check Internet Explorer version - suppresses further checks
@@ -110,18 +108,19 @@ WinMain(_In_ HINSTANCE     instance,
         if (cfg->win)
         {
             LoadString(NULL, IDS_OLDWIN, format, ARRAYSIZE(format));
-            sprintf(message, format, cfg->name,
+            snprintf(message, ARRAYSIZE(message), format, cfg->name,
                     ardv_windows_get_name(cfg->win, false),
                     ardv_windows_get_name(cfg->winnt, true));
         }
         else
         {
             LoadString(NULL, IDS_OLDWINNT, format, ARRAYSIZE(format));
-            sprintf(message, format, cfg->name,
+            snprintf(message, ARRAYSIZE(message), format, cfg->name,
                     ardv_windows_get_name(cfg->winnt, true));
         }
 
-        return die_with_rundos(message, cfg);
+        die_with_rundos(message, cfg);
+        goto msg_pump;
     }
 
     // check the service pack version
@@ -133,11 +132,12 @@ WinMain(_In_ HINSTANCE     instance,
 
         LoadString(NULL, is_nt ? IDS_OLDSP : IDS_OLDOSR, format,
                    ARRAYSIZE(format));
-        sprintf(message, format, cfg->name,
+        snprintf(message, ARRAYSIZE(message), format, cfg->name,
                 ardv_windows_get_spname(winver, cfg->ossp, is_nt),
                 ardv_windows_get_name(winver, is_nt));
 
-        return die_with_rundos(message, cfg);
+        die_with_rundos(message, cfg);
+        goto msg_pump;
     }
 
     // check library dependencies
@@ -152,16 +152,18 @@ WinMain(_In_ HINSTANCE     instance,
         {
 
             LoadString(NULL, IDS_NODLL, format, ARRAYSIZE(format));
-            sprintf(message, format, cfg->name, dep->name, HIBYTE(dep->version),
+            snprintf(message, ARRAYSIZE(message), format, cfg->name, dep->name, HIBYTE(dep->version),
                     LOBYTE(dep->version));
 
-            return die_with_rundos(message, cfg);
+            die_with_rundos(message, cfg);
+            goto msg_pump;
         }
 
         if (NULL == (sources = ard_get_sources(cfg)))
         {
             LoadString(NULL, IDS_EBADDEPS, message, ARRAYSIZE(message));
-            return die_with_rundos(message, cfg);
+            die_with_rundos(message, cfg);
+            goto msg_pump;
         }
 
         arda_select(cfg, sources);
@@ -172,7 +174,8 @@ WinMain(_In_ HINSTANCE     instance,
         arda_run(cfg);
     }
 
-    while (GetMessage(&msg, NULL, 0, 0))
+msg_pump:
+    while (0 < GetMessage(&msg, NULL, 0, 0))
     {
         if (!msg.hwnd || (NULL == frame_) || !IsDialogMessage(frame_, &msg))
         {
@@ -184,6 +187,12 @@ WinMain(_In_ HINSTANCE     instance,
         {
             PostQuitMessage(1);
         }
+    }
+
+    if (WM_QUIT != msg.message)
+    {
+        // GetMessage error
+        msg.wParam = 1;
     }
 
     arda_select_cleanup();

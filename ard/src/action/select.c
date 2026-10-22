@@ -210,7 +210,7 @@ create_option_redists(_In_ int cy, _In_ HWND parent, _In_ ardc_source **sources)
     if (1 == count_sources(sources_))
     {
         LoadString(NULL, IDS_INSTREDISTD, format, ARRAYSIZE(format));
-        sprintf(listing_, format, sources_[0]->description);
+        snprintf(listing_, listing_length_, format, sources_[0]->description);
     }
     else
     {
@@ -260,7 +260,8 @@ create_option_ie(_In_ int cy, _In_ HWND parent)
                ARRAYSIZE(title));
     LoadString(NULL, has_ie ? IDS_INSTIEUPD : IDS_INSTIED, format,
                ARRAYSIZE(format));
-    sprintf(description, format, config_->ie_description);
+    snprintf(description, ARRAYSIZE(description), format,
+             config_->ie_description);
 
     icon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_INSTIE));
     return create_option(ID_INSTIE, icon, title, description, cy, parent);
@@ -306,7 +307,7 @@ wndproc_create(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
     SendMessageW(wnd, WM_SETICON, ICON_SMALL, (LPARAM)icon);
 
     LoadString(NULL, IDS_INFORMATION, format, ARRAYSIZE(format));
-    sprintf(message, format, config_->name);
+    snprintf(message, ARRAYSIZE(message), format, config_->name);
     ctl =
         CreateWindow(WC_STATIC, message, WS_VISIBLE | WS_CHILD | SS_LEFT,
                      WINDOW_MARGIN + BUTTON_LEFT, cy, WINDOW_MAXW - BUTTON_LEFT,
