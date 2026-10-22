@@ -40,8 +40,8 @@ LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
 
     IDS_ECONFIG, "Nie udało się załadować konfiguracji."
     IDS_EEXECNORES, "Nie udało się uruchomić programu %s z powodu braku zasobów w systemie."
-    IDS_EEXECBADF, "Nie udało się uruchomić programu %s, ponieważ plik '%s' jest niepoprawny."
-    IDS_EEXECNOF, "Nie udało się uruchomić programu %s, ponieważ nie znaleziono pliku '%s'."
+    IDS_EEXECBADF, "Nie udało się uruchomić programu %s, ponieważ plik '%.*s' jest niepoprawny."
+    IDS_EEXECNOF, "Nie udało się uruchomić programu %s, ponieważ nie znaleziono pliku '%.*s'."
     IDS_EBADDEPS, "Nie udało się przetworzyć bazy danych o zależnościach."
     IDS_EBADHWND, "Nie udało się zainicjalizować okna."
     IDS_EINSTNOF, "Nie udało się uruchomić instalatora komponentu %s."
