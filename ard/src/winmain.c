@@ -86,7 +86,7 @@ WinMain(_In_ HINSTANCE     instance,
         LoadString(NULL,
                    IDS_CPUBASE + ardv_cpu_from_string(cfg->cpu, ARDV_CPU_I486),
                    cpu_desc, ARRAYSIZE(cpu_desc));
-        sprintf(message, format, cfg->name, cpu_desc);
+        snprintf(message, ARRAYSIZE(message), format, cfg->name, cpu_desc);
 
         die_with_rundos(message, cfg);
         goto msg_pump;
@@ -108,14 +108,14 @@ WinMain(_In_ HINSTANCE     instance,
         if (cfg->win)
         {
             LoadString(NULL, IDS_OLDWIN, format, ARRAYSIZE(format));
-            sprintf(message, format, cfg->name,
+            snprintf(message, ARRAYSIZE(message), format, cfg->name,
                     ardv_windows_get_name(cfg->win, false),
                     ardv_windows_get_name(cfg->winnt, true));
         }
         else
         {
             LoadString(NULL, IDS_OLDWINNT, format, ARRAYSIZE(format));
-            sprintf(message, format, cfg->name,
+            snprintf(message, ARRAYSIZE(message), format, cfg->name,
                     ardv_windows_get_name(cfg->winnt, true));
         }
 
@@ -132,7 +132,7 @@ WinMain(_In_ HINSTANCE     instance,
 
         LoadString(NULL, is_nt ? IDS_OLDSP : IDS_OLDOSR, format,
                    ARRAYSIZE(format));
-        sprintf(message, format, cfg->name,
+        snprintf(message, ARRAYSIZE(message), format, cfg->name,
                 ardv_windows_get_spname(winver, cfg->ossp, is_nt),
                 ardv_windows_get_name(winver, is_nt));
 
@@ -152,7 +152,7 @@ WinMain(_In_ HINSTANCE     instance,
         {
 
             LoadString(NULL, IDS_NODLL, format, ARRAYSIZE(format));
-            sprintf(message, format, cfg->name, dep->name, HIBYTE(dep->version),
+            snprintf(message, ARRAYSIZE(message), format, cfg->name, dep->name, HIBYTE(dep->version),
                     LOBYTE(dep->version));
 
             die_with_rundos(message, cfg);

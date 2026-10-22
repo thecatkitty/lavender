@@ -54,7 +54,8 @@ arda_exec(_In_ const ardc_config *cfg, _In_z_ const char *cmd)
         }
 
         LoadString(NULL, id, format, ARRAYSIZE(format));
-        sprintf(message, format, cfg->name, (int)(argv0_end - argv0), argv0);
+        snprintf(message, ARRAYSIZE(message), format, cfg->name,
+                 (int)(argv0_end - argv0), argv0);
         ardui_msgbox(message, MB_ICONERROR | MB_OK);
 
         return 1;
