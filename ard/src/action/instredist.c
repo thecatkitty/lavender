@@ -19,7 +19,7 @@ show_error(_In_ int id, _In_z_ const char *description)
     char format[ARDC_LENGTH_LONG] = "";
     char message[ARDC_LENGTH_LONG] = "";
     LoadString(NULL, id, format, ARRAYSIZE(format));
-    sprintf(message, format, description);
+    snprintf(message, ARRAYSIZE(message), format, description);
     ardui_msgbox(message, MB_ICONERROR | MB_OK);
 }
 
