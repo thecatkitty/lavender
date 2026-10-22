@@ -40,8 +40,8 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
 
     IDS_ECONFIG, "Nelze načíst konfiguraci."
     IDS_EEXECNORES, "%s nelze spustit, protože systému došly prostředky."
-    IDS_EEXECBADF, "%s nelze spustit, protože soubor '%s' je neplatný."
-    IDS_EEXECNOF, "%s nelze spustit, protože soubor '%s' nebyl nalezen."
+    IDS_EEXECBADF, "%s nelze spustit, protože soubor '%.*s' je neplatný."
+    IDS_EEXECNOF, "%s nelze spustit, protože soubor '%.*s' nebyl nalezen."
     IDS_EBADDEPS, "Nelze zpracovat databázi závislostí."
     IDS_EBADHWND, "Nelze inicializovat okno."
     IDS_EINSTNOF, "Nelze spustit instalační program součásti %s."
