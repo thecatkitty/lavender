@@ -15,17 +15,10 @@ pal_get_medium_id(const char *tag)
     LOG("entry");
     unsigned volume_sn_high = 0, volume_sn_low = 0;
 
-    char self[PATH_MAX];
-    if (0 > readlink("/proc/self/exe", self, PATH_MAX))
-    {
-        LOG("exit, cannot retrieve executable path!");
-        return 0;
-    }
-
     struct stat info;
-    if (0 > stat(self, &info))
+    if (0 > stat("/proc/self/exe", &info))
     {
-        LOG("exit, cannot get file info for '%s'!", self);
+        LOG("exit, cannot get the executable file info!");
         return 0;
     }
 
