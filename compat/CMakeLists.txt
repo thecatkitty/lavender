@@ -23,7 +23,8 @@ supply_header(winnt)
 
 target_sources(compat PRIVATE
     src/bswap.c
-    src/itoa.c)
+    src/itoa.c
+    src/swprintf.c)
 
 if(WIN32)
     target_sources(compat PRIVATE

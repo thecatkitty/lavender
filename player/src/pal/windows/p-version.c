@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include <arch/windows.h>
+#include <compat/wchar.h>
 #include <pal.h>
 
 #include "impl.h"
@@ -64,13 +65,8 @@ load_string_file_info(const char *name)
     WCHAR *string = NULL;
     UINT   string_len = 0;
 
-    swprintf(path,
-#if !defined(_MSC_VER) || (_MSC_VER > 1400)
-             MAX_PATH,
-#endif
-             L"\\StringFileInfo\\%04X%04X\\" FMT_AS, translation_[0],
-             translation_[1], name);
-
+    swprintf_c(path, MAX_PATH, L"\\StringFileInfo\\%04X%04X\\" FMT_AS,
+               translation_[0], translation_[1], name);
     if (!VerQueryValueW(info_, path, (LPVOID *)&string, &string_len))
     {
         LOG("cannot query %s", name);

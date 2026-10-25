@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include <arch/windows.h>
+#include <compat/wchar.h>
 #include <pal.h>
 
 #include "impl.h"
@@ -14,12 +15,8 @@ pal_alert(const char *text, int error)
     if (error)
     {
         WCHAR error_msg[32];
-        swprintf(error_msg,
-#if !defined(_MSC_VER) || (_MSC_VER > 1400)
-                 lengthof(error_msg),
-#endif
-                 L"\nerror %d", error);
-        wcsncat(msg, error_msg, MAX_PATH - wcslen(msg));
+        swprintf_c(error_msg, lengthof(error_msg), L"\nerror %d", error);
+        wcsncat(msg, error_msg, MAX_PATH - wcslen(msg) - 1);
     }
 
     MessageBoxW(windows_wnd, msg, L"Lavender",
